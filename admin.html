@@ -67,7 +67,7 @@
                 <button onclick="aplicarFiltroRapido('mes_actual')" class="flex-1 md:flex-none bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold hover:bg-slate-700 transition">Este Mes</button>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 border-t border-slate-200 pt-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 border-t border-slate-200 pt-5">
                 <div>
                     <label class="block text-xs font-black text-slate-500 uppercase mb-1">Desde</label>
                     <input type="date" id="filtro-inicio" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold">
@@ -78,19 +78,22 @@
                 </div>
                 <div>
                     <label class="block text-xs font-black text-slate-500 uppercase mb-1">Empresa</label>
-                    <select id="filtro-empresa" onchange="ejecutarFiltros()" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold truncate">
+                    <select id="filtro-empresa" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold truncate">
                         <option value="Todas">Todas las empresas</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-black text-slate-500 uppercase mb-1">Médico Responsable</label>
-                    <select id="filtro-medico" onchange="ejecutarFiltros()" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold truncate">
+                    <select id="filtro-medico" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold truncate">
                         <option value="Todos">Todos los médicos</option>
                     </select>
                 </div>
-                <div class="flex items-end h-full">
-                    <button onclick="reestablecerTodo()" class="w-full p-2.5 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition font-bold text-sm" title="Limpiar Filtros">
-                        <i class="fa-solid fa-rotate-left mr-2"></i> Limpiar Todo
+                <div class="flex items-end h-full gap-2 lg:col-span-2">
+                    <button onclick="ejecutarFiltros()" class="w-full p-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition font-bold text-sm shadow-md">
+                        <i class="fa-solid fa-filter mr-1"></i> Aplicar
+                    </button>
+                    <button onclick="reestablecerTodo()" class="w-full p-2.5 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition font-bold text-sm">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Limpiar
                     </button>
                 </div>
             </div>
@@ -116,29 +119,29 @@
 
         <div id="analytics-section" class="chart-container space-y-6 mb-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="glass p-5 rounded-2xl shadow-sm">
+                <div class="glass p-5 rounded-2xl shadow-sm flex flex-col">
                     <h3 class="font-black text-slate-500 text-xs uppercase tracking-widest mb-4 border-b pb-2">Estudios por Periodo</h3>
-                    <canvas id="chartFechas"></canvas>
+                    <div class="relative h-64 w-full"><canvas id="chartFechas"></canvas></div>
                 </div>
-                <div class="glass p-5 rounded-2xl shadow-sm">
+                <div class="glass p-5 rounded-2xl shadow-sm flex flex-col">
                     <h3 class="font-black text-slate-500 text-xs uppercase tracking-widest mb-4 border-b pb-2">Distribución por Tipo de Estudio</h3>
-                    <canvas id="chartTipos"></canvas>
+                    <div class="relative h-64 w-full"><canvas id="chartTipos"></canvas></div>
                 </div>
-                <div class="glass p-5 rounded-2xl shadow-sm">
+                <div class="glass p-5 rounded-2xl shadow-sm flex flex-col">
                     <h3 class="font-black text-slate-500 text-xs uppercase tracking-widest mb-4 border-b pb-2">Productividad por Empresa</h3>
-                    <canvas id="chartEmpresas"></canvas>
+                    <div class="relative h-64 w-full"><canvas id="chartEmpresas"></canvas></div>
                 </div>
-                <div class="glass p-5 rounded-2xl shadow-sm">
+                <div class="glass p-5 rounded-2xl shadow-sm flex flex-col">
                     <h3 class="font-black text-slate-500 text-xs uppercase tracking-widest mb-4 border-b pb-2">Horas laboradas por Periodo</h3>
-                    <canvas id="chartHorasPeriodo"></canvas>
+                    <div class="relative h-64 w-full"><canvas id="chartHorasPeriodo"></canvas></div>
                 </div>
-                <div class="glass p-5 rounded-2xl shadow-sm">
+                <div class="glass p-5 rounded-2xl shadow-sm flex flex-col">
                     <h3 class="font-black text-slate-500 text-xs uppercase tracking-widest mb-4 border-b pb-2">Horas Acumuladas por Médico</h3>
-                    <canvas id="chartHoras"></canvas>
+                    <div class="relative h-64 w-full"><canvas id="chartHoras"></canvas></div>
                 </div>
-                <div class="glass p-5 rounded-2xl shadow-sm">
+                <div class="glass p-5 rounded-2xl shadow-sm flex flex-col">
                     <h3 class="font-black text-slate-500 text-xs uppercase tracking-widest mb-4 border-b pb-2">Empresas Atendidas por Periodo</h3>
-                    <canvas id="chartEmpresasPeriodo"></canvas>
+                    <div class="relative h-64 w-full"><canvas id="chartEmpresasPeriodo"></canvas></div>
                 </div>
             </div>
         </div>
@@ -218,7 +221,6 @@
             if (tipo === 'hoy') { 
                 inicioStr = finStr; 
             } else if (tipo === 'semana') {
-                // Cálculo exacto del LUNES más reciente
                 const day = hoyObj.getDay(); 
                 const diff = hoyObj.getDate() - day + (day === 0 ? -6 : 1); 
                 const lunes = new Date(hoyObj.setDate(diff));
@@ -352,7 +354,7 @@
                 },
                 options: { 
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: false, // Ahora sí funciona porque el div padre tiene altura fija
                     plugins: { legend: { display: false } },
                     scales: { 
                         y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11, weight: 'bold' } } },
