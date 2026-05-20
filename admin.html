@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAPI Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.query = query;
+        window.orderBy = orderBy;
+        
+        // Cargar datos al iniciar
+        cargarDatos();
+    </script>
+    
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); }
+        body { background-color: #f1f5f9; }
+    </style>
+</head>
+<body class="font-sans text-gray-800 p-6">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8 bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-2xl shadow-lg text-white">
+            <div>
+                <h1 class="text-3xl font-bold">LAPI Dashboard</h1>
+                <p class="opacity-80 text-sm mt-1">Análisis de Productividad Médica</p>
+            </div>
+            <button onclick="exportarExcel()" class="bg-green-500 hover:bg-green-600 transition px-6 py-3 rounded-lg font-bold shadow flex gap-2 items-center">
+                <span>Descargar Excel</span>
+            </button>
+        </div>
+
+        <div class="glass p-4 rounded-xl shadow-sm mb-6 flex flex-wrap gap-4 items-end">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Fecha Inicio</label>
+                <input type="date" id="filtro-inicio" class="p-2 border rounded-lg outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Fecha Fin</label>
+                <input type="date" id="filtro-fin" class="p-2 border rounded-lg outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+            <button onclick="filtrarDatos()" class="bg-gray-800 text-white px-6 py-2 rounded-lg font-bold hover:bg-gray-700 transition">Aplicar Filtro</button>
+            <button onclick="cargarDatos()" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-300 transition">Ver Todos</button>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+            <div class="glass p-6 rounded-2xl shadow-sm border-l-4 border-orange-500">
+                <p class="text-gray-500 text-sm font-bold uppercase">Total Estudios</p>
+                <p id="kpi-estudios" class="text-3xl font-black text-gray-800 mt-2">0</p>
+            </div>
+            <div class="glass p-6 rounded-2xl shadow-sm border-l-4 border-blue-500">
+                <p class="text-gray-500 text-sm font-bold uppercase">Horas Laboradas</p>
+                <p id="kpi-horas" class="text-3xl font-black text-gray-800 mt-2">0</p>
+            </div>
+            <div class="glass p-6 rounded-2xl shadow-sm border-l-4 border-green-500">
+                <p class="text-gray-500 text-sm font-bold uppercase">Empresas Atendidas</p>
+                <p id="kpi-empresas" class="text-3xl font-black text-gray-800 mt-2">0</p>
+            </div>
+            <div class="glass p-6 rounded-2xl shadow-sm border-l-4 border-purple-500">
+                <p class="text-gray-500 text-sm font-bold uppercase">Médico Top</p>
+                <p id="kpi-medico-top" class="text-xl font-black text-gray-800 mt-2">-</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="glass p-6 rounded-2xl shadow-sm">
+                <h3 class="font-bold text-gray-600 mb-4 text-center">Estudios por Médico</h3>
+                <canvas id="chartMedicos"></canvas>
+            </div>
+            <div class="glass p-6 rounded-2xl shadow-sm">
+                <h3 class="font-bold text-gray-600 mb-4 text-center">Horas de Servicio por Médico</h3>
+                <canvas id="chartHoras"></canvas>
+            </div>
+            <div class="glass p-6 rounded-2xl shadow-sm">
+                <h3 class="font-bold text-gray-600 mb-4 text-center">Volumen por Empresa</h3>
+                <canvas id="chartEmpresas"></canvas>
+            </div>
+            <div class="glass p-6 rounded-2xl shadow-sm">
+                <h3 class="font-bold text-gray-600 mb-4 text-center">Tendencia de Estudios (Fechas)</h3>
+                <canvas id="chartFechas"></canvas>
+            </div>
+        </div>
+
+        <div class="glass p-6 rounded-2xl shadow-sm overflow-x-auto">
+            <h3 class="font-bold text-gray-600 mb-4">Registro Detallado</h3>
+            <table class="w-full text-sm text-left text-gray-600">
+                <thead class="text-xs uppercase bg-gray-100 text-gray-700">
+                    <tr>
+                        <th class="py-3 px-4 rounded-tl-lg">Fecha</th>
+                        <th class="py-3 px-4">Folio / Empresa</th>
+                        <th class="py-3 px-4">Horario</th>
+                        <th class="py-3 px-4">Detalle Médico</th>
+                        <th class="py-3 px-4 rounded-tr-lg">Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body" class="divide-y divide-gray-100">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let rawData = [];
+        let graficos = {};
+
+        async function cargarDatos() {
+            try {
+                const q = window.query(window.collection(window.db, "registros"), window.orderBy("fecha", "desc"));
+                const querySnapshot = await window.getDocs(q);
+                rawData = [];
+                querySnapshot.forEach((doc) => { rawData.push({ id: doc.id, ...doc.data() }); });
+                procesarDashboard(rawData);
+            } catch (error) {
+                console.error("Error obteniendo datos:", error);
+                alert("Hubo un error al conectar con Firebase.");
+            }
+        }
+
+        function filtrarDatos() {
+            const fInicio = document.getElementById('filtro-inicio').value;
+            const fFin = document.getElementById('filtro-fin').value;
+            if(!fInicio || !fFin) return alert("Selecciona fecha de inicio y fin");
+            
+            const filtrados = rawData.filter(d => d.fecha >= fInicio && d.fecha <= fFin);
+            procesarDashboard(filtrados);
+        }
+
+        function procesarDashboard(datos) {
+            let totalEstudios = 0;
+            let totalHoras = 0;
+            let empresasUnicas = new Set();
+            
+            let statsMedicos = {};
+            let horasMedicos = {};
+            let statsEmpresas = {};
+            let statsFechas = {};
+
+            const tablaBody = document.getElementById('tabla-body');
+            tablaBody.innerHTML = '';
+
+            datos.forEach(reg => {
+                totalHoras += reg.horasLaboradas || 0;
+                empresasUnicas.add(reg.empresa);
+
+                // Stats Empresas y Fechas
+                let cantEstudiosRegistro = 0;
+                
+                // Mapeo de médicos únicos en este registro para sumarles las horas laboradas del servicio completo
+                let medicosEnRegistro = new Set();
+
+                // Llenar tabla
+                let detalleHtml = '';
+                reg.detalles.forEach(det => {
+                    totalEstudios += det.cant;
+                    cantEstudiosRegistro += det.cant;
+                    detalleHtml += `<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs mr-1 mb-1 inline-block"><b>${det.medico}</b>: ${det.estudio} (${det.cant})</span>`;
+                    
+                    // Stats médicos (estudios)
+                    statsMedicos[det.medico] = (statsMedicos[det.medico] || 0) + det.cant;
+                    medicosEnRegistro.add(det.medico);
+                });
+
+                // Asignar las horas laboradas del registro a cada médico que participó
+                medicosEnRegistro.forEach(med => {
+                    horasMedicos[med] = (horasMedicos[med] || 0) + (reg.horasLaboradas || 0);
+                });
+
+                statsEmpresas[reg.empresa] = (statsEmpresas[reg.empresa] || 0) + cantEstudiosRegistro;
+                statsFechas[reg.fecha] = (statsFechas[reg.fecha] || 0) + cantEstudiosRegistro;
+
+                // Crear fila tabla
+                tablaBody.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="py-3 px-4 font-bold">${reg.fecha}<br><span class="text-xs font-normal text-gray-400">${reg.turno}</span></td>
+                        <td class="py-3 px-4"><span class="text-xs text-gray-400 block">${reg.folio}</span><b>${reg.empresa}</b></td>
+                        <td class="py-3 px-4">${reg.horaInicio} - ${reg.horaFin}<br><span class="text-xs bg-blue-100 text-blue-800 px-2 rounded">${reg.horasLaboradas} hrs</span></td>
+                        <td class="py-3 px-4">${detalleHtml}</td>
+                        <td class="py-3 px-4 text-xs italic text-gray-500">${reg.observaciones || 'Sin observaciones'}</td>
+                    </tr>
+                `;
+            });
+
+            // Actualizar KPIs
+            document.getElementById('kpi-estudios').innerText = totalEstudios;
+            document.getElementById('kpi-horas').innerText = totalHoras.toFixed(1);
+            document.getElementById('kpi-empresas').innerText = empresasUnicas.size;
+            
+            // Encontrar Médico Top
+            let medicoTop = "-";
+            let maxEstudios = 0;
+            for(let m in statsMedicos) { if(statsMedicos[m] > maxEstudios) { maxEstudios = statsMedicos[m]; medicoTop = m; } }
+            document.getElementById('kpi-medico-top').innerText = medicoTop;
+
+            // Dibujar Gráficas
+            dibujarGrafico('chartMedicos', 'bar', Object.keys(statsMedicos), Object.values(statsMedicos), 'Estudios Realizados', '#f97316');
+            dibujarGrafico('chartHoras', 'bar', Object.keys(horasMedicos), Object.values(horasMedicos), 'Horas de Servicio', '#3b82f6');
+            dibujarGrafico('chartEmpresas', 'doughnut', Object.keys(statsEmpresas), Object.values(statsEmpresas), 'Estudios por Empresa', ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#f59e0b']);
+            
+            // Ordenar fechas cronológicamente para la gráfica
+            const fechasOrdenadas = Object.keys(statsFechas).sort();
+            const valoresFechas = fechasOrdenadas.map(f => statsFechas[f]);
+            dibujarGrafico('chartFechas', 'line', fechasOrdenadas, valoresFechas, 'Tendencia Diaria', '#10b981');
+        }
+
+        function dibujarGrafico(canvasId, tipo, labels, data, labelTitulo, colores) {
+            if(graficos[canvasId]) graficos[canvasId].destroy();
+            
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            graficos[canvasId] = new Chart(ctx, {
+                type: tipo,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelTitulo,
+                        data: data,
+                        backgroundColor: colores,
+                        borderColor: tipo === 'line' ? colores : 'transparent',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: tipo === 'doughnut' } } }
+            });
+        }
+
+        function exportarExcel() {
+            if(rawData.length === 0) return alert("No hay datos para exportar");
+            
+            let dataAplanada = [];
+            rawData.forEach(r => {
+                r.detalles.forEach(d => {
+                    dataAplanada.push({
+                        Folio: r.folio, Fecha: r.fecha, Turno: r.turno, Empresa: r.empresa,
+                        Hora_Inicio: r.horaInicio, Hora_Fin: r.horaFin, Horas_Totales_Servicio: r.horasLaboradas,
+                        Medico: d.medico, Estudio: d.estudio, Cantidad: d.cant, Observaciones: r.observaciones || ''
+                    });
+                });
+            });
+
+            const hoja = XLSX.utils.json_to_sheet(dataAplanada);
+            const libro = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(libro, hoja, "Productividad");
+            XLSX.writeFile(libro, `LAPI_Reporte_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+    </script>
+</body>
+</html>
+
