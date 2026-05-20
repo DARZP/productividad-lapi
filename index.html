@@ -5,6 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LAPI Registro Productividad</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404",
+            measurementId: "G-DSYL82FFDE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app);
+        
+        window.db = db;
+        window.addDoc = addDoc;
+        window.collection = collection;
+    </script>
     <style>
         .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
         .paso { transition: all 0.4s ease; }
@@ -15,7 +38,7 @@
     <datalist id="lista-medicos"></datalist>
     <datalist id="lista-empresas"></datalist>
 
-    <div id="contenedor-principal" class="w-full max-w-md">
+    <div class="w-full max-w-md">
         <div class="glass p-6 rounded-3xl shadow-2xl mb-6">
             <h1 class="text-xl font-bold mb-6 text-center">Registro de Productividad</h1>
 
@@ -57,9 +80,9 @@
         </div>
 
         <div id="cuadro-edicion" class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30">
-            <h2 class="text-xs font-bold uppercase mb-2 opacity-80 text-center">¿Editar registro previo?</h2>
+            <h2 class="text-xs font-bold uppercase mb-2 opacity-80 text-center">¿Editar registro?</h2>
             <div class="flex gap-2">
-                <input id="input-edit-id" placeholder="Ingresa Folio..." class="w-full p-2 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50">
+                <input id="input-edit-id" placeholder="Folio..." class="w-full p-2 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50">
                 <button onclick="buscarRegistro()" class="bg-white/20 px-4 py-2 rounded-lg text-sm font-bold">Buscar</button>
             </div>
         </div>
@@ -70,31 +93,19 @@
         const medicos = ["Susana Cayetano", "Diego Arias", "Patricia Kassandra", "Estefany Bechere", "Giovanni Mariano", "David Emmanuel", "Angelica Reynoso"];
         const estudios = ["Espirometría", "Audiometría", "Historia Clínica", "Examen de Capacidad Visual", "Nórdico"];
 
-        let seleccionados = [];
-        let registroFinal = [];
-        let indiceActual = 0;
+        let seleccionados = [], registroFinal = [], indiceActual = 0;
 
         document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join('');
         document.getElementById('lista-medicos').innerHTML = medicos.map(m => `<option value="${m}">`).join('');
-        document.getElementById('lista-checkbox-estudios').innerHTML = estudios.map(e => `
-            <label class="flex items-center gap-3 p-3 bg-white/10 rounded-xl cursor-pointer">
-                <input type="checkbox" value="${e}" class="w-5 h-5 accent-orange-500"> ${e}
-            </label>`).join('');
+        document.getElementById('lista-checkbox-estudios').innerHTML = estudios.map(e => `<label class="flex items-center gap-3 p-3 bg-white/10 rounded-xl cursor-pointer"><input type="checkbox" value="${e}" class="w-5 h-5 accent-orange-500"> ${e}</label>`).join('');
 
-        function verificarRegistro() {
-            if(!document.getElementById('input-fecha').value) return alert("Selecciona fecha");
-            document.getElementById('paso-0').classList.add('hidden');
-            document.getElementById('paso-1').classList.remove('hidden');
-            document.getElementById('cuadro-edicion').classList.add('hidden');
-        }
-
-        function irAPaso2() { if(document.getElementById('input-empresa').value) { document.getElementById('paso-1').classList.add('hidden'); document.getElementById('paso-2').classList.remove('hidden'); } else alert("Selecciona empresa"); }
-
+        function verificarRegistro() { if(document.getElementById('input-fecha').value) { document.getElementById('paso-0').classList.add('hidden'); document.getElementById('paso-1').classList.remove('hidden'); document.getElementById('cuadro-edicion').classList.add('hidden'); } else alert("Selecciona fecha"); }
+        function irAPaso2() { if(document.getElementById('input-empresa').value) { document.getElementById('paso-1').classList.add('hidden'); document.getElementById('paso-2').classList.remove('hidden'); } }
+        
         function iniciarCapturaDetalle() {
             seleccionados = Array.from(document.querySelectorAll('#lista-checkbox-estudios input:checked')).map(i => i.value);
             if(seleccionados.length === 0) return alert("Selecciona un estudio");
-            indiceActual = 0;
-            mostrarDetalleEstudio();
+            indiceActual = 0; mostrarDetalleEstudio();
         }
 
         function mostrarDetalleEstudio() {
@@ -113,10 +124,7 @@
         function agregarFilaMedico() {
             const div = document.createElement('div');
             div.className = "flex gap-2";
-            div.innerHTML = `
-                <input list="lista-medicos" placeholder="Médico" class="med-name w-full p-2 rounded bg-white/20 outline-none placeholder-white/50">
-                <input type="number" placeholder="Cant." class="med-cant w-1/3 p-2 rounded bg-white/20 outline-none placeholder-white/50">
-            `;
+            div.innerHTML = `<input list="lista-medicos" placeholder="Médico" class="med-name w-full p-2 rounded bg-white/20 outline-none placeholder-white/50"><input type="number" placeholder="Cant." class="med-cant w-1/3 p-2 rounded bg-white/20 outline-none placeholder-white/50">`;
             document.getElementById('lista-medicos-detalle').appendChild(div);
         }
 
@@ -138,10 +146,16 @@
             document.getElementById('resumen-contenido').innerHTML = html;
         }
 
-        function finalizar() {
+        async function finalizar() {
             const folio = "LAPI-" + document.getElementById('input-fecha').value.replace(/-/g, '') + "-" + document.getElementById('input-turno').value[0];
-            alert("Registro enviado exitosamente. Folio: " + folio);
-            location.reload();
+            try {
+                await addDoc(collection(window.db, "registros"), {
+                    folio, fecha: document.getElementById('input-fecha').value, turno: document.getElementById('input-turno').value,
+                    empresa: document.getElementById('input-empresa').value, detalles: registroFinal, timestamp: new Date()
+                });
+                alert("Registro enviado exitosamente. Folio: " + folio);
+                location.reload();
+            } catch(e) { alert("Error al enviar: " + e); }
         }
 
         function buscarRegistro() { alert("Buscando folio: " + document.getElementById('input-edit-id').value); }
