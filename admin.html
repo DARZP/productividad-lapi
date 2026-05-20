@@ -65,6 +65,8 @@
                 <button onclick="aplicarFiltroRapido('hoy')" class="flex-1 md:flex-none bg-orange-500 text-white text-sm px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-orange-600 transition">Hoy</button>
                 <button onclick="aplicarFiltroRapido('semana')" class="flex-1 md:flex-none bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold hover:bg-slate-700 transition">Esta Semana</button>
                 <button onclick="aplicarFiltroRapido('mes_actual')" class="flex-1 md:flex-none bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold hover:bg-slate-700 transition">Este Mes</button>
+                <button onclick="aplicarFiltroRapido('ano_actual')" class="flex-1 md:flex-none bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold hover:bg-slate-700 transition">Este Año</button>
+                <button onclick="aplicarFiltroRapido('acumulado')" class="flex-1 md:flex-none bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold hover:bg-slate-700 transition">Acumulado</button>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 border-t border-slate-200 pt-5">
@@ -228,6 +230,13 @@
             } else if (tipo === 'mes_actual') {
                 const primero = new Date(hoyObj.getFullYear(), hoyObj.getMonth(), 1);
                 inicioStr = obtenerFechaFormato(primero);
+            } else if (tipo === 'ano_actual') {
+                const primeroEnero = new Date(hoyObj.getFullYear(), 0, 1);
+                inicioStr = obtenerFechaFormato(primeroEnero);
+            } else if (tipo === 'acumulado') {
+                // Para el acumulado limpiamos los campos de fecha
+                inicioStr = '';
+                finStr = '';
             }
 
             document.getElementById('filtro-inicio').value = inicioStr;
@@ -354,7 +363,7 @@
                 },
                 options: { 
                     responsive: true,
-                    maintainAspectRatio: false, // Ahora sí funciona porque el div padre tiene altura fija
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { 
                         y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11, weight: 'bold' } } },
