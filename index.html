@@ -7,7 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        // Agregamos getDocs, query, where, doc, updateDoc para poder buscar y editar
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -22,6 +23,11 @@
         window.db = getFirestore(app);
         window.addDoc = addDoc;
         window.collection = collection;
+        window.getDocs = getDocs;
+        window.query = query;
+        window.where = where;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
     </script>
     <style>
         .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
@@ -34,6 +40,7 @@
     <datalist id="lista-empresas"></datalist>
 
     <div id="contenedor-principal" class="w-full max-w-md">
+        
         <div class="glass p-6 rounded-3xl shadow-2xl mb-6">
             <h1 class="text-xl font-bold mb-6 text-center">Registro de Productividad</h1>
 
@@ -54,8 +61,8 @@
 
                 <label class="block mb-2 font-medium">Turno</label>
                 <select id="input-turno" class="w-full p-3 mb-6 rounded-xl bg-white/20 text-orange-900 font-bold outline-none">
-                    <option value="Matutino">Matutino</option>
-                    <option value="Vespertino">Vespertino</option>
+                    <option value="Matutino" class="text-black">Matutino</option>
+                    <option value="Vespertino" class="text-black">Vespertino</option>
                 </select>
                 <button onclick="verificarRegistro()" class="w-full bg-white text-orange-600 font-bold py-3 rounded-xl">Siguiente</button>
             </div>
@@ -88,12 +95,60 @@
                     <button onclick="finalizar()" class="w-2/3 bg-green-500 font-bold py-4 rounded-xl shadow-lg">Confirmar</button>
                 </div>
             </div>
+
+            <div id="paso-edicion" class="paso hidden">
+                <h2 class="text-xl font-bold mb-4 text-center">Modificando Folio: <span id="edit-folio-text" class="text-orange-200"></span></h2>
+                
+                <div class="space-y-4 text-sm">
+                    <div class="bg-black/10 p-4 rounded-xl">
+                        <label class="block mb-1 font-bold">Empresa:</label> 
+                        <input id="edit-empresa" list="lista-empresas" class="w-full p-2 mb-3 rounded-lg bg-white/20 uppercase text-white outline-none">
+                        
+                        <label class="block mb-1 font-bold">Fecha:</label> 
+                        <input type="date" id="edit-fecha" class="w-full p-2 mb-3 rounded-lg bg-white/20 text-white outline-none">
+                        
+                        <div class="flex gap-3 mb-3">
+                            <div class="w-1/2">
+                                <label class="block mb-1 font-bold">Inicio:</label>
+                                <input type="time" id="edit-hora-inicio" class="w-full p-2 rounded-lg bg-white/20 text-white outline-none">
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block mb-1 font-bold">Fin:</label>
+                                <input type="time" id="edit-hora-fin" class="w-full p-2 rounded-lg bg-white/20 text-white outline-none">
+                            </div>
+                        </div>
+                        
+                        <label class="block mb-1 font-bold">Turno:</label>
+                        <select id="edit-turno" class="w-full p-2 rounded-lg bg-white/20 text-white outline-none">
+                            <option value="Matutino" class="text-black">Matutino</option>
+                            <option value="Vespertino" class="text-black">Vespertino</option>
+                        </select>
+                    </div>
+
+                    <div class="bg-black/10 p-4 rounded-xl">
+                        <h3 class="font-bold border-b border-white/20 pb-2 mb-3">Estudios Realizados</h3>
+                        <div id="edit-detalles-container" class="space-y-3"></div>
+                        <button onclick="agregarFilaEdicion()" class="w-full mt-4 bg-white/20 py-2 rounded-lg text-sm font-bold">+ Agregar otro estudio</button>
+                    </div>
+
+                    <div class="bg-black/10 p-4 rounded-xl">
+                        <label class="block mb-1 font-bold">Observaciones:</label>
+                        <textarea id="edit-observaciones" class="w-full p-2 rounded-lg bg-white/20 outline-none text-white placeholder-white/50" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mt-6">
+                    <button onclick="location.reload()" class="w-1/3 bg-red-500 font-bold py-3 rounded-xl shadow-lg">Cancelar</button>
+                    <button onclick="guardarEdicion()" class="w-2/3 bg-green-500 font-bold py-3 rounded-xl shadow-lg">Guardar Cambios</button>
+                </div>
+            </div>
+
         </div>
 
         <div id="cuadro-edicion" class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30">
             <h2 class="text-xs font-bold uppercase mb-2 opacity-80 text-center">¿Editar registro previo?</h2>
             <div class="flex gap-2">
-                <input id="input-edit-id" placeholder="Ingresa Folio..." class="w-full p-2 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50">
+                <input id="input-edit-id" placeholder="Ej: 4812M" class="w-full p-2 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50 uppercase">
                 <button onclick="buscarRegistro()" class="bg-white/20 px-4 py-2 rounded-lg text-sm font-bold">Buscar</button>
             </div>
         </div>
@@ -106,6 +161,7 @@
 
         let seleccionados = [], registroFinal = [], indiceActual = 0;
         let horasCalculadas = 0;
+        let editDocId = null; // ID interno de Firebase para el documento que estamos editando
 
         document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join('');
         document.getElementById('lista-medicos').innerHTML = medicos.map(m => `<option value="${m}">`).join('');
@@ -116,19 +172,19 @@
             const [h1, m1] = inicio.split(':').map(Number);
             const [h2, m2] = fin.split(':').map(Number);
             let diff = (h2 + m2/60) - (h1 + m1/60);
-            if (diff < 0) diff += 24; // Por si cruza la medianoche
+            if (diff < 0) diff += 24; 
             return parseFloat(diff.toFixed(2));
         }
 
+        // ---------- LÓGICA DE REGISTRO NUEVO ----------
+        
         function verificarRegistro() { 
             const fecha = document.getElementById('input-fecha').value;
             const hIni = document.getElementById('input-hora-inicio').value;
             const hFin = document.getElementById('input-hora-fin').value;
-            
             if(!fecha || !hIni || !hFin) return alert("Completa la fecha y los horarios de inicio y fin.");
             
             horasCalculadas = calcularHoras(hIni, hFin);
-            
             document.getElementById('paso-0').classList.add('hidden'); 
             document.getElementById('paso-1').classList.remove('hidden'); 
             document.getElementById('cuadro-edicion').classList.add('hidden'); 
@@ -170,18 +226,12 @@
             document.querySelectorAll('#lista-medicos-detalle > div').forEach(fila => {
                 const medico = fila.querySelector('.med-name').value;
                 const cant = parseInt(fila.querySelector('.med-cant').value);
-                
                 if(medico || !isNaN(cant)) hayDatos = true;
-                
-                if(hayDatos && (!medico || isNaN(cant) || cant < 1)) {
-                    errorValidacion = true;
-                } else if (medico && cant > 0) {
-                    registroFinal.push({ estudio, medico, cant });
-                }
+                if(hayDatos && (!medico || isNaN(cant) || cant < 1)) errorValidacion = true;
+                else if (medico && cant > 0) registroFinal.push({ estudio, medico, cant });
             });
 
             if(errorValidacion || !hayDatos) return alert("Por favor asigna médicos válidos y cantidades mayores a 0.");
-
             if(indiceActual < seleccionados.length - 1) { indiceActual++; mostrarDetalleEstudio(); } 
             else mostrarResumen();
         }
@@ -197,7 +247,10 @@
         }
 
         async function finalizar() {
-            const folio = "LAPI-" + document.getElementById('input-fecha').value.replace(/-/g, '') + "-" + document.getElementById('input-turno').value[0] + Math.floor(Math.random() * 100);
+            // Generador de folio simplificado: 4 números aleatorios + letra del turno
+            const numAleatorio = Math.floor(1000 + Math.random() * 9000); // Rango: 1000 a 9999
+            const folio = numAleatorio + document.getElementById('input-turno').value[0].toUpperCase();
+            
             const empresaF = document.getElementById('input-empresa').value.toUpperCase();
             const observaciones = document.getElementById('input-observaciones').value;
 
@@ -214,13 +267,131 @@
                     observaciones: observaciones,
                     timestamp: new Date()
                 });
-                alert("Registro enviado exitosamente. Folio: " + folio);
+                alert("Registro enviado exitosamente. FOLIO: " + folio);
                 location.reload();
             } catch(e) { alert("Error al enviar: " + e); }
         }
 
-        function buscarRegistro() { alert("Buscando folio: " + document.getElementById('input-edit-id').value); }
+        // ---------- LÓGICA DE EDICIÓN ----------
+
+        async function buscarRegistro() { 
+            const folioInput = document.getElementById('input-edit-id').value.trim().toUpperCase();
+            if(!folioInput) return alert("Ingresa un folio válido.");
+            
+            try {
+                // Buscamos en Firebase el documento con el folio exacto
+                const q = window.query(window.collection(window.db, "registros"), window.where("folio", "==", folioInput));
+                const qs = await window.getDocs(q);
+                
+                if(qs.empty) {
+                    alert("No se encontró ningún registro con el folio: " + folioInput);
+                    return;
+                }
+                
+                let dataExtraida;
+                qs.forEach(doc => { 
+                    editDocId = doc.id; 
+                    dataExtraida = doc.data(); 
+                });
+                
+                abrirEditor(dataExtraida);
+            } catch(e) {
+                alert("Error de conexión al buscar: " + e);
+            }
+        }
+
+        function abrirEditor(data) {
+            // Ocultamos todo lo demás
+            document.getElementById('paso-0').classList.add('hidden');
+            document.getElementById('cuadro-edicion').classList.add('hidden');
+            
+            // Mostramos la vista general de edición
+            document.getElementById('paso-edicion').classList.remove('hidden');
+
+            // Cargar los datos extraídos en los inputs
+            document.getElementById('edit-folio-text').innerText = data.folio;
+            document.getElementById('edit-empresa').value = data.empresa;
+            document.getElementById('edit-fecha').value = data.fecha;
+            document.getElementById('edit-hora-inicio').value = data.horaInicio;
+            document.getElementById('edit-hora-fin').value = data.horaFin;
+            document.getElementById('edit-turno').value = data.turno;
+            document.getElementById('edit-observaciones').value = data.observaciones || '';
+
+            // Cargar la lista de estudios/médicos que ya existía
+            document.getElementById('edit-detalles-container').innerHTML = '';
+            if(data.detalles && data.detalles.length > 0){
+                data.detalles.forEach(d => agregarFilaEdicion(d.estudio, d.medico, d.cant));
+            } else {
+                agregarFilaEdicion(); // Dejar una vacía si por alguna razón no había
+            }
+        }
+
+        function agregarFilaEdicion(estudio = '', medico = '', cant = '') {
+            const div = document.createElement('div');
+            div.className = "flex gap-2 items-center bg-black/20 p-2 rounded-lg edit-fila";
+            
+            // Reutilizamos el array global "estudios" para construir el select desplegable
+            const opcionesEstudios = estudios.map(e => `<option value="${e}" class="text-black" ${e === estudio ? 'selected' : ''}>${e}</option>`).join('');
+            
+            div.innerHTML = `
+                <select class="edit-est w-1/3 p-2 rounded-md bg-white/20 text-white outline-none">
+                    <option value="" disabled ${!estudio ? 'selected' : ''} class="text-gray-400">Estudio...</option>
+                    ${opcionesEstudios}
+                </select>
+                <input list="lista-medicos" placeholder="Médico" value="${medico}" class="edit-med w-1/3 p-2 rounded-md bg-white/20 outline-none placeholder-white/50">
+                <input type="number" min="1" placeholder="Cant." value="${cant}" class="edit-cant w-1/4 p-2 rounded-md bg-white/20 outline-none placeholder-white/50">
+                <button onclick="this.parentElement.remove()" class="text-red-300 font-black px-2 hover:text-red-500 transition">X</button>
+            `;
+            document.getElementById('edit-detalles-container').appendChild(div);
+        }
+
+        async function guardarEdicion() {
+            const empresa = document.getElementById('edit-empresa').value.toUpperCase();
+            const fecha = document.getElementById('edit-fecha').value;
+            const horaInicio = document.getElementById('edit-hora-inicio').value;
+            const horaFin = document.getElementById('edit-hora-fin').value;
+            const turno = document.getElementById('edit-turno').value;
+            const observaciones = document.getElementById('edit-observaciones').value;
+
+            if(!empresa || !fecha || !horaInicio || !horaFin) return alert("Completa los datos generales del encabezado.");
+
+            let detallesNuevos = [];
+            let hayErrorDetalles = false;
+
+            document.querySelectorAll('.edit-fila').forEach(fila => {
+                const est = fila.querySelector('.edit-est').value;
+                const med = fila.querySelector('.edit-med').value;
+                const cant = parseInt(fila.querySelector('.edit-cant').value);
+
+                if(!est || !med || isNaN(cant) || cant < 1) hayErrorDetalles = true;
+                else detallesNuevos.push({ estudio: est, medico: med, cant: cant });
+            });
+
+            if(hayErrorDetalles || detallesNuevos.length === 0) {
+                return alert("Revisa que todos los estudios agregados tengan Tipo de Estudio, un Médico asignado y Cantidad válida.");
+            }
+
+            const horasCalculadasNuevas = calcularHoras(horaInicio, horaFin);
+
+            try {
+                const docRef = window.doc(window.db, "registros", editDocId);
+                await window.updateDoc(docRef, {
+                    empresa: empresa, 
+                    fecha: fecha, 
+                    horaInicio: horaInicio, 
+                    horaFin: horaFin, 
+                    turno: turno, 
+                    observaciones: observaciones,
+                    horasLaboradas: horasCalculadasNuevas,
+                    detalles: detallesNuevos
+                });
+                
+                alert("¡El registro se ha actualizado con éxito!");
+                location.reload();
+            } catch(e) {
+                alert("Ocurrió un error al intentar actualizar: " + e);
+            }
+        }
     </script>
 </body>
 </html>
-
