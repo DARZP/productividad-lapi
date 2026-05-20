@@ -8,7 +8,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -16,15 +15,11 @@
             projectId: "lapi-productividad",
             storageBucket: "lapi-productividad.firebasestorage.app",
             messagingSenderId: "1077149571149",
-            appId: "1:1077149571149:web:e1423dde4a8de6f8562404",
-            measurementId: "G-DSYL82FFDE"
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const analytics = getAnalytics(app);
-        
-        window.db = db;
+        window.db = getFirestore(app);
         window.addDoc = addDoc;
         window.collection = collection;
     </script>
@@ -38,15 +33,27 @@
     <datalist id="lista-medicos"></datalist>
     <datalist id="lista-empresas"></datalist>
 
-    <div class="w-full max-w-md">
+    <div id="contenedor-principal" class="w-full max-w-md">
         <div class="glass p-6 rounded-3xl shadow-2xl mb-6">
             <h1 class="text-xl font-bold mb-6 text-center">Registro de Productividad</h1>
 
             <div id="paso-0" class="paso">
                 <label class="block mb-2 font-medium">Fecha de Servicio</label>
                 <input type="date" id="input-fecha" class="w-full p-3 mb-4 rounded-xl bg-white/20 text-orange-900 font-bold outline-none">
+                
+                <div class="flex gap-4 mb-4">
+                    <div class="w-1/2">
+                        <label class="block mb-2 font-medium text-sm">Hora Inicio</label>
+                        <input type="time" id="input-hora-inicio" class="w-full p-3 rounded-xl bg-white/20 text-orange-900 font-bold outline-none">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="block mb-2 font-medium text-sm">Hora Fin</label>
+                        <input type="time" id="input-hora-fin" class="w-full p-3 rounded-xl bg-white/20 text-orange-900 font-bold outline-none">
+                    </div>
+                </div>
+
                 <label class="block mb-2 font-medium">Turno</label>
-                <select id="input-turno" class="w-full p-3 mb-4 rounded-xl bg-white/20 text-orange-900 font-bold outline-none">
+                <select id="input-turno" class="w-full p-3 mb-6 rounded-xl bg-white/20 text-orange-900 font-bold outline-none">
                     <option value="Matutino">Matutino</option>
                     <option value="Vespertino">Vespertino</option>
                 </select>
@@ -55,7 +62,7 @@
 
             <div id="paso-1" class="paso hidden">
                 <label class="block mb-2 font-medium">1. Empresa</label>
-                <input id="input-empresa" list="lista-empresas" class="w-full p-3 rounded-xl bg-white/20 border-none outline-none placeholder-white/70" placeholder="Escribe la empresa...">
+                <input id="input-empresa" list="lista-empresas" class="w-full p-3 rounded-xl bg-white/20 border-none outline-none placeholder-white/70 uppercase" placeholder="Escribe la empresa...">
                 <button onclick="irAPaso2()" class="mt-4 w-full bg-white text-orange-600 font-bold py-3 rounded-xl">Siguiente</button>
             </div>
 
@@ -72,6 +79,10 @@
             <div id="paso-4" class="paso hidden">
                 <h2 class="font-bold mb-4 text-center">Resumen Final</h2>
                 <div id="resumen-contenido" class="text-sm bg-black/20 p-4 rounded-xl mb-4 space-y-2"></div>
+                
+                <label class="block mb-2 font-medium text-sm">Observaciones (Opcional)</label>
+                <textarea id="input-observaciones" class="w-full p-3 mb-6 rounded-xl bg-white/20 border-none outline-none placeholder-white/60" rows="3" placeholder="Ej. Hubo un retraso por lluvia..."></textarea>
+
                 <div class="flex gap-2">
                     <button onclick="location.reload()" class="w-1/3 bg-red-500 font-bold py-4 rounded-xl shadow-lg">Reiniciar</button>
                     <button onclick="finalizar()" class="w-2/3 bg-green-500 font-bold py-4 rounded-xl shadow-lg">Confirmar</button>
@@ -80,9 +91,9 @@
         </div>
 
         <div id="cuadro-edicion" class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30">
-            <h2 class="text-xs font-bold uppercase mb-2 opacity-80 text-center">¿Editar registro?</h2>
+            <h2 class="text-xs font-bold uppercase mb-2 opacity-80 text-center">¿Editar registro previo?</h2>
             <div class="flex gap-2">
-                <input id="input-edit-id" placeholder="Folio..." class="w-full p-2 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50">
+                <input id="input-edit-id" placeholder="Ingresa Folio..." class="w-full p-2 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50">
                 <button onclick="buscarRegistro()" class="bg-white/20 px-4 py-2 rounded-lg text-sm font-bold">Buscar</button>
             </div>
         </div>
@@ -94,13 +105,36 @@
         const estudios = ["Espirometría", "Audiometría", "Historia Clínica", "Examen de Capacidad Visual", "Nórdico"];
 
         let seleccionados = [], registroFinal = [], indiceActual = 0;
+        let horasCalculadas = 0;
 
         document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join('');
         document.getElementById('lista-medicos').innerHTML = medicos.map(m => `<option value="${m}">`).join('');
         document.getElementById('lista-checkbox-estudios').innerHTML = estudios.map(e => `<label class="flex items-center gap-3 p-3 bg-white/10 rounded-xl cursor-pointer"><input type="checkbox" value="${e}" class="w-5 h-5 accent-orange-500"> ${e}</label>`).join('');
 
-        function verificarRegistro() { if(document.getElementById('input-fecha').value) { document.getElementById('paso-0').classList.add('hidden'); document.getElementById('paso-1').classList.remove('hidden'); document.getElementById('cuadro-edicion').classList.add('hidden'); } else alert("Selecciona fecha"); }
-        function irAPaso2() { if(document.getElementById('input-empresa').value) { document.getElementById('paso-1').classList.add('hidden'); document.getElementById('paso-2').classList.remove('hidden'); } }
+        function calcularHoras(inicio, fin) {
+            if(!inicio || !fin) return 0;
+            const [h1, m1] = inicio.split(':').map(Number);
+            const [h2, m2] = fin.split(':').map(Number);
+            let diff = (h2 + m2/60) - (h1 + m1/60);
+            if (diff < 0) diff += 24; // Por si cruza la medianoche
+            return parseFloat(diff.toFixed(2));
+        }
+
+        function verificarRegistro() { 
+            const fecha = document.getElementById('input-fecha').value;
+            const hIni = document.getElementById('input-hora-inicio').value;
+            const hFin = document.getElementById('input-hora-fin').value;
+            
+            if(!fecha || !hIni || !hFin) return alert("Completa la fecha y los horarios de inicio y fin.");
+            
+            horasCalculadas = calcularHoras(hIni, hFin);
+            
+            document.getElementById('paso-0').classList.add('hidden'); 
+            document.getElementById('paso-1').classList.remove('hidden'); 
+            document.getElementById('cuadro-edicion').classList.add('hidden'); 
+        }
+        
+        function irAPaso2() { if(document.getElementById('input-empresa').value) { document.getElementById('paso-1').classList.add('hidden'); document.getElementById('paso-2').classList.remove('hidden'); } else alert("Selecciona empresa"); }
         
         function iniciarCapturaDetalle() {
             seleccionados = Array.from(document.querySelectorAll('#lista-checkbox-estudios input:checked')).map(i => i.value);
@@ -124,16 +158,30 @@
         function agregarFilaMedico() {
             const div = document.createElement('div');
             div.className = "flex gap-2";
-            div.innerHTML = `<input list="lista-medicos" placeholder="Médico" class="med-name w-full p-2 rounded bg-white/20 outline-none placeholder-white/50"><input type="number" placeholder="Cant." class="med-cant w-1/3 p-2 rounded bg-white/20 outline-none placeholder-white/50">`;
+            div.innerHTML = `<input list="lista-medicos" placeholder="Médico" class="med-name w-full p-2 rounded bg-white/20 outline-none placeholder-white/50">
+                             <input type="number" min="1" placeholder="Cant." class="med-cant w-1/3 p-2 rounded bg-white/20 outline-none placeholder-white/50">`;
             document.getElementById('lista-medicos-detalle').appendChild(div);
         }
 
         function guardarDetalle(estudio) {
+            let errorValidacion = false;
+            let hayDatos = false;
+
             document.querySelectorAll('#lista-medicos-detalle > div').forEach(fila => {
                 const medico = fila.querySelector('.med-name').value;
-                const cant = fila.querySelector('.med-cant').value;
-                if(medico && cant) registroFinal.push({ estudio, medico, cant });
+                const cant = parseInt(fila.querySelector('.med-cant').value);
+                
+                if(medico || !isNaN(cant)) hayDatos = true;
+                
+                if(hayDatos && (!medico || isNaN(cant) || cant < 1)) {
+                    errorValidacion = true;
+                } else if (medico && cant > 0) {
+                    registroFinal.push({ estudio, medico, cant });
+                }
             });
+
+            if(errorValidacion || !hayDatos) return alert("Por favor asigna médicos válidos y cantidades mayores a 0.");
+
             if(indiceActual < seleccionados.length - 1) { indiceActual++; mostrarDetalleEstudio(); } 
             else mostrarResumen();
         }
@@ -141,17 +189,30 @@
         function mostrarResumen() {
             document.getElementById('paso-3').classList.add('hidden');
             document.getElementById('paso-4').classList.remove('hidden');
-            let html = `<p><b>Fecha:</b> ${document.getElementById('input-fecha').value}</p><p><b>Empresa:</b> ${document.getElementById('input-empresa').value}</p>`;
+            let html = `<p><b>Fecha:</b> ${document.getElementById('input-fecha').value}</p>
+                        <p><b>Horas Laboradas:</b> ${horasCalculadas} hrs</p>
+                        <p><b>Empresa:</b> ${document.getElementById('input-empresa').value.toUpperCase()}</p>`;
             registroFinal.forEach(item => html += `<div class="border-t border-white/20 pt-1 mt-1"><b>${item.estudio}</b>: ${item.medico} (${item.cant})</div>`);
             document.getElementById('resumen-contenido').innerHTML = html;
         }
 
         async function finalizar() {
-            const folio = "LAPI-" + document.getElementById('input-fecha').value.replace(/-/g, '') + "-" + document.getElementById('input-turno').value[0];
+            const folio = "LAPI-" + document.getElementById('input-fecha').value.replace(/-/g, '') + "-" + document.getElementById('input-turno').value[0] + Math.floor(Math.random() * 100);
+            const empresaF = document.getElementById('input-empresa').value.toUpperCase();
+            const observaciones = document.getElementById('input-observaciones').value;
+
             try {
-                await addDoc(collection(window.db, "registros"), {
-                    folio, fecha: document.getElementById('input-fecha').value, turno: document.getElementById('input-turno').value,
-                    empresa: document.getElementById('input-empresa').value, detalles: registroFinal, timestamp: new Date()
+                await window.addDoc(window.collection(window.db, "registros"), {
+                    folio, 
+                    fecha: document.getElementById('input-fecha').value, 
+                    horaInicio: document.getElementById('input-hora-inicio').value,
+                    horaFin: document.getElementById('input-hora-fin').value,
+                    horasLaboradas: horasCalculadas,
+                    turno: document.getElementById('input-turno').value,
+                    empresa: empresaF, 
+                    detalles: registroFinal, 
+                    observaciones: observaciones,
+                    timestamp: new Date()
                 });
                 alert("Registro enviado exitosamente. Folio: " + folio);
                 location.reload();
