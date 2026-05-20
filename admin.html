@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -28,112 +29,138 @@
         window.query = query;
         window.orderBy = orderBy;
         
-        // Cargar datos al iniciar
         initDashboard();
     </script>
     
     <style>
         .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); }
-        body { background-color: #f1f5f9; }
+        .bg-lapi-orange { background: linear-gradient(135deg, #ff8c00 0%, #ff6a00 100%); }
+        body { background-color: #f8fafc; }
+        .chart-container { transition: all 0.5s ease-in-out; overflow: hidden; }
     </style>
 </head>
-<body class="font-sans text-gray-800 p-6">
+<body class="font-sans text-slate-800 p-6">
 
     <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-8 bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-2xl shadow-lg text-white">
+        <div class="flex justify-between items-center mb-8 bg-lapi-orange p-8 rounded-3xl shadow-xl text-white">
             <div>
-                <h1 class="text-3xl font-bold">LAPI Dashboard</h1>
-                <p class="opacity-80 text-sm mt-1">Panel de Administración Avanzado</p>
+                <h1 class="text-4xl font-black tracking-tight">LAPI Admin</h1>
+                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest">Inteligencia de Datos Médicos</p>
             </div>
-            <button onclick="exportarExcel()" class="bg-green-500 hover:bg-green-600 transition px-6 py-3 rounded-lg font-bold shadow-md flex gap-2 items-center">
-                <span>Descargar Excel</span>
-            </button>
+            <div class="flex gap-3">
+                <button onclick="toggleAnalytics()" class="bg-white/20 hover:bg-white/30 transition px-6 py-3 rounded-2xl font-bold flex gap-2 items-center border border-white/30">
+                    <i id="toggle-icon" class="fa-solid fa-chart-line"></i>
+                    <span id="toggle-text">Ocultar Gráficas</span>
+                </button>
+                <button onclick="exportarExcel()" class="bg-emerald-500 hover:bg-emerald-600 transition px-6 py-3 rounded-2xl font-bold shadow-lg flex gap-2 items-center">
+                    <i class="fa-solid fa-file-excel"></i>
+                    <span>Exportar Reporte</span>
+                </button>
+            </div>
         </div>
 
-        <div class="glass p-6 rounded-2xl shadow-sm mb-6 space-y-4">
+        <div class="glass p-6 rounded-3xl shadow-sm mb-8 space-y-6">
             <div class="flex flex-wrap gap-2 items-center">
-                <span class="text-xs font-bold text-gray-400 uppercase mr-2">Filtros Rápidos:</span>
-                <button onclick="aplicarFiltroRapido('hoy')" class="bg-orange-500 text-white text-xs px-4 py-2 rounded-lg font-bold shadow hover:bg-orange-600 transition">Hoy</button>
-                <button onclick="aplicarFiltroRapido('semana')" class="bg-gray-800 text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition">Última Semana</button>
-                <button onclick="aplicarFiltroRapido('mes30')" class="bg-gray-800 text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition">Últimos 30 Días</button>
-                <button onclick="aplicarFiltroRapido('mes_actual')" class="bg-gray-800 text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition">Mes Actual</button>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-4">Accesos Rápidos</span>
+                <button onclick="aplicarFiltroRapido('hoy')" class="bg-orange-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-orange-200 transition">Hoy</button>
+                <button onclick="aplicarFiltroRapido('semana')" class="bg-slate-800 text-white text-xs px-5 py-2.5 rounded-xl font-bold hover:bg-slate-700 transition">Esta Semana</button>
+                <button onclick="aplicarFiltroRapido('mes_actual')" class="bg-slate-800 text-white text-xs px-5 py-2.5 rounded-xl font-bold hover:bg-slate-700 transition">Este Mes</button>
             </div>
 
-            <div class="flex flex-wrap gap-4 items-end border-t border-gray-200 pt-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Fecha Inicio</label>
-                    <input type="date" id="filtro-inicio" class="p-2 border rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm">
+            <div class="flex flex-wrap gap-6 items-end border-t border-slate-100 pt-6">
+                <div class="flex-1 min-w-[150px]">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2">Desde</label>
+                    <input type="date" id="filtro-inicio" class="w-full p-3 border-none bg-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold">
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Fecha Fin</label>
-                    <input type="date" id="filtro-fin" class="p-2 border rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm">
+                <div class="flex-1 min-w-[150px]">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2">Hasta</label>
+                    <input type="date" id="filtro-fin" class="w-full p-3 border-none bg-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold">
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Filtrar por Empresa</label>
-                    <select id="filtro-empresa" onchange="ejecutarFiltros()" class="p-2 border rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-white font-medium w-48">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2">Empresa</label>
+                    <select id="filtro-empresa" onchange="ejecutarFiltros()" class="w-full p-3 border-none bg-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold appearance-none">
                         <option value="Todas">Todas las empresas</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Filtrar por Médico</label>
-                    <select id="filtro-medico" onchange="ejecutarFiltros()" class="p-2 border rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-white font-medium w-48">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2">Médico Responsable</label>
+                    <select id="filtro-medico" onchange="ejecutarFiltros()" class="w-full p-3 border-none bg-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold appearance-none">
                         <option value="Todos">Todos los médicos</option>
                     </select>
                 </div>
-                <button onclick="ejecutarFiltros()" class="bg-orange-600 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-orange-700 transition">Aplicar Filtros</button>
-                <button onclick="reestablecerTodo()" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold text-sm hover:bg-gray-300 transition">Ver Todo el Historial</button>
+                <button onclick="reestablecerTodo()" class="p-3 bg-slate-200 text-slate-600 rounded-xl hover:bg-slate-300 transition" title="Limpiar Filtros">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="glass p-6 rounded-2xl shadow-sm border-l-4 border-orange-500">
-                <p class="text-gray-500 text-sm font-bold uppercase">Total Estudios</p>
-                <p id="kpi-estudios" class="text-3xl font-black text-gray-800 mt-2">0</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
+            <div class="glass p-8 rounded-3xl shadow-sm border-b-8 border-orange-500">
+                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Productividad Total</p>
+                <p id="kpi-estudios" class="text-5xl font-black text-slate-800 mt-2">0</p>
+                <p class="text-slate-400 text-[10px] mt-1 font-bold">Estudios Realizados</p>
             </div>
-            <div class="glass p-6 rounded-2xl shadow-sm border-l-4 border-blue-500">
-                <p class="text-gray-500 text-sm font-bold uppercase">Horas Laboradas</p>
-                <p id="kpi-horas" class="text-3xl font-black text-gray-800 mt-2">0</p>
+            <div class="glass p-8 rounded-3xl shadow-sm border-b-8 border-sky-500">
+                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Tiempo en Campo</p>
+                <p id="kpi-horas" class="text-5xl font-black text-slate-800 mt-2">0</p>
+                <p class="text-slate-400 text-[10px] mt-1 font-bold">Horas Totales Acumuladas</p>
             </div>
-            <div class="glass p-6 rounded-2xl shadow-sm border-l-4 border-green-500">
-                <p class="text-gray-500 text-sm font-bold uppercase">Empresas Atendidas</p>
-                <p id="kpi-empresas" class="text-3xl font-black text-gray-800 mt-2">0</p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="glass p-6 rounded-2xl shadow-sm">
-                <h3 class="font-bold text-gray-600 mb-4 text-center">Total de Estudios por Periodo</h3>
-                <canvas id="chartFechas"></canvas>
-            </div>
-            <div class="glass p-6 rounded-2xl shadow-sm">
-                <h3 class="font-bold text-gray-600 mb-4 text-center">Total de Estudios por Tipo de Estudio</h3>
-                <canvas id="chartTipos"></canvas>
-            </div>
-            <div class="glass p-6 rounded-2xl shadow-sm">
-                <h3 class="font-bold text-gray-600 mb-4 text-center">Estudios Totales por Empresa</h3>
-                <canvas id="chartEmpresas"></canvas>
-            </div>
-            <div class="glass p-6 rounded-2xl shadow-sm">
-                <h3 class="font-bold text-gray-600 mb-4 text-center">Horas de Servicio por Médico</h3>
-                <canvas id="chartHoras"></canvas>
+            <div class="glass p-8 rounded-3xl shadow-sm border-b-8 border-emerald-500">
+                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Cobertura</p>
+                <p id="kpi-empresas" class="text-5xl font-black text-slate-800 mt-2">0</p>
+                <p class="text-slate-400 text-[10px] mt-1 font-bold">Empresas Distintas</p>
             </div>
         </div>
 
-        <div class="glass p-6 rounded-2xl shadow-sm overflow-x-auto">
-            <h3 class="font-bold text-gray-600 mb-4">Registro Detallado</h3>
-            <table class="w-full text-sm text-left text-gray-600">
-                <thead class="text-xs uppercase bg-gray-100 text-gray-700">
-                    <tr>
-                        <th class="py-3 px-4 rounded-tl-lg">Fecha</th>
-                        <th class="py-3 px-4">Folio / Empresa</th>
-                        <th class="py-3 px-4">Horario</th>
-                        <th class="py-3 px-4">Detalle de Estudios Realizados</th>
-                        <th class="py-3 px-4 rounded-tr-lg">Observaciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-body" class="divide-y divide-gray-100">
-                    </tbody>
-            </table>
+        <div id="analytics-section" class="chart-container space-y-8 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass p-8 rounded-3xl shadow-sm">
+                    <h3 class="font-black text-slate-500 text-[10px] uppercase tracking-widest mb-6 border-b pb-2">Estudios por Periodo</h3>
+                    <canvas id="chartFechas"></canvas>
+                </div>
+                <div class="glass p-8 rounded-3xl shadow-sm">
+                    <h3 class="font-black text-slate-500 text-[10px] uppercase tracking-widest mb-6 border-b pb-2">Distribución por Tipo de Estudio</h3>
+                    <canvas id="chartTipos"></canvas>
+                </div>
+                <div class="glass p-8 rounded-3xl shadow-sm">
+                    <h3 class="font-black text-slate-500 text-[10px] uppercase tracking-widest mb-6 border-b pb-2">Productividad por Empresa</h3>
+                    <canvas id="chartEmpresas"></canvas>
+                </div>
+                <div class="glass p-8 rounded-3xl shadow-sm">
+                    <h3 class="font-black text-slate-500 text-[10px] uppercase tracking-widest mb-6 border-b pb-2">Horas laboradas por Periodo</h3>
+                    <canvas id="chartHorasPeriodo"></canvas>
+                </div>
+                <div class="glass p-8 rounded-3xl shadow-sm">
+                    <h3 class="font-black text-slate-500 text-[10px] uppercase tracking-widest mb-6 border-b pb-2">Horas Acumuladas por Médico</h3>
+                    <canvas id="chartHoras"></canvas>
+                </div>
+                <div class="glass p-8 rounded-3xl shadow-sm">
+                    <h3 class="font-black text-slate-500 text-[10px] uppercase tracking-widest mb-6 border-b pb-2">Empresas Atendidas por Periodo</h3>
+                    <canvas id="chartEmpresasPeriodo"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass p-8 rounded-3xl shadow-sm overflow-hidden border border-slate-100">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm">Registros Detallados</h3>
+                <span class="text-[10px] bg-slate-100 text-slate-500 px-3 py-1 rounded-full font-bold" id="total-registros-txt">0 Registros encontrados</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left border-collapse">
+                    <thead>
+                        <tr class="text-[10px] uppercase bg-slate-50 text-slate-400 tracking-wider">
+                            <th class="py-4 px-6 font-black rounded-tl-2xl">Día / Fecha</th>
+                            <th class="py-4 px-6 font-black">Identificación</th>
+                            <th class="py-4 px-6 font-black text-center">Horario</th>
+                            <th class="py-4 px-6 font-black">Productividad Médica</th>
+                            <th class="py-4 px-6 font-black rounded-tr-2xl">Bitácora / Notas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body" class="divide-y divide-slate-100 font-medium">
+                        </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -145,7 +172,6 @@
         let datosFiltradosActuales = [];
         let graficos = {};
 
-        // Inyectar opciones
         document.getElementById('filtro-medico').innerHTML += medicosListaFija.map(m => `<option value="${m}">${m}</option>`).join('');
         document.getElementById('filtro-empresa').innerHTML += empresasListaFija.map(e => `<option value="${e}">${e}</option>`).join('');
 
@@ -155,11 +181,23 @@
                 const querySnapshot = await window.getDocs(q);
                 rawData = [];
                 querySnapshot.forEach((doc) => { rawData.push({ id: doc.id, ...doc.data() }); });
-                
                 aplicarFiltroRapido('hoy');
-            } catch (error) {
-                console.error("Error obteniendo datos:", error);
-                alert("Hubo un error al conectar con Firebase.");
+            } catch (error) { alert("Error de conexión: " + error); }
+        }
+
+        function toggleAnalytics() {
+            const section = document.getElementById('analytics-section');
+            const icon = document.getElementById('toggle-icon');
+            const text = document.getElementById('toggle-text');
+            
+            if (section.classList.contains('hidden')) {
+                section.classList.remove('hidden');
+                icon.className = "fa-solid fa-chart-line";
+                text.innerText = "Ocultar Gráficas";
+            } else {
+                section.classList.add('hidden');
+                icon.className = "fa-solid fa-eye";
+                text.innerText = "Mostrar Gráficas";
             }
         }
 
@@ -175,17 +213,12 @@
             let inicioStr = '';
             let finStr = obtenerFechaFormato(hoy);
 
-            if (tipo === 'hoy') {
-                inicioStr = finStr;
-            } else if (tipo === 'semana') {
-                const pasada = new Date();
-                pasada.setDate(hoy.getDate() - 7);
+            if (tipo === 'hoy') { inicioStr = finStr; } 
+            else if (tipo === 'semana') {
+                const pasada = new Date(); pasada.setDate(hoy.getDate() - 7);
                 inicioStr = obtenerFechaFormato(pasada);
-            } else if (tipo === 'mes30') {
-                const pasada = new Date();
-                pasada.setDate(hoy.getDate() - 30);
-                inicioStr = obtenerFechaFormato(pasada);
-            } else if (tipo === 'mes_actual') {
+            } 
+            else if (tipo === 'mes_actual') {
                 const primero = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
                 inicioStr = obtenerFechaFormato(primero);
             }
@@ -211,21 +244,9 @@
 
             let filtrados = [...rawData];
 
-            // Filtrar rango de fechas
-            if (fInicio && fFin) {
-                filtrados = filtrados.filter(d => d.fecha >= fInicio && d.fecha <= fFin);
-            }
-
-            // Filtrar por Empresa
-            if (eSel !== "Todas") {
-                // Comparamos convirtiendo a mayúsculas para evitar problemas de case sensitive con nuevas empresas
-                filtrados = filtrados.filter(d => d.empresa.toUpperCase() === eSel.toUpperCase());
-            }
-
-            // Filtrar por Médico
-            if (mSel !== "Todos") {
-                filtrados = filtrados.filter(reg => reg.detalles.some(d => d.medico === mSel));
-            }
+            if (fInicio && fFin) filtrados = filtrados.filter(d => d.fecha >= fInicio && d.fecha <= fFin);
+            if (eSel !== "Todas") filtrados = filtrados.filter(d => d.empresa.toUpperCase() === eSel.toUpperCase());
+            if (mSel !== "Todos") filtrados = filtrados.filter(reg => reg.detalles.some(d => d.medico === mSel));
 
             datosFiltradosActuales = filtrados;
             procesarDashboard(filtrados, mSel);
@@ -233,81 +254,84 @@
 
         function procesarDashboard(datos, medicoFiltro) {
             let totalEstudios = 0;
-            let totalHoras = 0;
-            let empresasUnicas = new Set();
+            let totalHorasGlobal = 0;
+            let empresasUnicasSet = new Set();
             
             let statsFechas = {};
             let statsTipos = {};
             let statsEmpresas = {};
             let horasMedicos = {};
+            let horasPorPeriodo = {};
+            let empresasPeriodo = {}; // Para el conteo no duplicado por fecha
 
             const tablaBody = document.getElementById('tabla-body');
             tablaBody.innerHTML = '';
 
             datos.forEach(reg => {
                 let medicosParticipantes = new Set(reg.detalles.map(d => d.medico));
-                empresasUnicas.add(reg.empresa);
+                empresasUnicasSet.add(reg.empresa);
+
+                // Lógica de empresas por fecha sin duplicar matutino/vespertino
+                if(!empresasPeriodo[reg.fecha]) empresasPeriodo[reg.fecha] = new Set();
+                empresasPeriodo[reg.fecha].add(reg.empresa);
 
                 let detalleHtml = '';
-                let cantEstudiosRegistroValidos = 0;
-
+                
                 reg.detalles.forEach(det => {
-                    const esMedicoFiltroValido = (medicoFiltro === "Todos" || det.medico === medicoFiltro);
-                    
-                    if (esMedicoFiltroValido) {
+                    const esValido = (medicoFiltro === "Todos" || det.medico === medicoFiltro);
+                    if (esValido) {
                         totalEstudios += det.cant;
-                        cantEstudiosRegistroValidos += det.cant;
                         statsTipos[det.estudio] = (statsTipos[det.estudio] || 0) + det.cant;
                         statsEmpresas[reg.empresa] = (statsEmpresas[reg.empresa] || 0) + det.cant;
                         statsFechas[reg.fecha] = (statsFechas[reg.fecha] || 0) + det.cant;
                     }
-
-                    const estiloBadge = (det.medico === medicoFiltro) ? 'bg-orange-600 text-white' : 'bg-orange-100 text-orange-800';
-                    detalleHtml += `<span class="${estiloBadge} px-2 py-1 rounded text-xs mr-1 mb-1 inline-block"><b>${det.medico}</b>: ${det.estudio} (${det.cant})</span>`;
+                    const badge = (det.medico === medicoFiltro) ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-600 border border-orange-100';
+                    detalleHtml += `<span class="${badge} px-2 py-0.5 rounded-lg text-[10px] mr-1 mb-1 inline-block font-black uppercase tracking-tight">${det.medico}: ${det.estudio} (${det.cant})</span>`;
                 });
 
-                // Horas de servicio por médico
                 medicosParticipantes.forEach(med => {
                     if (medicoFiltro === "Todos" || med === medicoFiltro) {
                         horasMedicos[med] = (horasMedicos[med] || 0) + (reg.horasLaboradas || 0);
                     }
                 });
 
-                // Horas totales globales
-                if (medicoFiltro === "Todos") {
-                    totalHoras += reg.horasLaboradas || 0;
-                } else if (medicosParticipantes.has(medicoFiltro)) {
-                    totalHoras += reg.horasLaboradas || 0;
+                if (medicoFiltro === "Todos" || medicosParticipantes.has(medicoFiltro)) {
+                    totalHorasGlobal += reg.horasLaboradas || 0;
+                    horasPorPeriodo[reg.fecha] = (horasPorPeriodo[reg.fecha] || 0) + (reg.horasLaboradas || 0);
                 }
 
-                // Generar tabla
                 tablaBody.innerHTML += `
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="py-3 px-4 font-bold text-gray-700">${reg.fecha}<br><span class="text-xs font-normal text-gray-400">${reg.turno}</span></td>
-                        <td class="py-3 px-4"><span class="text-xs text-gray-400 block">${reg.folio}</span><b>${reg.empresa}</b></td>
-                        <td class="py-3 px-4 text-gray-700">${reg.horaInicio} - ${reg.horaFin}<br><span class="text-xs bg-blue-100 text-blue-800 px-2 rounded font-semibold">${reg.horasLaboradas} hrs</span></td>
-                        <td class="py-3 px-4">${detalleHtml}</td>
-                        <td class="py-3 px-4 text-xs italic text-gray-500">${reg.observaciones || 'Sin observaciones'}</td>
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-5 px-6 font-black text-slate-800">${reg.fecha}<br><span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${reg.turno}</span></td>
+                        <td class="py-5 px-6"><span class="text-[10px] text-slate-400 block font-bold mb-1">${reg.folio}</span><b class="text-orange-600 font-black">${reg.empresa}</b></td>
+                        <td class="py-5 px-6 text-center"><span class="text-[10px] font-black bg-slate-100 px-3 py-1 rounded-full text-slate-600">${reg.horaInicio} - ${reg.horaFin}</span><br><span class="text-[11px] text-blue-600 font-black mt-2 inline-block">${reg.horasLaboradas} HRS</span></td>
+                        <td class="py-5 px-6">${detalleHtml}</td>
+                        <td class="py-5 px-6 text-xs italic text-slate-400 max-w-[200px]">${reg.observaciones || '---'}</td>
                     </tr>
                 `;
             });
 
             document.getElementById('kpi-estudios').innerText = totalEstudios;
-            document.getElementById('kpi-horas').innerText = totalHoras.toFixed(1) + " hrs";
-            document.getElementById('kpi-empresas').innerText = empresasUnicas.size;
+            document.getElementById('kpi-horas').innerText = totalHorasGlobal.toFixed(1);
+            document.getElementById('kpi-empresas').innerText = empresasUnicasSet.size;
+            document.getElementById('total-registros-txt').innerText = datos.length + " Registros encontrados";
 
             const fechasOrdenadas = Object.keys(statsFechas).sort();
-            const valoresFechas = fechasOrdenadas.map(f => statsFechas[f]);
-
-            dibujarGrafico('chartFechas', 'line', fechasOrdenadas, valoresFechas, 'Estudios Realizados', '#10b981');
-            dibujarGrafico('chartTipos', 'bar', Object.keys(statsTipos), Object.values(statsTipos), 'Cantidad por Tipo', '#3b82f6');
-            dibujarGrafico('chartEmpresas', 'bar', Object.keys(statsEmpresas), Object.values(statsEmpresas), 'Estudios Totales por Empresa', '#f59e0b');
-            dibujarGrafico('chartHoras', 'bar', Object.keys(horasMedicos), Object.values(horasMedicos), 'Horas de Servicio', '#ef4444');
+            
+            // Render Gráficas
+            dibujarGrafico('chartFechas', 'line', fechasOrdenadas, fechasOrdenadas.map(f => statsFechas[f]), 'Estudios', '#ff8c00');
+            dibujarGrafico('chartTipos', 'bar', Object.keys(statsTipos), Object.values(statsTipos), 'Cantidad', '#3b82f6');
+            dibujarGrafico('chartEmpresas', 'bar', Object.keys(statsEmpresas), Object.values(statsEmpresas), 'Volumen', '#ff8c00');
+            dibujarGrafico('chartHoras', 'bar', Object.keys(horasMedicos), Object.values(horasMedicos), 'Horas', '#3b82f6');
+            dibujarGrafico('chartHorasPeriodo', 'line', fechasOrdenadas, fechasOrdenadas.map(f => horasPorPeriodo[f]), 'Horas Totales', '#0ea5e9');
+            
+            // Nueva gráfica: Empresas atendidas por fecha (Set.size para no duplicar mat/vesp)
+            const valoresEmpresasPeriodo = fechasOrdenadas.map(f => empresasPeriodo[f].size);
+            dibujarGrafico('chartEmpresasPeriodo', 'bar', fechasOrdenadas, valoresEmpresasPeriodo, 'Nº Empresas', '#10b981');
         }
 
         function dibujarGrafico(canvasId, tipo, labels, data, labelTitulo, color) {
             if(graficos[canvasId]) graficos[canvasId].destroy();
-            
             const ctx = document.getElementById(canvasId).getContext('2d');
             graficos[canvasId] = new Chart(ctx, {
                 type: tipo,
@@ -316,38 +340,41 @@
                     datasets: [{
                         label: labelTitulo,
                         data: data,
-                        backgroundColor: color,
-                        borderColor: tipo === 'line' ? color : 'transparent',
-                        borderWidth: 2,
-                        tension: 0.2
+                        backgroundColor: tipo === 'line' ? color + '20' : color,
+                        borderColor: color,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        fill: tipo === 'line',
+                        tension: 0.4
                     }]
                 },
                 options: { 
-                    responsive: true, 
-                    scales: { y: { beginAtZero: true } },
-                    plugins: { legend: { display: false } } 
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { weight: 'bold' } } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
+                    }
                 }
             });
         }
 
         function exportarExcel() {
-            if(datosFiltradosActuales.length === 0) return alert("No hay datos en el corte seleccionado para exportar.");
-            
-            let dataAplanada = [];
+            if(datosFiltradosActuales.length === 0) return alert("No hay datos para exportar.");
+            let aplanada = [];
             datosFiltradosActuales.forEach(r => {
                 r.detalles.forEach(d => {
-                    dataAplanada.push({
-                        Folio: r.folio, Fecha: r.fecha, Turno: r.turno, Empresa: r.empresa,
-                        Hora_Inicio: r.horaInicio, Hora_Fin: r.horaFin, Horas_Totales_Servicio: r.horasLaboradas,
-                        Medico: d.medico, Estudio: d.estudio, Cantidad: d.cant, Observaciones: r.observaciones || ''
+                    aplanada.push({
+                        FOLIO: r.folio, FECHA: r.fecha, TURNO: r.turno, EMPRESA: r.empresa,
+                        INICIO: r.horaInicio, FIN: r.horaFin, TOTAL_HRS: r.horasLaboradas,
+                        MEDICO: d.medico, ESTUDIO: d.estudio, CANTIDAD: d.cant, NOTAS: r.observaciones || ''
                     });
                 });
             });
-
-            const hoja = XLSX.utils.json_to_sheet(dataAplanada);
-            const libro = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(libro, hoja, "Productividad");
-            XLSX.writeFile(libro, `LAPI_Reporte_Corte_${new Date().toISOString().split('T')[0]}.xlsx`);
+            const ws = XLSX.utils.json_to_sheet(aplanada);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "LAPI_Reporte");
+            XLSX.writeFile(wb, `LAPI_Data_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
     </script>
 </body>
