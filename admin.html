@@ -80,15 +80,13 @@
                 </div>
                 <div>
                     <label class="block text-xs font-black text-slate-500 uppercase mb-1">Empresa</label>
-                    <select id="filtro-empresa" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold truncate">
-                        <option value="Todas">Todas las empresas</option>
-                    </select>
+                    <input id="filtro-empresa" list="lista-empresas-admin" placeholder="Todas las empresas..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold truncate">
+                    <datalist id="lista-empresas-admin"></datalist>
                 </div>
                 <div>
                     <label class="block text-xs font-black text-slate-500 uppercase mb-1">Médico Responsable</label>
-                    <select id="filtro-medico" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold truncate">
-                        <option value="Todos">Todos los médicos</option>
-                    </select>
+                    <input id="filtro-medico" list="lista-medicos-admin" placeholder="Todos los médicos..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold truncate">
+                    <datalist id="lista-medicos-admin"></datalist>
                 </div>
                 <div class="flex items-end h-full gap-2 lg:col-span-2">
                     <button onclick="ejecutarFiltros()" class="w-full p-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition font-bold text-sm shadow-md">
@@ -179,8 +177,9 @@
         let datosFiltradosActuales = [];
         let graficos = {};
 
-        document.getElementById('filtro-medico').innerHTML += medicosListaFija.map(m => `<option value="${m}">${m}</option>`).join('');
-        document.getElementById('filtro-empresa').innerHTML += empresasListaFija.map(e => `<option value="${e}">${e}</option>`).join('');
+        // Inyectar en los datalists
+        document.getElementById('lista-medicos-admin').innerHTML = medicosListaFija.map(m => `<option value="${m}">`).join('');
+        document.getElementById('lista-empresas-admin').innerHTML = empresasListaFija.map(e => `<option value="${e}">`).join('');
 
         async function initDashboard() {
             try {
@@ -234,7 +233,6 @@
                 const primeroEnero = new Date(hoyObj.getFullYear(), 0, 1);
                 inicioStr = obtenerFechaFormato(primeroEnero);
             } else if (tipo === 'acumulado') {
-                // Para el acumulado limpiamos los campos de fecha
                 inicioStr = '';
                 finStr = '';
             }
@@ -247,16 +245,16 @@
         function reestablecerTodo() {
             document.getElementById('filtro-inicio').value = '';
             document.getElementById('filtro-fin').value = '';
-            document.getElementById('filtro-medico').value = 'Todos';
-            document.getElementById('filtro-empresa').value = 'Todas';
+            document.getElementById('filtro-medico').value = '';
+            document.getElementById('filtro-empresa').value = '';
             ejecutarFiltros();
         }
 
         function ejecutarFiltros() {
             const fInicio = document.getElementById('filtro-inicio').value;
             const fFin = document.getElementById('filtro-fin').value;
-            const mSel = document.getElementById('filtro-medico').value;
-            const eSel = document.getElementById('filtro-empresa').value;
+            const mSel = document.getElementById('filtro-medico').value.trim() || "Todos";
+            const eSel = document.getElementById('filtro-empresa').value.trim() || "Todas";
 
             let filtrados = [...rawData];
 
@@ -393,4 +391,3 @@
     </script>
 </body>
 </html>
-
