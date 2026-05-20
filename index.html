@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        // Agregamos getDocs, query, where, doc, updateDoc para poder buscar y editar
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -87,8 +86,8 @@
                 <h2 class="font-bold mb-4 text-center">Resumen Final</h2>
                 <div id="resumen-contenido" class="text-sm bg-black/20 p-4 rounded-xl mb-4 space-y-2"></div>
                 
-                <label class="block mb-2 font-medium text-sm">Observaciones (Pendientes, Inconvenientes o Información Relevante)</label>
-                <textarea id="input-observaciones" class="w-full p-3 mb-6 rounded-xl bg-white/20 border-none outline-none placeholder-white/60" rows="3" placeholder="Ej. 3 pacientes pendientes de ... por..., Dejó de Funcionar..., La cabina estaba alado de maquinaria..."></textarea>
+                <label class="block mb-2 font-medium text-sm">Observaciones (Opcional)</label>
+                <textarea id="input-observaciones" class="w-full p-3 mb-6 rounded-xl bg-white/20 border-none outline-none placeholder-white/60" rows="3" placeholder="Ej. Hubo un retraso por lluvia..."></textarea>
 
                 <div class="flex gap-2">
                     <button onclick="location.reload()" class="w-1/3 bg-red-500 font-bold py-4 rounded-xl shadow-lg">Reiniciar</button>
@@ -155,13 +154,14 @@
     </div>
 
     <script>
-        const empresas = ["AEROMEXICO", "USME", "COMPAÑÍA EDITORIAL", "COCA COLA FEMSA TOLUCA", "SCHNEIDER", "JUGOS DEL VALLE", "TACA", "SEGURO AXA", "SEGURO ZURICH", "SEGURO INBURSA", "BARCEL LERMA", "TISK SOLUCIONES", "AMCOR", "SODEXO CECAT SUR", "MERCK", "CEMEX ATOTONILCO", "ABBOTT SCOUTING", "ALSTOM FERROVIARIA", "USK INTENACIONAL", "S C JOHNSON AND SON", "BIMBO", "CASA LUMBRE",  "ASA CDMX", "COMSA", "INDUSTRIAS METÁLICAS", "CLOROX", "GRUPO COBRA", "HUMANTOP", "LIVERPOOL", "QUALITAS"].sort;
-        const medicos = ["Susana Cayetano", "Diego Arias", "Patricia Kassandra", "Estefany Becherel", "Paulina Alba", "Mariana Gaviño", "Jose Alejandro", "Isabel Palma", "Dulce Maria", "Angeles Valenzuela", "Jose Juan", "Ingrid Bernal", "Giselle Vizuet", "Angello", "Elzy Chacon", "Alberto Gomez", "Yirelka Yeraldine", "Juan Manuel", "Angelica Itzel", "Mauricio Ruiz", "Lucero Cruz", "Jannet Alejandra", "Fernanda",  "Giovanni Mariano", "David Emmanuel", "Jazmin Morales!"].sort;
-        const estudios = ["Espirometría", "Audiometría", "Historia Clínica", "Examen de Capacidad Visual", "Nórdico", "Seguro"].sort;
+        // Listas actualizadas y ordenadas alfabéticamente
+        const empresas = ["AEROMEXICO", "USME", "COMPAÑÍA EDITORIAL", "COCA COLA FEMSA TOLUCA", "SCHNEIDER", "JUGOS DEL VALLE", "TACA", "SEGURO AXA", "SEGURO ZURICH", "SEGURO INBURSA", "BARCEL LERMA", "TISK SOLUCIONES", "AMCOR", "SODEXO CECAT SUR", "MERCK", "CEMEX ATOTONILCO", "ABBOTT SCOUTING", "ALSTOM FERROVIARIA", "USK INTENACIONAL", "S C JOHNSON AND SON", "BIMBO", "CASA LUMBRE",  "ASA CDMX", "COMSA", "INDUSTRIAS METÁLICAS", "CLOROX", "GRUPO COBRA", "HUMANTOP", "LIVERPOOL", "QUALITAS"].sort();
+        const medicos = ["Susana Cayetano", "Diego Arias", "Patricia Kassandra", "Estefany Becherel", "Paulina Alba", "Mariana Gaviño", "Jose Alejandro", "Isabel Palma", "Dulce Maria", "Angeles Valenzuela", "Jose Juan", "Ingrid Bernal", "Giselle Vizuet", "Angello", "Elzy Chacon", "Alberto Gomez", "Yirelka Yeraldine", "Juan Manuel", "Angelica Itzel", "Mauricio Ruiz", "Lucero Cruz", "Jannet Alejandra", "Fernanda",  "Giovanni Mariano", "David Emmanuel", "Jazmin Morales!"].sort();
+        const estudios = ["Espirometría", "Audiometría", "Historia Clínica", "Examen de Capacidad Visual", "Nórdico", "Seguro"];
 
         let seleccionados = [], registroFinal = [], indiceActual = 0;
         let horasCalculadas = 0;
-        let editDocId = null; // ID interno de Firebase para el documento que estamos editando
+        let editDocId = null; 
 
         document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join('');
         document.getElementById('lista-medicos').innerHTML = medicos.map(m => `<option value="${m}">`).join('');
@@ -247,8 +247,7 @@
         }
 
         async function finalizar() {
-            // Generador de folio simplificado: 4 números aleatorios + letra del turno
-            const numAleatorio = Math.floor(1000 + Math.random() * 9000); // Rango: 1000 a 9999
+            const numAleatorio = Math.floor(1000 + Math.random() * 9000); 
             const folio = numAleatorio + document.getElementById('input-turno').value[0].toUpperCase();
             
             const empresaF = document.getElementById('input-empresa').value.toUpperCase();
@@ -267,7 +266,7 @@
                     observaciones: observaciones,
                     timestamp: new Date()
                 });
-                alert("Registro enviado exitosamente, Guarda el Folio. Será necesario en caso de correcciones. FOLIO: " + folio);
+                alert("Registro enviado exitosamente. FOLIO: " + folio);
                 location.reload();
             } catch(e) { alert("Error al enviar: " + e); }
         }
@@ -279,7 +278,6 @@
             if(!folioInput) return alert("Ingresa un folio válido.");
             
             try {
-                // Buscamos en Firebase el documento con el folio exacto
                 const q = window.query(window.collection(window.db, "registros"), window.where("folio", "==", folioInput));
                 const qs = await window.getDocs(q);
                 
@@ -301,14 +299,10 @@
         }
 
         function abrirEditor(data) {
-            // Ocultamos todo lo demás
             document.getElementById('paso-0').classList.add('hidden');
             document.getElementById('cuadro-edicion').classList.add('hidden');
-            
-            // Mostramos la vista general de edición
             document.getElementById('paso-edicion').classList.remove('hidden');
 
-            // Cargar los datos extraídos en los inputs
             document.getElementById('edit-folio-text').innerText = data.folio;
             document.getElementById('edit-empresa').value = data.empresa;
             document.getElementById('edit-fecha').value = data.fecha;
@@ -317,12 +311,11 @@
             document.getElementById('edit-turno').value = data.turno;
             document.getElementById('edit-observaciones').value = data.observaciones || '';
 
-            // Cargar la lista de estudios/médicos que ya existía
             document.getElementById('edit-detalles-container').innerHTML = '';
             if(data.detalles && data.detalles.length > 0){
                 data.detalles.forEach(d => agregarFilaEdicion(d.estudio, d.medico, d.cant));
             } else {
-                agregarFilaEdicion(); // Dejar una vacía si por alguna razón no había
+                agregarFilaEdicion(); 
             }
         }
 
@@ -330,7 +323,6 @@
             const div = document.createElement('div');
             div.className = "flex gap-2 items-center bg-black/20 p-2 rounded-lg edit-fila";
             
-            // Reutilizamos el array global "estudios" para construir el select desplegable
             const opcionesEstudios = estudios.map(e => `<option value="${e}" class="text-black" ${e === estudio ? 'selected' : ''}>${e}</option>`).join('');
             
             div.innerHTML = `
