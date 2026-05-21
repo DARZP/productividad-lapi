@@ -31,7 +31,7 @@
 
     <div class="max-w-3xl mx-auto glass p-8 rounded-3xl shadow-xl">
         <h1 class="text-3xl font-black text-orange-600 mb-2">Importador de Historial (Excel)</h1>
-        <p class="text-slate-500 mb-6">Pega aquí directamente las celdas de tu Excel. El orden debe ser: <br><b>Fecha | Empresa | Espiros | Audio | HC | Excavcis | Nórdico</b></p>
+        <p class="text-slate-500 mb-6">Pega aquí directamente las celdas de tu Excel. El orden debe ser: <br><b>Fecha | Empresa | Espiros | Audio | HC | Excavcis | Nórdico | Seguro </b></p>
         
         <div class="mb-4">
             <label class="block font-bold mb-2">Año del reporte:</label>
@@ -39,8 +39,8 @@
         </div>
 
         <textarea id="excel-data" class="w-full h-64 p-4 border rounded-xl outline-none focus:ring-2 focus:ring-orange-500 font-mono text-sm whitespace-pre" placeholder="Ejemplo:
-1-abr    AEROMEXICO    10    5    10    0    0
-         CEMEX         0     2    2     2    0"></textarea>
+1-abr    AEROMEXICO    10    5    10    0    0    0
+         CEMEX         0     2    2     2    0    0"></textarea>
 
         <button onclick="procesarDatos()" class="mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg w-full transition">Iniciar Migración a Firebase</button>
 
@@ -50,7 +50,7 @@
 
     <script>
         const mesesDic = { "ene": "01", "feb": "02", "mar": "03", "abr": "04", "may": "05", "jun": "06", "jul": "07", "ago": "08", "sep": "09", "oct": "10", "nov": "11", "dic": "12" };
-        const nombresEstudios = ["Espirometría", "Audiometría", "Historia Clínica", "Examen de Capacidad Visual", "Nórdico"];
+        const nombresEstudios = ["Espirometría", "Audiometría", "Historia Clínica", "Examen de Capacidad Visual", "Nórdico", "Seguro"];
 
         function formatearFecha(fechaStr, anio) {
             // Convierte "1-abr" o "01-abr" a "2024-04-01"
@@ -73,17 +73,16 @@
             logDiv.classList.remove('hidden');
 
             const filas = rawData.split('\n');
-            let fechaActualMemoria = ""; // Aquí guardaremos la fecha si el renglón de abajo viene vacío
+            let fechaActualMemoria = ""; 
             let registrosExitosos = 0;
 
             for (let i = 0; i < filas.length; i++) {
                 const filaStr = filas[i].trimEnd();
-                if (!filaStr) continue; // Saltar filas vacías
+                if (!filaStr) continue; 
 
-                // Al pegar de Excel, las columnas se separan por tabulaciones (\t)
                 const columnas = filaStr.split('\t');
                 
-                if (columnas.length < 2) continue; // Fila inválida
+                if (columnas.length < 2) continue; 
 
                 // 1. Manejo de fecha
                 let celdaFecha = columnas[0].trim();
@@ -105,8 +104,9 @@
                 const cantHC = parseInt(columnas[4]) || 0;
                 const cantVisual = parseInt(columnas[5]) || 0;
                 const cantNordico = parseInt(columnas[6]) || 0;
+                const cantSeguro = parseInt(columnas[7]) || 0;
 
-                const cantidades = [cantEspiros, cantAudio, cantHC, cantVisual, cantNordico];
+                const cantidades = [cantEspiros, cantAudio, cantHC, cantVisual, cantNordico, cantSeguro];
                 let detalles = [];
 
                 // 3. Crear los detalles ignorando los ceros
