@@ -10,37 +10,78 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
-            authDomain: "lapi-productividad.firebaseapp.com",
-            projectId: "lapi-productividad",
-            storageBucket: "lapi-productividad.firebasestorage.app",
-            messagingSenderId: "1077149571149",
-            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+    const firebaseConfig = {
+        apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+        authDomain: "lapi-productividad.firebaseapp.com",
+        projectId: "lapi-productividad",
+        storageBucket: "lapi-productividad.firebasestorage.app",
+        messagingSenderId: "1077149571149",
+        appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app);
+    window.getDocs = getDocs;
+    window.collection = collection;
+    window.query = query;
+    window.orderBy = orderBy;
+    window.addDoc = addDoc; // Esto corrige el error de "addDoc is not defined"
+
+    // Esta es la función que enlaza con tu botón HTML
+    window.importarCSV = async function() {
+        const fileInput = document.getElementById('archivoCsv'); // Asegúrate que tu input se llame así
+        const file = fileInput.files[0];
+        if (!file) return alert("Por favor selecciona primero el archivo Reporte_Limpiado.csv");
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet); 
+            
+            if (json.length === 0) return alert("El archivo está vacío.");
+
+            let count = 0;
+            for (let row of json) {
+                try {
+                    await window.addDoc(window.collection(window.db, "registros"), {
+                        tipo: "sucursal",
+                        fecha: row.FECHA ? String(row.FECHA).trim() : "S/F",
+                        sucursal: row.SUCURSAL ? String(row.SUCURSAL).trim() : "S/S",
+                        paciente: row.PACIENTE ? String(row.PACIENTE).trim() : "S/P",
+                        empresa: row.EMPRESA ? String(row.EMPRESA).trim().toUpperCase() : "S/E",
+                        estudio: row.ESTUDIO ? String(row.ESTUDIO).trim() : "S/E",
+                        medico: row.PERSONAL ? String(row.PERSONAL).trim().toUpperCase() : "S/M",
+                        timestamp: new Date()
+                    });
+                    count++;
+                } catch (err) {
+                    console.error("Error en fila:", err);
+                }
+            }
+            alert(`¡Éxito! Se integraron ${count} registros.`);
+            location.reload();
         };
+        reader.readAsArrayBuffer(file);
+    };
 
-        const app = initializeApp(firebaseConfig);
-        window.db = getFirestore(app);
-        window.getDocs = getDocs;
-        window.collection = collection;
-        window.query = query;
-        window.orderBy = orderBy;
-        
-        initDashboard();
-    </script>
+    initDashboard();
+</script>
     
     <style>
-        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.4); }
-        .bg-lapi-orange { background: linear-gradient(135deg, #ff8c00 0%, #ff6a00 100%); }
-        .bg-lapi-blue { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
-        body { background-color: #f8fafc; }
-        .chart-container-global { transition: all 0.5s ease-in-out; overflow: hidden; }
-        .tab-btn.active { background-color: white; color: #1e293b; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .tab-btn { background-color: rgba(255,255,255,0.2); color: white; }
-    </style>
+    .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.4); }
+    .bg-lapi-orange { background: linear-gradient(135deg, #ff8c00 0%, #ff6a00 100%); }
+    .bg-lapi-blue { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
+    body { background-color: #f8fafc; }
+    .chart-container-global { transition: all 0.5s ease-in-out; overflow: hidden; }
+    .tab-btn.active { background-color: white; color: #1e293b; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    .tab-btn { background-color: rgba(255,255,255,0.2); color: white; }
+</style>
+    
 </head>
 <body class="font-sans text-slate-800 p-4 md:p-6">
 
@@ -514,43 +555,7 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(aplanada), origen);
             XLSX.writeFile(wb, `LAPI_${origen}_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
-
-       async function importarCSV() {
-    const fileInput = document.getElementById('archivoCsv');
-    const file = fileInput.files[0];
-    if (!file) return alert("Por favor selecciona primero el archivo Reporte_Limpiado.csv");
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, {type: 'array'});
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        // XLSX automáticamente convierte las columnas en objetos usando los encabezados del CSV
-        const json = XLSX.utils.sheet_to_json(sheet); 
-        
-        if (json.length === 0) return alert("El archivo parece vacío o no tiene encabezados válidos.");
-
-        let count = 0;
-        let total = json.length;
-        
-        for (let row of json) {
-            // Mapeo basado en tus encabezados: FECHA, MES, SUCURSAL, PACIENTE, EMPRESA, ESTUDIO, PERSONAL
-            try {
-                await window.addDoc(window.collection(window.db, "registros"), {
-                    tipo: "sucursal",
-                    fecha: row.FECHA ? String(row.FECHA).trim() : "S/F",
-                    sucursal: row.SUCURSAL ? String(row.SUCURSAL).trim() : "S/S",
-                    paciente: row.PACIENTE ? String(row.PACIENTE).trim() : "S/P",
-                    empresa: row.EMPRESA ? String(row.EMPRESA).trim().toUpperCase() : "S/E",
-                    estudio: row.ESTUDIO ? String(row.ESTUDIO).trim() : "S/E",
-                    medico: row.PERSONAL ? String(row.PERSONAL).trim().toUpperCase() : "S/M",
-                    timestamp: new Date()
-                });
-                count++;
-            } catch (err) {
-                console.error("Error en fila:", row, err);
-            }
-        }
+  }
         
         alert(`¡Éxito! Se integraron ${count} de ${total} registros a la base de datos.`);
         location.reload(); // Recarga para ver todo en el dashboard
