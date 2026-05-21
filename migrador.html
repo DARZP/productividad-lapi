@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migrador LAPI Excel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.addDoc = addDoc;
+        window.collection = collection;
+    </script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 p-8">
+
+    <div class="max-w-3xl mx-auto glass p-8 rounded-3xl shadow-xl">
+        <h1 class="text-3xl font-black text-orange-600 mb-2">Importador de Historial (Excel)</h1>
+        <p class="text-slate-500 mb-6">Pega aquí directamente las celdas de tu Excel. El orden debe ser: <br><b>Fecha | Empresa | Espiros | Audio | HC | Excavcis | Nórdico</b></p>
+        
+        <div class="mb-4">
+            <label class="block font-bold mb-2">Año del reporte:</label>
+            <input type="number" id="input-anio" value="2024" class="p-2 border rounded-lg w-32 outline-none focus:ring-2 focus:ring-orange-500">
+        </div>
+
+        <textarea id="excel-data" class="w-full h-64 p-4 border rounded-xl outline-none focus:ring-2 focus:ring-orange-500 font-mono text-sm whitespace-pre" placeholder="Ejemplo:
+1-abr    AEROMEXICO    10    5    10    0    0
+         CEMEX         0     2    2     2    0"></textarea>
+
+        <button onclick="procesarDatos()" class="mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg w-full transition">Iniciar Migración a Firebase</button>
+
+        <div id="log" class="mt-6 bg-slate-800 text-green-400 p-4 rounded-xl font-mono text-xs h-48 overflow-y-auto hidden">
+            </div>
+    </div>
+
+    <script>
+        const mesesDic = { "ene": "01", "feb": "02", "mar": "03", "abr": "04", "may": "05", "jun": "06", "jul": "07", "ago": "08", "sep": "09", "oct": "10", "nov": "11", "dic": "12" };
+        const nombresEstudios = ["Espirometría", "Audiometría", "Historia Clínica", "Examen de Capacidad Visual", "Nórdico"];
+
+        function formatearFecha(fechaStr, anio) {
+            // Convierte "1-abr" o "01-abr" a "2024-04-01"
+            if(!fechaStr) return null;
+            const partes = fechaStr.toLowerCase().trim().split('-');
+            if(partes.length < 2) return null;
+            
+            const dia = partes[0].padStart(2, '0');
+            const mesStr = partes[1].substring(0, 3); // Toma las primeras 3 letras
+            const mes = mesesDic[mesStr] || "01";
+            
+            return `${anio}-${mes}-${dia}`;
+        }
+
+        async function procesarDatos() {
+            const rawData = document.getElementById('excel-data').value;
+            const anio = document.getElementById('input-anio').value;
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML = "Iniciando análisis de datos...<br>";
+            logDiv.classList.remove('hidden');
+
+            const filas = rawData.split('\n');
+            let fechaActualMemoria = ""; // Aquí guardaremos la fecha si el renglón de abajo viene vacío
+            let registrosExitosos = 0;
+
+            for (let i = 0; i < filas.length; i++) {
+                const filaStr = filas[i].trimEnd();
+                if (!filaStr) continue; // Saltar filas vacías
+
+                // Al pegar de Excel, las columnas se separan por tabulaciones (\t)
+                const columnas = filaStr.split('\t');
+                
+                if (columnas.length < 2) continue; // Fila inválida
+
+                // 1. Manejo de fecha
+                let celdaFecha = columnas[0].trim();
+                if (celdaFecha !== "") {
+                    fechaActualMemoria = formatearFecha(celdaFecha, anio);
+                }
+
+                if (!fechaActualMemoria) {
+                    logDiv.innerHTML += `<span class="text-red-400">Error en fila ${i+1}: No hay fecha válida.</span><br>`;
+                    continue;
+                }
+
+                const empresa = columnas[1].trim().toUpperCase();
+                if (!empresa) continue; // Si no hay empresa, saltar
+
+                // 2. Extraer cantidades
+                const cantEspiros = parseInt(columnas[2]) || 0;
+                const cantAudio = parseInt(columnas[3]) || 0;
+                const cantHC = parseInt(columnas[4]) || 0;
+                const cantVisual = parseInt(columnas[5]) || 0;
+                const cantNordico = parseInt(columnas[6]) || 0;
+
+                const cantidades = [cantEspiros, cantAudio, cantHC, cantVisual, cantNordico];
+                let detalles = [];
+
+                // 3. Crear los detalles ignorando los ceros
+                for (let j = 0; j < cantidades.length; j++) {
+                    if (cantidades[j] > 0) {
+                        detalles.push({
+                            estudio: nombresEstudios[j],
+                            medico: "Historial Previo",
+                            cant: cantidades[j]
+                        });
+                    }
+                }
+
+                // Si no hubo ningún estudio en esa fila, saltarla
+                if (detalles.length === 0) continue;
+
+                // 4. Preparar objeto para Firebase
+                const numAleatorio = Math.floor(1000 + Math.random() * 9000);
+                const folio = `HIST-${numAleatorio}`;
+
+                const registroDB = {
+                    folio: folio,
+                    fecha: fechaActualMemoria,
+                    horaInicio: "08:00",
+                    horaFin: "08:00",
+                    horasLaboradas: 0,
+                    turno: "Matutino",
+                    empresa: empresa,
+                    detalles: detalles,
+                    observaciones: "Migrado desde Excel histórico",
+                    timestamp: new Date()
+                };
+
+                // 5. Enviar a Firebase
+                try {
+                    await window.addDoc(window.collection(window.db, "registros"), registroDB);
+                    registrosExitosos++;
+                    logDiv.innerHTML += `Guardado: ${fechaActualMemoria} - ${empresa} (${detalles.length} tipos de estudio). Folio: ${folio}<br>`;
+                    logDiv.scrollTop = logDiv.scrollHeight; // Auto-scroll
+                } catch (error) {
+                    logDiv.innerHTML += `<span class="text-red-400">Error al guardar ${empresa}: ${error}</span><br>`;
+                }
+            }
+
+            logDiv.innerHTML += `<br><span class="text-white font-bold">¡PROCESO TERMINADO! ${registrosExitosos} registros subidos a Firebase.</span><br>`;
+            alert(`Migración completada. Revisa el log inferior. Se subieron ${registrosExitosos} registros.`);
+        }
+    </script>
+</body>
+</html>
