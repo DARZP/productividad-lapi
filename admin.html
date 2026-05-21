@@ -10,78 +10,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
-        authDomain: "lapi-productividad.firebaseapp.com",
-        projectId: "lapi-productividad",
-        storageBucket: "lapi-productividad.firebasestorage.app",
-        messagingSenderId: "1077149571149",
-        appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    window.db = getFirestore(app);
-    window.getDocs = getDocs;
-    window.collection = collection;
-    window.query = query;
-    window.orderBy = orderBy;
-    window.addDoc = addDoc; // Esto corrige el error de "addDoc is not defined"
-
-    // Esta es la función que enlaza con tu botón HTML
-    window.importarCSV = async function() {
-        const fileInput = document.getElementById('archivoCsv'); // Asegúrate que tu input se llame así
-        const file = fileInput.files[0];
-        if (!file) return alert("Por favor selecciona primero el archivo Reporte_Limpiado.csv");
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(sheet); 
-            
-            if (json.length === 0) return alert("El archivo está vacío.");
-
-            let count = 0;
-            for (let row of json) {
-                try {
-                    await window.addDoc(window.collection(window.db, "registros"), {
-                        tipo: "sucursal",
-                        fecha: row.FECHA ? String(row.FECHA).trim() : "S/F",
-                        sucursal: row.SUCURSAL ? String(row.SUCURSAL).trim() : "S/S",
-                        paciente: row.PACIENTE ? String(row.PACIENTE).trim() : "S/P",
-                        empresa: row.EMPRESA ? String(row.EMPRESA).trim().toUpperCase() : "S/E",
-                        estudio: row.ESTUDIO ? String(row.ESTUDIO).trim() : "S/E",
-                        medico: row.PERSONAL ? String(row.PERSONAL).trim().toUpperCase() : "S/M",
-                        timestamp: new Date()
-                    });
-                    count++;
-                } catch (err) {
-                    console.error("Error en fila:", err);
-                }
-            }
-            alert(`¡Éxito! Se integraron ${count} registros.`);
-            location.reload();
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
         };
-        reader.readAsArrayBuffer(file);
-    };
 
-    initDashboard();
-</script>
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.query = query;
+        window.orderBy = orderBy;
+        
+        initDashboard();
+    </script>
     
     <style>
-    .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.4); }
-    .bg-lapi-orange { background: linear-gradient(135deg, #ff8c00 0%, #ff6a00 100%); }
-    .bg-lapi-blue { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
-    body { background-color: #f8fafc; }
-    .chart-container-global { transition: all 0.5s ease-in-out; overflow: hidden; }
-    .tab-btn.active { background-color: white; color: #1e293b; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-    .tab-btn { background-color: rgba(255,255,255,0.2); color: white; }
-</style>
-    
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.4); }
+        .bg-lapi-orange { background: linear-gradient(135deg, #ff8c00 0%, #ff6a00 100%); }
+        .bg-lapi-blue { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
+        body { background-color: #f8fafc; }
+        .chart-container-global { transition: all 0.5s ease-in-out; overflow: hidden; }
+        .tab-btn.active { background-color: white; color: #1e293b; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .tab-btn { background-color: rgba(255,255,255,0.2); color: white; }
+    </style>
 </head>
 <body class="font-sans text-slate-800 p-4 md:p-6">
 
@@ -166,15 +125,6 @@
                     <button onclick="aplicarFiltroRapido('S', 'mes_actual')" class="bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold">Este Mes</button>
                     <button onclick="aplicarFiltroRapido('S', 'acumulado')" class="bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold">Acumulado</button>
                 </div>
-            <div class="glass p-5 rounded-2xl shadow-sm mb-6 border-l-4 border-emerald-500">   
-                <h3 class="font-black text-slate-700 text-sm mb-3 uppercase">Carga Masiva de Sucursales (CSV)</h3>  
-                <div class="flex gap-4 items-center">
-                    <input type="file" id="archivoCsv" accept=".csv" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
-                    <button onclick="importarCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold text-sm transition shadow-lg">
-                        <i class="fa-solid fa-cloud-upload mr-2"></i> Procesar y Subir
-                    </button>
-                </div>
-            </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 border-t border-slate-200 pt-5">
                     <div><label class="block text-xs font-black text-slate-500 uppercase mb-1">Desde</label><input type="date" id="s-inicio" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none"></div>
                     <div><label class="block text-xs font-black text-slate-500 uppercase mb-1">Hasta</label><input type="date" id="s-fin" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none"></div>
@@ -555,14 +505,6 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(aplanada), origen);
             XLSX.writeFile(wb, `LAPI_${origen}_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
-  }
-        
-        alert(`¡Éxito! Se integraron ${count} de ${total} registros a la base de datos.`);
-        location.reload(); // Recarga para ver todo en el dashboard
-    };
-    reader.readAsArrayBuffer(file);
-}
-        } 
     </script>
 </body>
 </html>
