@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extractor Sucursales LAPI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.addDoc = addDoc;
+        window.collection = collection;
+    </script>
+</head>
+<body class="bg-gradient-to-br from-slate-100 to-slate-200 font-sans text-slate-800 p-8 min-h-screen">
+
+    <div class="max-w-4xl mx-auto bg-white/70 backdrop-blur-lg border border-white/50 p-8 rounded-3xl shadow-xl">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black text-sky-700">⚙️ Procesador de Sucursales</h1>
+            <p class="text-slate-500 mt-2">Convierte el Excel de sucursales en registros para la base de datos central</p>
+        </div>
+
+        <div class="border-2 border-dashed border-sky-300 rounded-2xl p-8 text-center bg-white/50 transition hover:border-sky-500">
+            <input type="file" id="archivosCarga" multiple accept=".csv, .xlsx, .xls" class="block w-full max-w-sm mx-auto mb-6 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer">
+            
+            <div class="flex gap-4 justify-center">
+                <button id="btnProcesar" onclick="procesarArchivos()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-6 rounded-xl shadow transition">1. Leer Excel</button>
+                <button id="btnSubir" onclick="subirAFirebase()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl shadow transition hidden">2. Subir a Firebase</button>
+            </div>
+        </div>
+
+        <div id="log" class="mt-6 bg-slate-800 text-green-400 p-4 rounded-xl font-mono text-xs h-64 overflow-y-auto hidden"></div>
+    </div>
+
+    <script>
+        const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
+        const estudiosMapeo = { "HC": "HC", "EXAMEN MEDICO": "HC", "SEGURO": "Seguro", "AUDIOMETRIA": "Audiometría", "ESPIROMETRIA": "Espirometría", "ELECTROCARDIOGRAMA": "Electrocardiograma", "AGUDEZA VISUAL": "Agudeza Visual", "LOGOAUDIOMETRIA": "Logoaudiometría", "TIMPANOMETRIA": "Timpanometría", "CERTIFICADO": "Certificado", "NORDICO": "Nórdico", "OTRO": "Otro" };
+
+        let datosListos = [];
+
+        function limpiarSucursal(nombre) {
+            if (!nombre) return "Desconocida";
+            let n = String(nombre).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            if(n.includes("CUAUTITLAN")) return "Cuautitlán";
+            if(n.includes("SATELITE")) return "Satélite";
+            if(n.includes("MARTIN CABRERA")) return "Martín Cabrera";
+            if(n.includes("REVOLUCION")) return "Revolución";
+            if(n.includes("SAN JERONIMO")) return "San Jerónimo";
+            if(n.includes("HUESO")) return "Calzada del Hueso";
+            if(n.includes("LOMAS VERDES")) return "Lomas Verdes";
+            return n.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        }
+
+        async function procesarArchivos() {
+            const input = document.getElementById('archivosCarga');
+            const logDiv = document.getElementById('log');
+            if(input.files.length === 0) return alert("Selecciona un archivo Excel primero.");
+            
+            logDiv.classList.remove('hidden');
+            logDiv.innerHTML = "Leyendo archivo...<br>";
+            datosListos = [];
+            
+            for(let i=0; i<input.files.length; i++){
+                try {
+                    let data = await input.files[i].arrayBuffer();
+                    let wb = XLSX.read(data, {type:'array'});
+                    for(let sn of wb.SheetNames){
+                        let sheet = wb.Sheets[sn];
+                        let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
+                        let fEx = "2026-01-01", sEx = "Desconocida", iEnc = -1, mapa = {};
+                        
+                        for(let r=0; r<Math.min(20, filas.length); r++){
+                            if(!filas[r]) continue;
+                            let cL = filas[r].map(v => String(v).trim().toUpperCase());
+                            
+                            // Extraer fecha y convertir a formato YYYY-MM-DD
+                            if(cL.join(" ").includes("FECHA")){
+                                let stringFechaTotal = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim();
+                                let partes = stringFechaTotal.replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
+                                if(partes.length>=3){
+                                    let d=partes[0].padStart(2,'0'), mR=partes[1], a=partes[2];
+                                    let mN = isNaN(mR) ? (mesesTexto[mR.substring(0,3)] || 0) + 1 : parseInt(mR,10);
+                                    if(a.length===2) a="20"+a; else if(a.length!==4) a="2026";
+                                    fEx = `${a}-${String(mN).padStart(2,'0')}-${d}`;
+                                }
+                            }
+                            
+                            let cS = cL.findIndex(v=>v.includes("SUCURSAL"));
+                            if(cS!==-1) sEx = limpiarSucursal(cL[cS+1] || cL[cS+2]);
+                            
+                            let filaTexto = cL.join(" ");
+                            if(filaTexto.includes("NOMBRE") && filaTexto.includes("EMPRESA")){
+                                iEnc=r; 
+                                filas[r].forEach((valor, colIdx)=>{ 
+                                    if(valor) mapa[String(valor).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim()] = colIdx;
+                                });
+                            }
+                        }
+                        
+                        if(iEnc!==-1){
+                            for(let r=iEnc+1; r<filas.length; r++){
+                                let f = filas[r]; if(!f || !f[mapa["NOMBRE"]]) continue;
+                                if(f.map(v=>String(v)).join("").toUpperCase().includes("PENDIENTES")) break;
+                                
+                                Object.keys(estudiosMapeo).forEach(key => {
+                                    let cIdx = mapa[key];
+                                    if(cIdx!==undefined && f[cIdx] && !String(f[cIdx]).toUpperCase().includes("PEND")){
+                                        datosListos.push({ 
+                                            tipo: "sucursal",
+                                            fecha: fEx, 
+                                            sucursal: sEx, 
+                                            paciente: String(f[mapa["NOMBRE"]]).trim(), 
+                                            empresa: String(f[mapa["EMPRESA"]]||"S/E").trim().toUpperCase(), 
+                                            estudio: estudiosMapeo[key], 
+                                            medico: String(f[cIdx]).trim().toUpperCase(),
+                                            timestamp: new Date()
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                } catch(e) { logDiv.innerHTML += `<span class="text-red-400">Error: ${e}</span><br>`; }
+            }
+            
+            logDiv.innerHTML += `Lectura completada. Se encontraron ${datosListos.length} estudios válidos listos para subir.<br>`;
+            document.getElementById('btnSubir').classList.remove('hidden');
+        }
+
+        async function subirAFirebase() {
+            if(datosListos.length === 0) return alert("No hay datos para subir.");
+            const logDiv = document.getElementById('log');
+            document.getElementById('btnSubir').disabled = true;
+            document.getElementById('btnSubir').innerText = "Subiendo...";
+            
+            let exitosos = 0;
+            for(let reg of datosListos) {
+                try {
+                    await window.addDoc(window.collection(window.db, "registros"), reg);
+                    exitosos++;
+                    if(exitosos % 10 === 0) {
+                        logDiv.innerHTML += `Subiendo... ${exitosos}/${datosListos.length}<br>`;
+                        logDiv.scrollTop = logDiv.scrollHeight;
+                    }
+                } catch(e) {
+                    logDiv.innerHTML += `<span class="text-red-400">Error subiendo registro: ${e}</span><br>`;
+                }
+            }
+            
+            logDiv.innerHTML += `<span class="text-white font-bold">¡COMPLETADO! ${exitosos} registros subidos con éxito.</span><br>`;
+            document.getElementById('btnSubir').innerText = "Subida Finalizada";
+        }
+    </script>
+</body>
+</html>
