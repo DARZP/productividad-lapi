@@ -125,6 +125,15 @@
                     <button onclick="aplicarFiltroRapido('S', 'mes_actual')" class="bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold">Este Mes</button>
                     <button onclick="aplicarFiltroRapido('S', 'acumulado')" class="bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold">Acumulado</button>
                 </div>
+            <div class="glass p-5 rounded-2xl shadow-sm mb-6 border-l-4 border-emerald-500">   
+                <h3 class="font-black text-slate-700 text-sm mb-3 uppercase">Carga Masiva de Sucursales (CSV)</h3>  
+                <div class="flex gap-4 items-center">
+                    <input type="file" id="archivoCsv" accept=".csv" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                    <button onclick="importarCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold text-sm transition shadow-lg">
+                        <i class="fa-solid fa-cloud-upload mr-2"></i> Procesar y Subir
+                    </button>
+                </div>
+            </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 border-t border-slate-200 pt-5">
                     <div><label class="block text-xs font-black text-slate-500 uppercase mb-1">Desde</label><input type="date" id="s-inicio" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none"></div>
                     <div><label class="block text-xs font-black text-slate-500 uppercase mb-1">Hasta</label><input type="date" id="s-fin" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none"></div>
@@ -505,6 +514,47 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(aplanada), origen);
             XLSX.writeFile(wb, `LAPI_${origen}_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
+
+       // Función para importar el CSV de sucursales que ya tienes
+        async function importarCSV() {
+            const fileInput = document.getElementById('archivoCsv');
+            const file = fileInput.files[0];
+            if (!file) return alert("Por favor selecciona primero el archivo Reporte_Limpiado.csv");
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const text = e.target.result;
+                const rows = text.split('\n').slice(1); // Saltar encabezados
+                
+                let count = 0;
+                // Usamos un batch para no saturar la conexión
+                for (let row of rows) {
+                    const cols = row.split(',');
+                    if (cols.length < 7) continue; // Si la fila está vacía o incompleta, saltar
+                    
+                    try {
+                        await window.addDoc(window.collection(window.db, "registros"), {
+                            tipo: "sucursal",
+                            fecha: cols[0].trim(),
+                            mes: cols[1].trim(),
+                            sucursal: cols[2].trim(),
+                            paciente: cols[3].trim(),
+                            empresa: cols[4].trim(),
+                            estudio: cols[5].trim(),
+                            medico: cols[6].trim(),
+                            timestamp: new Date()
+                        });
+                        count++;
+                    } catch (err) {
+                        console.error("Error al subir fila:", err);
+                    }
+                }
+                alert(`¡Éxito! Se han integrado ${count} registros a la base de datos.`);
+                // Recargamos el dashboard para ver los cambios
+                location.reload();
+            };
+            reader.readAsText(file);
+        } 
     </script>
 </body>
 </html>
