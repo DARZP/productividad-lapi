@@ -515,45 +515,48 @@
             XLSX.writeFile(wb, `LAPI_${origen}_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
-       // Función para importar el CSV de sucursales que ya tienes
-        async function importarCSV() {
-            const fileInput = document.getElementById('archivoCsv');
-            const file = fileInput.files[0];
-            if (!file) return alert("Por favor selecciona primero el archivo Reporte_Limpiado.csv");
+       async function importarCSV() {
+    const fileInput = document.getElementById('archivoCsv');
+    const file = fileInput.files[0];
+    if (!file) return alert("Por favor selecciona primero el archivo Reporte_Limpiado.csv");
 
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const text = e.target.result;
-                const rows = text.split('\n').slice(1); // Saltar encabezados
-                
-                let count = 0;
-                // Usamos un batch para no saturar la conexión
-                for (let row of rows) {
-                    const cols = row.split(',');
-                    if (cols.length < 7) continue; // Si la fila está vacía o incompleta, saltar
-                    
-                    try {
-                        await window.addDoc(window.collection(window.db, "registros"), {
-                            tipo: "sucursal",
-                            fecha: cols[0].trim(),
-                            mes: cols[1].trim(),
-                            sucursal: cols[2].trim(),
-                            paciente: cols[3].trim(),
-                            empresa: cols[4].trim(),
-                            estudio: cols[5].trim(),
-                            medico: cols[6].trim(),
-                            timestamp: new Date()
-                        });
-                        count++;
-                    } catch (err) {
-                        console.error("Error al subir fila:", err);
-                    }
-                }
-                alert(`¡Éxito! Se han integrado ${count} registros a la base de datos.`);
-                // Recargamos el dashboard para ver los cambios
-                location.reload();
-            };
-            reader.readAsText(file);
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        // XLSX automáticamente convierte las columnas en objetos usando los encabezados del CSV
+        const json = XLSX.utils.sheet_to_json(sheet); 
+        
+        if (json.length === 0) return alert("El archivo parece vacío o no tiene encabezados válidos.");
+
+        let count = 0;
+        let total = json.length;
+        
+        for (let row of json) {
+            // Mapeo basado en tus encabezados: FECHA, MES, SUCURSAL, PACIENTE, EMPRESA, ESTUDIO, PERSONAL
+            try {
+                await window.addDoc(window.collection(window.db, "registros"), {
+                    tipo: "sucursal",
+                    fecha: row.FECHA ? String(row.FECHA).trim() : "S/F",
+                    sucursal: row.SUCURSAL ? String(row.SUCURSAL).trim() : "S/S",
+                    paciente: row.PACIENTE ? String(row.PACIENTE).trim() : "S/P",
+                    empresa: row.EMPRESA ? String(row.EMPRESA).trim().toUpperCase() : "S/E",
+                    estudio: row.ESTUDIO ? String(row.ESTUDIO).trim() : "S/E",
+                    medico: row.PERSONAL ? String(row.PERSONAL).trim().toUpperCase() : "S/M",
+                    timestamp: new Date()
+                });
+                count++;
+            } catch (err) {
+                console.error("Error en fila:", row, err);
+            }
+        }
+        
+        alert(`¡Éxito! Se integraron ${count} de ${total} registros a la base de datos.`);
+        location.reload(); // Recarga para ver todo en el dashboard
+    };
+    reader.readAsArrayBuffer(file);
+}
         } 
     </script>
 </body>
