@@ -68,7 +68,7 @@
             <div class="glass p-5 rounded-2xl shadow-sm mb-6 space-y-5 border-l-4 border-orange-500">
                 <div class="flex flex-wrap gap-2 items-center">
                     <span class="text-xs font-black text-slate-400 uppercase tracking-widest mr-2 w-full md:w-auto mb-2 md:mb-0">Filtros Rápidos</span>
-                    <button onclick="aplicarFiltroRapido('F', 'hoy')" class="bg-orange-500 text-white text-sm px-4 py-2 rounded-lg font-bold shadow-sm">Hoy</button>
+                    <button onclick="aplicarFiltroRapido('F', 'hoy')" class="bg-orange-500 text-white text-sm px-4 py-2 rounded-lg font-bold">Hoy</button>
                     <button onclick="aplicarFiltroRapido('F', 'semana')" class="bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold">Esta Semana</button>
                     <button onclick="aplicarFiltroRapido('F', 'mes_actual')" class="bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold">Este Mes</button>
                     <button onclick="aplicarFiltroRapido('F', 'acumulado')" class="bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold">Acumulado</button>
@@ -87,22 +87,29 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
-                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-orange-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Productividad</p><p id="kpi-f-estudios" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
-                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-sky-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Tiempo Campo</p><p id="kpi-f-horas" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
-                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-emerald-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Empresas</p><p id="kpi-f-empresas" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
+                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-orange-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Productividad Total</p><p id="kpi-f-estudios" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
+                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-sky-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Tiempo en Campo</p><p id="kpi-f-horas" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
+                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-emerald-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Empresas Atendidas</p><p id="kpi-f-empresas" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
             </div>
 
             <div class="chart-container-global grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Tendencia Diaria</h3><div class="relative h-64"><canvas id="cF1"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Top Médicos (Horas)</h3><div class="relative h-64"><canvas id="cF2"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Estudios por Periodo</h3><div class="relative h-64"><canvas id="cF1"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Distribución por Tipo de Estudio</h3><div class="relative h-64"><canvas id="cF2"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Productividad por Empresa</h3><div class="relative h-64"><canvas id="cF3"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Horas laboradas por Periodo</h3><div class="relative h-64"><canvas id="cF4"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Horas Acumuladas por Médico</h3><div class="relative h-64"><canvas id="cF5"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Empresas Atendidas por Periodo</h3><div class="relative h-64"><canvas id="cF6"></canvas></div></div>
             </div>
 
             <div class="glass p-5 rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-                <h3 class="font-black text-slate-800 uppercase text-sm mb-4">Registros Detallados (Foráneos)</h3>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm">Registros Detallados (Foráneos)</h3>
+                    <span class="text-xs bg-slate-200 text-slate-600 px-3 py-1 rounded-full font-bold" id="kpi-f-total-regs">0 Registros</span>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left border-collapse min-w-[700px]">
-                        <thead><tr class="text-xs uppercase bg-slate-100 text-slate-500 border-b"><th class="py-3 px-4">Día / Fecha</th><th class="py-3 px-4">Identificación</th><th class="py-3 px-4">Detalle Médico</th></tr></thead>
-                        <tbody id="tabla-foraneos" class="divide-y divide-slate-100"></tbody>
+                        <thead><tr class="text-xs uppercase bg-slate-100 text-slate-500 border-b"><th class="py-3 px-4">Día / Fecha</th><th class="py-3 px-4">Identificación</th><th class="py-3 px-4 text-center">Horario</th><th class="py-3 px-4">Detalle Médico</th><th class="py-3 px-4">Observaciones</th></tr></thead>
+                        <tbody id="tabla-foraneos" class="divide-y divide-slate-100 font-medium"></tbody>
                     </table>
                 </div>
                 <button onclick="cargarMasForaneos()" class="mt-4 w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-sm hover:bg-slate-200 transition">Ver más registros...</button>
@@ -113,7 +120,7 @@
             <div class="glass p-5 rounded-2xl shadow-sm mb-6 space-y-5 border-l-4 border-sky-600">
                 <div class="flex flex-wrap gap-2 items-center">
                     <span class="text-xs font-black text-slate-400 uppercase tracking-widest mr-2 w-full md:w-auto mb-2 md:mb-0">Filtros Rápidos</span>
-                    <button onclick="aplicarFiltroRapido('S', 'hoy')" class="bg-sky-600 text-white text-sm px-4 py-2 rounded-lg font-bold shadow-sm">Hoy</button>
+                    <button onclick="aplicarFiltroRapido('S', 'hoy')" class="bg-sky-600 text-white text-sm px-4 py-2 rounded-lg font-bold">Hoy</button>
                     <button onclick="aplicarFiltroRapido('S', 'semana')" class="bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold">Esta Semana</button>
                     <button onclick="aplicarFiltroRapido('S', 'mes_actual')" class="bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold">Este Mes</button>
                     <button onclick="aplicarFiltroRapido('S', 'acumulado')" class="bg-slate-800 text-white text-sm px-4 py-2 rounded-lg font-bold">Acumulado</button>
@@ -142,14 +149,19 @@
             </div>
 
             <div class="chart-container-global grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Estudios por Día de la Semana</h3><div class="relative h-64"><canvas id="cS1"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Top 10 Sucursales</h3><div class="relative h-64"><canvas id="cS2"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Distribución por Tipo de Estudio</h3><div class="relative h-64"><canvas id="cS3"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Top Médicos</h3><div class="relative h-64"><canvas id="cS4"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Tendencia Diaria (Sucursales)</h3><div class="relative h-64"><canvas id="cS1"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Estudios por Día de la Semana</h3><div class="relative h-64"><canvas id="cS2"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Top 10 Sucursales</h3><div class="relative h-64"><canvas id="cS3"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Distribución por Tipo de Estudio</h3><div class="relative h-64"><canvas id="cS4"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Top Médicos</h3><div class="relative h-64"><canvas id="cS5"></canvas></div></div>
+                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Pacientes Únicos por Día</h3><div class="relative h-64"><canvas id="cS6"></canvas></div></div>
             </div>
 
             <div class="glass p-5 rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-                <h3 class="font-black text-slate-800 uppercase text-sm mb-4">Registros Detallados (Sucursales)</h3>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm">Registros Detallados (Sucursales)</h3>
+                    <span class="text-xs bg-slate-200 text-slate-600 px-3 py-1 rounded-full font-bold" id="kpi-s-total-regs">0 Registros</span>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left border-collapse min-w-[700px]">
                         <thead><tr class="text-xs uppercase bg-slate-100 text-slate-500 border-b"><th class="py-3 px-4">Fecha</th><th class="py-3 px-4">Sucursal / Empresa</th><th class="py-3 px-4">Paciente</th><th class="py-3 px-4">Estudio y Médico</th></tr></thead>
@@ -227,7 +239,6 @@
             const icon = document.getElementById('toggle-icon');
             const text = document.getElementById('toggle-text');
             
-            // Verificamos el estado del primer contenedor para decidir
             if (containers[0].classList.contains('hidden')) {
                 containers.forEach(el => el.classList.remove('hidden'));
                 icon.className = "fa-solid fa-chart-line";
@@ -240,13 +251,11 @@
         }
 
         function reestablecerTodo() {
-            // Limpia foráneos
             document.getElementById('f-inicio').value = '';
             document.getElementById('f-fin').value = '';
             document.getElementById('f-empresa').value = '';
             document.getElementById('f-medico').value = '';
             
-            // Limpia sucursales
             document.getElementById('s-inicio').value = '';
             document.getElementById('s-fin').value = '';
             document.getElementById('s-sucursal').value = 'Todas';
@@ -280,7 +289,7 @@
             if(prefijo === 'F') ejecutarFiltrosForaneos(); else ejecutarFiltrosSucursales();
         }
 
-        // =================== LOGICA FORANEOS ===================
+        // =================== LOGICA FORANEOS (LAS 6 GRÁFICAS) ===================
         function ejecutarFiltrosForaneos() {
             const fIni = document.getElementById('f-inicio').value;
             const fFin = document.getElementById('f-fin').value;
@@ -299,7 +308,8 @@
         }
 
         function renderForaneos() {
-            let tEst=0, tHrs=0, tEmp=new Set(), fechas={}, hrsMed={};
+            let tEst=0, tHrs=0, tEmp=new Set();
+            let statsFechas={}, statsTipos={}, statsEmpresas={}, horasMed={}, horasPeriodo={}, empPeriodo={};
             const tbody = document.getElementById('tabla-foraneos'); tbody.innerHTML = '';
 
             datosFiltradosF.forEach((reg, i) => {
@@ -307,21 +317,29 @@
                 tHrs += reg.horasLaboradas || 0;
                 let medParticipantes = new Set(reg.detalles.map(d=>d.medico));
                 
+                if(!empPeriodo[reg.fecha]) empPeriodo[reg.fecha] = new Set();
+                empPeriodo[reg.fecha].add(reg.empresa);
+                
                 let dHtml = '';
                 reg.detalles.forEach(det => {
                     tEst += det.cant;
-                    fechas[reg.fecha] = (fechas[reg.fecha] || 0) + det.cant;
-                    dHtml += `<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs mr-1 font-bold inline-block">${det.medico}: ${det.estudio} (${det.cant})</span>`;
+                    statsFechas[reg.fecha] = (statsFechas[reg.fecha] || 0) + det.cant;
+                    statsTipos[det.estudio] = (statsTipos[det.estudio] || 0) + det.cant;
+                    statsEmpresas[reg.empresa] = (statsEmpresas[reg.empresa] || 0) + det.cant;
+                    dHtml += `<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs mr-1 font-bold inline-block uppercase">${det.medico}: ${det.estudio} (${det.cant})</span>`;
                 });
 
-                medParticipantes.forEach(m => hrsMed[m] = (hrsMed[m] || 0) + (reg.horasLaboradas || 0));
+                medParticipantes.forEach(m => horasMed[m] = (horasMed[m] || 0) + (reg.horasLaboradas || 0));
+                horasPeriodo[reg.fecha] = (horasPeriodo[reg.fecha] || 0) + (reg.horasLaboradas || 0);
 
                 if(i < limiteF) {
                     tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 border-b">
-                            <td class="py-3 px-4 font-bold">${reg.fecha}</td>
-                            <td class="py-3 px-4"><span class="text-xs text-slate-400">${reg.folio || 'N/A'}</span><br><b class="text-orange-600">${reg.empresa}</b></td>
-                            <td class="py-3 px-4">${dHtml}</td>
+                        <tr class="hover:bg-slate-50 border-b transition">
+                            <td class="py-4 px-4 font-bold text-slate-700">${reg.fecha}<br><span class="text-[10px] text-slate-400 uppercase">${reg.turno}</span></td>
+                            <td class="py-4 px-4"><span class="text-[10px] text-slate-400 font-bold block mb-1">${reg.folio || 'N/A'}</span><b class="text-orange-600">${reg.empresa}</b></td>
+                            <td class="py-4 px-4 text-center"><span class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded-md text-slate-600">${reg.horaInicio} - ${reg.horaFin}</span><br><span class="text-xs text-sky-600 font-black mt-2 inline-block">${reg.horasLaboradas} HRS</span></td>
+                            <td class="py-4 px-4">${dHtml}</td>
+                            <td class="py-4 px-4 text-sm text-slate-500">${reg.observaciones || '---'}</td>
                         </tr>
                     `;
                 }
@@ -330,15 +348,24 @@
             document.getElementById('kpi-f-estudios').innerText = tEst;
             document.getElementById('kpi-f-horas').innerText = tHrs.toFixed(1);
             document.getElementById('kpi-f-empresas').innerText = tEmp.size;
+            document.getElementById('kpi-f-total-regs').innerText = datosFiltradosF.length + " Registros";
 
-            let fOrd = Object.keys(fechas).sort();
-            dibujarGrafico('cF1', 'line', fOrd, fOrd.map(f=>fechas[f]), 'Estudios', '#f97316');
-            dibujarGrafico('cF2', 'bar', Object.keys(hrsMed), Object.values(hrsMed), 'Horas', '#0ea5e9');
+            let fOrd = Object.keys(statsFechas).sort();
+            
+            // Dibujamos las 6 gráficas originales de foráneos
+            dibujarGrafico('cF1', 'line', fOrd, fOrd.map(f=>statsFechas[f]), 'Estudios por Periodo', '#ff8c00');
+            dibujarGrafico('cF2', 'bar', Object.keys(statsTipos), Object.values(statsTipos), 'Cantidad por Tipo', '#3b82f6');
+            let topEmpForaneas = Object.entries(statsEmpresas).sort((a,b)=>b[1]-a[1]).slice(0,10);
+            dibujarGrafico('cF3', 'bar', topEmpForaneas.map(x=>x[0]), topEmpForaneas.map(x=>x[1]), 'Productividad Empresa', '#ff8c00');
+            dibujarGrafico('cF4', 'line', fOrd, fOrd.map(f=>horasPeriodo[f]), 'Horas Laboradas', '#0ea5e9');
+            let topMedForaneos = Object.entries(horasMed).sort((a,b)=>b[1]-a[1]).slice(0,10);
+            dibujarGrafico('cF5', 'bar', topMedForaneos.map(x=>x[0]), topMedForaneos.map(x=>x[1]), 'Horas Acumuladas', '#3b82f6');
+            dibujarGrafico('cF6', 'bar', fOrd, fOrd.map(f=>empPeriodo[f].size), 'Empresas Atendidas', '#10b981');
         }
 
         function cargarMasForaneos() { limiteF += 50; renderForaneos(); }
 
-        // =================== LOGICA SUCURSALES ===================
+        // =================== LOGICA SUCURSALES (LAS 6 GRÁFICAS) ===================
         function ejecutarFiltrosSucursales() {
             const fIni = document.getElementById('s-inicio').value;
             const fFin = document.getElementById('s-fin').value;
@@ -357,14 +384,11 @@
         }
 
         function renderSucursales() {
-            let tEst = datosFiltradosS.length; // Cada fila es 1 estudio
+            let tEst = datosFiltradosS.length; 
             let tPac = new Set(), tMed = new Set();
             
-            // Contadores para gráficas
-            let diasSemana = { "Lunes":0, "Martes":0, "Miércoles":0, "Jueves":0, "Viernes":0, "Sábado":0, "Domingo":0 };
-            let sucursales = {};
-            let tiposEstudio = {};
-            let medicosTop = {};
+            let fechas = {}, diasSemana = { "Lunes":0, "Martes":0, "Miércoles":0, "Jueves":0, "Viernes":0, "Sábado":0, "Domingo":0 };
+            let sucursales = {}, tiposEstudio = {}, medicosTop = {}, pacientesPeriodo = {};
 
             const tbody = document.getElementById('tabla-sucursales'); 
             tbody.innerHTML = '';
@@ -373,23 +397,26 @@
                 tPac.add(reg.paciente);
                 tMed.add(reg.medico);
                 
-                // Conteo Días
+                fechas[reg.fecha] = (fechas[reg.fecha] || 0) + 1;
+
+                if(!pacientesPeriodo[reg.fecha]) pacientesPeriodo[reg.fecha] = new Set();
+                pacientesPeriodo[reg.fecha].add(reg.paciente);
+
                 let fechaObj = new Date(reg.fecha.replace(/-/g, '/'));
                 let nombreDia = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][fechaObj.getDay()];
                 if(nombreDia) diasSemana[nombreDia]++;
 
-                // Conteo Resto de Gráficas
                 sucursales[reg.sucursal] = (sucursales[reg.sucursal] || 0) + 1;
                 tiposEstudio[reg.estudio] = (tiposEstudio[reg.estudio] || 0) + 1;
                 medicosTop[reg.medico] = (medicosTop[reg.medico] || 0) + 1;
 
                 if(i < limiteS) {
                     tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 border-b">
-                            <td class="py-3 px-4 font-bold text-slate-700">${reg.fecha}</td>
-                            <td class="py-3 px-4"><b class="text-sky-700">${reg.sucursal}</b><br><span class="text-xs text-slate-500">${reg.empresa}</span></td>
-                            <td class="py-3 px-4 text-sm">${reg.paciente}</td>
-                            <td class="py-3 px-4"><span class="bg-sky-100 text-sky-800 px-2 py-1 rounded text-xs font-bold">${reg.estudio} (Dr. ${reg.medico})</span></td>
+                        <tr class="hover:bg-slate-50 border-b transition">
+                            <td class="py-4 px-4 font-bold text-slate-700">${reg.fecha}</td>
+                            <td class="py-4 px-4"><b class="text-sky-700">${reg.sucursal}</b><br><span class="text-xs text-slate-500">${reg.empresa}</span></td>
+                            <td class="py-4 px-4 text-sm font-semibold">${reg.paciente}</td>
+                            <td class="py-4 px-4"><span class="bg-sky-100 text-sky-800 px-3 py-1.5 rounded-lg text-xs font-bold uppercase">${reg.estudio} (Dr. ${reg.medico})</span></td>
                         </tr>
                     `;
                 }
@@ -398,23 +425,27 @@
             document.getElementById('kpi-s-estudios').innerText = tEst;
             document.getElementById('kpi-s-pacientes').innerText = tPac.size;
             document.getElementById('kpi-s-personal').innerText = tMed.size;
+            document.getElementById('kpi-s-total-regs').innerText = datosFiltradosS.length + " Registros";
 
-            // 1. Gráfica: Días de la semana
+            let fOrd = Object.keys(fechas).sort();
+
+            // Dibujamos las 6 gráficas de sucursales
+            dibujarGrafico('cS1', 'line', fOrd, fOrd.map(f=>fechas[f]), 'Tendencia Diaria', '#0ea5e9');
+            
             let diasOrdenados = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
             let valoresDias = diasOrdenados.map(d => diasSemana[d]);
-            dibujarGrafico('cS1', 'bar', diasOrdenados, valoresDias, 'Estudios por Día', '#ed8936');
+            dibujarGrafico('cS2', 'bar', diasOrdenados, valoresDias, 'Estudios por Día', '#ed8936');
 
-            // 2. Gráfica: Top 10 Sucursales
             let topSucs = Object.entries(sucursales).sort((a,b)=>b[1]-a[1]).slice(0,10);
-            dibujarGrafico('cS2', 'bar', topSucs.map(x=>x[0]), topSucs.map(x=>x[1]), 'Estudios por Sucursal', '#3182ce');
+            dibujarGrafico('cS3', 'bar', topSucs.map(x=>x[0]), topSucs.map(x=>x[1]), 'Estudios por Sucursal', '#3182ce');
 
-            // 3. Gráfica: Pastel
             let coloresPastel = ['#f687b3', '#667eea', '#4fd1c5', '#f6e05e', '#ed8936', '#9f7aea', '#48bb78'];
-            dibujarGrafico('cS3', 'pie', Object.keys(tiposEstudio), Object.values(tiposEstudio), 'Distribución', coloresPastel);
+            dibujarGrafico('cS4', 'pie', Object.keys(tiposEstudio), Object.values(tiposEstudio), 'Distribución', coloresPastel);
 
-            // 4. Gráfica: Top Médicos
             let topMeds = Object.entries(medicosTop).sort((a,b)=>b[1]-a[1]).slice(0,10);
-            dibujarGrafico('cS4', 'bar', topMeds.map(x=>x[0]), topMeds.map(x=>x[1]), 'Estudios por Médico', '#48bb78');
+            dibujarGrafico('cS5', 'bar', topMeds.map(x=>x[0]), topMeds.map(x=>x[1]), 'Estudios por Médico', '#48bb78');
+
+            dibujarGrafico('cS6', 'line', fOrd, fOrd.map(f=>pacientesPeriodo[f].size), 'Pacientes Únicos', '#8b5cf6');
         }
 
         function cargarMasSucursales() { limiteS += 50; renderSucursales(); }
@@ -448,11 +479,10 @@
                 }
             };
 
-            // Quitar cuadrículas de fondo si es pastel
             if (tipo !== 'pie') {
                 configuracionChart.options.scales = { 
-                    y: { beginAtZero: true },
-                    x: { grid: { display: false } }
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { weight: 'bold' } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
                 };
             }
 
@@ -460,12 +490,12 @@
         }
 
         function exportarExcel(datos, origen) {
-            if(datos.length === 0) return alert("No hay datos.");
+            if(datos.length === 0) return alert("No hay datos para exportar.");
             let aplanada = [];
             
             if(origen === 'Foraneos') {
                 datos.forEach(r => { r.detalles.forEach(d => {
-                    aplanada.push({ FOLIO: r.folio, FECHA: r.fecha, TURNO: r.turno, EMPRESA: r.empresa, INICIO: r.horaInicio, FIN: r.horaFin, HRS: r.horasLaboradas, MEDICO: d.medico, ESTUDIO: d.estudio, CANTIDAD: d.cant });
+                    aplanada.push({ FOLIO: r.folio, FECHA: r.fecha, TURNO: r.turno, EMPRESA: r.empresa, INICIO: r.horaInicio, FIN: r.horaFin, HRS: r.horasLaboradas, MEDICO: d.medico, ESTUDIO: d.estudio, CANTIDAD: d.cant, NOTAS: r.observaciones || '' });
                 });});
             } else {
                 aplanada = datos.map(d => ({ FECHA: d.fecha, SUCURSAL: d.sucursal, PACIENTE: d.paciente, EMPRESA: d.empresa, ESTUDIO: d.estudio, MEDICO: d.medico }));
