@@ -26,20 +26,20 @@
         window.collection = collection;
     </script>
 </head>
-<body class="bg-gradient-to-br from-slate-100 to-slate-200 font-sans text-slate-800 p-8 min-h-screen">
+<body class="bg-gradient-to-br from-slate-100 to-slate-200 font-sans text-slate-800 p-8 min-h-screen flex items-center justify-center">
 
-    <div class="max-w-4xl mx-auto bg-white/70 backdrop-blur-lg border border-white/50 p-8 rounded-3xl shadow-xl">
+    <div class="w-full max-w-2xl bg-white/70 backdrop-blur-lg border border-white/50 p-10 rounded-3xl shadow-xl">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-black text-sky-700">⚙️ Procesador de Sucursales</h1>
-            <p class="text-slate-500 mt-2">Convierte el Excel de sucursales en registros para la base de datos central</p>
+            <h1 class="text-3xl font-black text-sky-700">⚙️ Carga Masiva de Sucursales</h1>
+            <p class="text-slate-500 mt-2 text-sm">Sube tu archivo (Excel o CSV) con las columnas exactas:<br><b class="text-sky-600">Fecha | Mes | Sucursal | Paciente | Empresa | Estudio | Personal</b></p>
         </div>
 
         <div class="border-2 border-dashed border-sky-300 rounded-2xl p-8 text-center bg-white/50 transition hover:border-sky-500">
-            <input type="file" id="archivosCarga" multiple accept=".csv, .xlsx, .xls" class="block w-full max-w-sm mx-auto mb-6 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer">
+            <input type="file" id="archivosCarga" accept=".csv, .xlsx, .xls" class="block w-full max-w-sm mx-auto mb-6 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer">
             
             <div class="flex gap-4 justify-center">
-                <button id="btnProcesar" onclick="procesarArchivos()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-6 rounded-xl shadow transition">1. Leer Excel</button>
-                <button id="btnSubir" onclick="subirAFirebase()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl shadow transition hidden">2. Subir a Firebase</button>
+                <button id="btnProcesar" onclick="procesarArchivos()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-6 rounded-xl shadow transition">1. Leer Archivo</button>
+                <button id="btnSubir" onclick="subirAFirebase()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-xl shadow transition hidden">2. Subir a Base de Datos</button>
             </div>
         </div>
 
@@ -47,122 +47,84 @@
     </div>
 
     <script>
-        const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
-        const estudiosMapeo = { "HC": "HC", "EXAMEN MEDICO": "HC", "SEGURO": "Seguro", "AUDIOMETRIA": "Audiometría", "ESPIROMETRIA": "Espirometría", "ELECTROCARDIOGRAMA": "Electrocardiograma", "AGUDEZA VISUAL": "Agudeza Visual", "LOGOAUDIOMETRIA": "Logoaudiometría", "TIMPANOMETRIA": "Timpanometría", "CERTIFICADO": "Certificado", "NORDICO": "Nórdico", "OTRO": "Otro" };
-
         let datosListos = [];
-
-        function limpiarSucursal(nombre) {
-            if (!nombre) return "Desconocida";
-            let n = String(nombre).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            if(n.includes("CUAUTITLAN")) return "Cuautitlán";
-            if(n.includes("SATELITE")) return "Satélite";
-            if(n.includes("MARTIN CABRERA")) return "Martín Cabrera";
-            if(n.includes("REVOLUCION")) return "Revolución";
-            if(n.includes("SAN JERONIMO")) return "San Jerónimo";
-            if(n.includes("HUESO")) return "Calzada del Hueso";
-            if(n.includes("LOMAS VERDES")) return "Lomas Verdes";
-            return n.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-        }
 
         async function procesarArchivos() {
             const input = document.getElementById('archivosCarga');
             const logDiv = document.getElementById('log');
-            if(input.files.length === 0) return alert("Selecciona un archivo Excel primero.");
+            if(input.files.length === 0) return alert("Selecciona un archivo Excel o CSV primero.");
             
             logDiv.classList.remove('hidden');
-            logDiv.innerHTML = "Leyendo archivo...<br>";
+            logDiv.innerHTML = "Analizando archivo...<br>";
             datosListos = [];
             
-            for(let i=0; i<input.files.length; i++){
-                try {
-                    let data = await input.files[i].arrayBuffer();
-                    let wb = XLSX.read(data, {type:'array'});
-                    for(let sn of wb.SheetNames){
-                        let sheet = wb.Sheets[sn];
-                        let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
-                        let fEx = "2026-01-01", sEx = "Desconocida", iEnc = -1, mapa = {};
-                        
-                        for(let r=0; r<Math.min(20, filas.length); r++){
-                            if(!filas[r]) continue;
-                            let cL = filas[r].map(v => String(v).trim().toUpperCase());
-                            
-                            // Extraer fecha y convertir a formato YYYY-MM-DD
-                            if(cL.join(" ").includes("FECHA")){
-                                let stringFechaTotal = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim();
-                                let partes = stringFechaTotal.replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
-                                if(partes.length>=3){
-                                    let d=partes[0].padStart(2,'0'), mR=partes[1], a=partes[2];
-                                    let mN = isNaN(mR) ? (mesesTexto[mR.substring(0,3)] || 0) + 1 : parseInt(mR,10);
-                                    if(a.length===2) a="20"+a; else if(a.length!==4) a="2026";
-                                    fEx = `${a}-${String(mN).padStart(2,'0')}-${d}`;
-                                }
-                            }
-                            
-                            let cS = cL.findIndex(v=>v.includes("SUCURSAL"));
-                            if(cS!==-1) sEx = limpiarSucursal(cL[cS+1] || cL[cS+2]);
-                            
-                            let filaTexto = cL.join(" ");
-                            if(filaTexto.includes("NOMBRE") && filaTexto.includes("EMPRESA")){
-                                iEnc=r; 
-                                filas[r].forEach((valor, colIdx)=>{ 
-                                    if(valor) mapa[String(valor).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim()] = colIdx;
-                                });
-                            }
-                        }
-                        
-                        if(iEnc!==-1){
-                            for(let r=iEnc+1; r<filas.length; r++){
-                                let f = filas[r]; if(!f || !f[mapa["NOMBRE"]]) continue;
-                                if(f.map(v=>String(v)).join("").toUpperCase().includes("PENDIENTES")) break;
-                                
-                                Object.keys(estudiosMapeo).forEach(key => {
-                                    let cIdx = mapa[key];
-                                    if(cIdx!==undefined && f[cIdx] && !String(f[cIdx]).toUpperCase().includes("PEND")){
-                                        datosListos.push({ 
-                                            tipo: "sucursal",
-                                            fecha: fEx, 
-                                            sucursal: sEx, 
-                                            paciente: String(f[mapa["NOMBRE"]]).trim(), 
-                                            empresa: String(f[mapa["EMPRESA"]]||"S/E").trim().toUpperCase(), 
-                                            estudio: estudiosMapeo[key], 
-                                            medico: String(f[cIdx]).trim().toUpperCase(),
-                                            timestamp: new Date()
-                                        });
-                                    }
-                                });
-                            }
-                        }
+            try {
+                let data = await input.files[0].arrayBuffer();
+                let wb = XLSX.read(data, {type:'array'});
+                let sheet = wb.Sheets[wb.SheetNames[0]]; // Siempre toma la primera hoja
+                let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:""});
+                
+                // Empezamos en r=1 para saltarnos la fila 0 (los títulos de las columnas)
+                for(let r=1; r<filas.length; r++){
+                    let cols = filas[r];
+                    if(cols.length < 7 || !cols[0] || String(cols[0]).trim() === "") continue; 
+                    
+                    // Formateo seguro de fecha por si Excel la manda como número serial
+                    let fechaStr = cols[0];
+                    if(typeof fechaStr === 'number') {
+                        let d = new Date((fechaStr - (25567 + 2)) * 86400 * 1000);
+                        fechaStr = d.toISOString().split('T')[0];
+                    } else if (String(fechaStr).includes('/')) {
+                        let p = String(fechaStr).split('/');
+                        if(p.length === 3) fechaStr = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
                     }
-                } catch(e) { logDiv.innerHTML += `<span class="text-red-400">Error: ${e}</span><br>`; }
+
+                    datosListos.push({ 
+                        tipo: "sucursal",
+                        fecha: String(fechaStr).trim(),
+                        mes: String(cols[1]).trim().toUpperCase(),
+                        sucursal: String(cols[2]).trim().toUpperCase(), 
+                        paciente: String(cols[3]).trim().toUpperCase(), 
+                        empresa: String(cols[4]).trim().toUpperCase(), 
+                        estudio: String(cols[5]).trim().toUpperCase(), 
+                        medico: String(cols[6]).trim().toUpperCase(),
+                        timestamp: new Date()
+                    });
+                }
+            } catch(e) { 
+                logDiv.innerHTML += `<span class="text-red-400">Error leyendo archivo: ${e}</span><br>`; 
             }
             
-            logDiv.innerHTML += `Lectura completada. Se encontraron ${datosListos.length} estudios válidos listos para subir.<br>`;
+            logDiv.innerHTML += `Lectura completada. Se detectaron <b class="text-white">${datosListos.length}</b> registros válidos listos para subir.<br>`;
             document.getElementById('btnSubir').classList.remove('hidden');
         }
 
         async function subirAFirebase() {
             if(datosListos.length === 0) return alert("No hay datos para subir.");
             const logDiv = document.getElementById('log');
-            document.getElementById('btnSubir').disabled = true;
-            document.getElementById('btnSubir').innerText = "Subiendo...";
+            const btn = document.getElementById('btnSubir');
+            
+            btn.disabled = true;
+            btn.innerText = "Subiendo... no cierres la ventana";
+            btn.classList.replace('bg-emerald-500', 'bg-slate-500');
             
             let exitosos = 0;
+            // Subimos uno por uno para no saturar la red
             for(let reg of datosListos) {
                 try {
                     await window.addDoc(window.collection(window.db, "registros"), reg);
                     exitosos++;
-                    if(exitosos % 10 === 0) {
-                        logDiv.innerHTML += `Subiendo... ${exitosos}/${datosListos.length}<br>`;
+                    if(exitosos % 20 === 0) { // Actualiza el log cada 20 para no trabar el navegador
+                        logDiv.innerHTML += `Progreso: ${exitosos} / ${datosListos.length} subidos...<br>`;
                         logDiv.scrollTop = logDiv.scrollHeight;
                     }
                 } catch(e) {
-                    logDiv.innerHTML += `<span class="text-red-400">Error subiendo registro: ${e}</span><br>`;
+                    logDiv.innerHTML += `<span class="text-red-400">Fallo en un registro: ${e}</span><br>`;
                 }
             }
             
-            logDiv.innerHTML += `<span class="text-white font-bold">¡COMPLETADO! ${exitosos} registros subidos con éxito.</span><br>`;
-            document.getElementById('btnSubir').innerText = "Subida Finalizada";
+            logDiv.innerHTML += `<span class="text-white text-sm font-bold block mt-4">¡COMPLETADO! ${exitosos} registros integrados a la base de datos central.</span><br>`;
+            btn.innerText = "¡Subida Exitosa!";
         }
     </script>
 </body>
