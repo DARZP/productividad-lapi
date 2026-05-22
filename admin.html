@@ -11,7 +11,9 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, orderBy, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        // Importamos Firebase Messaging
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -29,6 +31,44 @@
         window.query = query;
         window.orderBy = orderBy;
         
+        // --- INICIO LÓGICA NOTIFICACIONES ---
+        const messaging = getMessaging(app);
+
+        async function activarNotificaciones() {
+            try {
+                // Pedimos permiso al usuario
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    console.log('Permiso concedido para notificaciones.');
+                    
+                    // Usamos la VAPID KEY que me pasaste
+                    const token = await getToken(messaging, { vapidKey: 'U-jvtzJnZQwpn9m9TTQ74rirhcos9i6_gBjlreECxeo' });
+                    
+                    if (token) {
+                        // Guardamos esta computadora como "Administrador"
+                        await setDoc(doc(window.db, "admin_tokens", token), {
+                            token: token,
+                            fechaSuscripcion: new Date()
+                        });
+                        console.log("Computadora registrada como Administrador activo.");
+                    }
+                } else {
+                    console.log('Permiso de notificaciones denegado.');
+                }
+            } catch (error) {
+                console.error('Error al configurar notificaciones:', error);
+            }
+        }
+
+        // Qué hacer si la alerta llega mientras tienes la pantalla del Admin abierta
+        onMessage(messaging, (payload) => {
+            alert(`🚨 LAPI ALERTA: ${payload.notification.title}\n${payload.notification.body}`);
+        });
+
+        // Lanzamos la solicitud de permiso
+        activarNotificaciones();
+        // --- FIN LÓGICA NOTIFICACIONES ---
+
         initDashboard();
     </script>
     
