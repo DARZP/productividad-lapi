@@ -39,9 +39,8 @@
                 // Pedimos permiso al usuario
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    console.log('Permiso concedido para notificaciones.');
+                    console.log('Recibirás notificación ante cada registro nuevo.');
                     
-                    // Usamos la VAPID KEY que me pasaste
                     const token = await getToken(messaging, { vapidKey: 'BK0Ndpz4nfvrNYlvSYbda1Craz0mRg4zXIDxDItg56ywIEKxT8QHvsUGpR6XbVO8AcrWP9sReRPRMwyGjcKVIQo' });
                     if (token) {
                         // Guardamos esta computadora como "Administrador"
@@ -61,7 +60,7 @@
 
         // Qué hacer si la alerta llega mientras tienes la pantalla del Admin abierta
         onMessage(messaging, (payload) => {
-            alert(`🚨 LAPI ALERTA: ${payload.notification.title}\n${payload.notification.body}`);
+            alert(`🚨 NUEVO REGISTRO: ${payload.notification.title}\n${payload.notification.body}`);
         });
 
         // Lanzamos la solicitud de permiso
