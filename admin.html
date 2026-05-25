@@ -42,8 +42,7 @@
                     console.log('Permiso concedido para notificaciones.');
                     
                     // Usamos la VAPID KEY que me pasaste
-                    const token = await getToken(messaging, { vapidKey: 'U-jvtzJnZQwpn9m9TTQ74rirhcos9i6_gBjlreECxeo' });
-                    
+                    const token = await getToken(messaging, { vapidKey: 'BK0Ndpz4nfvrNYlvSYbda1Craz0mRg4zXIDxDItg56ywIEKxT8QHvsUGpR6XbVO8AcrWP9sReRPRMwyGjcKVIQo' });
                     if (token) {
                         // Guardamos esta computadora como "Administrador"
                         await setDoc(doc(window.db, "admin_tokens", token), {
