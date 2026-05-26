@@ -191,7 +191,15 @@
                         <i class="fa-solid fa-cloud-upload mr-2"></i> 2. Subir Nuevos
                     </button>
                 </div>
-                <div id="logProcesamiento" class="mt-4 text-xs font-mono text-slate-600 hidden bg-slate-100 p-3 rounded-lg max-h-40 overflow-y-auto"></div>
+
+                <div id="contenedor-progreso" class="mt-4 hidden">
+                    <div class="w-full bg-slate-200 rounded-full h-3">
+                        <div id="barra-progreso" class="bg-emerald-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <p id="texto-progreso" class="text-xs font-bold text-slate-600 mt-2 text-right">0%</p>
+                </div>
+                
+                <div id="logProcesamiento" class="mt-2 text-xs font-mono text-slate-600 hidden bg-slate-100 p-3 rounded-lg max-h-40 overflow-y-auto"></div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
@@ -552,11 +560,20 @@
             const logDiv = document.getElementById('logProcesamiento');
             const btnProcesar = document.getElementById('btnProcesarExcels');
             const btnSubir = document.getElementById('btnSubirExcels');
+            const contProgreso = document.getElementById('contenedor-progreso');
+            const barraProgreso = document.getElementById('barra-progreso');
+            const textoProgreso = document.getElementById('texto-progreso');
 
             if(input.files.length === 0) return alert("Selecciona al menos un archivo Excel primero.");
 
             btnProcesar.disabled = true;
             btnProcesar.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Procesando...';
+            
+            // Mostrar barra de progreso
+            contProgreso.classList.remove('hidden');
+            barraProgreso.style.width = '0%';
+            textoProgreso.innerText = 'Iniciando análisis... 0%';
+            
             logDiv.classList.remove('hidden');
             logDiv.innerHTML = "Iniciando análisis (por favor espera)...<br>";
             datosProcesadosListos = [];
@@ -604,9 +621,16 @@
                         }
 
                         if(iEnc!==-1){
+                            let totalFilasAnalizar = filas.length - (iEnc + 1);
+                            
                             for(let r=iEnc+1; r<filas.length; r++){
-                                // MAGIA: Pausa microscópica cada 200 filas para que Firebase y el navegador respiren
-                                if (r % 200 === 0) await new Promise(resolve => setTimeout(resolve, 5));
+                                // Actualizar barra de progreso y dar "respiro" al navegador
+                                if (r % 100 === 0) {
+                                    let currentProg = Math.round(((r - iEnc) / totalFilasAnalizar) * 100);
+                                    barraProgreso.style.width = currentProg + '%';
+                                    textoProgreso.innerText = `Analizando Excel: ${currentProg}%`;
+                                    await new Promise(resolve => setTimeout(resolve, 5));
+                                }
 
                                 let f = filas[r]; if(!f || !f[mapa["NOMBRE"]]) continue;
                                 if(f.join(" ").toUpperCase().includes("PENDIENTES")) break;
@@ -638,6 +662,10 @@
                 } catch(e) { logDiv.innerHTML += `<span class="text-red-400">Error leyendo ${input.files[i].name}: ${e.message}</span><br>`; }
             }
 
+            // Termina el análisis
+            barraProgreso.style.width = '100%';
+            textoProgreso.innerText = 'Análisis Completado al 100%';
+            
             logDiv.innerHTML += `<br><span class="text-emerald-600 font-bold">✓ Análisis completado.</span><br>`;
             logDiv.innerHTML += `► Estudios NUEVOS listos para subir: <b class="text-sky-600">${totalExtraidos}</b><br>`;
             if (totalDuplicados > 0) logDiv.innerHTML += `► Registros OMITIDOS (Ya existían en LAPI): <b class="text-orange-500">${totalDuplicados}</b><br>`;
@@ -652,22 +680,34 @@
         async function subirExcelsProcesados() {
             const btnSubir = document.getElementById('btnSubirExcels');
             const logDiv = document.getElementById('logProcesamiento');
+            const barraProgreso = document.getElementById('barra-progreso');
+            const textoProgreso = document.getElementById('texto-progreso');
 
             btnSubir.disabled = true;
             btnSubir.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Subiendo a Firebase (Rápido)...';
 
+            // Reiniciar barra de progreso para la fase de subida
+            barraProgreso.style.width = '0%';
+            textoProgreso.innerText = 'Iniciando subida... 0%';
+
             let exitosos = 0;
             let promesasBatch = [];
+            let totalSubir = datosProcesadosListos.length;
 
             for(let reg of datosProcesadosListos) {
                 promesasBatch.push(window.addDoc(window.collection(window.db, "registros"), reg));
                 
-                // MAGIA 2: Subir de 50 en 50 en paralelo
                 if (promesasBatch.length >= 50) {
                     await Promise.all(promesasBatch);
                     exitosos += promesasBatch.length;
                     promesasBatch = [];
-                    logDiv.innerHTML += `Sincronizando con la nube... ${exitosos}/${datosProcesadosListos.length}<br>`;
+                    
+                    // Actualizar UI
+                    let currentProg = Math.round((exitosos / totalSubir) * 100);
+                    barraProgreso.style.width = currentProg + '%';
+                    textoProgreso.innerText = `Subiendo a la nube: ${currentProg}% (${exitosos}/${totalSubir})`;
+                    
+                    logDiv.innerHTML += `Sincronizando con la nube... ${exitosos}/${totalSubir}<br>`;
                     logDiv.scrollTop = logDiv.scrollHeight;
                 }
             }
@@ -675,6 +715,8 @@
             if (promesasBatch.length > 0) {
                 await Promise.all(promesasBatch);
                 exitosos += promesasBatch.length;
+                barraProgreso.style.width = '100%';
+                textoProgreso.innerText = `Subida exitosa: 100% (${exitosos}/${totalSubir})`;
             }
 
             alert(`¡Subida Completada! ${exitosos} estudios integrados a LAPI Central.`);
