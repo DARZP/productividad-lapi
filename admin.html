@@ -238,106 +238,24 @@
         // Listas Foráneos estáticas
         const medicosForaneos = ["Susana Cayetano", "Diego Arias", "Patricia Kassandra", "Estefany Becherel", "Paulina Alba", "Mariana Gaviño", "Jose Alejandro", "Isabel Palma", "Dulce Maria", "Angeles Valenzuela", "Jose Juan", "Ingrid Bernal", "Giselle Vizuet", "Angello", "Elzy Chacon", "Alberto Gomez", "Yirelka Yeraldine", "Juan Manuel", "Angelica Itzel", "Mauricio Ruiz", "Lucero Cruz", "Jannet Alejandra", "Fernanda", "Giovanni Mariano", "David Emmanuel", "Jazmin Morales!"].sort();
         const empresasForaneos = [
-  "ABBOTT SCOUTING",
-  "AEROMEXICO",
-  "ALMEXA",
-  "ALSTOM FERROVIARIA",
-  "ALSTOM FERROVIARIA CIUDAD AZTECA",
-  "ALSTOM FERROVIARIA ROSARIO",
-  "ALSTOM FERROVIARIA TICOMAN",
-  "ALESSO CUAUTITLÁN",
-  "AMCOR",
-  "ANTIBIÓTICOS DE MÉXICO",
-  "ASA CDMX",
-  "ATLAS",
-  "ATLAS GDL",
-  "AVANTOR",
-  "AZ FINE",
-  "BARCEL LERMA",
-  "BD",
-  "BIMBO",
-  "BIMBO AZCAPOTZALCO",
-  "BIMBO SANTA MARÍA",
-  "BIODIST",
-  "BYVA MINERALES",
-  "CASA LUMBRE",
-  "CASA LUMBRE AXOCOPAN",
-  "CASA LUMBRE PUEBLA",
-  "CEMEX ATOTONILCO",
-  "CENTRO DE DISTRIBUCIÓN OXXO",
-  "CLOROX",
-  "COCA COLA",
-  "COCA COLA EXPORT",
-  "COCA COLA FEMSA TOLUCA",
-  "COCA COLA MANUFACTURA PACIFICO",
-  "COCA COLA OJUELOS",
-  "COCA COLA TOLUCA",
-  "COMPAÑÍA EDITORIAL",
-  "COMPAÑÍA NOC",
-  "COMSA",
-  "CONSUMED SONY",
-  "CONSULTORES MEDICOS",
-  "CORPORATIVO DL DENTILAB",
-  "DESARROLLO LOGÍSTICO",
-  "DICIPA",
-  "DISTRIBUIDORA DE LÁCTEOS",
-  "DLP MEDICAL",
-  "FRUTAS CONCENTRADAS",
-  "GERDAU CORSA",
-  "GRUPO COBRA",
-  "GRUPO IND POSEIDON",
-  "GRUPO TAIFELDS",
-  "HOLCIM ATLACOMULCO",
-  "HOLCIM CUAUTLA",
-  "HOLCIM CUERNAVACA",
-  "HOLCIM POLOTITLAN",
-  "HUMANTOP",
-  "IBERCHEM",
-  "INDUSTRIAS METÁLICAS",
-  "JUGOS DEL VALLE",
-  "KEUBIO",
-  "LA CAZADORA",
-  "LIVERPOOL",
-  "LIVERPOOL PLAN",
-  "LOREAL",
-  "MATERIAS PRIMAS",
-  "MCORMICK",
-  "MCCORD PAYEN",
-  "MERCK",
-  "NYSCO",
-  "OMEGA MÉXICO",
-  "ORGANON PHARMA",
-  "OXXO AZCAPOTZALCO",
-  "OXXO SMO",
-  "POLIRESINAS",
-  "PROMECO",
-  "PROBIOMED",
-  "PROFILATEX",
-  "PROVEEDORA MEXICANA DE MONOFILAMENTOS",
-  "PROXIMIDAD Y LOGÍSTICA CHALCO",
-  "PROXIMIDAD Y LOGÍSTICA PACHUCA",
-  "PROXIIDAD Y LOGÍSTICA MORELOS",
-  "PRODUCTOS INNOVADOR",
-  "PRODUCTOS RICH",
-  "QUALITAS",
-  "SAFMEX TOLUCA",
-  "SC JOHNSON",
-  "SCHNEIDER",
-  "SEGURO AXA",
-  "SEGURO INBURSA",
-  "SEGURO ZURICH",
-  "SIFATEC TULA 1",
-  "SIFATEC TULA 2",
-  "SNF FLOERGER",
-  "SODEXO",
-  "SODEXO CECAT SUR",
-  "TACA",
-  "TISK SOLUCIONES",
-  "TRANSFORMADORA INDUSTRIAL",
-  "USK INTENACIONAL",
-  "USME",
-  "VALEANT"
-].sort();
+          "ABBOTT SCOUTING", "AEROMEXICO", "ALMEXA", "ALSTOM FERROVIARIA", "ALSTOM FERROVIARIA CIUDAD AZTECA",
+          "ALSTOM FERROVIARIA ROSARIO", "ALSTOM FERROVIARIA TICOMAN", "ALESSO CUAUTITLÁN", "AMCOR", "ANTIBIÓTICOS DE MÉXICO",
+          "ASA CDMX", "ATLAS", "ATLAS GDL", "AVANTOR", "AZ FINE", "BARCEL LERMA", "BD PLANTA", "BIMBO",
+          "BIMBO AZCAPOTZALCO", "BIMBO SANTA MARÍA", "BIODIST", "BYVA MINERALES", "CASA LUMBRE", "CASA LUMBRE AXOCOPAN",
+          "CASA LUMBRE PUEBLA", "CEMEX ATOTONILCO", "CENTRO DE DISTRIBUCIÓN OXXO", "CLOROX", "COCA COLA",
+          "COCA COLA EXPORT", "COCA COLA FEMSA TOLUCA", "COCA COLA MANUFACTURA PACIFICO", "COCA COLA OJUELOS",
+          "COCA COLA TOLUCA", "COMPAÑÍA EDITORIAL", "COMPAÑÍA NOC", "COMSA", "CONSUMED SONY", "CONSULTORES MEDICOS",
+          "CORPORATIVO DL DENTILAB", "DESARROLLO LOGÍSTICO", "DICIPA", "DISTRIBUIDORA DE LÁCTEOS", "DLP MEDICAL",
+          "FRUTAS CONCENTRADAS", "GERDAU CORSA", "GRUPO COBRA", "GRUPO IND POSEIDON", "GRUPO TAIFELDS", "HOLCIM ATLACOMULCO",
+          "HOLCIM CUAUTLA", "HOLCIM CUERNAVACA", "HOLCIM POLOTITLAN", "HUMANTOP", "IBERCHEM", "INDUSTRIAS METÁLICAS",
+          "JUGOS DEL VALLE", "KEUBIO", "LA CAZADORA", "LIVERPOOL", "LIVERPOOL PLAN", "LOREAL", "MATERIAS PRIMAS",
+          "MCORMICK", "MCCORD PAYEN", "MERCK", "NYSCO", "OMEGA MÉXICO", "ORGANON PHARMA", "OXXO AZCAPOTZALCO",
+          "OXXO SMO", "POLIRESINAS", "PROMECO", "PROBIOMED", "PROFILATEX", "PROVEEDORA MEXICANA DE MONOFILAMENTOS",
+          "PROXIMIDAD Y LOGÍSTICA CHALCO", "PROXIMIDAD Y LOGÍSTICA PACHUCA", "PROXIIDAD Y LOGÍSTICA MORELOS",
+          "PRODUCTOS INNOVADOR", "PRODUCTOS RICH", "QUALITAS", "SAFMEX TOLUCA", "SC JOHNSON", "SCHNEIDER", "SEGURO AXA",
+          "SEGURO INBURSA", "SEGURO ZURICH", "SIFATEC TULA 1", "SIFATEC TULA 2", "SNF FLOERGER", "SODEXO", "SODEXO CECAT SUR",
+          "TACA", "TISK SOLUCIONES", "TRANSFORMADORA INDUSTRIAL", "USK INTENACIONAL", "USME", "VALEANT"
+        ].sort();
         const estudiosForaneos = ["Espirometría", "Audiometría", "Historia Clínica", "Examen de Capacidad Visual", "Nórdico", "Seguro"].sort();
 
         document.getElementById('lista-medicos-admin').innerHTML = medicosForaneos.map(m => `<option value="${m}">`).join('');
@@ -502,4 +420,307 @@
                     if(pasaMed && pasaEst) {
                         tEst += det.cant; statsFechas[reg.fecha] = (statsFechas[reg.fecha] || 0) + det.cant;
                         statsTipos[det.estudio] = (statsTipos[det.estudio] || 0) + det.cant;
-                        statsEmpresas[reg.empresa] = (statsEmpres
+                        statsEmpresas[reg.empresa] = (statsEmpresas[reg.empresa] || 0) + det.cant;
+                        estudiosMed[det.medico] = (estudiosMed[det.medico] || 0) + det.cant;
+                        dHtml += `<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs mr-1 mb-1 font-bold inline-block uppercase">${det.medico}: ${det.estudio} (${det.cant})</span>`;
+                        detallesValidos++; medParticipantesValidos.add(det.medico);
+                    }
+                });
+
+                if(detallesValidos > 0) {
+                    tEmp.add(reg.empresa); if(!empPeriodo[reg.fecha]) empPeriodo[reg.fecha] = new Set(); empPeriodo[reg.fecha].add(reg.empresa);
+                    medParticipantesValidos.forEach(m => horasMed[m] = (horasMed[m] || 0) + (reg.horasLaboradas || 0));
+                    tHrs += reg.horasLaboradas || 0; horasPeriodo[reg.fecha] = (horasPeriodo[reg.fecha] || 0) + (reg.horasLaboradas || 0);
+
+                    if(filasMostradas < limiteF) {
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-50 border-b transition">
+                                <td class="py-4 px-4 font-bold text-slate-700">${reg.fecha}<br><span class="text-[10px] text-slate-400 uppercase">${reg.turno}</span></td>
+                                <td class="py-4 px-4"><span class="text-[10px] text-slate-400 font-bold block mb-1">${reg.folio || 'N/A'}</span><b class="text-orange-600">${reg.empresa}</b></td>
+                                <td class="py-4 px-4 text-center"><span class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded-md text-slate-600">${reg.horaInicio} - ${reg.horaFin}</span><br><span class="text-xs text-sky-600 font-black mt-2 inline-block">${reg.horasLaboradas} HRS</span></td>
+                                <td class="py-4 px-4 min-w-[250px]">${dHtml}</td>
+                                <td class="py-4 px-4 text-sm text-slate-500 max-w-[200px]">${reg.observaciones || '---'}</td>
+                            </tr>
+                        `;
+                    }
+                    filasMostradas++;
+                }
+            });
+
+            document.getElementById('kpi-f-estudios').innerText = tEst; document.getElementById('kpi-f-horas').innerText = tHrs.toFixed(1);
+            document.getElementById('kpi-f-empresas').innerText = tEmp.size; document.getElementById('kpi-f-total-regs').innerText = filasMostradas + " Registros Filtrados";
+
+            let fOrd = Object.keys(statsFechas).sort();
+            dibujarGrafico('cF1', 'line', fOrd, fOrd.map(f=>statsFechas[f]), 'Estudios por Periodo', '#ff8c00');
+            dibujarGrafico('cF2', 'bar', Object.keys(statsTipos), Object.values(statsTipos), 'Cantidad por Tipo', '#3b82f6');
+            let topEmpForaneas = Object.entries(statsEmpresas).sort((a,b)=>b[1]-a[1]).slice(0,10);
+            dibujarGrafico('cF3', 'bar', topEmpForaneas.map(x=>x[0]), topEmpForaneas.map(x=>x[1]), 'Productividad Empresa', '#ff8c00');
+            let topMedsEstudios = Object.entries(estudiosMed).sort((a,b)=>b[1]-a[1]).slice(0,10);
+            dibujarGrafico('cF7', 'bar', topMedsEstudios.map(x=>x[0]), topMedsEstudios.map(x=>x[1]), 'Estudios Realizados', '#10b981');
+            dibujarGrafico('cF4', 'line', fOrd, fOrd.map(f=>horasPeriodo[f]), 'Horas Laboradas Totales', '#0ea5e9');
+            let topMedForaneos = Object.entries(horasMed).sort((a,b)=>b[1]-a[1]).slice(0,10);
+            dibujarGrafico('cF5', 'bar', topMedForaneos.map(x=>x[0]), topMedForaneos.map(x=>x[1]), 'Horas Acumuladas', '#3b82f6');
+            dibujarGrafico('cF6', 'bar', fOrd, fOrd.map(f=>empPeriodo[f].size), 'Empresas Atendidas', '#8b5cf6');
+        }
+
+        function cargarMasForaneos() { limiteF += 50; renderForaneos(); }
+
+        function ejecutarFiltrosSucursales() {
+            const fIni = document.getElementById('s-inicio').value;
+            const fFin = document.getElementById('s-fin').value;
+            const suc = document.getElementById('s-sucursal').value.trim().toUpperCase();
+            const emp = document.getElementById('s-empresa').value.trim().toUpperCase();
+            const med = document.getElementById('s-medico').value.trim().toUpperCase();
+            const est = document.getElementById('s-estudio').value.trim().toUpperCase();
+
+            datosFiltradosS = rawDataSucursales.filter(d => {
+                let pasa = true;
+                if(fIni && fFin) pasa = pasa && (d.fecha >= fIni && d.fecha <= fFin);
+                if(suc && suc !== "TODAS") pasa = pasa && (d.sucursal.toUpperCase() === suc);
+                if(emp && emp !== "TODAS") pasa = pasa && (d.empresa.toUpperCase() === emp);
+                if(med && med !== "TODOS") pasa = pasa && (d.medico.toUpperCase() === med);
+                if(est && est !== "TODOS") pasa = pasa && (d.estudio.toUpperCase() === est);
+                return pasa;
+            });
+            limiteS = 50;
+            renderSucursales();
+        }
+
+        function renderSucursales() {
+            let tEst = datosFiltradosS.length; let tPac = new Set(), tMed = new Set();
+            let fechas = {}, diasSemana = { "Lunes":0, "Martes":0, "Miércoles":0, "Jueves":0, "Viernes":0, "Sábado":0, "Domingo":0 };
+            let sucursales = {}, tiposEstudio = {}, medicosTop = {}, pacientesPeriodo = {};
+            const tbody = document.getElementById('tabla-sucursales'); tbody.innerHTML = '';
+
+            datosFiltradosS.forEach((reg, i) => {
+                tPac.add(reg.paciente); tMed.add(reg.medico);
+                fechas[reg.fecha] = (fechas[reg.fecha] || 0) + 1;
+                if(!pacientesPeriodo[reg.fecha]) pacientesPeriodo[reg.fecha] = new Set(); pacientesPeriodo[reg.fecha].add(reg.paciente);
+
+                let fechaObj = new Date(reg.fecha.replace(/-/g, '/'));
+                let nombreDia = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][fechaObj.getDay()];
+                if(nombreDia) diasSemana[nombreDia]++;
+
+                sucursales[reg.sucursal] = (sucursales[reg.sucursal] || 0) + 1;
+                tiposEstudio[reg.estudio] = (tiposEstudio[reg.estudio] || 0) + 1;
+                medicosTop[reg.medico] = (medicosTop[reg.medico] || 0) + 1;
+
+                if(i < limiteS) {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 border-b transition">
+                            <td class="py-4 px-4 font-bold text-slate-700">${reg.fecha}</td>
+                            <td class="py-4 px-4"><b class="text-sky-700">${reg.sucursal}</b><br><span class="text-xs text-slate-500">${reg.empresa}</span></td>
+                            <td class="py-4 px-4 text-sm font-semibold">${reg.paciente}</td>
+                            <td class="py-4 px-4"><span class="bg-sky-100 text-sky-800 px-3 py-1.5 rounded-lg text-xs font-bold uppercase">${reg.estudio} (Dr. ${reg.medico})</span></td>
+                        </tr>
+                    `;
+                }
+            });
+
+            document.getElementById('kpi-s-estudios').innerText = tEst; document.getElementById('kpi-s-pacientes').innerText = tPac.size;
+            document.getElementById('kpi-s-personal').innerText = tMed.size; document.getElementById('kpi-s-total-regs').innerText = datosFiltradosS.length + " Registros Filtrados";
+
+            let fOrd = Object.keys(fechas).sort();
+            dibujarGrafico('cS1', 'line', fOrd, fOrd.map(f=>fechas[f]), 'Tendencia Diaria', '#0ea5e9');
+            let diasOrdenados = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+            let valoresDias = diasOrdenados.map(d => diasSemana[d]);
+            dibujarGrafico('cS2', 'bar', diasOrdenados, valoresDias, 'Estudios por Día', '#ed8936');
+            let topSucs = Object.entries(sucursales).sort((a,b)=>b[1]-a[1]).slice(0,10);
+            dibujarGrafico('cS3', 'bar', topSucs.map(x=>x[0]), topSucs.map(x=>x[1]), 'Estudios por Sucursal', '#3182ce');
+            let coloresPastel = ['#f687b3', '#667eea', '#4fd1c5', '#f6e05e', '#ed8936', '#9f7aea', '#48bb78'];
+            dibujarGrafico('cS4', 'pie', Object.keys(tiposEstudio), Object.values(tiposEstudio), 'Distribución', coloresPastel);
+            let topMeds = Object.entries(medicosTop).sort((a,b)=>b[1]-a[1]).slice(0,10);
+            dibujarGrafico('cS5', 'bar', topMeds.map(x=>x[0]), topMeds.map(x=>x[1]), 'Estudios por Médico', '#48bb78');
+            dibujarGrafico('cS6', 'line', fOrd, fOrd.map(f=>pacientesPeriodo[f].size), 'Pacientes Únicos', '#8b5cf6');
+        }
+
+        function cargarMasSucursales() { limiteS += 50; renderSucursales(); }
+
+        // =================== PROCESAMIENTO INTELIGENTE DE EXCELS CRUDOS ===================
+        function limpiarSucursal(nombre) {
+            if (!nombre) return "Desconocida";
+            let n = String(nombre).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            if(n.includes("CUAUTITLAN")) return "Cuautitlán"; if(n.includes("SATELITE")) return "Satélite";
+            if(n.includes("MARTIN CABRERA")) return "Martín Cabrera"; if(n.includes("REVOLUCION")) return "Revolución";
+            if(n.includes("SAN JERONIMO")) return "San Jerónimo"; if(n.includes("HUESO")) return "Calzada del Hueso";
+            if(n.includes("LOMAS VERDES")) return "Lomas Verdes";
+            return n.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        }
+
+        async function procesarExcelsSucursales() {
+            const input = document.getElementById('archivoExcelSucursales');
+            const logDiv = document.getElementById('logProcesamiento');
+            const btnProcesar = document.getElementById('btnProcesarExcels');
+            const btnSubir = document.getElementById('btnSubirExcels');
+
+            if(input.files.length === 0) return alert("Selecciona al menos un archivo Excel primero.");
+
+            btnProcesar.disabled = true;
+            btnProcesar.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Procesando...';
+            logDiv.classList.remove('hidden');
+            logDiv.innerHTML = "Iniciando análisis (por favor espera)...<br>";
+            datosProcesadosListos = [];
+
+            let totalExtraidos = 0; let totalDuplicados = 0;
+            const hashActuales = new Set(rawDataSucursales.map(d => `${d.fecha}|${d.sucursal}|${d.paciente}|${d.estudio}`.toUpperCase()));
+
+            for(let i=0; i<input.files.length; i++){
+                try {
+                    let data = await input.files[i].arrayBuffer();
+                    let wb = XLSX.read(data, {type:'array'});
+                    for(let sn of wb.SheetNames){
+                        let sheet = wb.Sheets[sn];
+                        let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
+                        let fEx = "2026-01-01", mN = 0, sEx = "Desconocida", iEnc = -1, mapa = {};
+
+                        for(let r=0; r<Math.min(20, filas.length); r++){
+                            if(!filas[r]) continue;
+                            let cL = filas[r].map(v => String(v).trim().toUpperCase());
+                            
+                            if(cL.join(" ").includes("FECHA")){
+                                let stringFechaTotal = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim();
+                                let partes = stringFechaTotal.replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
+                                if(partes.length>=3){
+                                    let d=partes[0].padStart(2,'0'), mR=partes[1], a=partes[2];
+                                    mN = isNaN(mR) ? (mesesTexto[mR.substring(0,3)] || 0) : parseInt(mR,10)-1;
+                                    if(a.length===2) a="20"+a; else if(a.length!==4) a="2026";
+                                    fEx = `${a}-${String(mN+1).padStart(2,'0')}-${d}`; 
+                                }
+                            }
+                            
+                            let cS = cL.findIndex(v=>v.includes("SUCURSAL"));
+                            if(cS!==-1) sEx = limpiarSucursal(cL[cS+1] || cL[cS+2]);
+
+                            let filaTexto = cL.join(" ");
+                            if(filaTexto.includes("NOMBRE") && filaTexto.includes("EMPRESA")){
+                                iEnc=r;
+                                filas[r].forEach((valor, colIdx)=>{
+                                    if(valor) {
+                                        let nombreColLimpio = String(valor).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                                        mapa[nombreColLimpio] = colIdx;
+                                    }
+                                });
+                            }
+                        }
+
+                        if(iEnc!==-1){
+                            for(let r=iEnc+1; r<filas.length; r++){
+                                // MAGIA: Pausa microscópica cada 200 filas para que Firebase y el navegador respiren
+                                if (r % 200 === 0) await new Promise(resolve => setTimeout(resolve, 5));
+
+                                let f = filas[r]; if(!f || !f[mapa["NOMBRE"]]) continue;
+                                if(f.join(" ").toUpperCase().includes("PENDIENTES")) break;
+
+                                Object.keys(estudiosMapeo).forEach(key => {
+                                    let cIdx = mapa[key];
+                                    if(cIdx!==undefined && f[cIdx] && !String(f[cIdx]).toUpperCase().includes("PEND")){
+                                        const pacienteRaw = String(f[mapa["NOMBRE"]]).trim();
+                                        const empresaRaw = String(f[mapa["EMPRESA"]]||"S/E").trim().toUpperCase();
+                                        const estudioFinal = estudiosMapeo[key];
+                                        const medicoRaw = String(f[cIdx]).trim().toUpperCase();
+                                        const hashRegistro = `${fEx}|${sEx}|${pacienteRaw}|${estudioFinal}`.toUpperCase();
+
+                                        if(hashActuales.has(hashRegistro)) {
+                                            totalDuplicados++;
+                                        } else {
+                                            datosProcesadosListos.push({
+                                                tipo: "sucursal", fecha: fEx, mes: String(mN+1).padStart(2,'0'), sucursal: sEx,
+                                                paciente: pacienteRaw, empresa: empresaRaw, estudio: estudioFinal, medico: medicoRaw, timestamp: new Date()
+                                            });
+                                            hashActuales.add(hashRegistro); 
+                                            totalExtraidos++;
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+                } catch(e) { logDiv.innerHTML += `<span class="text-red-400">Error leyendo ${input.files[i].name}: ${e.message}</span><br>`; }
+            }
+
+            logDiv.innerHTML += `<br><span class="text-emerald-600 font-bold">✓ Análisis completado.</span><br>`;
+            logDiv.innerHTML += `► Estudios NUEVOS listos para subir: <b class="text-sky-600">${totalExtraidos}</b><br>`;
+            if (totalDuplicados > 0) logDiv.innerHTML += `► Registros OMITIDOS (Ya existían en LAPI): <b class="text-orange-500">${totalDuplicados}</b><br>`;
+
+            btnProcesar.disabled = false;
+            btnProcesar.innerHTML = '<i class="fa-solid fa-cogs mr-2"></i> 1. Analizar Archivos';
+
+            if(totalExtraidos > 0) btnSubir.classList.remove('hidden');
+            else { btnSubir.classList.add('hidden'); if (totalDuplicados > 0) alert(`Todos los registros detectados (${totalDuplicados}) ya existen en la base de datos central. No hay nada nuevo que subir.`); }
+        }
+
+        async function subirExcelsProcesados() {
+            const btnSubir = document.getElementById('btnSubirExcels');
+            const logDiv = document.getElementById('logProcesamiento');
+
+            btnSubir.disabled = true;
+            btnSubir.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Subiendo a Firebase (Rápido)...';
+
+            let exitosos = 0;
+            let promesasBatch = [];
+
+            for(let reg of datosProcesadosListos) {
+                promesasBatch.push(window.addDoc(window.collection(window.db, "registros"), reg));
+                
+                // MAGIA 2: Subir de 50 en 50 en paralelo
+                if (promesasBatch.length >= 50) {
+                    await Promise.all(promesasBatch);
+                    exitosos += promesasBatch.length;
+                    promesasBatch = [];
+                    logDiv.innerHTML += `Sincronizando con la nube... ${exitosos}/${datosProcesadosListos.length}<br>`;
+                    logDiv.scrollTop = logDiv.scrollHeight;
+                }
+            }
+            
+            if (promesasBatch.length > 0) {
+                await Promise.all(promesasBatch);
+                exitosos += promesasBatch.length;
+            }
+
+            alert(`¡Subida Completada! ${exitosos} estudios integrados a LAPI Central.`);
+            location.reload();
+        }
+
+        function dibujarGrafico(canvasId, tipo, labels, data, labelTitulo, color) {
+            if(graficos[canvasId]) graficos[canvasId].destroy();
+            let mostrarLeyenda = (tipo === 'pie');
+            let colorFondo = (tipo === 'line' && typeof color === 'string') ? color + '20' : color;
+            let colorBorde = (tipo === 'pie') ? '#ffffff' : color;
+
+            let conf = {
+                type: tipo, data: { labels: labels, datasets: [{ label: labelTitulo, data: data, backgroundColor: colorFondo, borderColor: colorBorde, borderWidth: 2, fill: tipo === 'line', tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: mostrarLeyenda } } }
+            };
+
+            if (tipo !== 'pie') {
+                conf.options.scales = { 
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { weight: 'bold' } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
+                };
+            }
+            graficos[canvasId] = new Chart(document.getElementById(canvasId), conf);
+        }
+
+        function exportarExcel(origen) {
+            let aplanada = [];
+            if(origen === 'Foraneos') {
+                if(datosFiltradosF.length === 0) return alert("No hay datos para exportar.");
+                const medFiltro = document.getElementById('f-medico').value.trim() || "Todos";
+                const estFiltro = document.getElementById('f-estudio').value.trim() || "Todos";
+                datosFiltradosF.forEach(r => { r.detalles.forEach(d => {
+                    if((medFiltro === "Todos" || d.medico === medFiltro) && (estFiltro === "Todos" || d.estudio === estFiltro)) {
+                        aplanada.push({ FOLIO: r.folio, FECHA: r.fecha, TURNO: r.turno, EMPRESA: r.empresa, INICIO: r.horaInicio, FIN: r.horaFin, HRS_VIAJE: r.horasLaboradas, MEDICO: d.medico, ESTUDIO: d.estudio, CANTIDAD: d.cant, NOTAS: r.observaciones || '' });
+                    }
+                });});
+            } else {
+                if(datosFiltradosS.length === 0) return alert("No hay datos para exportar.");
+                aplanada = datosFiltradosS.map(d => ({ FECHA: d.fecha, SUCURSAL: d.sucursal, PACIENTE: d.paciente, EMPRESA: d.empresa, ESTUDIO: d.estudio, MEDICO: d.medico }));
+            }
+            if(aplanada.length === 0) return alert("No hay detalles que coincidan con tus filtros específicos.");
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(aplanada), origen);
+            XLSX.writeFile(wb, `LAPI_${origen}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+    </script>
+</body>
+</html>
