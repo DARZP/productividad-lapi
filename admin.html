@@ -242,16 +242,17 @@
     <datalist id="lista-s-estudio"></datalist>
 
     <script>
+       
         // --- 1. DATOS CENTRALIZADOS DESDE CONFIG.JS ---
         const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales;
 
-        // --- 2. LLENAR FILTROS DE FORÁNEOS ---
+        // --- 2. LLENAR FILTROS DE FORÁNEOS (Con catálogos globales) ---
         document.getElementById('lista-medicos-admin').innerHTML = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">`).join('');
         document.getElementById('lista-empresas-admin').innerHTML = window.LAPI_CONFIG.empresas.map(e => `<option value="${e}">`).join('');
         document.getElementById('lista-estudios-admin').innerHTML = window.LAPI_CONFIG.estudiosForaneos.map(e => `<option value="${e}">`).join('');
 
-        // --- 3. LLENAR FILTROS DE SUCURSALES ---
+        // --- 3. LLENAR FILTROS DE SUCURSALES (Con catálogos globales) ---
         document.getElementById('lista-s-sucursal').innerHTML = window.LAPI_CONFIG.sucursales.map(x => `<option value="${x}">`).join('');
         document.getElementById('lista-s-empresa').innerHTML = window.LAPI_CONFIG.empresas.map(x => `<option value="${x}">`).join('');
         document.getElementById('lista-s-medico').innerHTML = window.LAPI_CONFIG.medicos.map(x => `<option value="${x}">`).join('');
@@ -263,6 +264,61 @@
         let limiteF = 50, limiteS = 50;
         let graficos = {};
         let datosProcesadosListos = [];
+        
+        // ==========================================
+        // 🛠️ FUNCIÓN PURIFICADORA PARA DATOS LEGACY
+        // ==========================================
+        function normalizarDato(texto, tipo) {
+            if (!texto) return "Desconocido";
+            let limpio = texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            
+            if (tipo === 'sucursal') {
+                if(limpio.includes("CUAUTITLAN")) return "Cuautitlán";
+                if(limpio.includes("SATELITE")) return "Satélite";
+                if(limpio.includes("MARTIN")) return "Martín Carrera";
+                if(limpio.includes("REVOLUCION")) return "Revolución";
+                if(limpio.includes("SAN JERONIMO")) return "San Jerónimo";
+                if(limpio.includes("HUESO")) return "Calzada del Hueso";
+                if(limpio.includes("LOMAS VERDES")) return "Lomas Verdes";
+                if(limpio.includes("GRAN SUR")) return "Gran Sur";
+                if(limpio.includes("BALBUENA")) return "Balbuena";
+                if(limpio.includes("CONDESA")) return "Condesa";
+                if(limpio.includes("FORTUNA")) return "Encuentro Fortuna";
+                if(limpio.includes("MANCERA")) return "Gabriel Mancera";
+                if(limpio.includes("INTERLOMAS")) return "Interlomas";
+                if(limpio.includes("LINDAVISTA")) return "Lindavista";
+                if(limpio === "MERIDA, CENTRO" || limpio === "MERIDA CENTRO" || limpio === "CENTRO" || limpio === "MERIDA") return "Mérida, Centro";
+                if(limpio.includes("METEPEC")) return "Metepec";
+                if(limpio.includes("MIXCOAC")) return "Mixcoac";
+                if(limpio.includes("PLATEROS")) return "Plateros";
+                if(limpio.includes("PLAZA CENTRAL")) return "Plaza Central";
+                if(limpio.includes("POLANCO")) return "Polanco";
+                if(limpio.includes("SANTA FE")) return "Santa Fe";
+                if(limpio.includes("SANTA MARTHA") || limpio.includes("MARTA")) return "Santa Martha";
+                
+                // Formato Capitalizado (Title Case) por defecto
+                return texto.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            }
+            
+            if (tipo === 'estudio') {
+                if(limpio === "HC" || limpio.includes("EXAMEN MEDICO") || limpio === "HISTORIA CLINICA") return "Historia Clínica Empresa";
+                if(limpio.includes("LAPIWEB")) return "Historia Clínica LAPIWEB";
+                if(limpio.includes("CONSULTA")) return "Consulta Médica";
+                if(limpio.includes("SEGURO")) return "Seguro";
+                if(limpio.includes("AUDIOMETRIA")) return "Audiometría";
+                if(limpio.includes("ESPIROMETRIA")) return "Espirometría";
+                if(limpio.includes("ELECTROCARDIOGRAMA")) return "Electrocardiograma";
+                if(limpio.includes("AGUDEZA VISUAL") || limpio.includes("VISUAL")) return "Agudeza Visual";
+                if(limpio.includes("LOGOAUDIOMETRIA") || limpio.includes("LOGO")) return "Logoaudiometría";
+                if(limpio.includes("TIMPANOMETRIA")) return "Timpanometría";
+                if(limpio.includes("CERTIFICADO")) return "Certificado";
+                if(limpio.includes("NORDICO")) return "Nórdico";
+                if(limpio.includes("OTRO")) return "Otro";
+                
+                return texto.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            }
+            return texto;
+        }
 
         async function initDashboard() {
             try {
@@ -272,11 +328,17 @@
                 
                 qs.forEach(doc => { 
                     const data = doc.data();
-                    if(data.tipo === "sucursal") rawDataSucursales.push(data);
-                    else rawDataForaneos.push(data);
+                    if(data.tipo === "sucursal") {
+                        // AQUÍ APLICAMOS LA MAGIA PARA LIMPIAR LA BASURA LEGACY
+                        data.sucursal = normalizarDato(data.sucursal, 'sucursal');
+                        data.estudio = normalizarDato(data.estudio, 'estudio');
+                        rawDataSucursales.push(data);
+                    } else {
+                        rawDataForaneos.push(data);
+                    }
                 });
 
-                // 2. CARGAR NUEVOS REGISTROS AGRUPADOS Y APLANARLOS
+                // 2. CARGAR NUEVOS REGISTROS AGRUPADOS (De sucursal.html) Y APLANARLOS
                 const qSucAgrupadas = window.query(window.collection(window.db, "registros_diarios_sucursales"));
                 const qsSucAgrupadas = await window.getDocs(qSucAgrupadas);
                 
@@ -286,13 +348,14 @@
                         Object.keys(data.empresas).forEach(empresa => {
                             Object.keys(data.empresas[empresa]).forEach(estudio => {
                                 const cantidad = data.empresas[empresa][estudio] || 0;
+                                // Expandimos la cantidad para alimentar las gráficas existentes
                                 for (let k = 0; k < cantidad; k++) {
                                     rawDataSucursales.push({
                                         tipo: "sucursal",
                                         fecha: data.fecha,
-                                        sucursal: data.sucursal,
+                                        sucursal: normalizarDato(data.sucursal, 'sucursal'),
                                         empresa: empresa,
-                                        estudio: estudio,
+                                        estudio: normalizarDato(estudio, 'estudio'),
                                         medico: data.medico
                                     });
                                 }
@@ -301,6 +364,7 @@
                     }
                 });
 
+                // Ordenar sucursales combinadas por fecha descendente
                 rawDataSucursales.sort((a,b) => b.fecha.localeCompare(a.fecha));
 
                 aplicarFiltroRapido('F', 'hoy');
@@ -548,7 +612,7 @@
             if (!nombre) return "Desconocida";
             let n = String(nombre).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             if(n.includes("CUAUTITLAN")) return "Cuautitlán"; if(n.includes("SATELITE")) return "Satélite";
-            if(n.includes("MARTIN CABRERA")) return "Martín Cabrera"; if(n.includes("REVOLUCION")) return "Revolución";
+            if(n.includes("MARTIN CABRERA")) return "Martín Carrera"; if(n.includes("REVOLUCION")) return "Revolución";
             if(n.includes("SAN JERONIMO")) return "San Jerónimo"; if(n.includes("HUESO")) return "Calzada del Hueso";
             if(n.includes("LOMAS VERDES")) return "Lomas Verdes";
             return n.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
@@ -712,6 +776,7 @@
             location.reload();
         }
 
+        // =================== UTILIDADES Y GRÁFICAS ===================
         function dibujarGrafico(canvasId, tipo, labels, data, labelTitulo, color) {
             if(graficos[canvasId]) graficos[canvasId].destroy();
             let mostrarLeyenda = (tipo === 'pie');
