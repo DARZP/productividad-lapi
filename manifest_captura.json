@@ -1,11 +1,10 @@
 {
-  "name": "LAPI Productividad",
-  "short_name": "LAPI",
+  "name": "LAPI Captura",
+  "short_name": "Captura",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#ea580c",
-  "description": "Registro diario de productividad para Foráneos y Sucursales",
   "orientation": "portrait",
   "icons": [
     {
