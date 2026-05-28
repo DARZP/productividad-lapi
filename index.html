@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Productividad</title>
+    
+    <!-- ETIQUETAS PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ea580c">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="config.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -186,7 +192,6 @@
         let horasCalculadas = 0;
         let editDocId = null; 
 
-        // SISTEMA DE TOAST NOTIFICATIONS
         function mostrarToast(mensaje, tipo = 'error', duracion = 3500) {
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'info' ? 'bg-sky-500' : 'bg-red-500');
@@ -214,7 +219,6 @@
             return parseFloat(diff.toFixed(2));
         }
 
-        // ---------- LÓGICA DE REGISTRO NUEVO ----------
         function verificarRegistro() { 
             const fecha = document.getElementById('input-fecha').value;
             const hIni = document.getElementById('input-hora-inicio').value;
@@ -225,7 +229,6 @@
             document.getElementById('paso-0').classList.add('hidden'); 
             document.getElementById('paso-1').classList.remove('hidden'); 
             
-            // Ocultar la botonera extra con una transición suave
             const zonaExtra = document.getElementById('seccion-botones-extra');
             zonaExtra.classList.add('opacity-0');
             setTimeout(() => zonaExtra.classList.add('hidden'), 500);
@@ -333,18 +336,14 @@
                     timestamp: new Date()
                 });
                 
-                // Usamos el Toast con duración 0 (infinito) porque la página se va a recargar sola
                 mostrarToast(`¡Guardado! Tu FOLIO de rastreo es: ${folio}`, "exito", 0);
-                
-                setTimeout(() => location.reload(), 3500); // 3.5 segundos para que alcancen a anotar o ver el folio
+                setTimeout(() => location.reload(), 3500);
             } catch(e) { 
                 mostrarToast("Error de red al guardar el registro.", "error"); 
                 btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Reintentar';
                 btn.disabled = false;
             }
         }
-
-        // ---------- LÓGICA DE EDICIÓN ----------
 
         async function buscarRegistro() { 
             const folioInput = document.getElementById('input-edit-id').value.trim().toUpperCase();
@@ -471,6 +470,15 @@
                 btn.innerHTML = 'Guardar Cambios';
                 btn.disabled = false;
             }
+        }
+
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('App Instalable Lista!', reg.scope))
+                    .catch(err => console.log('Error instalando App: ', err));
+            });
         }
     </script>
 </body>
