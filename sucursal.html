@@ -3,24 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Productividad -Sucursales</title>
+    <title>Captura Sucursales</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="config.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* Estilo Glassmorphism idéntico a Foráneos */
         .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        /* Animación para el colapso */
-        .content-accordion { transition: max-height 0.3s ease-out, opacity 0.2s; overflow: hidden; }
-        .collapsed { max-height: 0 !important; opacity: 0; pointer-events: none; }
-        .expanded { max-height: 1000px; opacity: 1; }
-        
-        /* Rotación de flecha */
-        .chevron { transition: transform 0.3s; }
-        .rotate-chevron { transform: rotate(180deg); }
-
         .study-row { transition: background-color 0.2s; }
         .study-row:hover { background-color: rgba(255, 255, 255, 0.1); }
     </style>
@@ -47,17 +36,16 @@
 </head>
 <body class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen text-white pb-20">
 
-    <!-- PANTALLA DE LOGIN -->
     <div id="pantalla-login" class="min-h-screen flex flex-col items-center justify-center p-4 gap-4">
         <div class="glass p-8 rounded-3xl shadow-2xl w-full max-w-md text-center">
             <div class="w-16 h-16 bg-white/20 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner"><i class="fa-solid fa-user-doctor"></i></div>
-            <h1 class="text-2xl font-black text-white mb-1">REGISTRO DIARIO DE PRODUCTIVIDAD</h1>
+            <h1 class="text-2xl font-black text-white mb-1">🏢 REGISTRO DIARIO DE PRODUCTIVIDAD</h1>
             <p class="text-sm text-white/80 mb-6 font-medium">Para Sucursales</p>
             
             <div class="space-y-4 text-left">
                 <div>
                     <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Nombre del Médico</label>
-                    <input type="text" id="login-medico" list="lista-medicos" placeholder="" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase font-bold">
+                    <input type="text" id="login-medico" list="lista-medicos" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase font-bold">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Sucursal</label>
@@ -66,11 +54,11 @@
                 <button onclick="iniciarSesion()" class="w-full bg-white text-orange-600 hover:bg-orange-50 font-black py-3.5 rounded-xl shadow-lg transition transform hover:-translate-y-0.5 mt-2">Ingresar a mi Turno</button>
             </div>
         </div>
-           
+
         <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 w-full max-w-md text-center">
-            <p class="text-xs font-bold uppercase mb-2 opacity-80">¿Vas a capturar un servicio fuera de sucursal?</p>
+            <p class="text-xs font-bold uppercase mb-2 opacity-80">¿Vas a capturar un servicio externo?</p>
             <button onclick="window.location.href='index.html'" class="w-full bg-white/20 hover:bg-white/30 py-3 rounded-lg text-sm font-bold transition">
-                <i class="fa-solid fa-truck-medical mr-2"></i> Ir a registro de Foráneos
+                📍 Ir a registro de Foráneos
             </button>
         </div>
     </div>
@@ -87,7 +75,6 @@
         </div>
 
         <div class="max-w-3xl mx-auto p-4 mt-2">
-            <!-- Info del Médico -->
             <div class="glass p-4 rounded-2xl shadow-sm border-l-4 border-white flex items-center justify-between mb-6">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-white/20 text-white rounded-full flex items-center justify-center text-lg"><i class="fa-solid fa-user-md"></i></div>
@@ -99,44 +86,24 @@
                 <div id="indicador-guardado" class="text-xs font-bold text-orange-900 bg-white px-2 py-1 rounded-md opacity-0 transition-opacity"><i class="fa-solid fa-cloud-check"></i> Guardado</div>
             </div>
 
-            <!-- Buscador de Empresas -->
-            <div class="glass p-4 rounded-2xl shadow-sm mb-6">
-                <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-2 text-center md:text-left">Añadir pacientes de una empresa:</label>
-                <div class="flex gap-2">
-                    <input type="text" id="input-nueva-empresa" list="lista-empresas" placeholder="Escribe la empresa..." class="flex-1 p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase text-sm font-bold">
-                    <button onclick="agregarEmpresa()" class="bg-white hover:bg-orange-50 text-orange-600 px-5 rounded-xl font-black shadow-sm transition"><i class="fa-solid fa-plus"></i></button>
-                </div>
-            </div>
-
-            <!-- Contenedor del Acordeón -->
-            <div id="contenedor-empresas" class="space-y-4"></div>
+            <div id="contenedor-estudios" class="space-y-4"></div>
             
-            <div id="mensaje-vacio" class="text-center py-14 opacity-70 hidden">
-                <i class="fa-solid fa-folder-open text-5xl mb-3"></i>
-                <p class="font-bold">Tu día está en blanco.</p>
-                <p class="text-xs">Agrega una empresa arriba para empezar.</p>
-            </div>
         </div>
     </div>
 
-    <!-- Datalists Globales -->
     <datalist id="lista-medicos"></datalist>
     <datalist id="lista-sucursales"></datalist>
-    <datalist id="lista-empresas"></datalist>
 
     <script>
-        // --- DATOS CENTRALIZADOS DESDE CONFIG.JS ---
         const medicosForaneos = window.LAPI_CONFIG.medicos;
         const sucursalesOficiales = window.LAPI_CONFIG.sucursales;
-        const empresasForaneos = window.LAPI_CONFIG.empresas;
         const listaEstudiosOficial = window.LAPI_CONFIG.estudiosSucursales;
 
         document.getElementById('lista-medicos').innerHTML = medicosForaneos.map(m => `<option value="${m}">`).join('');
         document.getElementById('lista-sucursales').innerHTML = sucursalesOficiales.map(s => `<option value="${s}">`).join('');
-        document.getElementById('lista-empresas').innerHTML = empresasForaneos.map(e => `<option value="${e}">`).join('');
 
         let sesionActual = { medico: null, sucursal: null };
-        let datosDelDia = { empresas: {} };
+        let datosDelDia = { estudios: {} };
         let fechaOperativa = "";
         let docId = "";
         let timerGuardado = null;
@@ -186,127 +153,70 @@
             document.getElementById('pantalla-app').classList.remove('hidden');
             document.getElementById('ui-medico').innerText = "Dr(a). " + sesionActual.medico;
             document.getElementById('ui-sucursal').innerText = sesionActual.sucursal;
+            
             const fechas = obtenerFechaOperativaYFormato();
             fechaOperativa = fechas.idFormat;
             document.getElementById('ui-fecha').innerText = fechas.idFormat === new Date().toISOString().split('T')[0] ? "Hoy, " + fechas.uiFormat : "Turno del " + fechas.uiFormat;
+            
             docId = `SUC_${fechaOperativa}_${sesionActual.sucursal.replace(/\s+/g,'')}_${sesionActual.medico.replace(/\s+/g,'')}`;
             
             try {
                 const docSnap = await window.getDoc(window.doc(window.db, "registros_diarios_sucursales", docId));
                 if (docSnap.exists()) {
                     datosDelDia = docSnap.data();
-                    if(!datosDelDia.empresas) datosDelDia.empresas = {};
+                    if(!datosDelDia.estudios) datosDelDia.estudios = {}; 
                 } else {
-                    datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, empresas: {} };
+                    datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {} };
                 }
                 renderizarTablero();
             } catch (error) { alert("Error de conexión. Revisa tu internet."); }
         }
 
-        function agregarEmpresa() {
-            const inputEmpresa = document.getElementById('input-nueva-empresa');
-            const nombreNormalizado = normalizarTexto(inputEmpresa.value);
-            if(!nombreNormalizado) return;
-            if(!datosDelDia.empresas[nombreNormalizado]) {
-                datosDelDia.empresas[nombreNormalizado] = {};
-                inputEmpresa.value = "";
-                renderizarTablero(nombreNormalizado); 
-                sincronizarConNube();
-            } else alert("Esta empresa ya está en tu lista.");
-        }
-
-        function toggleEmpresa(empresaID) {
-            const content = document.getElementById(`content-${empresaID}`);
-            const chevron = document.getElementById(`chevron-${empresaID}`);
+        function cambiarContador(estudio, cantidad) {
+            if(!datosDelDia.estudios[estudio]) datosDelDia.estudios[estudio] = 0;
+            datosDelDia.estudios[estudio] += cantidad;
+            if(datosDelDia.estudios[estudio] < 0) datosDelDia.estudios[estudio] = 0;
             
-            if(content.classList.contains('collapsed')) {
-                content.classList.remove('collapsed');
-                content.classList.add('expanded');
-                chevron.classList.add('rotate-chevron');
-            } else {
-                content.classList.remove('expanded');
-                content.classList.add('collapsed');
-                chevron.classList.remove('rotate-chevron');
-            }
-        }
-
-        function cambiarContador(empresa, estudio, cantidad) {
-            if(!datosDelDia.empresas[empresa][estudio]) datosDelDia.empresas[empresa][estudio] = 0;
-            datosDelDia.empresas[empresa][estudio] += cantidad;
-            if(datosDelDia.empresas[empresa][estudio] < 0) datosDelDia.empresas[empresa][estudio] = 0;
-            
-            const idHTML = `count_${empresa.replace(/\s+/g,'')}_${estudio.replace(/\s+/g,'')}`;
+            const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
             const counterElement = document.getElementById(idHTML);
             if(counterElement) {
-                counterElement.innerText = datosDelDia.empresas[empresa][estudio];
+                counterElement.innerText = datosDelDia.estudios[estudio];
                 counterElement.classList.add('scale-150', 'text-orange-200');
                 setTimeout(() => counterElement.classList.remove('scale-150', 'text-orange-200'), 200);
             }
             sincronizarConNube();
         }
 
-        function renderizarTablero(empresaParaAbrir = null) {
-            const contenedor = document.getElementById('contenedor-empresas');
-            const msjVacio = document.getElementById('mensaje-vacio');
-            contenedor.innerHTML = "";
-            const nombresEmpresas = Object.keys(datosDelDia.empresas).sort();
+        function renderizarTablero() {
+            const contenedor = document.getElementById('contenedor-estudios');
+            let htmlEstudios = "";
             
-            if(nombresEmpresas.length === 0) {
-                msjVacio.classList.remove('hidden');
-                return;
-            }
-            msjVacio.classList.add('hidden');
-
-            nombresEmpresas.forEach(empresa => {
-                const empresaID = empresa.replace(/\s+/g,'');
-                let htmlEstudios = "";
+            listaEstudiosOficial.forEach(estudio => {
+                const cantidadAct = datosDelDia.estudios[estudio] || 0;
+                const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
                 
-                const esNueva = (empresa === empresaParaAbrir);
-                const claseEstado = esNueva ? 'expanded' : 'collapsed';
-                const claseChevron = esNueva ? 'rotate-chevron' : '';
-
-                listaEstudiosOficial.forEach(estudio => {
-                    const cantidadAct = datosDelDia.empresas[empresa][estudio] || 0;
-                    const idHTML = `count_${empresaID}_${estudio.replace(/\s+/g,'')}`;
-                    
-                    htmlEstudios += `
-                        <div class="study-row flex items-center justify-between py-2 border-b border-white/10 last:border-0 px-2 rounded-lg">
-                            <span class="text-xs font-bold text-white/90 leading-tight">${estudio}</span>
-                            <div class="flex items-center gap-2 bg-black/20 p-0.5 rounded-lg border border-white/10">
-                                <button onclick="cambiarContador('${empresa}', '${estudio}', -1)" class="w-7 h-7 rounded bg-white/20 text-white shadow-sm font-black text-base hover:bg-white/40 transition">-</button>
-                                <span id="${idHTML}" class="w-5 text-center font-black text-white text-sm transition-transform">${cantidadAct}</span>
-                                <button onclick="cambiarContador('${empresa}', '${estudio}', 1)" class="w-7 h-7 rounded bg-white text-orange-600 shadow-sm font-black text-base hover:bg-gray-100 transition">+</button>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                contenedor.innerHTML += `
-                    <div class="glass rounded-2xl shadow-sm overflow-hidden transition-all duration-300">
-                        <div onclick="toggleEmpresa('${empresaID}')" class="bg-black/20 text-white px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-black/30 transition">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-regular fa-building text-white text-xs"></i>
-                                <span class="font-black text-xs tracking-widest uppercase">${empresa}</span>
-                            </div>
-                            <i id="chevron-${empresaID}" class="fa-solid fa-chevron-down text-xs chevron ${claseChevron}"></i>
-                        </div>
-                        <div id="content-${empresaID}" class="content-accordion ${claseEstado}">
-                            <div class="p-2 space-y-1 bg-black/10">
-                                ${htmlEstudios}
-                                <button onclick="borrarEmpresa('${empresa}')" class="w-full py-2 mt-2 text-[10px] font-bold text-red-300 uppercase tracking-widest hover:text-red-400 transition"><i class="fa-solid fa-trash-can mr-1"></i> Quitar Empresa de la lista</button>
-                            </div>
+                htmlEstudios += `
+                    <div class="study-row flex items-center justify-between py-3 border-b border-white/10 last:border-0 px-3 rounded-lg">
+                        <span class="text-sm font-bold text-white/90 leading-tight w-1/2">${estudio}</span>
+                        <div class="flex items-center gap-3 bg-black/20 p-1.5 rounded-xl border border-white/10">
+                            <button onclick="cambiarContador('${estudio}', -1)" class="w-10 h-10 rounded-lg bg-white/20 text-white shadow-sm font-black text-xl hover:bg-white/40 transition">-</button>
+                            <span id="${idHTML}" class="w-8 text-center font-black text-white text-lg transition-transform">${cantidadAct}</span>
+                            <button onclick="cambiarContador('${estudio}', 1)" class="w-10 h-10 rounded-lg bg-white text-orange-600 shadow-sm font-black text-xl hover:bg-gray-100 transition">+</button>
                         </div>
                     </div>
                 `;
             });
-        }
 
-        function borrarEmpresa(empresa) {
-            if(confirm(`¿Quitar ${empresa} de tu lista de hoy?`)) {
-                delete datosDelDia.empresas[empresa];
-                renderizarTablero();
-                sincronizarConNube();
-            }
+            contenedor.innerHTML = `
+                <div class="glass rounded-2xl shadow-sm overflow-hidden mb-10">
+                    <div class="bg-black/20 text-white px-4 py-3 border-b border-white/10">
+                        <h3 class="font-black text-xs tracking-widest uppercase text-center opacity-80">Conteo de Estudios</h3>
+                    </div>
+                    <div class="p-2 bg-black/10">
+                        ${htmlEstudios}
+                    </div>
+                </div>
+            `;
         }
 
         function sincronizarConNube() {
