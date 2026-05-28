@@ -48,7 +48,7 @@
 <body class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen text-white pb-20">
 
     <!-- PANTALLA DE LOGIN -->
-    <div id="pantalla-login" class="min-h-screen flex items-center justify-center p-4">
+    <div id="pantalla-login" class="min-h-screen flex flex-col items-center justify-center p-4 gap-4">
         <div class="glass p-8 rounded-3xl shadow-2xl w-full max-w-md text-center">
             <div class="w-16 h-16 bg-white/20 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner"><i class="fa-solid fa-user-doctor"></i></div>
             <h1 class="text-2xl font-black text-white mb-1">REGISTRO DIARIO DE PRODUCTIVIDAD</h1>
@@ -65,6 +65,13 @@
                 </div>
                 <button onclick="iniciarSesion()" class="w-full bg-white text-orange-600 hover:bg-orange-50 font-black py-3.5 rounded-xl shadow-lg transition transform hover:-translate-y-0.5 mt-2">Ingresar a mi Turno</button>
             </div>
+        </div>
+           
+        <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 w-full max-w-md text-center">
+            <p class="text-xs font-bold uppercase mb-2 opacity-80">¿Vas a capturar un servicio externo?</p>
+            <button onclick="window.location.href='index.html'" class="w-full bg-white/20 hover:bg-white/30 py-3 rounded-lg text-sm font-bold transition">
+                <i class="fa-solid fa-truck-medical mr-2"></i> Ir a registro de Foráneos
+            </button>
         </div>
     </div>
 
