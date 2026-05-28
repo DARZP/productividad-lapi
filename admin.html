@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script type="module">
@@ -241,9 +242,11 @@
     <datalist id="lista-s-estudio"></datalist>
 
     <script>
-        const medicosForaneos = ["Susana Cayetano", "Diego Arias", "Patricia Kassandra", "Estefany Becherel", "Paulina Alba", "Mariana Gaviño", "Jose Alejandro", "Isabel Palma", "Dulce Maria", "Angeles Valenzuela", "Jose Juan", "Ingrid Bernal", "Giselle Vizuet", "Angello", "Elzy Chacon", "Alberto Gomez", "Yirelka Yeraldine", "Juan Manuel", "Angelica Itzel", "Mauricio Ruiz", "Lucero Cruz", "Jannet Alejandra", "Fernanda", "Giovanni Mariano", "David Emmanuel", "Jazmin Morales!"].sort();
-        const empresasForaneos = ["ABBOTT SCOUTING", "AEROMEXICO", "ALMEXA", "ALSTOM FERROVIARIA", "ALSTOM FERROVIARIA CIUDAD AZTECA", "ALSTOM FERROVIARIA ROSARIO", "ALSTOM FERROVIARIA TICOMAN", "ALESSO CUAUTITLÁN", "AMCOR", "ANTIBIÓTICOS DE MÉXICO", "ASA CDMX", "ATLAS", "ATLAS GDL", "AVANTOR", "AZ FINE", "BARCEL LERMA", "BD PLANTA", "BIMBO", "BIMBO AZCAPOTZALCO", "BIMBO SANTA MARÍA", "BIODIST", "BYVA MINERALES", "CASA LUMBRE", "CASA LUMBRE AXOCOPAN", "CASA LUMBRE PUEBLA", "CEMEX ATOTONILCO", "CENTRO DE DISTRIBUCIÓN OXXO", "CLOROX", "COCA COLA", "COCA COLA EXPORT", "COCA COLA FEMSA TOLUCA", "COCA COLA MANUFACTURA PACIFICO", "COCA COLA OJUELOS", "COCA COLA TOLUCA", "COMPAÑÍA EDITORIAL", "COMPAÑÍA NOC", "COMSA", "CONSUMED SONY", "CONSULTORES MEDICOS", "CORPORATIVO DL DENTILAB", "DESARROLLO LOGÍSTICO", "DICIPA", "DISTRIBUIDORA DE LÁCTEOS", "DLP MEDICAL", "FRUTAS CONCENTRADAS", "GERDAU CORSA", "GRUPO COBRA", "GRUPO IND POSEIDON", "GRUPO TAIFELDS", "HOLCIM ATLACOMULCO", "HOLCIM CUAUTLA", "HOLCIM CUERNAVACA", "HOLCIM POLOTITLAN", "HUMANTOP", "IBERCHEM", "INDUSTRIAS METÁLICAS", "JUGOS DEL VALLE", "KEUBIO", "LA CAZADORA", "LIVERPOOL", "LIVERPOOL PLAN", "LOREAL", "MATERIAS PRIMAS", "MCORMICK", "MCCORD PAYEN", "MERCK", "NYSCO", "OMEGA MÉXICO", "ORGANON PHARMA", "OXXO AZCAPOTZALCO", "OXXO SMO", "POLIRESINAS", "PROMECO", "PROBIOMED", "PROFILATEX", "PROVEEDORA MEXICANA DE MONOFILAMENTOS", "PROXIMIDAD Y LOGÍSTICA CHALCO", "PROXIMIDAD Y LOGÍSTICA PACHUCA", "PROXIIDAD Y LOGÍSTICA MORELOS", "PRODUCTOS INNOVADOR", "PRODUCTOS RICH", "QUALITAS", "SAFMEX TOLUCA", "SC JOHNSON", "SCHNEIDER", "SEGURO AXA", "SEGURO INBURSA", "SEGURO ZURICH", "SIFATEC TULA 1", "SIFATEC TULA 2", "SNF FLOERGER", "SODEXO", "SODEXO CECAT SUR", "TACA", "TISK SOLUCIONES", "TRANSFORMADORA INDUSTRIAL", "USK INTENACIONAL", "USME", "VALEANT"].sort();
-        const estudiosForaneos = ["Espirometría", "Audiometría", "Historia Clínica", "Examen de Capacidad Visual", "Nórdico", "Seguro"].sort();
+       
+        const medicosForaneos = window.LAPI_CONFIG.medicos;
+        const empresasForaneos = window.LAPI_CONFIG.empresas;
+        const estudiosForaneos = window.LAPI_CONFIG.estudiosForaneos;
+        const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales;
 
         document.getElementById('lista-medicos-admin').innerHTML = medicosForaneos.map(m => `<option value="${m}">`).join('');
         document.getElementById('lista-empresas-admin').innerHTML = empresasForaneos.map(e => `<option value="${e}">`).join('');
