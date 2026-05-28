@@ -89,11 +89,30 @@ window.LAPI_CONFIG = {
     ].sort(),
 
     // ==========================================
-    // 2. CATÁLOGO DE SUCURSALES
+    // 2. CATÁLOGO DE SUCURSALES OFICIALES
     // ==========================================
     sucursales: [
-        "Satélite", "Cuautitlán", "Martín Cabrera", "Revolución", 
-        "San Jerónimo", "Calzada del Hueso", "Lomas Verdes", "Gran Sur"
+        "Balbuena", 
+        "Calzada del Hueso", 
+        "Condesa", 
+        "Cuautitlán", 
+        "Encuentro Fortuna", 
+        "Gabriel Mancera", 
+        "Gran Sur", 
+        "Interlomas", 
+        "Lindavista", 
+        "Lomas Verdes", 
+        "Martín Carrera", 
+        "Mérida, Centro", 
+        "Metepec", 
+        "Mixcoac", 
+        "Plateros", 
+        "Plaza Central", 
+        "Polanco", 
+        "Revolución", 
+        "Santa Fe", 
+        "Santa Martha", 
+        "Satélite"
     ].sort(),
 
     // ==========================================
