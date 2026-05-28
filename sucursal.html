@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Captura Sucursales</title>
+    
+    <!-- ETIQUETAS PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ea580c">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="config.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -158,7 +164,6 @@
         let docId = "";
         let timerGuardado = null;
 
-        // SISTEMA DE TOAST NOTIFICATIONS
         function mostrarToast(mensaje, tipo = 'error', duracion = 3500) {
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'info' ? 'bg-sky-500' : 'bg-red-500');
@@ -240,9 +245,7 @@
                     datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
                 }
                 
-                // Cargar observaciones previas en la caja de texto
                 document.getElementById('obs-principal').value = datosDelDia.observaciones || '';
-                
                 renderizarTablero();
                 mostrarToast(`Turno iniciado con éxito. Todo listo.`, 'exito');
             } catch (error) { mostrarToast("Error de conexión. Revisa tu internet e intenta recargar.", "error"); }
@@ -265,7 +268,6 @@
 
         function actualizarObservaciones(texto) {
             datosDelDia.observaciones = texto;
-            // Para mantener sincronizados ambos cuadros de texto
             document.getElementById('obs-principal').value = texto;
             document.getElementById('obs-resumen').value = texto;
             sincronizarConNube();
@@ -303,19 +305,16 @@
             `;
         }
 
-        // --- FUNCIONES DEL RESUMEN FINAL ---
         function mostrarResumen() {
             document.getElementById('vista-captura-principal').classList.add('hidden');
             document.getElementById('vista-resumen-final').classList.remove('hidden');
             
-            // Construir el HTML del resumen
             let html = `<p class="mb-1"><b class="opacity-70">Fecha:</b> ${document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '')}</p>
                         <p class="mb-4"><b class="opacity-70">Sucursal:</b> ${sesionActual.sucursal.toUpperCase()}</p>`;
             
             let totalEstudios = 0;
             let listHtml = '';
             
-            // Filtrar solo los que son mayores a 0
             for (const [estudio, cant] of Object.entries(datosDelDia.estudios)) {
                 if (cant > 0) {
                     listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center">
@@ -336,7 +335,6 @@
             }
             
             document.getElementById('resumen-contenido').innerHTML = html + listHtml;
-            // Asegurarnos que la caja del resumen tenga lo último que escribió
             document.getElementById('obs-resumen').value = datosDelDia.observaciones || '';
         }
 
@@ -346,7 +344,6 @@
         }
 
         function confirmarTurno() {
-            // Forzamos un último guardado rápido para asegurar
             sincronizarConNube();
             
             const btn = document.getElementById('btn-confirmar-final');
@@ -355,7 +352,6 @@
 
             mostrarToast("¡Turno actualizado y confirmado exitosamente!", "exito", 0);
             
-            // Recargamos la página después de 3 segundos
             setTimeout(() => {
                 location.reload();
             }, 3000);
@@ -372,6 +368,15 @@
                     setTimeout(() => indicador.classList.add('opacity-0'), 2000);
                 } catch (error) { console.error("Error guardando silencio:", error); }
             }, 800);
+        }
+
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('App Instalable Lista!', reg.scope))
+                    .catch(err => console.log('Error instalando App: ', err));
+            });
         }
     </script>
 </body>
