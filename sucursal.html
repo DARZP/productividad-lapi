@@ -95,8 +95,49 @@
                 <div id="indicador-guardado" class="text-xs font-bold text-orange-900 bg-white px-2 py-1 rounded-md opacity-0 transition-opacity"><i class="fa-solid fa-cloud-check"></i> Sincronizado</div>
             </div>
 
-            <!-- Contenedor Único de Estudios -->
-            <div id="contenedor-estudios" class="space-y-4"></div>
+            <!-- VISTA PRINCIPAL (CONTADORES Y OBS) -->
+            <div id="vista-captura-principal">
+                <!-- Contenedor Único de Estudios -->
+                <div id="contenedor-estudios" class="space-y-4"></div>
+                
+                <!-- Caja de Observaciones -->
+                <div class="glass p-4 rounded-2xl shadow-sm mb-6 mt-6 border-white/10">
+                    <label class="block mb-2 font-bold text-sm text-white/90">Observaciones (Pendientes, Fallas, Inconvenientes)</label>
+                    <textarea id="obs-principal" oninput="actualizarObservaciones(this.value)" class="w-full p-3 rounded-xl bg-black/20 border border-white/10 outline-none placeholder-white/50 text-white font-medium" rows="3" placeholder="Ej. Equipo de audiometría falló, paciente pendiente..."></textarea>
+                </div>
+
+                <!-- Botón hacia el Resumen -->
+                <button onclick="mostrarResumen()" class="w-full bg-white text-orange-600 font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2 mb-6">
+                    Ir al Resumen Final <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- VISTA DEL RESUMEN FINAL -->
+            <div id="vista-resumen-final" class="hidden glass p-6 rounded-3xl shadow-xl border border-white/20">
+                <h2 class="font-black text-xl mb-4 text-center text-white"><i class="fa-solid fa-clipboard-check mr-2"></i> Resumen de Turno</h2>
+                
+                <!-- Contenido Dinámico del Resumen -->
+                <div id="resumen-contenido" class="bg-black/20 p-4 rounded-2xl mb-6 space-y-2 border border-white/10 text-white/90 text-sm">
+                    <!-- Se llena con JS -->
+                </div>
+
+                <!-- Observaciones (Espejo de la vista principal) -->
+                <div class="mb-6">
+                    <label class="block mb-2 font-bold text-sm text-white/90">Observaciones Finales:</label>
+                    <textarea id="obs-resumen" oninput="actualizarObservaciones(this.value)" class="w-full p-3 rounded-xl bg-black/20 border border-white/10 outline-none placeholder-white/50 text-white font-medium" rows="3"></textarea>
+                </div>
+
+                <!-- Botonera Final -->
+                <div class="flex gap-3">
+                    <button onclick="ocultarResumen()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Volver
+                    </button>
+                    <button id="btn-confirmar-final" onclick="confirmarTurno()" class="w-2/3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-check-double"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -112,13 +153,13 @@
         document.getElementById('lista-sucursales').innerHTML = sucursalesOficiales.map(s => `<option value="${s}">`).join('');
 
         let sesionActual = { medico: null, sucursal: null };
-        let datosDelDia = { estudios: {} };
+        let datosDelDia = { estudios: {}, observaciones: "" };
         let fechaOperativa = "";
         let docId = "";
         let timerGuardado = null;
 
         // SISTEMA DE TOAST NOTIFICATIONS
-        function mostrarToast(mensaje, tipo = 'error') {
+        function mostrarToast(mensaje, tipo = 'error', duracion = 3500) {
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'info' ? 'bg-sky-500' : 'bg-red-500');
             const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'info' ? 'fa-info-circle' : 'fa-triangle-exclamation');
@@ -127,7 +168,9 @@
             document.getElementById('toast-container').appendChild(toast);
             
             setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
-            setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
+            if (duracion > 0) {
+                setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, duracion);
+            }
         }
 
         window.onload = function() {
@@ -165,7 +208,7 @@
                 sesionActual = { medico: med, sucursal: suc };
                 localStorage.setItem('lapi_sesion_sucursal', JSON.stringify(sesionActual));
                 iniciarApp();
-            }, 600); // Pequeña espera para UX
+            }, 600);
         }
 
         function cerrarSesion() {
@@ -192,9 +235,14 @@
                 if (docSnap.exists()) {
                     datosDelDia = docSnap.data();
                     if(!datosDelDia.estudios) datosDelDia.estudios = {}; 
+                    if(!datosDelDia.observaciones) datosDelDia.observaciones = ""; 
                 } else {
-                    datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {} };
+                    datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
                 }
+                
+                // Cargar observaciones previas en la caja de texto
+                document.getElementById('obs-principal').value = datosDelDia.observaciones || '';
+                
                 renderizarTablero();
                 mostrarToast(`Turno iniciado con éxito. Todo listo.`, 'exito');
             } catch (error) { mostrarToast("Error de conexión. Revisa tu internet e intenta recargar.", "error"); }
@@ -212,6 +260,14 @@
                 counterElement.classList.add('scale-150', 'text-orange-200');
                 setTimeout(() => counterElement.classList.remove('scale-150', 'text-orange-200'), 200);
             }
+            sincronizarConNube();
+        }
+
+        function actualizarObservaciones(texto) {
+            datosDelDia.observaciones = texto;
+            // Para mantener sincronizados ambos cuadros de texto
+            document.getElementById('obs-principal').value = texto;
+            document.getElementById('obs-resumen').value = texto;
             sincronizarConNube();
         }
 
@@ -236,7 +292,7 @@
             });
 
             contenedor.innerHTML = `
-                <div class="glass rounded-2xl shadow-sm overflow-hidden mb-10">
+                <div class="glass rounded-2xl shadow-sm overflow-hidden">
                     <div class="bg-black/20 text-white px-4 py-3 border-b border-white/10 flex justify-between items-center">
                         <h3 class="font-black text-xs tracking-widest uppercase opacity-80"><i class="fa-solid fa-list-check mr-2"></i> Conteo de Estudios</h3>
                     </div>
@@ -245,6 +301,64 @@
                     </div>
                 </div>
             `;
+        }
+
+        // --- FUNCIONES DEL RESUMEN FINAL ---
+        function mostrarResumen() {
+            document.getElementById('vista-captura-principal').classList.add('hidden');
+            document.getElementById('vista-resumen-final').classList.remove('hidden');
+            
+            // Construir el HTML del resumen
+            let html = `<p class="mb-1"><b class="opacity-70">Fecha:</b> ${document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '')}</p>
+                        <p class="mb-4"><b class="opacity-70">Sucursal:</b> ${sesionActual.sucursal.toUpperCase()}</p>`;
+            
+            let totalEstudios = 0;
+            let listHtml = '';
+            
+            // Filtrar solo los que son mayores a 0
+            for (const [estudio, cant] of Object.entries(datosDelDia.estudios)) {
+                if (cant > 0) {
+                    listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center">
+                                    <span class="font-bold text-orange-200 text-sm">${estudio}</span>
+                                    <span class="bg-white/20 px-3 py-1 rounded-lg font-black">${cant}</span>
+                                 </div>`;
+                    totalEstudios += cant;
+                }
+            }
+            
+            if (totalEstudios === 0) {
+                listHtml += `<p class="text-center italic opacity-60 mt-4 py-4 border-t border-white/10">El día está en blanco, no has sumado ningún estudio.</p>`;
+            } else {
+                listHtml += `<div class="border-t-2 border-dashed border-white/20 pt-3 mt-4 flex justify-between items-center text-lg">
+                                <span class="font-black text-white/90">TOTAL ESTUDIOS:</span>
+                                <span class="font-black text-emerald-400">${totalEstudios}</span>
+                             </div>`;
+            }
+            
+            document.getElementById('resumen-contenido').innerHTML = html + listHtml;
+            // Asegurarnos que la caja del resumen tenga lo último que escribió
+            document.getElementById('obs-resumen').value = datosDelDia.observaciones || '';
+        }
+
+        function ocultarResumen() {
+            document.getElementById('vista-resumen-final').classList.add('hidden');
+            document.getElementById('vista-captura-principal').classList.remove('hidden');
+        }
+
+        function confirmarTurno() {
+            // Forzamos un último guardado rápido para asegurar
+            sincronizarConNube();
+            
+            const btn = document.getElementById('btn-confirmar-final');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finalizando...';
+            btn.disabled = true;
+
+            mostrarToast("¡Turno guardado y confirmado exitosamente!", "exito", 0);
+            
+            // Recargamos la página después de 3 segundos
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
         }
 
         function sincronizarConNube() {
@@ -256,7 +370,7 @@
                     const indicador = document.getElementById('indicador-guardado');
                     indicador.classList.remove('opacity-0');
                     setTimeout(() => indicador.classList.add('opacity-0'), 2000);
-                } catch (error) { mostrarToast("Error guardando progreso. Revisa conexión.", "error"); }
+                } catch (error) { console.error("Error guardando silencio:", error); }
             }, 800);
         }
     </script>
