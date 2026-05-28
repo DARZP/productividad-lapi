@@ -42,7 +42,7 @@
     <div id="contenedor-principal" class="w-full max-w-md">
         
         <div class="glass p-6 rounded-3xl shadow-2xl mb-6">
-            <h1 class="text-xl font-bold mb-6 text-center">Registro de Productividad</h1>
+            <h1 class="text-xl font-bold mb-6 text-center">Registro de Productividad. FORÁNEOS</h1>
 
             <div id="paso-0" class="paso">
                 <label class="block mb-2 font-medium">Fecha de Servicio</label>
@@ -88,7 +88,7 @@
                 <div id="resumen-contenido" class="text-sm bg-black/20 p-4 rounded-xl mb-4 space-y-2"></div>
                 
                 <label class="block mb-2 font-medium text-sm">Observaciones (Pendientes, Inconvenientes o Información Relevante)</label>
-                <textarea id="input-observaciones" class="w-full p-3 mb-6 rounded-xl bg-white/20 border-none outline-none placeholder-white/60" rows="3" placeholder="Ej. 3 pacientes pendientes de ... por..."></textarea>
+                <textarea id="input-observaciones" class="w-full p-3 mb-6 rounded-xl bg-white/20 border-none outline-none placeholder-white/60" rows="3" placeholder="Ej. 3 pendientes de ... por..."></textarea>
 
                 <div class="flex gap-2">
                     <button onclick="location.reload()" class="w-1/3 bg-red-500 font-bold py-4 rounded-xl shadow-lg">Reiniciar</button>
@@ -155,8 +155,6 @@
     </div>
 
     <script>
-        // Listas actualizadas y ordenadas alfabéticamente
-        // --- DATOS CENTRALIZADOS DESDE CONFIG.JS ---
         const empresas = window.LAPI_CONFIG.empresas;
         const medicos = window.LAPI_CONFIG.medicos;
         const estudios = window.LAPI_CONFIG.estudiosForaneos;
