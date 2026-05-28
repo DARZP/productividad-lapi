@@ -8,9 +8,9 @@
     <script src="config.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); }
-        .bg-gradient-lapi { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
-        body { background-color: #f0f4f8; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        /* Estilo Glassmorphism idéntico a Foráneos */
+        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         /* Animación para el colapso */
         .content-accordion { transition: max-height 0.3s ease-out, opacity 0.2s; overflow: hidden; }
@@ -22,7 +22,7 @@
         .rotate-chevron { transform: rotate(180deg); }
 
         .study-row { transition: background-color 0.2s; }
-        .study-row:hover { background-color: #f8fafc; }
+        .study-row:hover { background-color: rgba(255, 255, 255, 0.1); }
     </style>
 
     <script type="module">
@@ -45,30 +45,32 @@
         window.getDoc = getDoc;
     </script>
 </head>
-<body class="text-slate-800 pb-20">
+<body class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen text-white pb-20">
 
-    <div id="pantalla-login" class="min-h-screen flex items-center justify-center p-4 bg-gradient-lapi">
+    <!-- PANTALLA DE LOGIN -->
+    <div id="pantalla-login" class="min-h-screen flex items-center justify-center p-4">
         <div class="glass p-8 rounded-3xl shadow-2xl w-full max-w-md text-center">
-            <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner"><i class="fa-solid fa-user-doctor"></i></div>
-            <h1 class="text-2xl font-black text-slate-800 mb-1">REGISTRO DIARIO DE PRODUCTIVIDAD</h1>
-            <p class="text-sm text-slate-500 mb-6 font-medium">Para Sucursales</p>
+            <div class="w-16 h-16 bg-white/20 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner"><i class="fa-solid fa-user-doctor"></i></div>
+            <h1 class="text-2xl font-black text-white mb-1">REGISTRO DIARIO DE PRODUCTIVIDAD</h1>
+            <p class="text-sm text-white/80 mb-6 font-medium">Para Sucursales</p>
             
             <div class="space-y-4 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Nombre del Médico</label>
-                    <input type="text" id="login-medico" list="lista-medicos" placeholder=" " class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-sky-500 transition uppercase font-semibold text-slate-700">
+                    <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Nombre del Médico</label>
+                    <input type="text" id="login-medico" list="lista-medicos" placeholder="Ej. Diego Arias" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase font-bold">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Sucursal</label>
-                    <input type="text" id="login-sucursal" list="lista-sucursales" placeholder="Ej. PLATEROS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-sky-500 transition uppercase font-semibold text-slate-700">
+                    <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Sucursal</label>
+                    <input type="text" id="login-sucursal" list="lista-sucursales" placeholder="Ej. PLATEROS" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase font-bold">
                 </div>
-                <button onclick="iniciarSesion()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition transform hover:-translate-y-0.5 mt-2">Ingresar a mi Turno</button>
+                <button onclick="iniciarSesion()" class="w-full bg-white text-orange-600 hover:bg-orange-50 font-black py-3.5 rounded-xl shadow-lg transition transform hover:-translate-y-0.5 mt-2">Ingresar a mi Turno</button>
             </div>
         </div>
     </div>
 
+    <!-- PANTALLA PRINCIPAL DE CAPTURA -->
     <div id="pantalla-app" class="hidden">
-        <div class="bg-gradient-lapi text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="glass text-white p-4 shadow-md sticky top-0 z-50 rounded-b-3xl mx-2 mb-4">
             <div class="max-w-3xl mx-auto flex justify-between items-center">
                 <div>
                     <p class="text-xs font-bold opacity-80 uppercase tracking-widest mb-0.5">Turno Operativo</p>
@@ -79,28 +81,31 @@
         </div>
 
         <div class="max-w-3xl mx-auto p-4 mt-2">
-            <div class="glass p-4 rounded-2xl shadow-sm border-l-4 border-sky-500 flex items-center justify-between mb-6">
+            <!-- Info del Médico -->
+            <div class="glass p-4 rounded-2xl shadow-sm border-l-4 border-white flex items-center justify-between mb-6">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center text-lg"><i class="fa-solid fa-user-md"></i></div>
+                    <div class="w-10 h-10 bg-white/20 text-white rounded-full flex items-center justify-center text-lg"><i class="fa-solid fa-user-md"></i></div>
                     <div>
-                        <p id="ui-medico" class="font-black text-slate-800 leading-tight">Dr. Nombre</p>
-                        <p id="ui-sucursal" class="text-xs font-bold text-slate-500 uppercase">Sucursal</p>
+                        <p id="ui-medico" class="font-black text-white leading-tight">Dr. Nombre</p>
+                        <p id="ui-sucursal" class="text-xs font-bold text-white/80 uppercase">Sucursal</p>
                     </div>
                 </div>
-                <div id="indicador-guardado" class="text-xs font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md opacity-0 transition-opacity"><i class="fa-solid fa-cloud-check"></i> Guardado</div>
+                <div id="indicador-guardado" class="text-xs font-bold text-orange-900 bg-white px-2 py-1 rounded-md opacity-0 transition-opacity"><i class="fa-solid fa-cloud-check"></i> Guardado</div>
             </div>
 
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6">
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 text-center md:text-left">Añadir pacientes de una empresa:</label>
+            <!-- Buscador de Empresas -->
+            <div class="glass p-4 rounded-2xl shadow-sm mb-6">
+                <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-2 text-center md:text-left">Añadir pacientes de una empresa:</label>
                 <div class="flex gap-2">
-                    <input type="text" id="input-nueva-empresa" list="lista-empresas" placeholder="Escribe la empresa..." class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-sky-500 transition uppercase text-sm font-bold">
-                    <button onclick="agregarEmpresa()" class="bg-slate-800 hover:bg-slate-700 text-white px-5 rounded-xl font-bold shadow-sm transition"><i class="fa-solid fa-plus"></i></button>
+                    <input type="text" id="input-nueva-empresa" list="lista-empresas" placeholder="Escribe la empresa..." class="flex-1 p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase text-sm font-bold">
+                    <button onclick="agregarEmpresa()" class="bg-white hover:bg-orange-50 text-orange-600 px-5 rounded-xl font-black shadow-sm transition"><i class="fa-solid fa-plus"></i></button>
                 </div>
             </div>
 
-            <div id="contenedor-empresas" class="space-y-3"></div>
+            <!-- Contenedor del Acordeón -->
+            <div id="contenedor-empresas" class="space-y-4"></div>
             
-            <div id="mensaje-vacio" class="text-center py-14 opacity-50 hidden">
+            <div id="mensaje-vacio" class="text-center py-14 opacity-70 hidden">
                 <i class="fa-solid fa-folder-open text-5xl mb-3"></i>
                 <p class="font-bold">Tu día está en blanco.</p>
                 <p class="text-xs">Agrega una empresa arriba para empezar.</p>
@@ -108,6 +113,7 @@
         </div>
     </div>
 
+    <!-- Datalists Globales -->
     <datalist id="lista-medicos"></datalist>
     <datalist id="lista-sucursales"></datalist>
     <datalist id="lista-empresas"></datalist>
@@ -198,12 +204,11 @@
             if(!datosDelDia.empresas[nombreNormalizado]) {
                 datosDelDia.empresas[nombreNormalizado] = {};
                 inputEmpresa.value = "";
-                renderizarTablero(nombreNormalizado); // Pasamos el nombre para que se abra automáticamente
+                renderizarTablero(nombreNormalizado); 
                 sincronizarConNube();
             } else alert("Esta empresa ya está en tu lista.");
         }
 
-        // FUNCIÓN PARA COLAPSAR/DESPLEGAR
         function toggleEmpresa(empresaID) {
             const content = document.getElementById(`content-${empresaID}`);
             const chevron = document.getElementById(`chevron-${empresaID}`);
@@ -228,8 +233,8 @@
             const counterElement = document.getElementById(idHTML);
             if(counterElement) {
                 counterElement.innerText = datosDelDia.empresas[empresa][estudio];
-                counterElement.classList.add('scale-150', 'text-sky-600');
-                setTimeout(() => counterElement.classList.remove('scale-150', 'text-sky-600'), 200);
+                counterElement.classList.add('scale-150', 'text-orange-200');
+                setTimeout(() => counterElement.classList.remove('scale-150', 'text-orange-200'), 200);
             }
             sincronizarConNube();
         }
@@ -250,7 +255,6 @@
                 const empresaID = empresa.replace(/\s+/g,'');
                 let htmlEstudios = "";
                 
-                // Determinar si debe iniciar abierto o cerrado
                 const esNueva = (empresa === empresaParaAbrir);
                 const claseEstado = esNueva ? 'expanded' : 'collapsed';
                 const claseChevron = esNueva ? 'rotate-chevron' : '';
@@ -260,30 +264,30 @@
                     const idHTML = `count_${empresaID}_${estudio.replace(/\s+/g,'')}`;
                     
                     htmlEstudios += `
-                        <div class="study-row flex items-center justify-between py-2 border-b border-slate-50 last:border-0 px-2 rounded-lg">
-                            <span class="text-xs font-bold text-slate-500 leading-tight">${estudio}</span>
-                            <div class="flex items-center gap-2 bg-slate-50 p-0.5 rounded-lg border border-slate-100">
-                                <button onclick="cambiarContador('${empresa}', '${estudio}', -1)" class="w-7 h-7 rounded bg-white text-slate-400 shadow-sm font-black text-base">-</button>
-                                <span id="${idHTML}" class="w-5 text-center font-black text-slate-700 text-sm transition-transform">${cantidadAct}</span>
-                                <button onclick="cambiarContador('${empresa}', '${estudio}', 1)" class="w-7 h-7 rounded bg-white text-slate-400 shadow-sm font-black text-base">+</button>
+                        <div class="study-row flex items-center justify-between py-2 border-b border-white/10 last:border-0 px-2 rounded-lg">
+                            <span class="text-xs font-bold text-white/90 leading-tight">${estudio}</span>
+                            <div class="flex items-center gap-2 bg-black/20 p-0.5 rounded-lg border border-white/10">
+                                <button onclick="cambiarContador('${empresa}', '${estudio}', -1)" class="w-7 h-7 rounded bg-white/20 text-white shadow-sm font-black text-base hover:bg-white/40 transition">-</button>
+                                <span id="${idHTML}" class="w-5 text-center font-black text-white text-sm transition-transform">${cantidadAct}</span>
+                                <button onclick="cambiarContador('${empresa}', '${estudio}', 1)" class="w-7 h-7 rounded bg-white text-orange-600 shadow-sm font-black text-base hover:bg-gray-100 transition">+</button>
                             </div>
                         </div>
                     `;
                 });
 
                 contenedor.innerHTML += `
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300">
-                        <div onclick="toggleEmpresa('${empresaID}')" class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center cursor-pointer active:bg-slate-700">
+                    <div class="glass rounded-2xl shadow-sm overflow-hidden transition-all duration-300">
+                        <div onclick="toggleEmpresa('${empresaID}')" class="bg-black/20 text-white px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-black/30 transition">
                             <div class="flex items-center gap-2">
-                                <i class="fa-regular fa-building text-sky-400 text-xs"></i>
+                                <i class="fa-regular fa-building text-white text-xs"></i>
                                 <span class="font-black text-xs tracking-widest uppercase">${empresa}</span>
                             </div>
                             <i id="chevron-${empresaID}" class="fa-solid fa-chevron-down text-xs chevron ${claseChevron}"></i>
                         </div>
                         <div id="content-${empresaID}" class="content-accordion ${claseEstado}">
-                            <div class="p-2 space-y-1 bg-white">
+                            <div class="p-2 space-y-1 bg-black/10">
                                 ${htmlEstudios}
-                                <button onclick="borrarEmpresa('${empresa}')" class="w-full py-2 mt-2 text-[10px] font-bold text-red-400 uppercase tracking-widest hover:text-red-600 transition"><i class="fa-solid fa-trash-can mr-1"></i> Quitar Empresa de la lista</button>
+                                <button onclick="borrarEmpresa('${empresa}')" class="w-full py-2 mt-2 text-[10px] font-bold text-red-300 uppercase tracking-widest hover:text-red-400 transition"><i class="fa-solid fa-trash-can mr-1"></i> Quitar Empresa de la lista</button>
                             </div>
                         </div>
                     </div>
