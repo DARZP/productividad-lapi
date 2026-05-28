@@ -298,3 +298,22 @@
             if(confirm(`¿Quitar ${empresa} de tu lista de hoy?`)) {
                 delete datosDelDia.empresas[empresa];
                 renderizarTablero();
+                sincronizarConNube();
+            }
+        }
+
+        function sincronizarConNube() {
+            clearTimeout(timerGuardado);
+            timerGuardado = setTimeout(async () => {
+                try {
+                    datosDelDia.ultimaActualizacion = new Date();
+                    await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia);
+                    const indicador = document.getElementById('indicador-guardado');
+                    indicador.classList.remove('opacity-0');
+                    setTimeout(() => indicador.classList.add('opacity-0'), 2000);
+                } catch (error) { console.error("Error guardando:", error); }
+            }, 800);
+        }
+    </script>
+</body>
+</html>
