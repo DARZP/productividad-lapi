@@ -242,17 +242,16 @@
     <datalist id="lista-s-estudio"></datalist>
 
     <script>
-       
         // --- 1. DATOS CENTRALIZADOS DESDE CONFIG.JS ---
         const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales;
 
-        // --- 2. LLENAR FILTROS DE FORÁNEOS (Con catálogos globales) ---
+        // --- 2. LLENAR FILTROS DE FORÁNEOS ---
         document.getElementById('lista-medicos-admin').innerHTML = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">`).join('');
         document.getElementById('lista-empresas-admin').innerHTML = window.LAPI_CONFIG.empresas.map(e => `<option value="${e}">`).join('');
         document.getElementById('lista-estudios-admin').innerHTML = window.LAPI_CONFIG.estudiosForaneos.map(e => `<option value="${e}">`).join('');
 
-        // --- 3. LLENAR FILTROS DE SUCURSALES (Con catálogos globales) ---
+        // --- 3. LLENAR FILTROS DE SUCURSALES ---
         document.getElementById('lista-s-sucursal').innerHTML = window.LAPI_CONFIG.sucursales.map(x => `<option value="${x}">`).join('');
         document.getElementById('lista-s-empresa').innerHTML = window.LAPI_CONFIG.empresas.map(x => `<option value="${x}">`).join('');
         document.getElementById('lista-s-medico').innerHTML = window.LAPI_CONFIG.medicos.map(x => `<option value="${x}">`).join('');
@@ -264,9 +263,6 @@
         let limiteF = 50, limiteS = 50;
         let graficos = {};
         let datosProcesadosListos = [];
-        
-        const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
-        const estudiosMapeo = { "HC": "HC", "EXAMEN MEDICO": "HC", "SEGURO": "Seguro", "AUDIOMETRIA": "Audiometría", "ESPIROMETRIA": "Espirometría", "ELECTROCARDIOGRAMA": "Electrocardiograma", "AGUDEZA VISUAL": "Agudeza Visual", "LOGOAUDIOMETRIA": "Logoaudiometría", "TIMPANOMETRIA": "Timpanometría", "CERTIFICADO": "Certificado", "NORDICO": "Nórdico", "OTRO": "Otro" };
 
         async function initDashboard() {
             try {
@@ -280,7 +276,7 @@
                     else rawDataForaneos.push(data);
                 });
 
-                // 2. CARGAR NUEVOS REGISTROS AGRUPADOS (De sucursal.html) Y APLANARLOS
+                // 2. CARGAR NUEVOS REGISTROS AGRUPADOS Y APLANARLOS
                 const qSucAgrupadas = window.query(window.collection(window.db, "registros_diarios_sucursales"));
                 const qsSucAgrupadas = await window.getDocs(qSucAgrupadas);
                 
@@ -290,7 +286,6 @@
                         Object.keys(data.empresas).forEach(empresa => {
                             Object.keys(data.empresas[empresa]).forEach(estudio => {
                                 const cantidad = data.empresas[empresa][estudio] || 0;
-                                // Expandimos la cantidad para alimentar las gráficas existentes
                                 for (let k = 0; k < cantidad; k++) {
                                     rawDataSucursales.push({
                                         tipo: "sucursal",
@@ -306,19 +301,7 @@
                     }
                 });
 
-                // Ordenar sucursales combinadas por fecha descendente
                 rawDataSucursales.sort((a,b) => b.fecha.localeCompare(a.fecha));
-
-                // Llenar selects dinámicos automáticamente con la mezcla de datos
-                const sSucursales = [...new Set(rawDataSucursales.map(d=>d.sucursal))].filter(Boolean).sort();
-                const sEmpresas = [...new Set(rawDataSucursales.map(d=>d.empresa))].filter(Boolean).sort();
-                const sMedicos = [...new Set(rawDataSucursales.map(d=>d.medico))].filter(Boolean).sort();
-                const sEstudios = [...new Set(rawDataSucursales.map(d=>d.estudio))].filter(Boolean).sort();
-                
-                document.getElementById('lista-s-sucursal').innerHTML = sSucursales.map(x => `<option value="${x}">`).join('');
-                document.getElementById('lista-s-empresa').innerHTML = sEmpresas.map(x => `<option value="${x}">`).join('');
-                document.getElementById('lista-s-medico').innerHTML = sMedicos.map(x => `<option value="${x}">`).join('');
-                document.getElementById('lista-s-estudio').innerHTML = sEstudios.map(x => `<option value="${x}">`).join('');
 
                 aplicarFiltroRapido('F', 'hoy');
                 aplicarFiltroRapido('S', 'mes_actual');
@@ -378,16 +361,11 @@
         }
 
         function reestablecerTodo() {
-            document.getElementById('f-inicio').value = '';
-            document.getElementById('f-fin').value = '';
-            document.getElementById('f-empresa').value = '';
-            document.getElementById('f-medico').value = '';
-            document.getElementById('f-estudio').value = '';
-            document.getElementById('s-inicio').value = '';
-            document.getElementById('s-fin').value = '';
-            document.getElementById('s-sucursal').value = '';
-            document.getElementById('s-empresa').value = '';
-            document.getElementById('s-medico').value = '';
+            document.getElementById('f-inicio').value = ''; document.getElementById('f-fin').value = '';
+            document.getElementById('f-empresa').value = ''; document.getElementById('f-medico').value = '';
+            document.getElementById('f-estudio').value = ''; document.getElementById('s-inicio').value = '';
+            document.getElementById('s-fin').value = ''; document.getElementById('s-sucursal').value = '';
+            document.getElementById('s-empresa').value = ''; document.getElementById('s-medico').value = '';
             document.getElementById('s-estudio').value = '';
             limpiarBotonActivo('F'); limpiarBotonActivo('S');
             ejecutarFiltrosForaneos(); ejecutarFiltrosSucursales();
@@ -734,7 +712,6 @@
             location.reload();
         }
 
-        // =================== UTILIDADES Y GRÁFICAS ===================
         function dibujarGrafico(canvasId, tipo, labels, data, labelTitulo, color) {
             if(graficos[canvasId]) graficos[canvasId].destroy();
             let mostrarLeyenda = (tipo === 'pie');
