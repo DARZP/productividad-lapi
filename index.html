@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Productividad -Foráneos</title>
+    <title>Registro Productividad</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="config.js"></script>
     <script type="module">
@@ -42,7 +42,7 @@
     <div id="contenedor-principal" class="w-full max-w-md">
         
         <div class="glass p-6 rounded-3xl shadow-2xl mb-6">
-            <h1 class="text-2xl font-black text-white mb-1">REGISTRO DIARIO DE PRODUCTIVIDAD</h1>
+            <h1 class="text-2xl font-black text-white mb-1">📍 REGISTRO DIARIO DE PRODUCTIVIDAD</h1>
             <p class="text-sm text-white/80 mb-6 font-medium">Para Foráneos</p>
 
             <div id="paso-0" class="paso">
@@ -146,21 +146,22 @@
 
         </div>
 
-        <div id="cuadro-edicion" class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30">
-            <h2 class="text-xs font-bold uppercase mb-2 opacity-80 text-center">¿Editar registro previo?</h2>
-            <div class="flex gap-2">
-                <input id="input-edit-id" placeholder="Ej: 4812M" class="w-full p-2 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50 uppercase">
-                <button onclick="buscarRegistro()" class="bg-white/20 px-4 py-2 rounded-lg text-sm font-bold">Buscar</button>
+        <div id="seccion-botones-extra">
+            <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 mb-4">
+                <h2 class="text-xs font-bold uppercase mb-2 opacity-80 text-center">¿Editar registro previo?</h2>
+                <div class="flex gap-2">
+                    <input id="input-edit-id" placeholder="Ej: 4812M" class="w-full p-2 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50 uppercase">
+                    <button onclick="buscarRegistro()" class="bg-white/20 px-4 py-2 rounded-lg text-sm font-bold">Buscar</button>
+                </div>
+            </div>
+
+            <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 text-center">
+                <p class="text-xs font-bold uppercase mb-2 opacity-80">¿Estás en una Clínica / Sucursal?</p>
+                <button onclick="window.location.href='sucursal.html'" class="w-full bg-white/20 hover:bg-white/30 py-3 rounded-lg text-sm font-bold transition">
+                    🏢 Ir a registro de Sucursales
+                </button>
             </div>
         </div>
-
-        <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 mt-4 text-center">
-            <p class="text-xs font-bold uppercase mb-2 opacity-80">¿Estás en una Sucursal?</p>
-            <button onclick="window.location.href='sucursal.html'" class="w-full bg-white/20 hover:bg-white/30 py-3 rounded-lg text-sm font-bold transition">
-                <i class="fa-solid fa-building mr-2"></i> Ir a registro de Sucursales
-            </button>
-        </div>
-        
     </div>
 
     <script>
@@ -196,7 +197,9 @@
             horasCalculadas = calcularHoras(hIni, hFin);
             document.getElementById('paso-0').classList.add('hidden'); 
             document.getElementById('paso-1').classList.remove('hidden'); 
-            document.getElementById('cuadro-edicion').classList.add('hidden'); 
+            
+            // MAGIA: Ocultar los botones extra al avanzar
+            document.getElementById('seccion-botones-extra').classList.add('hidden'); 
         }
         
         function irAPaso2() { if(document.getElementById('input-empresa').value) { document.getElementById('paso-1').classList.add('hidden'); document.getElementById('paso-2').classList.remove('hidden'); } else alert("Selecciona empresa"); }
@@ -309,7 +312,7 @@
 
         function abrirEditor(data) {
             document.getElementById('paso-0').classList.add('hidden');
-            document.getElementById('cuadro-edicion').classList.add('hidden');
+            document.getElementById('seccion-botones-extra').classList.add('hidden');
             document.getElementById('paso-edicion').classList.remove('hidden');
 
             document.getElementById('edit-folio-text').innerText = data.folio;
