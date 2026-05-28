@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LAPI Registro Productividad</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="config.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -155,110 +156,11 @@
 
     <script>
         // Listas actualizadas y ordenadas alfabéticamente
-        const empresas = [
-  "ABBOTT SCOUTING",
-  "AEROMEXICO",
-  "ALMEXA",
-  "ALSTOM FERROVIARIA",
-  "ALSTOM FERROVIARIA CIUDAD AZTECA",
-  "ALSTOM FERROVIARIA ROSARIO",
-  "ALSTOM FERROVIARIA TICOMAN",
-  "ALESSO CUAUTITLÁN",
-  "AMCOR",
-  "ANTIBIÓTICOS DE MÉXICO",
-  "ASA CDMX",
-  "ATLAS",
-  "ATLAS GDL",
-  "AVANTOR",
-  "AZ FINE",
-  "BARCEL LERMA",
-  "BD",
-  "BIMBO",
-  "BIMBO AZCAPOTZALCO",
-  "BIMBO SANTA MARÍA",
-  "BIODIST",
-  "BYVA MINERALES",
-  "CASA LUMBRE",
-  "CASA LUMBRE AXOCOPAN",
-  "CASA LUMBRE PUEBLA",
-  "CEMEX ATOTONILCO",
-  "CENTRO DE DISTRIBUCIÓN OXXO",
-  "CLOROX",
-  "COCA COLA",
-  "COCA COLA EXPORT",
-  "COCA COLA FEMSA TOLUCA",
-  "COCA COLA MANUFACTURA PACIFICO",
-  "COCA COLA OJUELOS",
-  "COCA COLA TOLUCA",
-  "COMPAÑÍA EDITORIAL",
-  "COMPAÑÍA NOC",
-  "COMSA",
-  "CONSUMED SONY",
-  "CONSULTORES MEDICOS",
-  "CORPORATIVO DL DENTILAB",
-  "DESARROLLO LOGÍSTICO",
-  "DICIPA",
-  "DISTRIBUIDORA DE LÁCTEOS",
-  "DLP MEDICAL",
-  "FRUTAS CONCENTRADAS",
-  "GERDAU CORSA",
-  "GRUPO COBRA",
-  "GRUPO IND POSEIDON",
-  "GRUPO TAIFELDS",
-  "HOLCIM ATLACOMULCO",
-  "HOLCIM CUAUTLA",
-  "HOLCIM CUERNAVACA",
-  "HOLCIM POLOTITLAN",
-  "HUMANTOP",
-  "IBERCHEM",
-  "INDUSTRIAS METÁLICAS",
-  "JUGOS DEL VALLE",
-  "KEUBIO",
-  "LA CAZADORA",
-  "LIVERPOOL",
-  "LIVERPOOL PLAN",
-  "LOREAL",
-  "MATERIAS PRIMAS",
-  "MCORMICK",
-  "MCCORD PAYEN",
-  "MERCK",
-  "NYSCO",
-  "OMEGA MÉXICO",
-  "ORGANON PHARMA",
-  "OXXO AZCAPOTZALCO",
-  "OXXO SMO",
-  "POLIRESINAS",
-  "PROMECO",
-  "PROBIOMED",
-  "PROFILATEX",
-  "PROVEEDORA MEXICANA DE MONOFILAMENTOS",
-  "PROXIMIDAD Y LOGÍSTICA CHALCO",
-  "PROXIMIDAD Y LOGÍSTICA PACHUCA",
-  "PROXIIDAD Y LOGÍSTICA MORELOS",
-  "PRODUCTOS INNOVADOR",
-  "PRODUCTOS RICH",
-  "QUALITAS",
-  "SAFMEX TOLUCA",
-  "SC JOHNSON",
-  "SCHNEIDER",
-  "SEGURO AXA",
-  "SEGURO INBURSA",
-  "SEGURO ZURICH",
-  "SIFATEC TULA 1",
-  "SIFATEC TULA 2",
-  "SNF FLOERGER",
-  "SODEXO",
-  "SODEXO CECAT SUR",
-  "TACA",
-  "TISK SOLUCIONES",
-  "TRANSFORMADORA INDUSTRIAL",
-  "USK INTENACIONAL",
-  "USME",
-  "VALEANT"
-].sort();
-        const medicos = ["Susana Cayetano", "Diego Arias", "Patricia Kassandra", "Estefany Becherel", "Paulina Alba", "Mariana Gaviño", "Jose Alejandro", "Isabel Palma", "Dulce Maria", "Angeles Valenzuela", "Jose Juan", "Ingrid Bernal", "Giselle Vizuet", "Angello", "Elzy Chacon", "Alberto Gomez", "Yirelka Yeraldine", "Juan Manuel", "Angelica Itzel", "Mauricio Ruiz", "Lucero Cruz", "Jannet Alejandra", "Fernanda",  "Giovanni Mariano", "David Emmanuel", "Jazmin Morales!"].sort();
-        const estudios = ["Espirometría", "Audiometría", "Historia Clínica", "Examen de Capacidad Visual", "Nórdico", "Seguro"];
-
+        // --- DATOS CENTRALIZADOS DESDE CONFIG.JS ---
+        const empresas = window.LAPI_CONFIG.empresas;
+        const medicos = window.LAPI_CONFIG.medicos;
+        const estudios = window.LAPI_CONFIG.estudiosForaneos;
+        
         let seleccionados = [], registroFinal = [], indiceActual = 0;
         let horasCalculadas = 0;
         let editDocId = null; 
