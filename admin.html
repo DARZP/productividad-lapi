@@ -243,21 +243,28 @@
 
     <script>
        
-        const medicosForaneos = window.LAPI_CONFIG.medicos;
-        const empresasForaneos = window.LAPI_CONFIG.empresas;
-        const estudiosForaneos = window.LAPI_CONFIG.estudiosForaneos;
+        // --- 1. DATOS CENTRALIZADOS DESDE CONFIG.JS ---
+        const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales;
 
-        document.getElementById('lista-medicos-admin').innerHTML = medicosForaneos.map(m => `<option value="${m}">`).join('');
-        document.getElementById('lista-empresas-admin').innerHTML = empresasForaneos.map(e => `<option value="${e}">`).join('');
-        document.getElementById('lista-estudios-admin').innerHTML = estudiosForaneos.map(e => `<option value="${e}">`).join('');
+        // --- 2. LLENAR FILTROS DE FORÁNEOS (Con catálogos globales) ---
+        document.getElementById('lista-medicos-admin').innerHTML = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">`).join('');
+        document.getElementById('lista-empresas-admin').innerHTML = window.LAPI_CONFIG.empresas.map(e => `<option value="${e}">`).join('');
+        document.getElementById('lista-estudios-admin').innerHTML = window.LAPI_CONFIG.estudiosForaneos.map(e => `<option value="${e}">`).join('');
 
+        // --- 3. LLENAR FILTROS DE SUCURSALES (Con catálogos globales) ---
+        document.getElementById('lista-s-sucursal').innerHTML = window.LAPI_CONFIG.sucursales.map(x => `<option value="${x}">`).join('');
+        document.getElementById('lista-s-empresa').innerHTML = window.LAPI_CONFIG.empresas.map(x => `<option value="${x}">`).join('');
+        document.getElementById('lista-s-medico').innerHTML = window.LAPI_CONFIG.medicos.map(x => `<option value="${x}">`).join('');
+        document.getElementById('lista-s-estudio').innerHTML = window.LAPI_CONFIG.estudiosSucursales.map(x => `<option value="${x}">`).join('');
+
+        // Variables Globales
         let rawDataForaneos = [], rawDataSucursales = [];
         let datosFiltradosF = [], datosFiltradosS = [];
         let limiteF = 50, limiteS = 50;
         let graficos = {};
-        
         let datosProcesadosListos = [];
+        
         const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
         const estudiosMapeo = { "HC": "HC", "EXAMEN MEDICO": "HC", "SEGURO": "Seguro", "AUDIOMETRIA": "Audiometría", "ESPIROMETRIA": "Espirometría", "ELECTROCARDIOGRAMA": "Electrocardiograma", "AGUDEZA VISUAL": "Agudeza Visual", "LOGOAUDIOMETRIA": "Logoaudiometría", "TIMPANOMETRIA": "Timpanometría", "CERTIFICADO": "Certificado", "NORDICO": "Nórdico", "OTRO": "Otro" };
 
