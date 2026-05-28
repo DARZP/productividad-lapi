@@ -344,6 +344,25 @@
                 
                 qsSucAgrupadas.forEach(doc => {
                     const data = doc.data();
+                    
+                    // 👉 PARA EL NUEVO FORMATO DIRECTO (Sin Empresas)
+                    if (data.estudios) {
+                        Object.keys(data.estudios).forEach(estudio => {
+                            const cantidad = data.estudios[estudio] || 0;
+                            for (let k = 0; k < cantidad; k++) {
+                                rawDataSucursales.push({
+                                    tipo: "sucursal",
+                                    fecha: data.fecha,
+                                    sucursal: normalizarDato(data.sucursal, 'sucursal'),
+                                    empresa: "SUCURSAL (SIN EMPRESA)", // Relleno automático para no romper la tabla
+                                    estudio: normalizarDato(estudio, 'estudio'),
+                                    medico: data.medico
+                                });
+                            }
+                        });
+                    }
+                    
+                    // 👉 PARA EL FORMATO DE TRANSICIÓN (Si hicieron pruebas ayer agrupando por empresa)
                     if (data.empresas) {
                         Object.keys(data.empresas).forEach(empresa => {
                             Object.keys(data.empresas[empresa]).forEach(estudio => {
