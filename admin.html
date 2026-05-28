@@ -166,7 +166,7 @@
                     <div class="flex-1 min-w-[130px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Hasta</label><input type="date" id="s-fin" onchange="limpiarBotonActivo('S')" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none"></div>
                     <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Sucursal</label><input id="s-sucursal" list="lista-s-sucursal" placeholder="Todas..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none uppercase"></div>
                     <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Empresa</label><input id="s-empresa" list="lista-s-empresa" placeholder="Todas..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none uppercase"></div>
-                    <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Médico (Iniciales)</label><input id="s-medico" list="lista-s-medico" placeholder="Todos..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none uppercase"></div>
+                    <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Médico</label><input id="s-medico" list="lista-s-medico" placeholder="Todos..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none uppercase"></div>
                     <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Estudio</label><input id="s-estudio" list="lista-s-estudio" placeholder="Todos..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none uppercase"></div>
                     
                     <div class="flex-none w-full xl:w-auto flex items-end gap-2">
@@ -178,7 +178,7 @@
             </div>
 
             <div class="glass p-5 rounded-2xl shadow-sm mb-6 border-l-4 border-emerald-500">
-                <h3 class="font-black text-slate-700 text-sm mb-3 uppercase">Procesamiento Inteligente de Excel (Sucursales)</h3>
+                <h3 class="font-black text-slate-700 text-sm mb-3 uppercase">Procesamiento Inteligente de Excel (Sucursales Legacy)</h3>
                 <p class="text-xs text-slate-500 mb-4">Sube los concentrados diarios o mensuales. El sistema extraerá los datos y <b>omitirá los duplicados automáticamente</b> comparando contra la base de datos.</p>
                 
                 <div class="flex flex-wrap gap-4 items-center">
@@ -202,9 +202,8 @@
                 <div id="logProcesamiento" class="mt-2 text-xs font-mono text-slate-600 hidden bg-slate-100 p-3 rounded-lg max-h-40 overflow-y-auto"></div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-center">
                 <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-sky-600"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Total Estudios</p><p id="kpi-s-estudios" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
-                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-indigo-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Pacientes Únicos</p><p id="kpi-s-pacientes" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
                 <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-emerald-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Personal Activo</p><p id="kpi-s-personal" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
             </div>
 
@@ -214,7 +213,6 @@
                 <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Top 10 Sucursales</h3><div class="relative h-64"><canvas id="cS3"></canvas></div></div>
                 <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Distribución por Tipo de Estudio</h3><div class="relative h-64"><canvas id="cS4"></canvas></div></div>
                 <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Top Médicos</h3><div class="relative h-64"><canvas id="cS5"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Pacientes Únicos por Día</h3><div class="relative h-64"><canvas id="cS6"></canvas></div></div>
             </div>
 
             <div class="glass p-5 rounded-2xl shadow-sm overflow-hidden border border-slate-200">
@@ -224,7 +222,7 @@
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left border-collapse min-w-[700px]">
-                        <thead><tr class="text-xs uppercase bg-slate-100 text-slate-500 border-b"><th class="py-3 px-4">Fecha</th><th class="py-3 px-4">Sucursal / Empresa</th><th class="py-3 px-4">Paciente</th><th class="py-3 px-4">Estudio y Médico</th></tr></thead>
+                        <thead><tr class="text-xs uppercase bg-slate-100 text-slate-500 border-b"><th class="py-3 px-4">Fecha</th><th class="py-3 px-4">Sucursal / Empresa</th><th class="py-3 px-4">Estudio Realizado</th><th class="py-3 px-4">Médico Asignado</th></tr></thead>
                         <tbody id="tabla-sucursales" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
@@ -243,27 +241,8 @@
     <datalist id="lista-s-estudio"></datalist>
 
     <script>
-        // Listas Foráneos estáticas
         const medicosForaneos = ["Susana Cayetano", "Diego Arias", "Patricia Kassandra", "Estefany Becherel", "Paulina Alba", "Mariana Gaviño", "Jose Alejandro", "Isabel Palma", "Dulce Maria", "Angeles Valenzuela", "Jose Juan", "Ingrid Bernal", "Giselle Vizuet", "Angello", "Elzy Chacon", "Alberto Gomez", "Yirelka Yeraldine", "Juan Manuel", "Angelica Itzel", "Mauricio Ruiz", "Lucero Cruz", "Jannet Alejandra", "Fernanda", "Giovanni Mariano", "David Emmanuel", "Jazmin Morales!"].sort();
-        const empresasForaneos = [
-          "ABBOTT SCOUTING", "AEROMEXICO", "ALMEXA", "ALSTOM FERROVIARIA", "ALSTOM FERROVIARIA CIUDAD AZTECA",
-          "ALSTOM FERROVIARIA ROSARIO", "ALSTOM FERROVIARIA TICOMAN", "ALESSO CUAUTITLÁN", "AMCOR", "ANTIBIÓTICOS DE MÉXICO",
-          "ASA CDMX", "ATLAS", "ATLAS GDL", "AVANTOR", "AZ FINE", "BARCEL LERMA", "BD PLANTA", "BIMBO",
-          "BIMBO AZCAPOTZALCO", "BIMBO SANTA MARÍA", "BIODIST", "BYVA MINERALES", "CASA LUMBRE", "CASA LUMBRE AXOCOPAN",
-          "CASA LUMBRE PUEBLA", "CEMEX ATOTONILCO", "CENTRO DE DISTRIBUCIÓN OXXO", "CLOROX", "COCA COLA",
-          "COCA COLA EXPORT", "COCA COLA FEMSA TOLUCA", "COCA COLA MANUFACTURA PACIFICO", "COCA COLA OJUELOS",
-          "COCA COLA TOLUCA", "COMPAÑÍA EDITORIAL", "COMPAÑÍA NOC", "COMSA", "CONSUMED SONY", "CONSULTORES MEDICOS",
-          "CORPORATIVO DL DENTILAB", "DESARROLLO LOGÍSTICO", "DICIPA", "DISTRIBUIDORA DE LÁCTEOS", "DLP MEDICAL",
-          "FRUTAS CONCENTRADAS", "GERDAU CORSA", "GRUPO COBRA", "GRUPO IND POSEIDON", "GRUPO TAIFELDS", "HOLCIM ATLACOMULCO",
-          "HOLCIM CUAUTLA", "HOLCIM CUERNAVACA", "HOLCIM POLOTITLAN", "HUMANTOP", "IBERCHEM", "INDUSTRIAS METÁLICAS",
-          "JUGOS DEL VALLE", "KEUBIO", "LA CAZADORA", "LIVERPOOL", "LIVERPOOL PLAN", "LOREAL", "MATERIAS PRIMAS",
-          "MCORMICK", "MCCORD PAYEN", "MERCK", "NYSCO", "OMEGA MÉXICO", "ORGANON PHARMA", "OXXO AZCAPOTZALCO",
-          "OXXO SMO", "POLIRESINAS", "PROMECO", "PROBIOMED", "PROFILATEX", "PROVEEDORA MEXICANA DE MONOFILAMENTOS",
-          "PROXIMIDAD Y LOGÍSTICA CHALCO", "PROXIMIDAD Y LOGÍSTICA PACHUCA", "PROXIIDAD Y LOGÍSTICA MORELOS",
-          "PRODUCTOS INNOVADOR", "PRODUCTOS RICH", "QUALITAS", "SAFMEX TOLUCA", "SC JOHNSON", "SCHNEIDER", "SEGURO AXA",
-          "SEGURO INBURSA", "SEGURO ZURICH", "SIFATEC TULA 1", "SIFATEC TULA 2", "SNF FLOERGER", "SODEXO", "SODEXO CECAT SUR",
-          "TACA", "TISK SOLUCIONES", "TRANSFORMADORA INDUSTRIAL", "USK INTENACIONAL", "USME", "VALEANT"
-        ].sort();
+        const empresasForaneos = ["ABBOTT SCOUTING", "AEROMEXICO", "ALMEXA", "ALSTOM FERROVIARIA", "ALSTOM FERROVIARIA CIUDAD AZTECA", "ALSTOM FERROVIARIA ROSARIO", "ALSTOM FERROVIARIA TICOMAN", "ALESSO CUAUTITLÁN", "AMCOR", "ANTIBIÓTICOS DE MÉXICO", "ASA CDMX", "ATLAS", "ATLAS GDL", "AVANTOR", "AZ FINE", "BARCEL LERMA", "BD PLANTA", "BIMBO", "BIMBO AZCAPOTZALCO", "BIMBO SANTA MARÍA", "BIODIST", "BYVA MINERALES", "CASA LUMBRE", "CASA LUMBRE AXOCOPAN", "CASA LUMBRE PUEBLA", "CEMEX ATOTONILCO", "CENTRO DE DISTRIBUCIÓN OXXO", "CLOROX", "COCA COLA", "COCA COLA EXPORT", "COCA COLA FEMSA TOLUCA", "COCA COLA MANUFACTURA PACIFICO", "COCA COLA OJUELOS", "COCA COLA TOLUCA", "COMPAÑÍA EDITORIAL", "COMPAÑÍA NOC", "COMSA", "CONSUMED SONY", "CONSULTORES MEDICOS", "CORPORATIVO DL DENTILAB", "DESARROLLO LOGÍSTICO", "DICIPA", "DISTRIBUIDORA DE LÁCTEOS", "DLP MEDICAL", "FRUTAS CONCENTRADAS", "GERDAU CORSA", "GRUPO COBRA", "GRUPO IND POSEIDON", "GRUPO TAIFELDS", "HOLCIM ATLACOMULCO", "HOLCIM CUAUTLA", "HOLCIM CUERNAVACA", "HOLCIM POLOTITLAN", "HUMANTOP", "IBERCHEM", "INDUSTRIAS METÁLICAS", "JUGOS DEL VALLE", "KEUBIO", "LA CAZADORA", "LIVERPOOL", "LIVERPOOL PLAN", "LOREAL", "MATERIAS PRIMAS", "MCORMICK", "MCCORD PAYEN", "MERCK", "NYSCO", "OMEGA MÉXICO", "ORGANON PHARMA", "OXXO AZCAPOTZALCO", "OXXO SMO", "POLIRESINAS", "PROMECO", "PROBIOMED", "PROFILATEX", "PROVEEDORA MEXICANA DE MONOFILAMENTOS", "PROXIMIDAD Y LOGÍSTICA CHALCO", "PROXIMIDAD Y LOGÍSTICA PACHUCA", "PROXIIDAD Y LOGÍSTICA MORELOS", "PRODUCTOS INNOVADOR", "PRODUCTOS RICH", "QUALITAS", "SAFMEX TOLUCA", "SC JOHNSON", "SCHNEIDER", "SEGURO AXA", "SEGURO INBURSA", "SEGURO ZURICH", "SIFATEC TULA 1", "SIFATEC TULA 2", "SNF FLOERGER", "SODEXO", "SODEXO CECAT SUR", "TACA", "TISK SOLUCIONES", "TRANSFORMADORA INDUSTRIAL", "USK INTENACIONAL", "USME", "VALEANT"].sort();
         const estudiosForaneos = ["Espirometría", "Audiometría", "Historia Clínica", "Examen de Capacidad Visual", "Nórdico", "Seguro"].sort();
 
         document.getElementById('lista-medicos-admin').innerHTML = medicosForaneos.map(m => `<option value="${m}">`).join('');
@@ -281,6 +260,7 @@
 
         async function initDashboard() {
             try {
+                // 1. CARGAR REGISTROS HISTÓRICOS Y FORÁNEOS
                 const q = window.query(window.collection(window.db, "registros"), window.orderBy("fecha", "desc"));
                 const qs = await window.getDocs(q);
                 
@@ -290,6 +270,36 @@
                     else rawDataForaneos.push(data);
                 });
 
+                // 2. CARGAR NUEVOS REGISTROS AGRUPADOS (De sucursal.html) Y APLANARLOS
+                const qSucAgrupadas = window.query(window.collection(window.db, "registros_diarios_sucursales"));
+                const qsSucAgrupadas = await window.getDocs(qSucAgrupadas);
+                
+                qsSucAgrupadas.forEach(doc => {
+                    const data = doc.data();
+                    if (data.empresas) {
+                        Object.keys(data.empresas).forEach(empresa => {
+                            Object.keys(data.empresas[empresa]).forEach(estudio => {
+                                const cantidad = data.empresas[empresa][estudio] || 0;
+                                // Expandimos la cantidad para alimentar las gráficas existentes
+                                for (let k = 0; k < cantidad; k++) {
+                                    rawDataSucursales.push({
+                                        tipo: "sucursal",
+                                        fecha: data.fecha,
+                                        sucursal: data.sucursal,
+                                        empresa: empresa,
+                                        estudio: estudio,
+                                        medico: data.medico
+                                    });
+                                }
+                            });
+                        });
+                    }
+                });
+
+                // Ordenar sucursales combinadas por fecha descendente
+                rawDataSucursales.sort((a,b) => b.fecha.localeCompare(a.fecha));
+
+                // Llenar selects dinámicos automáticamente con la mezcla de datos
                 const sSucursales = [...new Set(rawDataSucursales.map(d=>d.sucursal))].filter(Boolean).sort();
                 const sEmpresas = [...new Set(rawDataSucursales.map(d=>d.empresa))].filter(Boolean).sort();
                 const sMedicos = [...new Set(rawDataSucursales.map(d=>d.medico))].filter(Boolean).sort();
@@ -305,6 +315,7 @@
             } catch (error) { alert("Error cargando base de datos: " + error); }
         }
 
+        // ---------- UI Y TABLEROS ----------
         function cambiarTab(tab) {
             const hBox = document.getElementById('header-box');
             if(tab === 'foraneos') {
@@ -392,6 +403,7 @@
             if(prefijo === 'F') ejecutarFiltrosForaneos(); else ejecutarFiltrosSucursales();
         }
 
+        // =================== LOGICA FORANEOS ===================
         function ejecutarFiltrosForaneos() {
             const fIni = document.getElementById('f-inicio').value;
             const fFin = document.getElementById('f-fin').value;
@@ -473,6 +485,7 @@
 
         function cargarMasForaneos() { limiteF += 50; renderForaneos(); }
 
+        // =================== LOGICA SUCURSALES ===================
         function ejecutarFiltrosSucursales() {
             const fIni = document.getElementById('s-inicio').value;
             const fFin = document.getElementById('s-fin').value;
@@ -495,15 +508,14 @@
         }
 
         function renderSucursales() {
-            let tEst = datosFiltradosS.length; let tPac = new Set(), tMed = new Set();
+            let tEst = datosFiltradosS.length; let tMed = new Set();
             let fechas = {}, diasSemana = { "Lunes":0, "Martes":0, "Miércoles":0, "Jueves":0, "Viernes":0, "Sábado":0, "Domingo":0 };
-            let sucursales = {}, tiposEstudio = {}, medicosTop = {}, pacientesPeriodo = {};
+            let sucursales = {}, tiposEstudio = {}, medicosTop = {};
             const tbody = document.getElementById('tabla-sucursales'); tbody.innerHTML = '';
 
             datosFiltradosS.forEach((reg, i) => {
-                tPac.add(reg.paciente); tMed.add(reg.medico);
+                tMed.add(reg.medico);
                 fechas[reg.fecha] = (fechas[reg.fecha] || 0) + 1;
-                if(!pacientesPeriodo[reg.fecha]) pacientesPeriodo[reg.fecha] = new Set(); pacientesPeriodo[reg.fecha].add(reg.paciente);
 
                 let fechaObj = new Date(reg.fecha.replace(/-/g, '/'));
                 let nombreDia = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][fechaObj.getDay()];
@@ -515,36 +527,35 @@
 
                 if(i < limiteS) {
                     tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 border-b transition">
-                            <td class="py-4 px-4 font-bold text-slate-700">${reg.fecha}</td>
-                            <td class="py-4 px-4"><b class="text-sky-700">${reg.sucursal}</b><br><span class="text-xs text-slate-500">${reg.empresa}</span></td>
-                            <td class="py-4 px-4 text-sm font-semibold">${reg.paciente}</td>
-                            <td class="py-4 px-4"><span class="bg-sky-100 text-sky-800 px-3 py-1.5 rounded-lg text-xs font-bold uppercase">${reg.estudio} (Dr. ${reg.medico})</span></td>
+                        <tr class="hover:bg-slate-50 border-b transition text-xs font-semibold">
+                            <td class="py-3 px-4 font-bold text-slate-700">${reg.fecha}</td>
+                            <td class="py-3 px-4"><b class="text-sky-700">${reg.sucursal}</b><br><span class="text-[10px] text-slate-400 font-bold uppercase">${reg.empresa}</span></td>
+                            <td class="py-3 px-4"><span class="bg-sky-100 text-sky-800 px-2.5 py-1 rounded-md font-bold uppercase">${reg.estudio}</span></td>
+                            <td class="py-3 px-4 text-slate-600 font-bold uppercase">Dr(a). ${reg.medico}</td>
                         </tr>
                     `;
                 }
             });
 
-            document.getElementById('kpi-s-estudios').innerText = tEst; document.getElementById('kpi-s-pacientes').innerText = tPac.size;
-            document.getElementById('kpi-s-personal').innerText = tMed.size; document.getElementById('kpi-s-total-regs').innerText = datosFiltradosS.length + " Registros Filtrados";
+            document.getElementById('kpi-s-estudios').innerText = tEst;
+            document.getElementById('kpi-s-personal').innerText = tMed.size;
+            document.getElementById('kpi-s-total-regs').innerText = datosFiltradosS.length + " Estudios Totales";
 
             let fOrd = Object.keys(fechas).sort();
             dibujarGrafico('cS1', 'line', fOrd, fOrd.map(f=>fechas[f]), 'Tendencia Diaria', '#0ea5e9');
             let diasOrdenados = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-            let valoresDias = diasOrdenados.map(d => diasSemana[d]);
-            dibujarGrafico('cS2', 'bar', diasOrdenados, valoresDias, 'Estudios por Día', '#ed8936');
+            dibujarGrafico('cS2', 'bar', diasOrdenados, diasOrdenados.map(d => diasSemana[d]), 'Estudios por Día', '#ed8936');
             let topSucs = Object.entries(sucursales).sort((a,b)=>b[1]-a[1]).slice(0,10);
             dibujarGrafico('cS3', 'bar', topSucs.map(x=>x[0]), topSucs.map(x=>x[1]), 'Estudios por Sucursal', '#3182ce');
             let coloresPastel = ['#f687b3', '#667eea', '#4fd1c5', '#f6e05e', '#ed8936', '#9f7aea', '#48bb78'];
             dibujarGrafico('cS4', 'pie', Object.keys(tiposEstudio), Object.values(tiposEstudio), 'Distribución', coloresPastel);
             let topMeds = Object.entries(medicosTop).sort((a,b)=>b[1]-a[1]).slice(0,10);
             dibujarGrafico('cS5', 'bar', topMeds.map(x=>x[0]), topMeds.map(x=>x[1]), 'Estudios por Médico', '#48bb78');
-            dibujarGrafico('cS6', 'line', fOrd, fOrd.map(f=>pacientesPeriodo[f].size), 'Pacientes Únicos', '#8b5cf6');
         }
 
         function cargarMasSucursales() { limiteS += 50; renderSucursales(); }
 
-        // =================== PROCESAMIENTO INTELIGENTE DE EXCELS CRUDOS ===================
+        // =================== PROCESAMIENTO INTELIGENTE DE EXCELS LEGACY ===================
         function limpiarSucursal(nombre) {
             if (!nombre) return "Desconocida";
             let n = String(nombre).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -569,7 +580,6 @@
             btnProcesar.disabled = true;
             btnProcesar.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Procesando...';
             
-            // Mostrar barra de progreso
             contProgreso.classList.remove('hidden');
             barraProgreso.style.width = '0%';
             textoProgreso.innerText = 'Iniciando análisis... 0%';
@@ -579,7 +589,7 @@
             datosProcesadosListos = [];
 
             let totalExtraidos = 0; let totalDuplicados = 0;
-            const hashActuales = new Set(rawDataSucursales.map(d => `${d.fecha}|${d.sucursal}|${d.paciente}|${d.estudio}`.toUpperCase()));
+            const hashActuales = new Set(rawDataSucursales.map(d => `${d.fecha}|${d.sucursal}|${d.empresa}|${d.estudio}`.toUpperCase()));
 
             for(let i=0; i<input.files.length; i++){
                 try {
@@ -624,7 +634,6 @@
                             let totalFilasAnalizar = filas.length - (iEnc + 1);
                             
                             for(let r=iEnc+1; r<filas.length; r++){
-                                // Actualizar barra de progreso y dar "respiro" al navegador
                                 if (r % 100 === 0) {
                                     let currentProg = Math.round(((r - iEnc) / totalFilasAnalizar) * 100);
                                     barraProgreso.style.width = currentProg + '%';
@@ -638,18 +647,17 @@
                                 Object.keys(estudiosMapeo).forEach(key => {
                                     let cIdx = mapa[key];
                                     if(cIdx!==undefined && f[cIdx] && !String(f[cIdx]).toUpperCase().includes("PEND")){
-                                        const pacienteRaw = String(f[mapa["NOMBRE"]]).trim();
                                         const empresaRaw = String(f[mapa["EMPRESA"]]||"S/E").trim().toUpperCase();
                                         const estudioFinal = estudiosMapeo[key];
                                         const medicoRaw = String(f[cIdx]).trim().toUpperCase();
-                                        const hashRegistro = `${fEx}|${sEx}|${pacienteRaw}|${estudioFinal}`.toUpperCase();
+                                        const hashRegistro = `${fEx}|${sEx}|${empresaRaw}|${estudioFinal}`.toUpperCase();
 
                                         if(hashActuales.has(hashRegistro)) {
                                             totalDuplicados++;
                                         } else {
                                             datosProcesadosListos.push({
                                                 tipo: "sucursal", fecha: fEx, mes: String(mN+1).padStart(2,'0'), sucursal: sEx,
-                                                paciente: pacienteRaw, empresa: empresaRaw, estudio: estudioFinal, medico: medicoRaw, timestamp: new Date()
+                                                empresa: empresaRaw, estudio: estudioFinal, medico: medicoRaw, timestamp: new Date()
                                             });
                                             hashActuales.add(hashRegistro); 
                                             totalExtraidos++;
@@ -662,7 +670,6 @@
                 } catch(e) { logDiv.innerHTML += `<span class="text-red-400">Error leyendo ${input.files[i].name}: ${e.message}</span><br>`; }
             }
 
-            // Termina el análisis
             barraProgreso.style.width = '100%';
             textoProgreso.innerText = 'Análisis Completado al 100%';
             
@@ -674,7 +681,7 @@
             btnProcesar.innerHTML = '<i class="fa-solid fa-cogs mr-2"></i> 1. Analizar Archivos';
 
             if(totalExtraidos > 0) btnSubir.classList.remove('hidden');
-            else { btnSubir.classList.add('hidden'); if (totalDuplicados > 0) alert(`Todos los registros detectados (${totalDuplicados}) ya existen en la base de datos central. No hay nada nuevo que subir.`); }
+            else { btnSubir.classList.add('hidden'); if (totalDuplicados > 0) alert(`Todos los registros detectados (${totalDuplicados}) ya existen en la base de datos central.`); }
         }
 
         async function subirExcelsProcesados() {
@@ -684,25 +691,20 @@
             const textoProgreso = document.getElementById('texto-progreso');
 
             btnSubir.disabled = true;
-            btnSubir.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Subiendo a Firebase (Rápido)...';
+            btnSubir.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Subiendo a Firebase...';
 
-            // Reiniciar barra de progreso para la fase de subida
             barraProgreso.style.width = '0%';
             textoProgreso.innerText = 'Iniciando subida... 0%';
 
-            let exitosos = 0;
-            let promesasBatch = [];
-            let totalSubir = datosProcesadosListos.length;
+            let exitosos = 0; let promesasBatch = []; let totalSubir = datosProcesadosListos.length;
 
             for(let reg of datosProcesadosListos) {
                 promesasBatch.push(window.addDoc(window.collection(window.db, "registros"), reg));
                 
                 if (promesasBatch.length >= 50) {
                     await Promise.all(promesasBatch);
-                    exitosos += promesasBatch.length;
-                    promesasBatch = [];
+                    exitosos += promesasBatch.length; promesasBatch = [];
                     
-                    // Actualizar UI
                     let currentProg = Math.round((exitosos / totalSubir) * 100);
                     barraProgreso.style.width = currentProg + '%';
                     textoProgreso.innerText = `Subiendo a la nube: ${currentProg}% (${exitosos}/${totalSubir})`;
@@ -713,8 +715,7 @@
             }
             
             if (promesasBatch.length > 0) {
-                await Promise.all(promesasBatch);
-                exitosos += promesasBatch.length;
+                await Promise.all(promesasBatch); exitosos += promesasBatch.length;
                 barraProgreso.style.width = '100%';
                 textoProgreso.innerText = `Subida exitosa: 100% (${exitosos}/${totalSubir})`;
             }
@@ -723,6 +724,7 @@
             location.reload();
         }
 
+        // =================== UTILIDADES Y GRÁFICAS ===================
         function dibujarGrafico(canvasId, tipo, labels, data, labelTitulo, color) {
             if(graficos[canvasId]) graficos[canvasId].destroy();
             let mostrarLeyenda = (tipo === 'pie');
@@ -756,7 +758,7 @@
                 });});
             } else {
                 if(datosFiltradosS.length === 0) return alert("No hay datos para exportar.");
-                aplanada = datosFiltradosS.map(d => ({ FECHA: d.fecha, SUCURSAL: d.sucursal, PACIENTE: d.paciente, EMPRESA: d.empresa, ESTUDIO: d.estudio, MEDICO: d.medico }));
+                aplanada = datosFiltradosS.map(d => ({ FECHA: d.fecha, SUCURSAL: d.sucursal, EMPRESA: d.empresa, ESTUDIO: d.estudio, MEDICO: d.medico }));
             }
             if(aplanada.length === 0) return alert("No hay detalles que coincidan con tus filtros específicos.");
             const wb = XLSX.utils.book_new();
