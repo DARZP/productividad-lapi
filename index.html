@@ -6,6 +6,8 @@
     <title>Registro Productividad</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -34,7 +36,10 @@
         .paso { transition: all 0.4s ease; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-4 flex flex-col items-center pt-6 font-sans text-white">
+<body class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-4 flex flex-col items-center pt-6 font-sans text-white pb-10">
+
+    <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
     <datalist id="lista-medicos"></datalist>
     <datalist id="lista-empresas"></datalist>
@@ -42,42 +47,46 @@
     <div id="contenedor-principal" class="w-full max-w-md">
         
         <div class="glass p-6 rounded-3xl shadow-2xl mb-6">
-            <h1 class="text-2xl font-black text-white mb-1"><i class="fa-solid fa-map-location-dot mr-2"></i>REGISTRO DIARIO DE PRODUCTIVIDAD</h1>
-            <p class="text-sm text-white/80 mb-6 font-medium">Para Foráneos</p>
+            <h1 class="text-2xl font-black text-white mb-1"><i class="fa-solid fa-map-location-dot mr-2"></i> REGISTRO DIARIO</h1>
+            <p class="text-sm text-white/80 mb-6 font-medium">Productividad Foráneos</p>
 
             <div id="paso-0" class="paso">
                 <label class="block mb-2 font-medium">Fecha de Servicio</label>
-                <input type="date" id="input-fecha" class="w-full p-3 mb-4 rounded-xl bg-white/20 text-orange-900 font-bold outline-none">
+                <input type="date" id="input-fecha" class="w-full p-3 mb-4 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
                 
                 <div class="flex gap-4 mb-4">
                     <div class="w-1/2">
                         <label class="block mb-2 font-medium text-sm">Hora Inicio</label>
-                        <input type="time" id="input-hora-inicio" class="w-full p-3 rounded-xl bg-white/20 text-orange-900 font-bold outline-none">
+                        <input type="time" id="input-hora-inicio" class="w-full p-3 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
                     </div>
                     <div class="w-1/2">
                         <label class="block mb-2 font-medium text-sm">Hora Fin</label>
-                        <input type="time" id="input-hora-fin" class="w-full p-3 rounded-xl bg-white/20 text-orange-900 font-bold outline-none">
+                        <input type="time" id="input-hora-fin" class="w-full p-3 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
                     </div>
                 </div>
 
                 <label class="block mb-2 font-medium">Turno</label>
-                <select id="input-turno" class="w-full p-3 mb-6 rounded-xl bg-white/20 text-orange-900 font-bold outline-none">
+                <select id="input-turno" class="w-full p-3 mb-6 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
                     <option value="Matutino" class="text-black">Matutino</option>
                     <option value="Vespertino" class="text-black">Vespertino</option>
                 </select>
-                <button onclick="verificarRegistro()" class="w-full bg-white text-orange-600 font-bold py-3 rounded-xl">Siguiente</button>
+                <button onclick="verificarRegistro()" class="w-full bg-white text-orange-600 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    Siguiente <i class="fa-solid fa-arrow-right"></i>
+                </button>
             </div>
 
             <div id="paso-1" class="paso hidden">
                 <label class="block mb-2 font-medium">1. Empresa</label>
                 <input id="input-empresa" list="lista-empresas" class="w-full p-3 rounded-xl bg-white/20 border-none outline-none placeholder-white/70 uppercase" placeholder="Escribe la empresa...">
-                <button onclick="irAPaso2()" class="mt-4 w-full bg-white text-orange-600 font-bold py-3 rounded-xl">Siguiente</button>
+                <button onclick="irAPaso2()" class="mt-6 w-full bg-white text-orange-600 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    Siguiente <i class="fa-solid fa-arrow-right"></i>
+                </button>
             </div>
 
             <div id="paso-2" class="paso hidden">
                 <label class="block mb-4 font-medium">2. ¿Qué estudios se hicieron?</label>
                 <div id="lista-checkbox-estudios" class="space-y-2 mb-4"></div>
-                <button onclick="iniciarCapturaDetalle()" class="w-full bg-white text-orange-600 font-bold py-3 rounded-xl">Continuar</button>
+                <button onclick="iniciarCapturaDetalle()" class="mt-4 w-full bg-white text-orange-600 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95">Continuar</button>
             </div>
 
             <div id="paso-3" class="paso hidden">
@@ -88,15 +97,18 @@
                 <h2 class="font-bold mb-4 text-center">Resumen Final</h2>
                 <div id="resumen-contenido" class="text-sm bg-black/20 p-4 rounded-xl mb-4 space-y-2"></div>
                 
-                <label class="block mb-2 font-medium text-sm">Observaciones (Pendientes, Inconvenientes o Información Relevante)</label>
-                <textarea id="input-observaciones" class="w-full p-3 mb-6 rounded-xl bg-white/20 border-none outline-none placeholder-white/60" rows="3" placeholder="Ej. 3 pendientes de ... por..."></textarea>
+                <label class="block mb-2 font-medium text-sm">Observaciones (Pendientes, Inconvenientes o Info Relevante)</label>
+                <textarea id="input-observaciones" class="w-full p-3 mb-6 rounded-xl bg-white/20 border-none outline-none placeholder-white/60" rows="3" placeholder="Ej. 3 pacientes pendientes..."></textarea>
 
-                <div class="flex gap-2">
-                    <button onclick="location.reload()" class="w-1/3 bg-red-500 font-bold py-4 rounded-xl shadow-lg">Reiniciar</button>
-                    <button onclick="finalizar()" class="w-2/3 bg-green-500 font-bold py-4 rounded-xl shadow-lg">Confirmar</button>
+                <div class="flex gap-3">
+                    <button onclick="location.reload()" class="w-1/3 bg-red-500 hover:bg-red-600 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95">Reiniciar</button>
+                    <button id="btn-confirmar" onclick="finalizar()" class="w-2/3 bg-emerald-500 hover:bg-emerald-600 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Confirmar
+                    </button>
                 </div>
             </div>
 
+            <!-- ZONA DE EDICIÓN -->
             <div id="paso-edicion" class="paso hidden">
                 <h2 class="text-xl font-bold mb-4 text-center">Modificando Folio: <span id="edit-folio-text" class="text-orange-200"></span></h2>
                 
@@ -129,7 +141,7 @@
                     <div class="bg-black/10 p-4 rounded-xl">
                         <h3 class="font-bold border-b border-white/20 pb-2 mb-3">Estudios Realizados</h3>
                         <div id="edit-detalles-container" class="space-y-3"></div>
-                        <button onclick="agregarFilaEdicion()" class="w-full mt-4 bg-white/20 py-2 rounded-lg text-sm font-bold">+ Agregar otro estudio</button>
+                        <button onclick="agregarFilaEdicion()" class="w-full mt-4 bg-white/20 hover:bg-white/30 transition py-2 rounded-lg text-sm font-bold active:scale-95">+ Agregar otro estudio</button>
                     </div>
 
                     <div class="bg-black/10 p-4 rounded-xl">
@@ -139,25 +151,26 @@
                 </div>
 
                 <div class="flex gap-2 mt-6">
-                    <button onclick="location.reload()" class="w-1/3 bg-red-500 font-bold py-3 rounded-xl shadow-lg">Cancelar</button>
-                    <button onclick="guardarEdicion()" class="w-2/3 bg-green-500 font-bold py-3 rounded-xl shadow-lg">Guardar Cambios</button>
+                    <button onclick="location.reload()" class="w-1/3 bg-red-500 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95">Cancelar</button>
+                    <button id="btn-guardar-cambios" onclick="guardarEdicion()" class="w-2/3 bg-emerald-500 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95">Guardar Cambios</button>
                 </div>
             </div>
 
         </div>
 
-        <div id="seccion-botones-extra">
-            <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 mb-4">
-                <h2 class="text-xs font-bold uppercase mb-2 opacity-80 text-center">Editar registro previo</h2>
+        <!-- SECCIÓN INFERIOR: BOTONES EXTRA (Desaparecen al avanzar) -->
+        <div id="seccion-botones-extra" class="space-y-4 transition-all duration-500">
+            <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 text-center">
+                <p class="text-xs font-bold uppercase mb-2 opacity-80">¿Editar registro previo?</p>
                 <div class="flex gap-2">
-                    <input id="input-edit-id" placeholder="Ej: 4812M" class="w-full p-2 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50 uppercase">
-                    <button onclick="buscarRegistro()" class="bg-white/20 px-4 py-2 rounded-lg text-sm font-bold">Buscar</button>
+                    <input id="input-edit-id" placeholder="Folio (Ej: 4812M)" class="w-full p-2.5 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50 uppercase font-bold text-center">
+                    <button id="btn-buscar-folio" onclick="buscarRegistro()" class="bg-white/20 hover:bg-white/30 transition-all px-4 py-2.5 rounded-lg text-sm font-bold active:scale-95">Buscar</button>
                 </div>
             </div>
 
             <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 text-center">
-                <p class="text-xs font-bold uppercase mb-2 opacity-80">¿Estás en una Sucursal?</p>
-                <button onclick="window.location.href='sucursal.html'" class="w-full bg-white/20 hover:bg-white/30 py-3 rounded-lg text-sm font-bold transition">
+                <p class="text-xs font-bold uppercase mb-2 opacity-80">¿Estás en una Clínica / Sucursal?</p>
+                <button onclick="window.location.href='sucursal.html'" class="w-full bg-white/20 hover:bg-white/30 py-3.5 rounded-lg text-sm font-bold transition-all active:scale-95">
                     <i class="fa-solid fa-building mr-2"></i> Ir a registro de Sucursales
                 </button>
             </div>
@@ -173,9 +186,24 @@
         let horasCalculadas = 0;
         let editDocId = null; 
 
+        // SISTEMA DE TOAST NOTIFICATIONS
+        function mostrarToast(mensaje, tipo = 'error', duracion = 3500) {
+            const toast = document.createElement('div');
+            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'info' ? 'bg-sky-500' : 'bg-red-500');
+            const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'info' ? 'fa-info-circle' : 'fa-triangle-exclamation');
+            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
+            toast.innerHTML = `<i class="fa-solid ${icono} text-lg"></i> <span class="leading-tight">${mensaje}</span>`;
+            document.getElementById('toast-container').appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
+            if (duracion > 0) {
+                setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, duracion);
+            }
+        }
+
         document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join('');
         document.getElementById('lista-medicos').innerHTML = medicos.map(m => `<option value="${m}">`).join('');
-        document.getElementById('lista-checkbox-estudios').innerHTML = estudios.map(e => `<label class="flex items-center gap-3 p-3 bg-white/10 rounded-xl cursor-pointer"><input type="checkbox" value="${e}" class="w-5 h-5 accent-orange-500"> ${e}</label>`).join('');
+        document.getElementById('lista-checkbox-estudios').innerHTML = estudios.map(e => `<label class="flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 transition rounded-xl cursor-pointer"><input type="checkbox" value="${e}" class="w-5 h-5 accent-orange-500 cursor-pointer"> ${e}</label>`).join('');
 
         function calcularHoras(inicio, fin) {
             if(!inicio || !fin) return 0;
@@ -187,26 +215,34 @@
         }
 
         // ---------- LÓGICA DE REGISTRO NUEVO ----------
-        
         function verificarRegistro() { 
             const fecha = document.getElementById('input-fecha').value;
             const hIni = document.getElementById('input-hora-inicio').value;
             const hFin = document.getElementById('input-hora-fin').value;
-            if(!fecha || !hIni || !hFin) return alert("Completa la fecha y los horarios de inicio y fin.");
+            if(!fecha || !hIni || !hFin) return mostrarToast("Completa la fecha y los horarios de inicio y fin.", "error");
             
             horasCalculadas = calcularHoras(hIni, hFin);
             document.getElementById('paso-0').classList.add('hidden'); 
             document.getElementById('paso-1').classList.remove('hidden'); 
             
-            // MAGIA: Ocultar los botones extra al avanzar
-            document.getElementById('seccion-botones-extra').classList.add('hidden'); 
+            // Ocultar la botonera extra con una transición suave
+            const zonaExtra = document.getElementById('seccion-botones-extra');
+            zonaExtra.classList.add('opacity-0');
+            setTimeout(() => zonaExtra.classList.add('hidden'), 500);
         }
         
-        function irAPaso2() { if(document.getElementById('input-empresa').value) { document.getElementById('paso-1').classList.add('hidden'); document.getElementById('paso-2').classList.remove('hidden'); } else alert("Selecciona empresa"); }
+        function irAPaso2() { 
+            if(document.getElementById('input-empresa').value) { 
+                document.getElementById('paso-1').classList.add('hidden'); 
+                document.getElementById('paso-2').classList.remove('hidden'); 
+            } else {
+                mostrarToast("Por favor selecciona o escribe una empresa.", "error");
+            } 
+        }
         
         function iniciarCapturaDetalle() {
             seleccionados = Array.from(document.querySelectorAll('#lista-checkbox-estudios input:checked')).map(i => i.value);
-            if(seleccionados.length === 0) return alert("Selecciona un estudio");
+            if(seleccionados.length === 0) return mostrarToast("Debes seleccionar al menos un estudio.", "error");
             indiceActual = 0; mostrarDetalleEstudio();
         }
 
@@ -215,10 +251,13 @@
             document.getElementById('paso-3').classList.remove('hidden');
             const est = seleccionados[indiceActual];
             document.getElementById('detalle-estudio-actual').innerHTML = `
-                <h3 class="font-bold text-lg mb-4 text-orange-200">Estudio: ${est}</h3>
+                <div class="bg-black/20 p-4 rounded-2xl text-center mb-4 border border-white/10">
+                    <p class="text-xs uppercase tracking-widest opacity-80 mb-1">Estudio Actual</p>
+                    <h3 class="font-black text-xl text-orange-200">${est}</h3>
+                </div>
                 <div id="lista-medicos-detalle" class="space-y-3 mb-4"></div>
-                <button onclick="agregarFilaMedico()" class="w-full bg-white/20 py-2 rounded-lg mb-4">+ Agregar médico</button>
-                <button onclick="guardarDetalle('${est}')" class="w-full bg-white text-orange-600 font-bold py-3 rounded-xl">${indiceActual < seleccionados.length - 1 ? 'Siguiente Estudio' : 'Ver Resumen'}</button>
+                <button onclick="agregarFilaMedico()" class="w-full bg-white/20 hover:bg-white/30 transition py-2.5 rounded-xl text-sm font-bold active:scale-95 mb-6"><i class="fa-solid fa-plus mr-1"></i> Añadir otro médico a este estudio</button>
+                <button onclick="guardarDetalle('${est}')" class="w-full bg-white text-orange-600 font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all">${indiceActual < seleccionados.length - 1 ? 'Siguiente Estudio <i class="fa-solid fa-arrow-right ml-1"></i>' : 'Ir al Resumen Final <i class="fa-solid fa-check ml-1"></i>'}</button>
             `;
             agregarFilaMedico();
         }
@@ -226,8 +265,8 @@
         function agregarFilaMedico() {
             const div = document.createElement('div');
             div.className = "flex gap-2";
-            div.innerHTML = `<input list="lista-medicos" placeholder="Médico" class="med-name w-full p-2 rounded bg-white/20 outline-none placeholder-white/50">
-                             <input type="number" min="1" placeholder="Cant." class="med-cant w-1/3 p-2 rounded bg-white/20 outline-none placeholder-white/50">`;
+            div.innerHTML = `<input list="lista-medicos" placeholder="Médico Asignado" class="med-name w-full p-3 rounded-xl bg-white/20 outline-none placeholder-white/50 text-sm font-bold">
+                             <input type="number" min="1" placeholder="Cant." class="med-cant w-1/3 p-3 rounded-xl bg-white/20 outline-none placeholder-white/50 text-center font-bold">`;
             document.getElementById('lista-medicos-detalle').appendChild(div);
         }
 
@@ -243,22 +282,37 @@
                 else if (medico && cant > 0) registroFinal.push({ estudio, medico, cant });
             });
 
-            if(errorValidacion || !hayDatos) return alert("Por favor asigna médicos válidos y cantidades mayores a 0.");
-            if(indiceActual < seleccionados.length - 1) { indiceActual++; mostrarDetalleEstudio(); } 
-            else mostrarResumen();
+            if(errorValidacion || !hayDatos) return mostrarToast("Por favor asigna médicos válidos y cantidades mayores a 0.", "error");
+            
+            if(indiceActual < seleccionados.length - 1) { 
+                indiceActual++; 
+                mostrarDetalleEstudio(); 
+            } else {
+                mostrarResumen();
+            }
         }
 
         function mostrarResumen() {
             document.getElementById('paso-3').classList.add('hidden');
             document.getElementById('paso-4').classList.remove('hidden');
-            let html = `<p><b>Fecha:</b> ${document.getElementById('input-fecha').value}</p>
-                        <p><b>Horas Laboradas:</b> ${horasCalculadas} hrs</p>
-                        <p><b>Empresa:</b> ${document.getElementById('input-empresa').value.toUpperCase()}</p>`;
-            registroFinal.forEach(item => html += `<div class="border-t border-white/20 pt-1 mt-1"><b>${item.estudio}</b>: ${item.medico} (${item.cant})</div>`);
+            let html = `<p class="mb-1"><b class="opacity-70">Fecha:</b> ${document.getElementById('input-fecha').value}</p>
+                        <p class="mb-1"><b class="opacity-70">Jornada:</b> ${horasCalculadas} hrs</p>
+                        <p class="mb-3"><b class="opacity-70">Empresa:</b> ${document.getElementById('input-empresa').value.toUpperCase()}</p>`;
+            
+            registroFinal.forEach(item => {
+                html += `<div class="border-t border-white/20 pt-2 mt-2 flex justify-between items-center">
+                            <span><b class="text-orange-200">${item.estudio}</b><br><span class="text-xs opacity-80">${item.medico}</span></span>
+                            <span class="bg-white/20 px-3 py-1 rounded-lg font-black text-lg">${item.cant}</span>
+                         </div>`;
+            });
             document.getElementById('resumen-contenido').innerHTML = html;
         }
 
         async function finalizar() {
+            const btn = document.getElementById('btn-confirmar');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo...';
+            btn.disabled = true;
+
             const numAleatorio = Math.floor(1000 + Math.random() * 9000); 
             const folio = numAleatorio + document.getElementById('input-turno').value[0].toUpperCase();
             
@@ -278,23 +332,36 @@
                     observaciones: observaciones,
                     timestamp: new Date()
                 });
-                alert("Registro enviado exitosamente, Guarda el Folio. Será necesario en caso de correcciones. FOLIO:" + folio);
-                location.reload();
-            } catch(e) { alert("Error al enviar: " + e); }
+                
+                // Usamos el Toast con duración 0 (infinito) porque la página se va a recargar sola
+                mostrarToast(`¡Guardado! Tu FOLIO de rastreo es: ${folio}`, "exito", 0);
+                
+                setTimeout(() => location.reload(), 3500); // 3.5 segundos para que alcancen a anotar o ver el folio
+            } catch(e) { 
+                mostrarToast("Error de red al guardar el registro.", "error"); 
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Reintentar';
+                btn.disabled = false;
+            }
         }
 
         // ---------- LÓGICA DE EDICIÓN ----------
 
         async function buscarRegistro() { 
             const folioInput = document.getElementById('input-edit-id').value.trim().toUpperCase();
-            if(!folioInput) return alert("Ingresa un folio válido.");
+            if(!folioInput) return mostrarToast("Ingresa un número de folio primero.", "error");
             
+            const btn = document.getElementById('btn-buscar-folio');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
             try {
                 const q = window.query(window.collection(window.db, "registros"), window.where("folio", "==", folioInput));
                 const qs = await window.getDocs(q);
                 
                 if(qs.empty) {
-                    alert("No se encontró ningún registro con el folio: " + folioInput);
+                    mostrarToast(`No existe el folio: ${folioInput}`, "error");
+                    btn.innerHTML = 'Buscar';
+                    btn.disabled = false;
                     return;
                 }
                 
@@ -306,7 +373,9 @@
                 
                 abrirEditor(dataExtraida);
             } catch(e) {
-                alert("Error de conexión al buscar: " + e);
+                mostrarToast("Error conectando a la base de datos.", "error");
+                btn.innerHTML = 'Buscar';
+                btn.disabled = false;
             }
         }
 
@@ -329,6 +398,7 @@
             } else {
                 agregarFilaEdicion(); 
             }
+            mostrarToast("Registro cargado. Puedes editar la información.", "info");
         }
 
         function agregarFilaEdicion(estudio = '', medico = '', cant = '') {
@@ -343,8 +413,8 @@
                     ${opcionesEstudios}
                 </select>
                 <input list="lista-medicos" placeholder="Médico" value="${medico}" class="edit-med w-1/3 p-2 rounded-md bg-white/20 outline-none placeholder-white/50">
-                <input type="number" min="1" placeholder="Cant." value="${cant}" class="edit-cant w-1/4 p-2 rounded-md bg-white/20 outline-none placeholder-white/50">
-                <button onclick="this.parentElement.remove()" class="text-red-300 font-black px-2 hover:text-red-500 transition">X</button>
+                <input type="number" min="1" placeholder="Cant." value="${cant}" class="edit-cant w-1/4 p-2 rounded-md bg-white/20 outline-none placeholder-white/50 text-center">
+                <button onclick="this.parentElement.remove()" class="text-red-300 font-black px-2 hover:text-red-500 transition active:scale-90"><i class="fa-solid fa-trash"></i></button>
             `;
             document.getElementById('edit-detalles-container').appendChild(div);
         }
@@ -357,7 +427,7 @@
             const turno = document.getElementById('edit-turno').value;
             const observaciones = document.getElementById('edit-observaciones').value;
 
-            if(!empresa || !fecha || !horaInicio || !horaFin) return alert("Completa los datos generales del encabezado.");
+            if(!empresa || !fecha || !horaInicio || !horaFin) return mostrarToast("Completa los datos generales del encabezado.", "error");
 
             let detallesNuevos = [];
             let hayErrorDetalles = false;
@@ -372,8 +442,12 @@
             });
 
             if(hayErrorDetalles || detallesNuevos.length === 0) {
-                return alert("Revisa que todos los estudios agregados tengan Tipo de Estudio, un Médico asignado y Cantidad válida.");
+                return mostrarToast("Todos los estudios deben tener Tipo, Médico y Cantidad válida.", "error");
             }
+
+            const btn = document.getElementById('btn-guardar-cambios');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Actualizando...';
+            btn.disabled = true;
 
             const horasCalculadasNuevas = calcularHoras(horaInicio, horaFin);
 
@@ -390,10 +464,12 @@
                     detalles: detallesNuevos
                 });
                 
-                alert("¡El registro se ha actualizado con éxito!");
-                location.reload();
+                mostrarToast("¡Modificación exitosa!", "exito", 0);
+                setTimeout(() => location.reload(), 2000);
             } catch(e) {
-                alert("Ocurrió un error al intentar actualizar: " + e);
+                mostrarToast("Fallo al actualizar el registro.", "error");
+                btn.innerHTML = 'Guardar Cambios';
+                btn.disabled = false;
             }
         }
     </script>
