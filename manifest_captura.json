@@ -1,6 +1,6 @@
 {
-  "name": "Productividad Registro",
-  "short_name": "Captura",
+  "name": "LAPI Productividad",
+  "short_name": "LAPI",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f8fafc",
