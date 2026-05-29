@@ -155,7 +155,7 @@ window.LAPI_CONFIG = {
         "BAXTER HEALTHCARE",
         "BBVA MEXICO",
         "BECTON DICKINSON",
-        "BERRY BPREX PLASTIC - AMCOR"
+        "BERRY BPREX PLASTIC - AMCOR",
         "BIMBO",
         "BIMBO AZCAPOTZALCO",
         "BIMBO SANTA MARIA",
