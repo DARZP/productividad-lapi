@@ -309,6 +309,7 @@ window.LAPI_CONFIG = {
         "RHI MAGNESITA",
         "ROTOPLAS",
         "RYDER CAPITAL",
+        "SABORMEX GUADALAJARA",
         "SAFMEX TOLUCA",
         "SC JOHNSON AND SON",
         "SCHNEIDER ELECTRIC",
