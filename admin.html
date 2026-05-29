@@ -443,8 +443,12 @@
                     }
                 });
 
-                // Ordenar sucursales combinadas por fecha descendente
-                rawDataSucursales.sort((a,b) => b.fecha.localeCompare(a.fecha));
+                // 🛡️ SOLUCIÓN: Ordenar con protección contra registros sin fecha
+                rawDataSucursales.sort((a,b) => {
+                    const fechaA = a.fecha || "1900-01-01"; // Fecha comodín si viene vacío
+                    const fechaB = b.fecha || "1900-01-01";
+                    return fechaB.localeCompare(fechaA);
+                });
 
                 aplicarFiltroRapido('F', 'hoy');
                 aplicarFiltroRapido('S', 'mes_actual');
