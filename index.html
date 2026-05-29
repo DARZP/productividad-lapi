@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Productividad</title>
     
-    <!-- ETIQUETAS PWA -->
     <link rel="manifest" href="manifest_captura.json">
     <meta name="theme-color" content="#ea580c">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -16,7 +15,8 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        // 👇 Importamos enableIndexedDbPersistence aquí también
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -29,6 +29,12 @@
 
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
+
+        // 👇 Activamos el almacenamiento Offline
+        enableIndexedDbPersistence(window.db).catch((err) => {
+            console.error("El modo offline falló:", err.code);
+        });
+
         window.addDoc = addDoc;
         window.collection = collection;
         window.getDocs = getDocs;
@@ -44,7 +50,6 @@
 </head>
 <body class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-4 flex flex-col items-center pt-6 font-sans text-white pb-10">
 
-    <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
     <datalist id="lista-medicos"></datalist>
@@ -114,7 +119,6 @@
                 </div>
             </div>
 
-            <!-- ZONA DE EDICIÓN -->
             <div id="paso-edicion" class="paso hidden">
                 <h2 class="text-xl font-bold mb-4 text-center">Modificando Folio: <span id="edit-folio-text" class="text-orange-200"></span></h2>
                 
@@ -164,7 +168,6 @@
 
         </div>
 
-        <!-- SECCIÓN INFERIOR: BOTONES EXTRA (Desaparecen al avanzar) -->
         <div id="seccion-botones-extra" class="space-y-4 transition-all duration-500">
             <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 text-center">
                 <p class="text-xs font-bold uppercase mb-2 opacity-80">¿Editar registro previo?</p>
@@ -180,20 +183,18 @@
                     <i class="fa-solid fa-building mr-2"></i> Ir a registro de Sucursales
                 </button>
             </div>
-
+            
             <div class="text-center w-full pt-2">
                 <button onclick="abrirModalPWA()" class="text-white/70 hover:text-white text-sm font-bold underline transition-all active:scale-95">
                     <i class="fa-solid fa-mobile-screen mr-1"></i> ¿Cómo instalar esta App?
                 </button>
             </div>
         </div>
-        
+    </div>
 
-    <!-- MODAL INSTRUCCIONES PWA -->
     <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-pwa-card" class="glass bg-orange-600/90 p-6 rounded-3xl shadow-2xl max-w-sm w-full text-white transform scale-95 transition-transform duration-300">
             <h3 class="text-xl font-black mb-5 text-center"><i class="fa-solid fa-download mr-2"></i> Instalar Aplicación</h3>
-            
             
             <div class="mb-5 bg-black/10 p-4 rounded-2xl border border-white/10">
                 <h4 class="font-bold border-b border-white/20 pb-2 mb-3 text-orange-200"><i class="fa-brands fa-apple mr-1 text-lg"></i> iOS (iPhone/iPad)</h4>
@@ -209,7 +210,7 @@
                 <ol class="text-sm space-y-2 list-decimal list-inside opacity-90 font-medium">
                     <li>Abre esta página en <b>Chrome</b>.</li>
                     <li>Toca el menú <i class="fa-solid fa-ellipsis-vertical mx-1"></i> arriba a la derecha.</li>
-                    <li>Selecciona <b>Agregar a la Pantalla Principal / Instalar aplicación</b>.</li>
+                    <li>Selecciona <b>Instalar aplicación</b>.</li>
                 </ol>
             </div>
 
@@ -225,6 +226,15 @@
         let seleccionados = [], registroFinal = [], indiceActual = 0;
         let horasCalculadas = 0;
         let editDocId = null; 
+
+        // DETECTORES DE SEÑAL DE INTERNET
+        window.addEventListener('offline', () => {
+            mostrarToast("Sin conexión a Internet. Modo Offline activado. Puedes seguir trabajando.", "info", 5000);
+        });
+
+        window.addEventListener('online', () => {
+            mostrarToast("Conexión restaurada. Sincronizando datos a la nube...", "exito", 4000);
+        });
 
         function mostrarToast(mensaje, tipo = 'error', duracion = 3500) {
             const toast = document.createElement('div');
@@ -245,20 +255,14 @@
             const modal = document.getElementById('modal-pwa');
             const card = document.getElementById('modal-pwa-card');
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                card.classList.remove('scale-95');
-            }, 10);
+            setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
         }
 
         function cerrarModalPWA() {
             const modal = document.getElementById('modal-pwa');
             const card = document.getElementById('modal-pwa-card');
-            modal.classList.add('opacity-0');
-            card.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+            modal.classList.add('opacity-0'); card.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
         document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join('');
@@ -394,8 +398,8 @@
                 mostrarToast(`¡Guardado! Tu FOLIO de rastreo es: ${folio}`, "exito", 0);
                 setTimeout(() => location.reload(), 3500);
             } catch(e) { 
-                mostrarToast("Error de red al guardar el registro.", "error"); 
-                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Reintentar';
+                mostrarToast("Hubo un problema al subir el registro. Se guardará localmente.", "info"); 
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar';
                 btn.disabled = false;
             }
         }
@@ -403,6 +407,7 @@
         async function buscarRegistro() { 
             const folioInput = document.getElementById('input-edit-id').value.trim().toUpperCase();
             if(!folioInput) return mostrarToast("Ingresa un número de folio primero.", "error");
+            if(!navigator.onLine) return mostrarToast("No se pueden buscar folios sin conexión a Internet.", "error");
             
             const btn = document.getElementById('btn-buscar-folio');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
