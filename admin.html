@@ -76,9 +76,9 @@
         .tab-btn { background-color: rgba(255,255,255,0.2); color: white; }
     </style>
 </head>
-<body class="font-sans text-slate-800 p-4 md:p-6">
+<body class="font-sans text-slate-800 p-4 md:p-6 min-h-screen flex flex-col">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl mx-auto flex-1 w-full">
         <div id="header-box" class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 bg-lapi-orange p-6 rounded-3xl shadow-xl text-white gap-4 transition-colors duration-500">
             <div>
                 <h1 class="text-3xl font-black tracking-tight">Global Admin</h1>
@@ -239,6 +239,40 @@
 
     </div>
 
+    <!-- ENLACE PARA INSTALAR APP (Admin) -->
+    <div class="mt-8 mb-6 text-center w-full">
+        <button onclick="abrirModalPWA()" class="text-slate-500 hover:text-slate-700 text-sm font-bold underline transition-all active:scale-95">
+            <i class="fa-solid fa-mobile-screen mr-1"></i> ¿Cómo instalar este panel en mi dispositivo?
+        </button>
+    </div>
+
+    <!-- MODAL INSTRUCCIONES PWA (Estilo Admin) -->
+    <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-pwa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300">
+            <h3 class="text-xl font-black mb-5 text-center text-sky-700"><i class="fa-solid fa-download mr-2"></i> Instalar Panel</h3>
+            
+            <div class="mb-5 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <h4 class="font-bold border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-apple mr-1 text-lg"></i> iOS (iPhone/iPad)</h4>
+                <ol class="text-sm space-y-2 list-decimal list-inside font-medium text-slate-600">
+                    <li>Abre esta página en <b>Safari</b>.</li>
+                    <li>Toca el botón Compartir <i class="fa-solid fa-arrow-up-from-bracket mx-1"></i> abajo.</li>
+                    <li>Selecciona <b>Agregar a inicio</b> <i class="fa-solid fa-square-plus mx-1"></i>.</li>
+                </ol>
+            </div>
+
+            <div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <h4 class="font-bold border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-android mr-1 text-lg"></i> Android o PC</h4>
+                <ol class="text-sm space-y-2 list-decimal list-inside font-medium text-slate-600">
+                    <li>Abre esta página en <b>Chrome/Edge</b>.</li>
+                    <li>Toca el menú <i class="fa-solid fa-ellipsis-vertical mx-1"></i> arriba a la derecha o busca el ícono de instalación <i class="fa-solid fa-desktop mx-1"></i>.</li>
+                    <li>Selecciona <b>Instalar aplicación</b>.</li>
+                </ol>
+            </div>
+
+            <button onclick="cerrarModalPWA()" class="w-full bg-sky-600 text-white hover:bg-sky-700 font-black py-3 rounded-xl transition-all active:scale-95 shadow-md">Entendido</button>
+        </div>
+    </div>
+
     <datalist id="lista-empresas-admin"></datalist>
     <datalist id="lista-medicos-admin"></datalist>
     <datalist id="lista-estudios-admin"></datalist>
@@ -248,7 +282,27 @@
     <datalist id="lista-s-estudio"></datalist>
 
     <script>
-       
+        // FUNCIONES MODAL PWA
+        function abrirModalPWA() {
+            const modal = document.getElementById('modal-pwa');
+            const card = document.getElementById('modal-pwa-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function cerrarModalPWA() {
+            const modal = document.getElementById('modal-pwa');
+            const card = document.getElementById('modal-pwa-card');
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
         // --- 1. DATOS CENTRALIZADOS DESDE CONFIG.JS ---
         const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales;
