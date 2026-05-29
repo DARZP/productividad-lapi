@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo de Auditoría Confidencial</title>
+    
+    <link rel="manifest" href="manifest_admin.json">
+    <meta name="theme-color" content="#7c3aed">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.query = query;
+
+        initAuditoria();
+    </script>
+    
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.25); }
+        body { background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%); font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="text-white p-4 md:p-6 min-h-screen flex flex-col items-center">
+
+    <div class="w-full max-w-6xl flex-1 flex flex-col mt-4">
+        
+        <div class="glass p-6 rounded-3xl shadow-2xl mb-6 flex flex-col md:flex-row justify-between items-center gap-4 border-l-4 border-purple-500">
+            <div>
+                <h1 class="text-2xl font-black tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-user-shield text-purple-400"></i> CONTROL DE AUDITORÍA INTERNA
+                </h1>
+                <p class="text-xs text-white/70 font-medium uppercase tracking-widest mt-1">Cruce de Información Ciega (Excel vs App Cloud)</p>
+            </div>
+            <div id="status-db" class="text-xs font-bold bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 text-purple-200">
+                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Conectando con Firebase...
+            </div>
+        </div>
+
+        <div class="glass p-6 rounded-2xl shadow-xl mb-6">
+            <h3 class="font-black text-sm uppercase tracking-wider mb-2 text-purple-200">1. Adjuntar Reportes Operativos</h3>
+            <p class="text-xs text-white/60 mb-4">Puedes seleccionar múltiples archivos a la vez (ya sean cortes diarios o acumulados mensuales con múltiples pestañas).</p>
+            
+            <div class="flex flex-col md:flex-row gap-4 items-center bg-black/20 p-4 rounded-2xl border border-white/10">
+                <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="text-sm text-white/70 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-white/10 file:text-white hover:file:bg-white/20 w-full md:w-auto cursor-pointer">
+                <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" disabled class="w-full md:w-auto bg-purple-600 hover:bg-purple-700 disabled:bg-slate-600 disabled:opacity-50 text-white font-black py-3 px-6 rounded-xl transition-all shadow-lg active:scale-95 flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-bezier-curve"></i> Conciliar Información
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="glass p-5 rounded-2xl text-center shadow-md border-b-4 border-emerald-500">
+                <p class="text-xs font-black text-white/60 uppercase tracking-wider">Conciliaciones Correctas</p>
+                <p id="kpi-aud-match" class="text-3xl font-black text-emerald-400 mt-1">0</p>
+            </div>
+            <div class="glass p-5 rounded-2xl text-center shadow-md border-b-4 border-red-500">
+                <p class="text-xs font-black text-white/60 uppercase tracking-wider">Estudios Omitidos (Faltan en App)</p>
+                <p id="kpi-aud-rojo" class="text-3xl font-black text-red-400 mt-1">0</p>
+            </div>
+            <div class="glass p-5 rounded-2xl text-center shadow-md border-b-4 border-amber-500">
+                <p class="text-xs font-black text-white/60 uppercase tracking-wider">Registros Huérfanos (Extras en App)</p>
+                <p id="kpi-aud-ama" class="text-3xl font-black text-amber-400 mt-1">0</p>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl overflow-hidden mb-10">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-black uppercase tracking-widest text-xs text-purple-200">Mapeo Comparativo en Tiempo Real</h3>
+                <span id="total-filas-auditoria" class="text-[10px] bg-white/10 px-2 py-1 rounded-md font-bold text-white/80">0 Evaluaciones</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="text-[11px] uppercase bg-black/30 text-purple-200 border-b border-white/10">
+                            <th class="py-3 px-4">Fecha / Sucursal</th>
+                            <th class="py-3 px-4">Médico Traducido</th>
+                            <th class="py-3 px-4">Estudio Médico</th>
+                            <th class="py-3 px-4 text-center">Cantidad en Excel</th>
+                            <th class="py-3 px-4 text-center">Cantidad en App</th>
+                            <th class="py-3 px-4 text-center">Estatus de Validación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-auditoria" class="divide-y divide-white/5 font-medium text-white/90">
+                        <tr>
+                            <td colspan="6" class="text-center py-10 text-white/40 italic">Cargando base de datos en la nube...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let rawDataSucursales = [];
+        const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
+        const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales;
+        const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
+
+        function normalizarDato(texto, tipo) {
+            if (!texto) return "Desconocido";
+            let limpio = texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            if (tipo === 'sucursal') return texto.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            if (tipo === 'estudio') return texto.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            return limpio;
+        }
+
+        function traducirMedico(iniciales) {
+            const raw = String(iniciales).toUpperCase().trim();
+            return diccIniciales[raw] || `[INICIAL DESCONOCIDA: ${raw}]`; 
+        }
+
+        async function initAuditoria() {
+            try {
+                // 1. Descargar registros legacy de sucursales
+                const qLegacy = window.query(window.collection(window.db, "registros"), window.where("tipo", "==", "sucursal"));
+                const qsLegacy = await window.getDocs(qLegacy);
+                qsLegacy.forEach(doc => {
+                    const data = doc.data();
+                    rawDataSucursales.push({
+                        fecha: data.fecha,
+                        sucursal: normalizarDato(data.sucursal, 'sucursal'),
+                        estudio: normalizarDato(data.estudio, 'estudio'),
+                        medico: normalizarDato(data.medico, 'medico')
+                    });
+                });
+
+                // 2. Descargar registros nativos y automáticos de sucursal.html
+                const qNativos = window.query(window.collection(window.db, "registros_diarios_sucursales"));
+                const qsNativos = await window.getDocs(qNativos);
+                qsNativos.forEach(doc => {
+                    const data = doc.data();
+                    if (data.estudios) {
+                        Object.keys(data.estudios).forEach(estudio => {
+                            const cantidad = data.estudios[estudio] || 0;
+                            for (let k = 0; k < cantidad; k++) {
+                                rawDataSucursales.push({
+                                    fecha: data.fecha,
+                                    sucursal: normalizarDato(data.sucursal, 'sucursal'),
+                                    estudio: normalizarDato(estudio, 'estudio'),
+                                    medico: normalizarDato(data.medico, 'medico')
+                                });
+                            }
+                        });
+                    }
+                });
+
+                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Base de datos sincronizada';
+                document.getElementById('btn-auditoria').disabled = false;
+                document.getElementById('tabla-auditoria').innerHTML = '<tr><td colspan="6" class="text-center py-10 text-white/40 italic">Listo para validar. Carga uno o varios archivos Excel.</td></tr>';
+
+            } catch (error) {
+                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-circle-xmark text-red-400 mr-1"></i> Error de enlace';
+                alert("Fallo de comunicación con la base de datos.");
+            }
+        }
+
+        async function ejecutarCruceDeDatos() {
+            const input = document.getElementById('archivoAuditoria');
+            const btn = document.getElementById('btn-auditoria');
+            if(input.files.length === 0) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Cruzando Bases de Datos...';
+
+            let excelData = {};
+
+            try {
+                for(let i=0; i<input.files.length; i++){
+                    let data = await input.files[i].arrayBuffer();
+                    let wb = XLSX.read(data, {type:'array'});
+                    
+                    for(let sn of wb.SheetNames){
+                        let sheet = wb.Sheets[sn];
+                        let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
+                        let fEx = "1900-01-01", sEx = "Desconocida", iEnc = -1, mapa = {};
+
+                        for(let r=0; r<Math.min(20, filas.length); r++){
+                            if(!filas[r]) continue;
+                            let cL = filas[r].map(v => String(v).trim().toUpperCase());
+                            
+                            if(cL.join(" ").includes("FECHA")){
+                                let str = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim();
+                                let p = str.replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
+                                if(p.length>=3){
+                                    let d=p[0].padStart(2,'0'), mR=p[1], a=p[2];
+                                    let mN = isNaN(mR) ? (mesesTexto[mR.substring(0,3)] || 0) : parseInt(mR,10)-1;
+                                    if(a.length===2) a="20"+a; else if(a.length!==4) a="2026";
+                                    fEx = `${a}-${String(mN+1).padStart(2,'0')}-${d}`; 
+                                }
+                            }
+                            let cS = cL.findIndex(v=>v.includes("SUCURSAL"));
+                            if(cS!==-1) sEx = cL[cS+1] || cL[cS+2];
+
+                            if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){
+                                iEnc=r;
+                                filas[r].forEach((val, idx)=>{ if(val) mapa[String(val).toUpperCase().trim()] = idx; });
+                            }
+                        }
+
+                        if(iEnc!==-1){
+                            sEx = normalizarDato(sEx, 'sucursal');
+                            for(let r=iEnc+1; r<filas.length; r++){
+                                let f = filas[r]; if(!f || !f[mapa["NOMBRE"]]) continue;
+                                if(f.join(" ").toUpperCase().includes("PENDIENTES")) break;
+
+                                Object.keys(estudiosMapeo).forEach(key => {
+                                    let cIdx = mapa[key];
+                                    if(cIdx!==undefined && f[cIdx] && !String(f[cIdx]).toUpperCase().includes("PEND")){
+                                        const estudioFinal = estudiosMapeo[key];
+                                        const medicoTraducido = normalizarDato(traducirMedico(f[cIdx]), 'medico');
+                                        
+                                        const hash = `${fEx}|${sEx}|${medicoTraducido}|${estudioFinal}`;
+                                        excelData[hash] = (excelData[hash] || 0) + 1;
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Unificar registros descargados de la App
+                let appData = {};
+                rawDataSucursales.forEach(reg => {
+                    const medicoLimpio = normalizarDato(reg.medico, 'medico');
+                    const hash = `${reg.fecha}|${reg.sucursal}|${medicoLimpio}|${reg.estudio}`;
+                    appData[hash] = (appData[hash] || 0) + 1;
+                });
+
+                renderResultados(excelData, appData);
+
+            } catch(e) { alert("Fallo crítico analizando las estructuras de Excel: " + e.message); }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-bezier-curve"></i> Conciliar Información';
+        }
+
+        function renderResultados(excelData, appData) {
+            const tbody = document.getElementById('tabla-auditoria');
+            tbody.innerHTML = '';
+            
+            let match=0, faltaEnApp=0, extraEnApp=0;
+            const todasLasLlaves = new Set([...Object.keys(excelData), ...Object.keys(appData)]);
+            const fechasEnExcel = [...new Set(Object.keys(excelData).map(k => k.split('|')[0]))];
+            
+            let renglonesHtml = "";
+
+            todasLasLlaves.forEach(hash => {
+                const [fecha, sucursal, medico, estudio] = hash.split('|');
+                if(!fechasEnExcel.includes(fecha)) return; 
+
+                const cantExcel = excelData[hash] || 0;
+                const cantApp = appData[hash] || 0;
+
+                let estadoHtml = '';
+                let bgClase = '';
+
+                if(cantExcel === cantApp) {
+                    match++;
+                    estadoHtml = `<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-xl text-[10px] font-black tracking-wider block text-center"><i class="fa-solid fa-circle-check mr-1"></i> INTEGRIDAD OK</span>`;
+                } else if (cantExcel > cantApp) {
+                    faltaEnApp++;
+                    bgClase = 'bg-red-500/10';
+                    let faltantes = cantExcel - cantApp;
+                    estadoHtml = `<span class="bg-red-500/20 text-red-300 border border-red-500/30 px-3 py-1 rounded-xl text-[10px] font-black tracking-wider block text-center"><i class="fa-solid fa-circle-exclamation mr-1"></i> FALTAN ${faltantes} EN APP</span>`;
+                } else if (cantApp > cantExcel) {
+                    extraEnApp++;
+                    bgClase = 'bg-amber-500/10';
+                    let extras = cantApp - cantExcel;
+                    estadoHtml = `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-xl text-[10px] font-black tracking-wider block text-center"><i class="fa-solid fa-circle-nodes mr-1"></i> ${extras} NO EN EXCEL</span>`;
+                }
+
+                renglonesHtml += `
+                    <tr class="${bgClase} transition hover:bg-white/5">
+                        <td class="py-3.5 px-4 font-bold text-xs text-white/90 leading-tight">${fecha}<br><span class="text-[10px] text-purple-300/80 uppercase font-black tracking-wider">${sucursal}</span></td>
+                        <td class="py-3.5 px-4 text-xs font-bold uppercase text-white/80">${medico}</td>
+                        <td class="py-3.5 px-4 text-xs font-bold text-purple-300 uppercase">${estudio}</td>
+                        <td class="py-3.5 px-4 text-center font-black text-lg text-white/50">${cantExcel}</td>
+                        <td class="py-3.5 px-4 text-center font-black text-lg text-white">${cantApp}</td>
+                        <td class="py-3.5 px-4">${estadoHtml}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = renglonesHtml || '<tr><td colspan="6" class="text-center py-10 text-white/40 italic">No se hallaron coincidencias para los días cargados.</td></tr>';
+            
+            document.getElementById('kpi-aud-match').innerText = match;
+            document.getElementById('kpi-aud-rojo').innerText = faltaEnApp;
+            document.getElementById('kpi-aud-ama').innerText = extraEnApp;
+            document.getElementById('total-filas-auditoria').innerText = (match + faltaEnApp + extraEnApp) + " Evaluaciones Realizadas";
+        }
+    </script>
+</body>
+</html>
