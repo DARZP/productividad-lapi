@@ -114,7 +114,7 @@
 
                 <!-- Botón hacia el Resumen -->
                 <button onclick="mostrarResumen()" class="w-full bg-white text-orange-600 font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2 mb-6">
-                    Ir al Resumen Final <i class="fa-solid fa-arrow-right"></i>
+                    Ir al Resumen del día <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
 
@@ -129,7 +129,7 @@
 
                 <!-- Observaciones (Espejo de la vista principal) -->
                 <div class="mb-6">
-                    <label class="block mb-2 font-bold text-sm text-white/90">Observaciones Finales:</label>
+                    <label class="block mb-2 font-bold text-sm text-white/90">Observaciones:</label>
                     <textarea id="obs-resumen" oninput="actualizarObservaciones(this.value)" class="w-full p-3 rounded-xl bg-black/20 border border-white/10 outline-none placeholder-white/50 text-white font-medium" rows="3"></textarea>
                 </div>
 
@@ -139,7 +139,7 @@
                         <i class="fa-solid fa-arrow-left"></i> Volver
                     </button>
                     <button id="btn-confirmar-final" onclick="confirmarTurno()" class="w-2/3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-check-double"></i> Confirmar
+                        <i class="fa-solid fa-check-double"></i> Actualizar 
                     </button>
                 </div>
             </div>
