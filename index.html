@@ -50,7 +50,7 @@
     <datalist id="lista-medicos"></datalist>
     <datalist id="lista-empresas"></datalist>
 
-    <div id="contenedor-principal" class="w-full max-w-md">
+    <div id="contenedor-principal" class="w-full max-w-md flex-1">
         
         <div class="glass p-6 rounded-3xl shadow-2xl mb-6">
             <h1 class="text-2xl font-black text-white mb-1"><i class="fa-solid fa-map-location-dot mr-2"></i> REGISTRO DIARIO</h1>
@@ -183,6 +183,40 @@
         </div>
     </div>
 
+    <!-- ENLACE PARA INSTALAR APP -->
+    <div class="mt-6 text-center w-full max-w-md">
+        <button onclick="abrirModalPWA()" class="text-white/70 hover:text-white text-sm font-bold underline transition-all active:scale-95">
+            <i class="fa-solid fa-mobile-screen mr-1"></i> ¿Cómo instalar esta App?
+        </button>
+    </div>
+
+    <!-- MODAL INSTRUCCIONES PWA -->
+    <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-pwa-card" class="glass bg-orange-600/90 p-6 rounded-3xl shadow-2xl max-w-sm w-full text-white transform scale-95 transition-transform duration-300">
+            <h3 class="text-xl font-black mb-5 text-center"><i class="fa-solid fa-download mr-2"></i> Instalar Aplicación</h3>
+            
+            <div class="mb-5 bg-black/10 p-4 rounded-2xl border border-white/10">
+                <h4 class="font-bold border-b border-white/20 pb-2 mb-3 text-orange-200"><i class="fa-brands fa-apple mr-1 text-lg"></i> iOS (iPhone/iPad)</h4>
+                <ol class="text-sm space-y-2 list-decimal list-inside opacity-90 font-medium">
+                    <li>Abre esta página en <b>Safari</b>.</li>
+                    <li>Toca el botón Compartir <i class="fa-solid fa-arrow-up-from-bracket mx-1"></i> abajo.</li>
+                    <li>Selecciona <b>Agregar a inicio</b> <i class="fa-solid fa-square-plus mx-1"></i>.</li>
+                </ol>
+            </div>
+
+            <div class="mb-6 bg-black/10 p-4 rounded-2xl border border-white/10">
+                <h4 class="font-bold border-b border-white/20 pb-2 mb-3 text-orange-200"><i class="fa-brands fa-android mr-1 text-lg"></i> Android</h4>
+                <ol class="text-sm space-y-2 list-decimal list-inside opacity-90 font-medium">
+                    <li>Abre esta página en <b>Chrome</b>.</li>
+                    <li>Toca el menú <i class="fa-solid fa-ellipsis-vertical mx-1"></i> arriba a la derecha.</li>
+                    <li>Selecciona <b>Instalar aplicación</b>.</li>
+                </ol>
+            </div>
+
+            <button onclick="cerrarModalPWA()" class="w-full bg-white text-orange-600 font-black py-3 rounded-xl transition-all active:scale-95 shadow-lg">Entendido</button>
+        </div>
+    </div>
+
     <script>
         const empresas = window.LAPI_CONFIG.empresas;
         const medicos = window.LAPI_CONFIG.medicos;
@@ -204,6 +238,27 @@
             if (duracion > 0) {
                 setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, duracion);
             }
+        }
+
+        // FUNCIONES MODAL PWA
+        function abrirModalPWA() {
+            const modal = document.getElementById('modal-pwa');
+            const card = document.getElementById('modal-pwa-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function cerrarModalPWA() {
+            const modal = document.getElementById('modal-pwa');
+            const card = document.getElementById('modal-pwa-card');
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
         }
 
         document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join('');
