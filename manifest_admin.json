@@ -1,6 +1,6 @@
 {
-  "name": "Productividad. Admin",
-  "short_name": "Admin",
+  "name": "LAPI ADMIN",
+  "short_name": "LAPI. A",
   "start_url": "./admin.html",
   "display": "standalone",
   "background_color": "#f8fafc",
