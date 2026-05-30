@@ -93,7 +93,7 @@
                             <div class="flex-grow border-t border-slate-200"></div>
                         </div>
 
-                        <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="w-full mt-2 mb-4 text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[11px] file:font-black file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer bg-slate-50 border border-slate-200 p-2 rounded-xl">
+                        <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="w-full mb-3 text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer bg-slate-50 border border-slate-200 p-2 rounded-xl">
                         
                         <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-2.5 rounded-xl transition-all shadow-sm text-xs active:scale-95"><i class="fa-solid fa-upload mr-1"></i> Procesar Archivos Locales</button>
                     </div>
@@ -108,7 +108,7 @@
                         </div>
                         <input type="date" id="a-inicio" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-3 border border-slate-300">
                         <input type="date" id="a-fin" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-4 border border-slate-300">
-                        <button onclick="reRenderAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl transition-all text-sm active:scale-95">Aplicar Vista</button>
+                        <button onclick="reRenderAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 rounded-xl transition-all text-xs active:scale-95">Aplicar Vista</button>
                     </div>
                 </div>
                 
@@ -121,16 +121,16 @@
                     
                     <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200">
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
+                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real (Filtrado por Sucursal)</h3>
                             <span id="status-db" class="text-[10px] text-slate-500 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Conectando BD...</span>
                         </div>
                         <div class="overflow-x-auto scroll-custom max-h-[500px]">
                             <table class="w-full text-left border-collapse">
                                 <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm text-[10px] uppercase text-slate-500">
-                                    <tr><th class="p-4">Fecha / Lugar</th><th class="p-4">Médico Inteligente</th><th class="p-4">Estudio</th><th class="p-4 text-center">Excel</th><th class="p-4 text-center">App</th><th class="p-4 text-center">Gestión TNC</th></tr>
+                                    <tr><th class="p-4">Fecha / Lugar</th><th class="p-4">Médico</th><th class="p-4">Estudio</th><th class="p-4 text-center">Excel</th><th class="p-4 text-center">App</th><th class="p-4 text-center">Acción Resolutiva</th></tr>
                                 </thead>
                                 <tbody id="tabla-auditoria" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs">
-                                    <tr><td colspan="6" class="text-center py-12 text-slate-400 italic">Conecta con OneDrive o sube archivos locales para iniciar el cruce...</td></tr>
+                                    <tr><td colspan="6" class="text-center py-12 text-slate-400 italic">Importa o sube un archivo Excel para iniciar el cruce...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -285,7 +285,7 @@
                 "Espirometría": ["CONSENTIMIENTO INFORMADO", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "SIGNOS VITALES Y SOMATOMETRÍA", "INTERROGATORIO Y/O ANTECEDENTES", "DISPONIBILIDAD DE MANIOBRA", "CALIDAD DE MANIOBRA", "REGISTRO EN SISTEMA WEB"],
                 "Agudeza Visual": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "REGISTRO DE AGUDEZA VISUAL", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB"],
                 "Electrocardiograma": ["DISPONIBILIDAD DE TRAZO", "FICHA DE IDENTIFICACIÓN", "CALIDAD DEL TRAZO"],
-                "Historia Clínica Empresa": ["EXPLORACIÓN FÍSICA", "AUDIOGRAMA", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB", "FICHA DE IDENTIFICACIÓN"], 
+                "Historia Clínica": ["EXPLORACIÓN FÍSICA", "AUDIOGRAMA", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB", "FICHA DE IDENTIFICACIÓN"], 
                 "Genérico": ["FICHA DE IDENTIFICACIÓN", "REGISTRO EN SISTEMA WEB", "LETRA LEGIBLE", "CONTROL DOCUMENTAL"]
             },
             "Foráneo": {
@@ -354,51 +354,38 @@
         }
 
         // ==========================================================
-        // 2. MOTOR INTELIGENTE DE PARSEO, DICCIONARIOS Y AGRUPACIÓN
+        // 2. MOTOR ESTRICTO DE DICCIONARIOS Y AGRUPACIÓN
         // ==========================================================
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
-        // 🔥 AGRUPADOR DE ESTUDIOS (Une las variables de Historia Clínica)
+        // 🔥 AGRUPADOR DE ESTUDIOS (UNIFICA HISTORIA CLÍNICA)
         function agruparEstudio(est, tipoOrigen) {
             if(!est) return "Desconocido";
             let n = normalizarDato(est);
             let upper = n.toUpperCase();
             if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") {
-                return tipoOrigen === "Sucursal" ? "Historia Clínica Empresa" : "Historia Clínica";
+                return "Historia Clínica";
             }
             return n;
         }
 
-        // 🔥 MOTOR INTELIGENTE PREDICTIVO DE INICIALES (MASR Soportado)
+        // 🔥 MOTOR ESTRICTO DE INICIALES 
         function traducirMedico(iniciales) {
             let raw = String(iniciales).toUpperCase().trim().replace(/\./g, '');
+            
+            // 1. Busca estrictamente en el diccionario manual de config.js
             if (diccIniciales[raw]) return diccIniciales[raw];
             
+            // 2. Si escriben el nombre completo en el Excel y cuadra con la base, lo dejamos pasar.
             const medicos = window.LAPI_CONFIG.medicos || [];
-            for(let med of medicos) {
-                let nom = med.toUpperCase().trim(); let partes = nom.split(/\s+/);
-                
-                if(partes.includes(raw)) return med; // Escribió el nombre completo o apellido
-                
-                let incialDirecta = partes.map(p => p[0]).join(''); 
-                if(incialDirecta === raw) return med; // Exacto
-                
-                if(partes.length >= 2 && (partes[0][0] + partes[1][0]) === raw) return med; // AB
-                if(partes.length >= 2 && (partes[1][0] + partes[0][0]) === raw) return med; // BA
-                
-                // M(2) A(3) S(0) R(1) -> MASR (Miguel Angel Salinas Rojas)
-                if(partes.length >= 4 && (partes[2][0] + partes[3][0] + partes[0][0] + partes[1][0]) === raw) return med;
-                
-                // M(2) S(0) R(1) -> MSR (Miguel Salinas Rojas)
-                if(partes.length >= 3 && (partes[2][0] + partes[0][0] + partes[1][0]) === raw) return med;
-                
-                // D(1) A(0) -> DA (Diego Arias -> Arias Diego)
-                if(partes.length >= 3 && (partes[2][0] + partes[0][0]) === raw) return med; 
-            }
-            return `[${raw}]`; // Falso o Desconocido
+            const exactMatch = medicos.find(m => m.toUpperCase().trim() === raw);
+            if(exactMatch) return exactMatch;
+
+            // 3. Si no existe en config.js, lo marcamos de rojo brillante para que el Admin lo agregue
+            return `[INICIAL NO REGISTRADA: ${raw}]`; 
         }
 
         async function procesarArrayBufferExcel(arrayBuffer) {
@@ -463,6 +450,16 @@
             document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-upload mr-1"></i> Procesar Archivos Locales';
         }
 
+        function verificarParametrosURL() {
+            const params = new URLSearchParams(window.location.search);
+            if(params.has('medico')) {
+                cambiarSeccion('tnc');
+                window.seleccionarRegistroTNC(params.get('origen') || 'Sucursal', params.get('fecha') || '', params.get('lugar') || '', params.get('medico') || '', params.get('estudio') || '');
+                abrirModal('tnc');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
         async function initAuditoria() {
             try {
                 rawDataGlobal = [];
@@ -492,6 +489,7 @@
                     }
                 });
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
+                verificarParametrosURL(); 
             } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; }
         }
 
