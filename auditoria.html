@@ -12,6 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
     <script src="config.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -69,7 +70,7 @@
             </div>
             
             <div class="flex flex-wrap gap-2 bg-black/20 p-1.5 rounded-xl w-full md:w-auto">
-                <button onclick="cambiarSeccion('cruce')" id="nav-cruce" class="tab-active flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all"><i class="fa-solid fa-code-compare mr-1"></i> Cruce Excel</button>
+                <button onclick="cambiarSeccion('cruce')" id="nav-cruce" class="tab-active flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all"><i class="fa-solid fa-code-compare mr-1"></i> Cruce Inteligente</button>
                 <button onclick="cambiarSeccion('tnc')" id="nav-tnc" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-white/70 hover:text-white"><i class="fa-solid fa-list-check mr-1"></i> Gestión TNC</button>
                 <button onclick="cambiarSeccion('perfil')" id="nav-perfil" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-white/70 hover:text-white"><i class="fa-solid fa-user-doctor mr-1"></i> Expediente</button>
             </div>
@@ -78,14 +79,27 @@
         <div id="sec-cruce" class="block animate-fade-in">
             <div class="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-6">
                 <div class="xl:col-span-1 space-y-6">
-                    <div class="glass p-5 rounded-2xl shadow-sm border-l-4 border-purple-500">
-                        <h3 class="font-black text-xs uppercase tracking-wider mb-3 text-slate-500"><i class="fa-solid fa-upload mr-1"></i> Carga de Archivos</h3>
-                        <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="w-full mb-4 text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[11px] file:font-black file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer bg-slate-50 border border-slate-200 p-2 rounded-xl">
-                        <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" disabled class="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-slate-300 disabled:text-slate-500 text-white font-black py-3 rounded-xl transition-all shadow-md text-sm active:scale-95"><i class="fa-solid fa-play mr-1"></i> Iniciar Cruce</button>
+                    <div class="glass p-5 rounded-2xl shadow-sm border-l-4 border-sky-500 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-sky-100 text-sky-600 text-[9px] font-black px-2 py-1 rounded-bl-lg">M2M ENABLED</div>
+                        <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Origen de Datos</h3>
+                        
+                        <button id="btn-auditoria-onedrive" onclick="conectarOneDrive()" class="w-full bg-[#0078d4] hover:bg-[#005a9e] text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm active:scale-95 mb-4 flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-microsoft text-lg"></i> Extraer de OneDrive
+                        </button>
+
+                        <div class="relative flex py-2 items-center mb-2">
+                            <div class="flex-grow border-t border-slate-200"></div>
+                            <span class="flex-shrink-0 mx-4 text-slate-400 text-[9px] font-bold uppercase tracking-widest">Opción Manual</span>
+                            <div class="flex-grow border-t border-slate-200"></div>
+                        </div>
+
+                        <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="w-full mt-2 mb-4 text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[11px] file:font-black file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer bg-slate-50 border border-slate-200 p-2 rounded-xl">
+                        
+                        <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-2.5 rounded-xl transition-all shadow-sm text-xs active:scale-95"><i class="fa-solid fa-upload mr-1"></i> Procesar Archivos Locales</button>
                     </div>
                     
                     <div class="glass p-5 rounded-2xl shadow-sm border-l-4 border-emerald-500">
-                        <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-calendar-days mr-1"></i> Filtro de Periodo</h3>
+                        <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-filter mr-1"></i> Filtro de Tabla</h3>
                         <div class="grid grid-cols-2 gap-2 mb-4">
                             <button onclick="aplicarFiltroRapido('hoy')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold py-2 rounded-lg transition">Hoy</button>
                             <button onclick="aplicarFiltroRapido('ayer')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold py-2 rounded-lg transition">Ayer</button>
@@ -94,7 +108,7 @@
                         </div>
                         <input type="date" id="a-inicio" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-3 border border-slate-300">
                         <input type="date" id="a-fin" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-4 border border-slate-300">
-                        <button onclick="reRenderAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl transition-all text-sm active:scale-95">Aplicar Filtro</button>
+                        <button onclick="reRenderAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl transition-all text-sm active:scale-95">Aplicar Vista</button>
                     </div>
                 </div>
                 
@@ -107,16 +121,16 @@
                     
                     <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200">
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real (Filtrado por Sucursal)</h3>
-                            <span id="status-db" class="text-[10px] text-slate-500 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Conectando...</span>
+                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
+                            <span id="status-db" class="text-[10px] text-slate-500 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Conectando BD...</span>
                         </div>
                         <div class="overflow-x-auto scroll-custom max-h-[500px]">
                             <table class="w-full text-left border-collapse">
                                 <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm text-[10px] uppercase text-slate-500">
-                                    <tr><th class="p-4">Fecha / Lugar</th><th class="p-4">Médico Autodetectado</th><th class="p-4">Estudio</th><th class="p-4 text-center">Excel</th><th class="p-4 text-center">App</th><th class="p-4 text-center">Acción Resolutiva</th></tr>
+                                    <tr><th class="p-4">Fecha / Lugar</th><th class="p-4">Médico Inteligente</th><th class="p-4">Estudio</th><th class="p-4 text-center">Excel</th><th class="p-4 text-center">App</th><th class="p-4 text-center">Gestión TNC</th></tr>
                                 </thead>
                                 <tbody id="tabla-auditoria" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs">
-                                    <tr><td colspan="6" class="text-center py-12 text-slate-400 italic">Esperando archivos Excel para iniciar el cruce...</td></tr>
+                                    <tr><td colspan="6" class="text-center py-12 text-slate-400 italic">Conecta con OneDrive o sube archivos locales para iniciar el cruce...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -205,7 +219,7 @@
                         <option value="Sucursal">Sucursal</option>
                         <option value="Foráneo">Foráneo</option>
                     </select>
-                    <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Ej. Lomas Verdes, 2026-05-15, Juan..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
+                    <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Ej. Lomas Verdes, Juan, HC..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
                 </div>
                 <div id="tnc-resultados-busqueda" class="max-h-52 overflow-y-auto scroll-custom space-y-1 mb-4 border border-slate-200 rounded-lg p-1 bg-slate-50">
                     <p class="text-center text-xs text-slate-400 py-4">Teclea para buscar...</p>
@@ -252,7 +266,7 @@
 
     <script>
         // ==========================================
-        // 0. GLOBALES Y CONFIG
+        // 0. GLOBALES, DICCIONARIOS Y CONFIG
         // ==========================================
         let rawDataGlobal = []; 
         let excelDataGlobal = {};
@@ -288,133 +302,145 @@
             cargarTNCs();
         }
 
-        // ==========================================
-        // 1. UTILIDADES Y MOTOR INTELIGENTE
-        // ==========================================
-        function mostrarToast(mensaje, tipo = 'info') {
-            const toast = document.createElement('div');
-            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-purple-600');
-            const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-triangle-exclamation' : 'fa-info-circle');
-            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-lg font-bold text-xs flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
-            toast.innerHTML = `<i class="fa-solid ${icono} text-base"></i> <span class="leading-tight">${mensaje}</span>`;
-            document.getElementById('toast-container').appendChild(toast);
-            setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
-            setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
+        // ==========================================================
+        // 1. MSAL (ONEDRIVE) 
+        // ==========================================================
+        const msalConfig = {
+            auth: {
+                clientId: "eaaa1a34-63b2-4dc1-bf1e-8a16e820e9c3", 
+                authority: "https://login.microsoftonline.com/fae950d2-8771-4d4e-a95e-a9dab0bd22de",
+                redirectUri: window.location.href.split('?')[0] 
+            }
+        };
+
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+        window.conectarOneDrive = async function() {
+            try {
+                mostrarToast("Conectando con Microsoft 365...", "info");
+                const loginResponse = await msalInstance.loginPopup({ scopes: ["User.Read", "Files.Read.All"] });
+                mostrarToast(`Hola ${loginResponse.account.name}. Extrayendo reportes...`, "exito");
+                
+                const tokenResponse = await msalInstance.acquireTokenSilent({ scopes: ["Files.Read.All"], account: loginResponse.account });
+
+                const btn = document.getElementById('btn-auditoria-onedrive');
+                const txtOriginal = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando BD...';
+
+                const headers = new Headers(); headers.append("Authorization", `Bearer ${tokenResponse.accessToken}`);
+                const searchRes = await fetch("https://graph.microsoft.com/v1.0/me/drive/root/search(q='.xlsx')?$top=30&$select=id,name,lastModifiedDateTime,@microsoft.graph.downloadUrl", { headers });
+                const data = await searchRes.json();
+                
+                if(!data.value || data.value.length === 0) { btn.innerHTML = txtOriginal; return mostrarToast("No se hallaron archivos Excel.", "error"); }
+
+                excelDataGlobal = {}; let archProcesados = 0;
+                for(let file of data.value) {
+                    const dlUrl = file["@microsoft.graph.downloadUrl"]; if(!dlUrl) continue;
+                    const fileRes = await fetch(dlUrl); const arrayBuffer = await fileRes.arrayBuffer();
+                    await procesarArrayBufferExcel(arrayBuffer); 
+                    archProcesados++;
+                }
+
+                appDataGlobal = {};
+                rawDataGlobal.filter(r => r.tipo === "Sucursal").forEach(reg => {
+                    const hash = `${reg.fecha}|${reg.lugar}|${reg.medico}|${reg.estudio}`;
+                    appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
+                });
+                
+                reRenderAuditoria();
+                mostrarToast(`Auditoría lista: ${archProcesados} Excels integrados automáticamente.`, "exito");
+                btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Extracción Completada';
+            } catch (err) { console.error("Error M2M:", err); mostrarToast("Fallo en sincronización OneDrive", "error"); }
         }
 
-        window.cambiarSeccion = function(sec) {
-            ['cruce', 'tnc', 'perfil'].forEach(s => {
-                document.getElementById(`sec-${s}`).classList.add('hidden');
-                document.getElementById(`nav-${s}`).classList.remove('tab-active', 'text-slate-800');
-                document.getElementById(`nav-${s}`).classList.add('text-white/70');
-            });
-            document.getElementById(`sec-${sec}`).classList.remove('hidden');
-            document.getElementById(`nav-${sec}`).classList.remove('text-white/70');
-            document.getElementById(`nav-${sec}`).classList.add('tab-active', 'text-slate-800');
-        }
-
-        window.abrirModal = function(id) {
-            const modal = document.getElementById(`modal-${id}`);
-            const card = document.getElementById(`modal-${id}-card`);
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
-        }
-
-        window.cerrarModal = function(id) {
-            const modal = document.getElementById(`modal-${id}`);
-            const card = document.getElementById(`modal-${id}-card`);
-            modal.classList.add('opacity-0'); card.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
-
+        // ==========================================================
+        // 2. MOTOR INTELIGENTE DE PARSEO, DICCIONARIOS Y AGRUPACIÓN
+        // ==========================================================
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
-        // 🔥 MOTOR INTELIGENTE DE RESOLUCIÓN DE INICIALES
-        function traducirMedico(iniciales) {
-            let raw = String(iniciales).toUpperCase().trim().replace(/\./g, '');
-            
-            // 1. Diccionario Manual (El que diste de alta en config.js)
-            if (diccIniciales[raw]) return diccIniciales[raw];
-            
-            // 2. Búsqueda Automática Predictiva
-            const medicos = window.LAPI_CONFIG.medicos || [];
-            for(let med of medicos) {
-                let nom = med.toUpperCase().trim();
-                let partes = nom.split(/\s+/);
-                
-                // a) Escribió el primer nombre o apellido real en vez de inicial
-                if(partes.includes(raw)) return med;
-                
-                // b) Iniciales exactas en el mismo orden (Ej: Cabrera Velazquez Miguel -> CVM)
-                let incialDirecta = partes.map(p => p[0]).join('');
-                if(incialDirecta === raw) return med;
-                
-                // c) Solo 2 iniciales directas (Ej: Cabrera Velazquez -> CV)
-                if(partes.length >= 2 && (partes[0][0] + partes[1][0]) === raw) return med;
-                
-                // d) Iniciales en orden inverso (Ej: Diego Arias -> DA, pero en base es Arias Diego -> AD)
-                if(partes.length >= 2 && (partes[1][0] + partes[0][0]) === raw) return med;
-                if(partes.length >= 3 && (partes[2][0] + partes[0][0]) === raw) return med; // Ej: Arias Azpeitia Diego -> DA
+        // 🔥 AGRUPADOR DE ESTUDIOS (Une las variables de Historia Clínica)
+        function agruparEstudio(est, tipoOrigen) {
+            if(!est) return "Desconocido";
+            let n = normalizarDato(est);
+            let upper = n.toUpperCase();
+            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") {
+                return tipoOrigen === "Sucursal" ? "Historia Clínica Empresa" : "Historia Clínica";
             }
-            
-            return `[${raw}]`; // Marca con corchetes si es totalmente desconocido para que resalte
+            return n;
         }
 
-        // ==========================================
-        // 2. DESCARGA GLOBAL EN MEMORIA
-        // ==========================================
-        async function initAuditoria() {
-            try {
-                rawDataGlobal = [];
+        // 🔥 MOTOR INTELIGENTE PREDICTIVO DE INICIALES (MASR Soportado)
+        function traducirMedico(iniciales) {
+            let raw = String(iniciales).toUpperCase().trim().replace(/\./g, '');
+            if (diccIniciales[raw]) return diccIniciales[raw];
+            
+            const medicos = window.LAPI_CONFIG.medicos || [];
+            for(let med of medicos) {
+                let nom = med.toUpperCase().trim(); let partes = nom.split(/\s+/);
                 
-                // Cargar Foráneos y Nativos
-                const q1 = window.query(window.collection(window.db, "registros"));
-                const qs1 = await window.getDocs(q1);
-                qs1.forEach(doc => {
-                    const data = doc.data();
-                    if(data.tipo === "sucursal") {
-                        rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: normalizarDato(data.estudio), medico: normalizarDato(data.medico) });
-                    } else if(data.detalles) {
-                        data.detalles.forEach(det => {
-                            rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), estudio: normalizarDato(det.estudio), medico: normalizarDato(det.medico) });
-                        });
-                    }
-                });
+                if(partes.includes(raw)) return med; // Escribió el nombre completo o apellido
+                
+                let incialDirecta = partes.map(p => p[0]).join(''); 
+                if(incialDirecta === raw) return med; // Exacto
+                
+                if(partes.length >= 2 && (partes[0][0] + partes[1][0]) === raw) return med; // AB
+                if(partes.length >= 2 && (partes[1][0] + partes[0][0]) === raw) return med; // BA
+                
+                // M(2) A(3) S(0) R(1) -> MASR (Miguel Angel Salinas Rojas)
+                if(partes.length >= 4 && (partes[2][0] + partes[3][0] + partes[0][0] + partes[1][0]) === raw) return med;
+                
+                // M(2) S(0) R(1) -> MSR (Miguel Salinas Rojas)
+                if(partes.length >= 3 && (partes[2][0] + partes[0][0] + partes[1][0]) === raw) return med;
+                
+                // D(1) A(0) -> DA (Diego Arias -> Arias Diego)
+                if(partes.length >= 3 && (partes[2][0] + partes[0][0]) === raw) return med; 
+            }
+            return `[${raw}]`; // Falso o Desconocido
+        }
 
-                // Cargar Sucursales Agrupadas
-                const q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"));
-                const qs2 = await window.getDocs(q2);
-                qs2.forEach(doc => {
-                    const data = doc.data();
-                    if(data.estudios) {
-                        Object.keys(data.estudios).forEach(est => {
-                            for(let k=0; k<(data.estudios[est]||0); k++){
-                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: normalizarDato(est), medico: normalizarDato(data.medico) });
+        async function procesarArrayBufferExcel(arrayBuffer) {
+            let wb = XLSX.read(arrayBuffer, {type:'array'});
+            for(let sn of wb.SheetNames){
+                let sheet = wb.Sheets[sn];
+                let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
+                let fEx = "1900-01-01", sEx = "Desconocida", iEnc = -1, mapa = {};
+
+                for(let r=0; r<Math.min(20, filas.length); r++){
+                    if(!filas[r]) continue;
+                    let cL = filas[r].map(v => String(v).trim().toUpperCase());
+                    
+                    if(cL.join(" ").includes("FECHA")){
+                        let p = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim().replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
+                        if(p.length>=3){
+                            let mN = isNaN(p[1]) ? (mesesTexto[p[1].substring(0,3)] || 0) : parseInt(p[1],10)-1;
+                            fEx = `${p[2].length===2?'20'+p[2]:p[2]}-${String(mN+1).padStart(2,'0')}-${p[0].padStart(2,'0')}`; 
+                        }
+                    }
+                    let cS = cL.findIndex(v=>v.includes("SUCURSAL")); if(cS!==-1) sEx = cL[cS+1] || cL[cS+2];
+                    if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){ iEnc=r; filas[r].forEach((val, idx)=>{ if(val) mapa[String(val).toUpperCase().trim()] = idx; }); }
+                }
+
+                if(iEnc!==-1){
+                    sEx = normalizarDato(sEx);
+                    for(let r=iEnc+1; r<filas.length; r++){
+                        let f = filas[r]; if(!f || !f[mapa["NOMBRE"]] || f.join(" ").toUpperCase().includes("PENDIENTES")) break;
+                        Object.keys(estudiosMapeo).forEach(key => {
+                            if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
+                                const hash = `${fEx}|${sEx}|${normalizarDato(traducirMedico(f[mapa[key]]))}|${agruparEstudio(estudiosMapeo[key], "Sucursal")}`;
+                                excelDataGlobal[hash] = (excelDataGlobal[hash] || 0) + 1;
                             }
                         });
                     }
-                });
-                
-                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
-                document.getElementById('btn-auditoria').disabled = false;
-                
-                // Si viene de URL redirigimos
-                const params = new URLSearchParams(window.location.search);
-                if(params.has('medico')) {
-                    cambiarSeccion('tnc');
-                    window.seleccionarRegistroTNC(params.get('origen'), params.get('fecha'), params.get('lugar'), params.get('medico'), params.get('estudio'));
-                    abrirModal('tnc');
-                    window.history.replaceState({}, document.title, window.location.pathname);
                 }
-            } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; }
+            }
         }
 
-        // ==========================================
-        // 3. AISLAMIENTO QUIRÚRGICO DE SUCURSAL
-        // ==========================================
+        // ==========================================================
+        // 3. UI, CRUCE MANUAL Y REDERIZADO
+        // ==========================================================
         window.ejecutarCruceDeDatos = async function() {
             const input = document.getElementById('archivoAuditoria');
             if(input.files.length === 0) return mostrarToast("Sube un archivo Excel.", "error");
@@ -424,41 +450,7 @@
             try {
                 for(let i=0; i<input.files.length; i++){
                     let data = await input.files[i].arrayBuffer();
-                    let wb = XLSX.read(data, {type:'array'});
-                    for(let sn of wb.SheetNames){
-                        let sheet = wb.Sheets[sn];
-                        let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
-                        let fEx = "1900-01-01", sEx = "Desconocida", iEnc = -1, mapa = {};
-
-                        for(let r=0; r<Math.min(20, filas.length); r++){
-                            if(!filas[r]) continue;
-                            let cL = filas[r].map(v => String(v).trim().toUpperCase());
-                            
-                            if(cL.join(" ").includes("FECHA")){
-                                let p = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim().replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
-                                if(p.length>=3){
-                                    let mN = isNaN(p[1]) ? (mesesTexto[p[1].substring(0,3)] || 0) : parseInt(p[1],10)-1;
-                                    fEx = `${p[2].length===2?'20'+p[2]:p[2]}-${String(mN+1).padStart(2,'0')}-${p[0].padStart(2,'0')}`; 
-                                }
-                            }
-                            let cS = cL.findIndex(v=>v.includes("SUCURSAL")); if(cS!==-1) sEx = cL[cS+1] || cL[cS+2];
-                            if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){ iEnc=r; filas[r].forEach((val, idx)=>{ if(val) mapa[String(val).toUpperCase().trim()] = idx; }); }
-                        }
-
-                        if(iEnc!==-1){
-                            sEx = normalizarDato(sEx);
-                            for(let r=iEnc+1; r<filas.length; r++){
-                                let f = filas[r]; if(!f || !f[mapa["NOMBRE"]] || f.join(" ").toUpperCase().includes("PENDIENTES")) break;
-                                Object.keys(estudiosMapeo).forEach(key => {
-                                    if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
-                                        // AQUI SE TRADUCE EL MEDICO CON LA NUEVA FUNCION INTELIGENTE
-                                        const hash = `${fEx}|${sEx}|${normalizarDato(traducirMedico(f[mapa[key]]))}|${estudiosMapeo[key]}`;
-                                        excelDataGlobal[hash] = (excelDataGlobal[hash] || 0) + 1;
-                                    }
-                                });
-                            }
-                        }
-                    }
+                    await procesarArrayBufferExcel(data); 
                 }
                 
                 appDataGlobal = {};
@@ -468,7 +460,39 @@
                 });
                 reRenderAuditoria();
             } catch(e) { mostrarToast("Error leyendo Excel", "error"); console.error(e); }
-            document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-play mr-1"></i> Iniciar Cruce';
+            document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-upload mr-1"></i> Procesar Archivos Locales';
+        }
+
+        async function initAuditoria() {
+            try {
+                rawDataGlobal = [];
+                const q1 = window.query(window.collection(window.db, "registros"));
+                const qs1 = await window.getDocs(q1);
+                qs1.forEach(doc => {
+                    const data = doc.data();
+                    if(data.tipo === "sucursal") {
+                        rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: agruparEstudio(data.estudio, "Sucursal"), medico: normalizarDato(data.medico) });
+                    } else if(data.detalles) {
+                        data.detalles.forEach(det => {
+                            rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), estudio: agruparEstudio(det.estudio, "Foráneo"), medico: normalizarDato(det.medico) });
+                        });
+                    }
+                });
+
+                const q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"));
+                const qs2 = await window.getDocs(q2);
+                qs2.forEach(doc => {
+                    const data = doc.data();
+                    if(data.estudios) {
+                        Object.keys(data.estudios).forEach(est => {
+                            for(let k=0; k<(data.estudios[est]||0); k++){
+                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: agruparEstudio(est, "Sucursal"), medico: normalizarDato(data.medico) });
+                            }
+                        });
+                    }
+                });
+                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
+            } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; }
         }
 
         window.aplicarFiltroRapido = function(tipo) {
@@ -487,22 +511,13 @@
             let match=0, faltaEnApp=0, extraEnApp=0; let html = "";
             
             const hashesExcel = new Set(Object.keys(excelDataGlobal));
-            
-            // 🔥 AISLAMIENTO: Solo auditaremos Sucursales y Fechas exactas que hayan sido subidas en el Excel.
-            const combinacionesExcel = new Set([...hashesExcel].map(k => {
-                const p = k.split('|'); return `${p[0]}|${p[1]}`; // Fecha | Sucursal
-            }));
-
+            const combinacionesExcel = new Set([...hashesExcel].map(k => { const p = k.split('|'); return `${p[0]}|${p[1]}`; }));
             const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
 
             todasLasLlaves.forEach(hash => {
                 const [fecha, sucursal, medico, estudio] = hash.split('|');
-                
-                // 🛑 Si el Excel subido NO contiene esta Sucursal en esta Fecha, LA IGNORAMOS POR COMPLETO
                 if(!combinacionesExcel.has(`${fecha}|${sucursal}`)) return; 
-                
-                if(fIni && fecha < fIni) return; 
-                if(fFin && fecha > fFin) return;
+                if(fIni && fecha < fIni) return; if(fFin && fecha > fFin) return;
 
                 const cE = excelDataGlobal[hash] || 0; const cA = appDataGlobal[hash] || 0;
                 let cHTML='', aHTML='';
@@ -517,7 +532,10 @@
                         <button onclick="abrirModalTncAutomatica('${hash}', ${cE}, ${cA})" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button>
                     `;
                 }
-                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursal}</span></td><td class="p-3 font-bold">${medico}</td><td class="p-3 text-purple-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black">${cE}</td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
+                
+                let alertMedico = medico.includes('[') ? `text-red-500 font-black` : `text-slate-700 font-bold`;
+
+                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursal}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-purple-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black">${cE}</td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
             });
 
             tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">Sube Excel de la sucursal que deseas auditar.</td></tr>';
@@ -550,23 +568,17 @@
 
             let filtrados = rawDataGlobal;
             if(origen !== "Todos") filtrados = filtrados.filter(r => r.tipo === origen);
-            
-            if(txt) {
-                filtrados = filtrados.filter(r => r.medico.includes(txt) || r.lugar.includes(txt) || r.fecha.includes(txt) || r.estudio.includes(txt));
-            }
+            if(txt) filtrados = filtrados.filter(r => r.medico.includes(txt) || r.lugar.includes(txt) || r.fecha.includes(txt) || r.estudio.includes(txt));
 
-            // 🛡️ PROTECCIÓN contra registros antiguos sin fecha (Escudo)
             filtrados.sort((a,b) => (b.fecha || "1900-01-01").localeCompare(a.fecha || "1900-01-01"));
             
-            let mostrados = new Set();
-            let html = '';
+            let mostrados = new Set(); let html = '';
             
             filtrados.forEach(r => {
                 const llave = `${r.tipo}|${r.fecha}|${r.lugar}|${r.medico}|${r.estudio}`;
                 if(!mostrados.has(llave)) {
                     const arg = `'${r.tipo}', '${r.fecha}', '${r.lugar}', '${r.medico}', '${r.estudio}'`;
                     const color = r.tipo === 'Sucursal' ? 'text-sky-600 bg-sky-50' : 'text-orange-600 bg-orange-50';
-                    
                     html += `
                         <button onclick="seleccionarRegistroTNC(${arg})" class="w-full text-left p-3 bg-white hover:bg-purple-50 border border-slate-100 rounded-xl text-xs transition flex justify-between items-center shadow-sm">
                             <div>
@@ -579,7 +591,6 @@
                     mostrados.add(llave);
                 }
             });
-
             contenedor.innerHTML = html.split('</button>').slice(0, 30).join('</button>') || '<p class="text-center text-xs text-slate-400 py-6">No se encontraron servicios que coincidan.</p>';
         }
 
@@ -596,8 +607,7 @@
                 <span class="font-bold text-slate-500">${estudio} <span class="font-normal mx-1">|</span> ${fecha} <span class="font-normal mx-1">|</span> ${lugar} (${origen})</span>
             `;
 
-            const sel = document.getElementById('tnc-clasificacion');
-            sel.innerHTML = '';
+            const sel = document.getElementById('tnc-clasificacion'); sel.innerHTML = '';
             TNC_CATALOGO.Global.forEach(t => sel.innerHTML += `<option value="${t}" class="font-bold text-red-700">${t}</option>`);
             const opciones = (TNC_CATALOGO[origen] || {})[estudio] || (TNC_CATALOGO[origen] || {})["Genérico"] || [];
             if(opciones.length > 0) sel.innerHTML += `<option disabled>--- TNCs de ${estudio || 'este tipo'} ---</option>`;
@@ -610,9 +620,7 @@
         window.abrirModalTncAutomatica = function(hash, cantExcel, cantApp) {
             const [fecha, suc, med, est] = hash.split('|');
             document.getElementById('tnc-hash').value = hash;
-            
             seleccionarRegistroTNC("Sucursal", fecha, suc, med, est);
-            
             const dif = cantExcel - cantApp;
             document.getElementById('tnc-clasificacion').value = dif > 0 ? TNC_CATALOGO.Global[0] : TNC_CATALOGO.Global[1];
             document.getElementById('tnc-notas').value = `Detectado en Auditoría Ciega (Diferencia: ${dif>0?'+'+dif:dif})`;
@@ -625,7 +633,6 @@
             const lugar = document.getElementById('tnc-lugar').value;
             const medico = document.getElementById('tnc-medico').value;
             const estudio = document.getElementById('tnc-estudio').value;
-            
             const clasif = document.getElementById('tnc-clasificacion').value;
             const notas = document.getElementById('tnc-notas').value;
 
@@ -634,12 +641,10 @@
             try {
                 await window.addDoc(window.collection(window.db, "tickets_auditoria"), {
                     origen, fechaOperativa: fecha, sucursal: lugar, medico, estudio,
-                    clasificacion: clasif, comentarios: notas,
-                    estado: 'Abierto', timestamp: new Date()
+                    clasificacion: clasif, comentarios: notas, estado: 'Abierto', timestamp: new Date()
                 });
                 mostrarToast("TNC Registrado Oficialmente", "exito");
-                cerrarModal('tnc');
-                cargarTNCs();
+                cerrarModal('tnc'); cargarTNCs();
             } catch(e) { mostrarToast("Error guardando TNC", "error"); }
         }
 
@@ -648,12 +653,7 @@
                 const q = window.query(window.collection(window.db, "tickets_auditoria"), window.orderBy("timestamp", "desc"));
                 const qs = await window.getDocs(q);
                 ticketsGlobal = [];
-                
-                qs.forEach(doc => {
-                    let d = doc.data(); d.id = doc.id;
-                    ticketsGlobal.push(d);
-                });
-                
+                qs.forEach(doc => { let d = doc.data(); d.id = doc.id; ticketsGlobal.push(d); });
                 window.filtrarTickets('Abierto');
             } catch (e) { console.error("Error TNCs:", e); }
         }
@@ -663,7 +663,6 @@
             document.getElementById(`tab-${estadoFiltro}`).classList.add('active');
 
             const filtrados = ticketsGlobal.filter(t => t.estado === estadoFiltro);
-            
             document.getElementById('c-abiertos').innerText = ticketsGlobal.filter(t => t.estado === 'Abierto').length;
             document.getElementById('c-resueltos').innerText = ticketsGlobal.filter(t => t.estado === 'Resuelto').length;
             document.getElementById('c-cerrados').innerText = ticketsGlobal.filter(t => t.estado === 'Cerrado').length;
@@ -677,7 +676,6 @@
 
             filtrados.forEach(d => {
                 let badge = ''; let acciones = '';
-                
                 if(d.estado === 'Abierto') {
                     badge = '<span class="px-2.5 py-1 rounded bg-red-100 text-red-700 border border-red-200">Abierto</span>';
                     acciones = `<button onclick="cambiarEstadoTNC('${d.id}', 'Resuelto')" class="bg-amber-500 hover:bg-amber-400 text-white py-1.5 px-3 rounded-lg shadow text-[10px] font-bold transition">Marcar Resuelto</button>`;
@@ -691,18 +689,10 @@
 
                 tbody.innerHTML += `
                     <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                        <td class="p-4">
-                            <p class="font-bold text-slate-700">${d.fechaOperativa}</p>
-                            <p class="text-[9px] text-slate-400 uppercase">${d.origen}</p>
-                        </td>
-                        <td class="p-4">
-                            <p class="font-bold text-purple-700 uppercase">${d.medico}</p>
-                            <p class="text-[9px] font-bold text-slate-500 uppercase">${d.sucursal}</p>
-                        </td>
-                        <td class="p-4 text-xs font-bold text-slate-600">
-                            ${d.estudio} <br>
-                            <p class="text-[10px] font-black text-red-500 mt-1">${d.clasificacion}</p>
-                        </td>
+                        <td class="p-4"><p class="font-bold text-slate-700">${d.fechaOperativa}</p><p class="text-[9px] text-slate-400 uppercase">${d.origen}</p></td>
+                        <td class="p-4"><p class="font-bold text-purple-700 uppercase">${d.medico}</p><p class="text-[9px] font-bold text-slate-500 uppercase">${d.sucursal}</p></td>
+                        <td class="p-4 text-xs font-bold text-slate-600">${d.estudio}</td>
+                        <td class="p-4 text-[10px] font-black text-red-600 uppercase">${d.clasificacion}</td>
                         <td class="p-4 text-xs text-slate-500 max-w-[200px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
                         <td class="p-4 text-center"><span class="px-2.5 py-1 rounded border text-[9px] font-black">${badge}</span></td>
                         <td class="p-4 text-center">${acciones}</td>
@@ -714,26 +704,20 @@
         window.cambiarEstadoTNC = async function(id, nuevoEstado) {
             let msg = nuevoEstado === 'Resuelto' ? "¿El médico ya respondió/corrigió este TNC?" : "¿Has verificado la corrección para archivar este TNC?";
             if(!confirm(msg)) return;
-            
             try {
                 let actualizacion = { estado: nuevoEstado };
                 if(nuevoEstado === 'Resuelto') actualizacion.fechaResolucion = new Date();
                 if(nuevoEstado === 'Cerrado') actualizacion.fechaCierre = new Date();
-                
                 await window.updateDoc(window.doc(window.db, "tickets_auditoria", id), actualizacion);
-                mostrarToast(`TNC movido a ${nuevoEstado}`, "exito"); 
-                cargarTNCs(); 
+                mostrarToast(`TNC movido a ${nuevoEstado}`, "exito"); cargarTNCs(); 
             } catch (e) { mostrarToast("Fallo al actualizar", "error"); }
         }
 
         window.exportarTNCs = async function() {
             if(ticketsGlobal.length === 0) return mostrarToast("No hay datos.", "info");
             let data = [];
-            ticketsGlobal.forEach(d => {
-                data.push({ "ESTADO": d.estado, "ORIGEN": d.origen, "FECHA_SERVICIO": d.fechaOperativa, "LUGAR": d.sucursal, "MEDICO": d.medico, "ESTUDIO": d.estudio, "CATEGORIA_TNC": d.clasificacion, "NOTAS": d.comentarios || '' });
-            });
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "TNC_Reporte");
-            XLSX.writeFile(wb, `LAPI_TNC_Reporte_${new Date().toISOString().split('T')[0]}.xlsx`);
+            ticketsGlobal.forEach(d => { data.push({ "ESTADO": d.estado, "ORIGEN": d.origen, "FECHA_SERVICIO": d.fechaOperativa, "LUGAR": d.sucursal, "MEDICO": d.medico, "ESTUDIO": d.estudio, "CATEGORIA_TNC": d.clasificacion, "NOTAS": d.comentarios || '' }); });
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "TNC_Reporte"); XLSX.writeFile(wb, `LAPI_TNC_Reporte_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
         // ==========================================
@@ -742,7 +726,6 @@
         window.cargarPerfilMedico = async function() {
             const nom = document.getElementById('input-buscar-medico').value.trim().toUpperCase();
             if(!nom) return;
-            
             document.getElementById('mensaje-perfil-vacio').classList.add('hidden');
             document.getElementById('contenido-perfil').classList.remove('hidden');
             document.getElementById('perf-historial').innerHTML = '<p class="text-center text-slate-400 italic py-6">Buscando expediente en la base de datos...</p>';
@@ -750,16 +733,13 @@
             try {
                 const q = window.query(window.collection(window.db, "tickets_auditoria"), window.where("medico", "==", nom));
                 const qs = await window.getDocs(q);
-                
                 let total = 0; let fallas = {}; let html = "";
                 
                 if(qs.empty) {
                     html = '<div class="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl text-center"><i class="fa-solid fa-award text-emerald-500 text-4xl mb-3"></i><p class="text-sm text-emerald-700 font-bold">Expediente impecable. 0 TNCs registrados.</p></div>';
                 } else {
                     let docsAr = []; qs.forEach(d => docsAr.push(d.data()));
-                    // 🛡️ PROTECCIÓN contra fechas sin formato
                     docsAr.sort((a,b) => (b.fechaOperativa || "1900-01-01").localeCompare(a.fechaOperativa || "1900-01-01"));
-                    
                     docsAr.forEach(d => {
                         total++; fallas[d.clasificacion] = (fallas[d.clasificacion] || 0) + 1;
                         const icon = d.estado === 'Abierto' ? '<i class="fa-solid fa-circle text-red-500 text-[10px]"></i>' : '<i class="fa-solid fa-circle text-emerald-500 text-[10px]"></i>';
@@ -776,14 +756,12 @@
                 document.getElementById('perf-total-tnc').innerText = total;
                 document.getElementById('perf-historial').innerHTML = html;
                 dibujarGraficaPerfil(fallas);
-                
             } catch (e) { mostrarToast("Error buscando perfil", "error"); console.log(e); }
         }
 
         function dibujarGraficaPerfil(dataObj) {
             if(chartMedico) chartMedico.destroy();
             const labels = Object.keys(dataObj); const data = Object.values(dataObj);
-            
             if(labels.length === 0) {
                 document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<p class="text-center text-slate-400 text-xs mt-16 font-medium">Sin datos para graficar</p><canvas id="chart-tnc-medico" class="hidden"></canvas>';
                 return;
@@ -796,7 +774,7 @@
         }
 
         // ==========================================
-        // CORRECCIÓN INYECCIÓN 
+        // CORRECCIÓN INYECCIÓN (Magia)
         // ==========================================
         window.prepararCorreccion = function(hash, cantCorrecta) {
             const [fecha, suc, med, est] = hash.split('|');
