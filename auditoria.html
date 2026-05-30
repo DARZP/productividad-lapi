@@ -107,13 +107,13 @@
                     
                     <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200">
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
+                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real (Filtrado por Sucursal)</h3>
                             <span id="status-db" class="text-[10px] text-slate-500 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Conectando...</span>
                         </div>
                         <div class="overflow-x-auto scroll-custom max-h-[500px]">
                             <table class="w-full text-left border-collapse">
                                 <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm text-[10px] uppercase text-slate-500">
-                                    <tr><th class="p-4">Fecha / Lugar</th><th class="p-4">Médico Traducido</th><th class="p-4">Estudio</th><th class="p-4 text-center">Excel</th><th class="p-4 text-center">App</th><th class="p-4 text-center">Acción Resolutiva</th></tr>
+                                    <tr><th class="p-4">Fecha / Lugar</th><th class="p-4">Médico Autodetectado</th><th class="p-4">Estudio</th><th class="p-4 text-center">Excel</th><th class="p-4 text-center">App</th><th class="p-4 text-center">Acción Resolutiva</th></tr>
                                 </thead>
                                 <tbody id="tabla-auditoria" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs">
                                     <tr><td colspan="6" class="text-center py-12 text-slate-400 italic">Esperando archivos Excel para iniciar el cruce...</td></tr>
@@ -205,9 +205,8 @@
                         <option value="Sucursal">Sucursal</option>
                         <option value="Foráneo">Foráneo</option>
                     </select>
-                    <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Ej. Juan, Lomas Verdes, 2026-05-15..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
+                    <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Ej. Lomas Verdes, 2026-05-15, Juan..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
                 </div>
-                
                 <div id="tnc-resultados-busqueda" class="max-h-52 overflow-y-auto scroll-custom space-y-1 mb-4 border border-slate-200 rounded-lg p-1 bg-slate-50">
                     <p class="text-center text-xs text-slate-400 py-4">Teclea para buscar...</p>
                 </div>
@@ -253,9 +252,9 @@
 
     <script>
         // ==========================================
-        // 0. GLOBALES, DICCIONARIOS Y CONFIG
+        // 0. GLOBALES Y CONFIG
         // ==========================================
-        let rawDataGlobal = []; // Base de datos viva en memoria para el buscador
+        let rawDataGlobal = []; 
         let excelDataGlobal = {};
         let appDataGlobal = {};
         let chartMedico = null;
@@ -290,7 +289,7 @@
         }
 
         // ==========================================
-        // 1. UI & UTILIDADES
+        // 1. UTILIDADES Y MOTOR INTELIGENTE
         // ==========================================
         function mostrarToast(mensaje, tipo = 'info') {
             const toast = document.createElement('div');
@@ -332,40 +331,46 @@
             if (!texto) return "Desconocido";
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
+
+        // 🔥 MOTOR INTELIGENTE DE RESOLUCIÓN DE INICIALES
         function traducirMedico(iniciales) {
-            const raw = String(iniciales).toUpperCase().trim();
-            return diccIniciales[raw] || raw; 
-        }
-
-        // ==========================================
-        // 2. PUERTA TRASERA: PARÁMETROS URL Y ADMIN
-        // ==========================================
-        function verificarParametrosURL() {
-            const params = new URLSearchParams(window.location.search);
-            if(params.has('medico')) {
-                cambiarSeccion('tnc');
-                const p_origen = params.get('origen') || 'Sucursal';
-                const p_fecha = params.get('fecha') || '';
-                const p_lugar = params.get('lugar') || '';
-                const p_medico = params.get('medico') || '';
-                const p_estudio = params.get('estudio') || '';
+            let raw = String(iniciales).toUpperCase().trim().replace(/\./g, '');
+            
+            // 1. Diccionario Manual (El que diste de alta en config.js)
+            if (diccIniciales[raw]) return diccIniciales[raw];
+            
+            // 2. Búsqueda Automática Predictiva
+            const medicos = window.LAPI_CONFIG.medicos || [];
+            for(let med of medicos) {
+                let nom = med.toUpperCase().trim();
+                let partes = nom.split(/\s+/);
                 
-                // Ejecutamos la funcion que llena y avanza al Paso 2 automáticamente
-                window.seleccionarRegistroTNC(p_origen, p_fecha, p_lugar, p_medico, p_estudio);
+                // a) Escribió el primer nombre o apellido real en vez de inicial
+                if(partes.includes(raw)) return med;
                 
-                abrirModal('tnc');
-                window.history.replaceState({}, document.title, window.location.pathname);
+                // b) Iniciales exactas en el mismo orden (Ej: Cabrera Velazquez Miguel -> CVM)
+                let incialDirecta = partes.map(p => p[0]).join('');
+                if(incialDirecta === raw) return med;
+                
+                // c) Solo 2 iniciales directas (Ej: Cabrera Velazquez -> CV)
+                if(partes.length >= 2 && (partes[0][0] + partes[1][0]) === raw) return med;
+                
+                // d) Iniciales en orden inverso (Ej: Diego Arias -> DA, pero en base es Arias Diego -> AD)
+                if(partes.length >= 2 && (partes[1][0] + partes[0][0]) === raw) return med;
+                if(partes.length >= 3 && (partes[2][0] + partes[0][0]) === raw) return med; // Ej: Arias Azpeitia Diego -> DA
             }
+            
+            return `[${raw}]`; // Marca con corchetes si es totalmente desconocido para que resalte
         }
 
         // ==========================================
-        // 3. CARGA GLOBAL Y CRUCE DE DATOS
+        // 2. DESCARGA GLOBAL EN MEMORIA
         // ==========================================
         async function initAuditoria() {
             try {
                 rawDataGlobal = [];
                 
-                // Foráneos y Legacy
+                // Cargar Foráneos y Nativos
                 const q1 = window.query(window.collection(window.db, "registros"));
                 const qs1 = await window.getDocs(q1);
                 qs1.forEach(doc => {
@@ -379,7 +384,7 @@
                     }
                 });
 
-                // Sucursales PWA Nativas
+                // Cargar Sucursales Agrupadas
                 const q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"));
                 const qs2 = await window.getDocs(q2);
                 qs2.forEach(doc => {
@@ -396,10 +401,20 @@
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
                 document.getElementById('btn-auditoria').disabled = false;
                 
-                verificarParametrosURL(); 
+                // Si viene de URL redirigimos
+                const params = new URLSearchParams(window.location.search);
+                if(params.has('medico')) {
+                    cambiarSeccion('tnc');
+                    window.seleccionarRegistroTNC(params.get('origen'), params.get('fecha'), params.get('lugar'), params.get('medico'), params.get('estudio'));
+                    abrirModal('tnc');
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
             } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; }
         }
 
+        // ==========================================
+        // 3. AISLAMIENTO QUIRÚRGICO DE SUCURSAL
+        // ==========================================
         window.ejecutarCruceDeDatos = async function() {
             const input = document.getElementById('archivoAuditoria');
             if(input.files.length === 0) return mostrarToast("Sube un archivo Excel.", "error");
@@ -436,6 +451,7 @@
                                 let f = filas[r]; if(!f || !f[mapa["NOMBRE"]] || f.join(" ").toUpperCase().includes("PENDIENTES")) break;
                                 Object.keys(estudiosMapeo).forEach(key => {
                                     if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
+                                        // AQUI SE TRADUCE EL MEDICO CON LA NUEVA FUNCION INTELIGENTE
                                         const hash = `${fEx}|${sEx}|${normalizarDato(traducirMedico(f[mapa[key]]))}|${estudiosMapeo[key]}`;
                                         excelDataGlobal[hash] = (excelDataGlobal[hash] || 0) + 1;
                                     }
@@ -471,13 +487,22 @@
             let match=0, faltaEnApp=0, extraEnApp=0; let html = "";
             
             const hashesExcel = new Set(Object.keys(excelDataGlobal));
-            const fechasExcel = [...new Set([...hashesExcel].map(k => k.split('|')[0]))];
+            
+            // 🔥 AISLAMIENTO: Solo auditaremos Sucursales y Fechas exactas que hayan sido subidas en el Excel.
+            const combinacionesExcel = new Set([...hashesExcel].map(k => {
+                const p = k.split('|'); return `${p[0]}|${p[1]}`; // Fecha | Sucursal
+            }));
+
             const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
 
             todasLasLlaves.forEach(hash => {
                 const [fecha, sucursal, medico, estudio] = hash.split('|');
-                if(!fechasExcel.includes(fecha)) return; 
-                if(fIni && fecha < fIni) return; if(fFin && fecha > fFin) return;
+                
+                // 🛑 Si el Excel subido NO contiene esta Sucursal en esta Fecha, LA IGNORAMOS POR COMPLETO
+                if(!combinacionesExcel.has(`${fecha}|${sucursal}`)) return; 
+                
+                if(fIni && fecha < fIni) return; 
+                if(fFin && fecha > fFin) return;
 
                 const cE = excelDataGlobal[hash] || 0; const cA = appDataGlobal[hash] || 0;
                 let cHTML='', aHTML='';
@@ -495,7 +520,7 @@
                 html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursal}</span></td><td class="p-3 font-bold">${medico}</td><td class="p-3 text-purple-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black">${cE}</td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
             });
 
-            tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">Sube Excel o ajusta el filtro de fechas.</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">Sube Excel de la sucursal que deseas auditar.</td></tr>';
             document.getElementById('kpi-aud-match').innerText = match; document.getElementById('kpi-aud-rojo').innerText = faltaEnApp; document.getElementById('kpi-aud-ama').innerText = extraEnApp;
         }
 
@@ -506,7 +531,7 @@
             document.getElementById('tnc-hash').value = "";
             resetBuscadorTNC();
             abrirModal('tnc');
-            ejecutarBuscadorTNC(); // Auto-llenar
+            ejecutarBuscadorTNC();
         }
 
         window.resetBuscadorTNC = function() {
@@ -530,7 +555,7 @@
                 filtrados = filtrados.filter(r => r.medico.includes(txt) || r.lugar.includes(txt) || r.fecha.includes(txt) || r.estudio.includes(txt));
             }
 
-            // 🛡️ PROTECCIÓN contra registros antiguos sin fecha
+            // 🛡️ PROTECCIÓN contra registros antiguos sin fecha (Escudo)
             filtrados.sort((a,b) => (b.fecha || "1900-01-01").localeCompare(a.fecha || "1900-01-01"));
             
             let mostrados = new Set();
@@ -646,7 +671,7 @@
             const tbody = document.getElementById('tabla-tickets'); tbody.innerHTML = '';
             
             if(filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">No hay TNCs en estado ${estadoFiltro}.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-slate-400 italic">No hay TNCs en estado ${estadoFiltro}.</td></tr>`;
                 return;
             }
 
@@ -732,7 +757,7 @@
                     html = '<div class="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl text-center"><i class="fa-solid fa-award text-emerald-500 text-4xl mb-3"></i><p class="text-sm text-emerald-700 font-bold">Expediente impecable. 0 TNCs registrados.</p></div>';
                 } else {
                     let docsAr = []; qs.forEach(d => docsAr.push(d.data()));
-                    // 🛡️ PROTECCIÓN contra registros sin fecha
+                    // 🛡️ PROTECCIÓN contra fechas sin formato
                     docsAr.sort((a,b) => (b.fechaOperativa || "1900-01-01").localeCompare(a.fechaOperativa || "1900-01-01"));
                     
                     docsAr.forEach(d => {
@@ -771,7 +796,7 @@
         }
 
         // ==========================================
-        // CORRECCIÓN INYECCIÓN (Magia)
+        // CORRECCIÓN INYECCIÓN 
         // ==========================================
         window.prepararCorreccion = function(hash, cantCorrecta) {
             const [fecha, suc, med, est] = hash.split('|');
