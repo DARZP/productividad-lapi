@@ -577,7 +577,7 @@
                         statsTipos[det.estudio] = (statsTipos[det.estudio] || 0) + det.cant;
                         statsEmpresas[reg.empresa] = (statsEmpresas[reg.empresa] || 0) + det.cant;
                         estudiosMed[det.medico] = (estudiosMed[det.medico] || 0) + det.cant;
-                        dHtml += `<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs mr-1 mb-1 font-bold inline-block uppercase">${det.medico}: ${det.estudio} (${det.cant})</span>`;
+                        dHtml += `<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs mr-1 mb-1 font-bold inline-block uppercase flex items-center justify-between gap-2">${det.medico}: ${det.estudio} (${det.cant}) <button onclick="window.open('auditoria.html?origen=Foráneo&fecha=${reg.fecha}&lugar=${reg.empresa}&medico=${det.medico}&estudio=${det.estudio}', '_blank')" class="text-red-500 hover:text-red-700 bg-white/50 px-1.5 rounded" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button></span>`;
                         detallesValidos++; medParticipantesValidos.add(det.medico);
                     }
                 });
@@ -688,7 +688,7 @@
                     let dHtml = '';
                     // Generar las "etiquetas" azules por cada estudio con su total
                     for (const [estudio, cant] of Object.entries(reg.estudios)) {
-                        dHtml += `<span class="bg-sky-100 text-sky-800 px-2 py-1 rounded text-[10px] mr-1 mb-1 font-bold inline-block uppercase">${estudio} (${cant})</span>`;
+                        dHtml += `<span class="bg-sky-100 text-sky-800 px-2 py-1 rounded text-[10px] mr-1 mb-1 font-bold inline-block uppercase flex items-center justify-between gap-2">${estudio} (${cant}) <button onclick="window.open('auditoria.html?origen=Sucursal&fecha=${reg.fecha}&lugar=${reg.sucursal}&medico=${reg.medico}&estudio=${estudio}', '_blank')" class="text-red-500 hover:text-red-700 bg-white/50 px-1.5 rounded" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button></span>`;
                     }
 
                     tbody.innerHTML += `
