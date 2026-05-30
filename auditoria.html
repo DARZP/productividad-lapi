@@ -187,7 +187,7 @@
     </div>
 
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300">
+        <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200">
             <h3 class="text-xl font-black mb-4 text-purple-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
             
             <input type="hidden" id="tnc-hash">
@@ -205,10 +205,11 @@
                         <option value="Sucursal">Sucursal</option>
                         <option value="Foráneo">Foráneo</option>
                     </select>
-                    <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Buscar por médico, fecha, lugar o estudio..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
+                    <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Ej. Juan, Lomas Verdes, 2026-05-15..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
                 </div>
+                
                 <div id="tnc-resultados-busqueda" class="max-h-52 overflow-y-auto scroll-custom space-y-1 mb-4 border border-slate-200 rounded-lg p-1 bg-slate-50">
-                    <p class="text-center text-xs text-slate-400 py-4">Teclea para empezar a buscar...</p>
+                    <p class="text-center text-xs text-slate-400 py-4">Teclea para buscar...</p>
                 </div>
                 <button onclick="cerrarModal('tnc')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar y Cerrar</button>
             </div>
@@ -295,8 +296,8 @@
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-purple-600');
             const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-triangle-exclamation' : 'fa-info-circle');
-            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-lg font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
-            toast.innerHTML = `<i class="fa-solid ${icono} text-lg"></i> <span class="leading-tight">${mensaje}</span>`;
+            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-lg font-bold text-xs flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
+            toast.innerHTML = `<i class="fa-solid ${icono} text-base"></i> <span class="leading-tight">${mensaje}</span>`;
             document.getElementById('toast-container').appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
@@ -395,7 +396,7 @@
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
                 document.getElementById('btn-auditoria').disabled = false;
                 
-                verificarParametrosURL(); // Revisar si venimos desde el admin
+                verificarParametrosURL(); 
             } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; }
         }
 
@@ -445,7 +446,6 @@
                 }
                 
                 appDataGlobal = {};
-                // Solo usamos los de Sucursal para el cruce
                 rawDataGlobal.filter(r => r.tipo === "Sucursal").forEach(reg => {
                     const hash = `${reg.fecha}|${reg.lugar}|${reg.medico}|${reg.estudio}`;
                     appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
@@ -500,13 +500,13 @@
         }
 
         // ==========================================
-        // 4. MÓDULO BUSCADOR TNC
+        // 4. MÓDULO BUSCADOR TNC 
         // ==========================================
         window.abrirBuscadorUniversal = function() {
             document.getElementById('tnc-hash').value = "";
             resetBuscadorTNC();
             abrirModal('tnc');
-            ejecutarBuscadorTNC(); // Auto-llenar las últimas actividades
+            ejecutarBuscadorTNC(); // Auto-llenar
         }
 
         window.resetBuscadorTNC = function() {
@@ -530,8 +530,8 @@
                 filtrados = filtrados.filter(r => r.medico.includes(txt) || r.lugar.includes(txt) || r.fecha.includes(txt) || r.estudio.includes(txt));
             }
 
-            // Ordenar por fecha y agrupar visualmente duplicados (ya que expandimos las cantidades)
-            filtrados.sort((a,b) => b.fecha.localeCompare(a.fecha));
+            // 🛡️ PROTECCIÓN contra registros antiguos sin fecha
+            filtrados.sort((a,b) => (b.fecha || "1900-01-01").localeCompare(a.fecha || "1900-01-01"));
             
             let mostrados = new Set();
             let html = '';
@@ -555,26 +555,22 @@
                 }
             });
 
-            // Limitar a los 30 más recientes para que no se trabe
             contenedor.innerHTML = html.split('</button>').slice(0, 30).join('</button>') || '<p class="text-center text-xs text-slate-400 py-6">No se encontraron servicios que coincidan.</p>';
         }
 
         window.seleccionarRegistroTNC = function(origen, fecha, lugar, medico, estudio) {
-            // Llenar campos ocultos
             document.getElementById('tnc-origen').value = origen;
             document.getElementById('tnc-fecha').value = fecha;
             document.getElementById('tnc-lugar').value = lugar;
             document.getElementById('tnc-medico').value = medico;
             document.getElementById('tnc-estudio').value = estudio;
 
-            // Mostrar resumen
             document.getElementById('tnc-servicio-seleccionado').innerHTML = `
                 <span class="text-[10px] text-purple-500 uppercase tracking-widest block mb-1">Servicio Afectado</span>
                 <span class="text-sm font-black text-slate-800">${medico}</span><br>
                 <span class="font-bold text-slate-500">${estudio} <span class="font-normal mx-1">|</span> ${fecha} <span class="font-normal mx-1">|</span> ${lugar} (${origen})</span>
             `;
 
-            // Llenar Catálogo
             const sel = document.getElementById('tnc-clasificacion');
             sel.innerHTML = '';
             TNC_CATALOGO.Global.forEach(t => sel.innerHTML += `<option value="${t}" class="font-bold text-red-700">${t}</option>`);
@@ -582,7 +578,6 @@
             if(opciones.length > 0) sel.innerHTML += `<option disabled>--- TNCs de ${estudio || 'este tipo'} ---</option>`;
             opciones.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
 
-            // Transición de Pasos
             document.getElementById('tnc-paso-1').classList.add('hidden');
             document.getElementById('tnc-paso-2').classList.remove('hidden');
         }
@@ -591,7 +586,6 @@
             const [fecha, suc, med, est] = hash.split('|');
             document.getElementById('tnc-hash').value = hash;
             
-            // Reutiliza la función del Buscador para saltar al Paso 2 directo
             seleccionarRegistroTNC("Sucursal", fecha, suc, med, est);
             
             const dif = cantExcel - cantApp;
@@ -652,7 +646,7 @@
             const tbody = document.getElementById('tabla-tickets'); tbody.innerHTML = '';
             
             if(filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-slate-400 italic">No hay TNCs en estado ${estadoFiltro}.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">No hay TNCs en estado ${estadoFiltro}.</td></tr>`;
                 return;
             }
 
@@ -680,9 +674,11 @@
                             <p class="font-bold text-purple-700 uppercase">${d.medico}</p>
                             <p class="text-[9px] font-bold text-slate-500 uppercase">${d.sucursal}</p>
                         </td>
-                        <td class="p-4 text-xs font-bold text-slate-600">${d.estudio}</td>
-                        <td class="p-4 text-[10px] font-black text-red-600 uppercase">${d.clasificacion}</td>
-                        <td class="p-4 text-xs text-slate-500 max-w-[150px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
+                        <td class="p-4 text-xs font-bold text-slate-600">
+                            ${d.estudio} <br>
+                            <p class="text-[10px] font-black text-red-500 mt-1">${d.clasificacion}</p>
+                        </td>
+                        <td class="p-4 text-xs text-slate-500 max-w-[200px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
                         <td class="p-4 text-center"><span class="px-2.5 py-1 rounded border text-[9px] font-black">${badge}</span></td>
                         <td class="p-4 text-center">${acciones}</td>
                     </tr>
@@ -736,7 +732,8 @@
                     html = '<div class="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl text-center"><i class="fa-solid fa-award text-emerald-500 text-4xl mb-3"></i><p class="text-sm text-emerald-700 font-bold">Expediente impecable. 0 TNCs registrados.</p></div>';
                 } else {
                     let docsAr = []; qs.forEach(d => docsAr.push(d.data()));
-                    docsAr.sort((a,b) => b.fechaOperativa.localeCompare(a.fechaOperativa));
+                    // 🛡️ PROTECCIÓN contra registros sin fecha
+                    docsAr.sort((a,b) => (b.fechaOperativa || "1900-01-01").localeCompare(a.fechaOperativa || "1900-01-01"));
                     
                     docsAr.forEach(d => {
                         total++; fallas[d.clasificacion] = (fallas[d.clasificacion] || 0) + 1;
@@ -755,7 +752,7 @@
                 document.getElementById('perf-historial').innerHTML = html;
                 dibujarGraficaPerfil(fallas);
                 
-            } catch (e) { mostrarToast("Error buscando perfil", "error"); }
+            } catch (e) { mostrarToast("Error buscando perfil", "error"); console.log(e); }
         }
 
         function dibujarGraficaPerfil(dataObj) {
@@ -774,7 +771,7 @@
         }
 
         // ==========================================
-        // CORRECCIÓN INYECCIÓN 
+        // CORRECCIÓN INYECCIÓN (Magia)
         // ==========================================
         window.prepararCorreccion = function(hash, cantCorrecta) {
             const [fecha, suc, med, est] = hash.split('|');
