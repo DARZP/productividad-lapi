@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Módulo de Auditoría Confidencial</title>
+    <title>Centro de Control LAPI - Calidad y Auditoría</title>
     
     <link rel="manifest" href="manifest_admin.json">
     <meta name="theme-color" content="#7c3aed">
@@ -11,12 +11,13 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="config.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, doc, getDoc, setDoc, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, doc, getDoc, setDoc, addDoc, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -37,182 +38,280 @@
         window.getDoc = getDoc;
         window.setDoc = setDoc;
         window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
         window.orderBy = orderBy;
 
         initAuditoria();
-        cargarTickets();
+        cargarTNCs();
     </script>
     
     <style>
-        .glass { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.25); }
-        body { background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%); font-family: 'Inter', sans-serif; }
-        .scroll-custom::-webkit-scrollbar { height: 8px; width: 8px; }
-        .scroll-custom::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        .glass { background: rgba(255, 255, 255, 0.10); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.15); }
+        body { background: linear-gradient(135deg, #0f172a 0%, #2e1065 100%); font-family: 'Inter', sans-serif; }
+        .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
         .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        .tab-active { background: rgba(124, 58, 237, 0.3); border-color: #a78bfa; color: white; }
     </style>
 </head>
-<body class="text-white p-4 md:p-6 min-h-screen flex flex-col items-center pb-20">
+<body class="text-white p-2 md:p-4 min-h-screen flex flex-col items-center pb-20">
 
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
-    <div class="w-full max-w-7xl flex-1 flex flex-col mt-2">
+    <div class="w-full max-w-7xl flex-1 flex flex-col">
         
-        <div class="glass p-6 rounded-3xl shadow-2xl mb-6 flex flex-col md:flex-row justify-between items-center gap-4 border-l-4 border-purple-500">
+        <div class="glass p-5 rounded-3xl shadow-2xl mb-4 flex flex-col md:flex-row justify-between items-center gap-4 border-l-4 border-purple-500">
             <div>
-                <h1 class="text-2xl font-black tracking-tight flex items-center gap-3">
-                    <i class="fa-solid fa-user-shield text-purple-400"></i> CONTROL DE AUDITORÍA Y TICKETS
+                <h1 class="text-xl font-black tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-shield-halved text-purple-400 text-2xl"></i> CENTRO DE CALIDAD Y TNC
                 </h1>
-                <p class="text-xs text-white/70 font-medium uppercase tracking-widest mt-1">Sincronización Excel vs Nube</p>
             </div>
-            <div id="status-db" class="text-xs font-bold bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 text-purple-200">
-                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Conectando...
+            <div class="flex bg-black/40 p-1.5 rounded-xl border border-white/10 w-full md:w-auto">
+                <button onclick="cambiarSeccion('cruce')" id="nav-cruce" class="tab-active flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all border border-transparent"><i class="fa-solid fa-code-compare mr-1"></i> Cruce Excel</button>
+                <button onclick="cambiarSeccion('tnc')" id="nav-tnc" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all border border-transparent text-white/50 hover:text-white"><i class="fa-solid fa-list-check mr-1"></i> Gestión TNC</button>
+                <button onclick="cambiarSeccion('perfil')" id="nav-perfil" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all border border-transparent text-white/50 hover:text-white"><i class="fa-solid fa-user-doctor mr-1"></i> Expediente</button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-            
-            <div class="xl:col-span-1 space-y-6">
-                <div class="glass p-6 rounded-2xl shadow-xl">
-                    <h3 class="font-black text-sm uppercase tracking-wider mb-2 text-purple-200">1. Subir Reportes</h3>
-                    <p class="text-xs text-white/60 mb-4">Sube los Excel de las sucursales para el cruce automático.</p>
-                    <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="w-full mb-3 text-sm text-white/70 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer bg-black/20 p-2 rounded-xl">
-                    <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" disabled class="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-slate-600 disabled:opacity-50 text-white font-black py-3 px-6 rounded-xl transition-all shadow-lg active:scale-95 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-bezier-curve"></i> Conciliar Información
-                    </button>
-                </div>
-
-                <div class="glass p-6 rounded-2xl shadow-xl border-l-4 border-emerald-500">
-                    <h3 class="font-black text-sm uppercase tracking-wider mb-4 text-emerald-300">2. Periodo a Evaluar</h3>
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <button id="btn-a-hoy" onclick="aplicarFiltroRapido('hoy')" class="btn-filtro-A text-white text-xs px-3 py-1.5 rounded-lg font-bold transition bg-white/10 hover:bg-white/20">Hoy</button>
-                        <button id="btn-a-ayer" onclick="aplicarFiltroRapido('ayer')" class="btn-filtro-A text-white text-xs px-3 py-1.5 rounded-lg font-bold transition bg-white/10 hover:bg-white/20">Ayer</button>
-                        <button id="btn-a-semana" onclick="aplicarFiltroRapido('semana')" class="btn-filtro-A text-white text-xs px-3 py-1.5 rounded-lg font-bold transition bg-white/10 hover:bg-white/20">Esta Semana</button>
-                        <button id="btn-a-todo" onclick="aplicarFiltroRapido('todo')" class="btn-filtro-A text-white text-xs px-3 py-1.5 rounded-lg font-bold transition bg-purple-600 hover:bg-purple-700">Todo</button>
+        <div id="sec-cruce" class="block animate-fade-in">
+            <div class="grid grid-cols-1 xl:grid-cols-4 gap-4 mb-4">
+                <div class="xl:col-span-1 space-y-4">
+                    <div class="glass p-5 rounded-2xl shadow-xl">
+                        <h3 class="font-black text-xs uppercase tracking-wider mb-3 text-purple-300"><i class="fa-solid fa-upload mr-1"></i> Carga de Archivos</h3>
+                        <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="w-full mb-3 text-xs text-white/70 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer bg-black/20 p-2 rounded-xl">
+                        <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" disabled class="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 text-white font-black py-2.5 rounded-xl transition-all shadow-lg text-xs"><i class="fa-solid fa-play mr-1"></i> Iniciar Cruce</button>
                     </div>
-                    <div class="flex gap-2 mb-4">
-                        <div class="w-1/2"><label class="block text-[10px] font-black text-white/50 uppercase mb-1">Desde</label><input type="date" id="a-inicio" onchange="limpiarBotonActivo()" class="w-full p-2 bg-black/30 border border-white/10 text-white rounded-lg text-xs font-semibold outline-none"></div>
-                        <div class="w-1/2"><label class="block text-[10px] font-black text-white/50 uppercase mb-1">Hasta</label><input type="date" id="a-fin" onchange="limpiarBotonActivo()" class="w-full p-2 bg-black/30 border border-white/10 text-white rounded-lg text-xs font-semibold outline-none"></div>
+                    <div class="glass p-5 rounded-2xl shadow-xl border-l-2 border-emerald-500">
+                        <h3 class="font-black text-xs uppercase tracking-wider mb-3 text-emerald-300"><i class="fa-solid fa-calendar-days mr-1"></i> Filtro de Periodo</h3>
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <button onclick="aplicarFiltroRapido('hoy')" class="bg-white/5 hover:bg-white/10 text-[10px] font-bold py-1.5 rounded-lg border border-white/5">Hoy</button>
+                            <button onclick="aplicarFiltroRapido('ayer')" class="bg-white/5 hover:bg-white/10 text-[10px] font-bold py-1.5 rounded-lg border border-white/5">Ayer</button>
+                            <button onclick="aplicarFiltroRapido('semana')" class="bg-white/5 hover:bg-white/10 text-[10px] font-bold py-1.5 rounded-lg border border-white/5">Semana</button>
+                            <button onclick="aplicarFiltroRapido('todo')" class="bg-purple-600 text-[10px] font-bold py-1.5 rounded-lg">Todo</button>
+                        </div>
+                        <input type="date" id="a-inicio" class="w-full p-2 bg-black/30 text-white rounded-lg text-xs font-bold outline-none mb-2 border border-white/10">
+                        <input type="date" id="a-fin" class="w-full p-2 bg-black/30 text-white rounded-lg text-xs font-bold outline-none mb-3 border border-white/10">
+                        <button onclick="reRenderAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2 rounded-xl transition-all text-xs">Aplicar</button>
                     </div>
-                    <button onclick="reRenderAuditoria()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-sm transition shadow-lg active:scale-95"><i class="fa-solid fa-filter mr-1"></i> Filtrar Tabla</button>
                 </div>
-            </div>
-
-            <div class="xl:col-span-2 flex flex-col">
-                <div class="grid grid-cols-3 gap-4 mb-4">
-                    <div class="glass p-4 rounded-xl text-center shadow-md border-b-4 border-emerald-500"><p class="text-[10px] font-black text-white/60 uppercase">Match Correcto</p><p id="kpi-aud-match" class="text-2xl font-black text-emerald-400">0</p></div>
-                    <div class="glass p-4 rounded-xl text-center shadow-md border-b-4 border-red-500"><p class="text-[10px] font-black text-white/60 uppercase">Falta en App</p><p id="kpi-aud-rojo" class="text-2xl font-black text-red-400">0</p></div>
-                    <div class="glass p-4 rounded-xl text-center shadow-md border-b-4 border-amber-500"><p class="text-[10px] font-black text-white/60 uppercase">Sobra en App</p><p id="kpi-aud-ama" class="text-2xl font-black text-amber-400">0</p></div>
-                </div>
-
-                <div class="glass rounded-2xl shadow-xl flex-1 flex flex-col overflow-hidden">
-                    <div class="p-4 border-b border-white/10 bg-black/20 flex justify-between items-center">
-                        <h3 class="font-black uppercase tracking-widest text-xs text-purple-200">Discrepancias Detectadas</h3>
-                        <span id="total-filas-auditoria" class="text-[10px] bg-white/10 px-2 py-1 rounded-md font-bold text-white/80">0 Evaluaciones</span>
+                
+                <div class="xl:col-span-3 flex flex-col">
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <div class="glass p-3 rounded-xl text-center border-b-2 border-emerald-500"><p class="text-[9px] font-black text-white/50 uppercase">Match Correcto</p><p id="kpi-aud-match" class="text-xl font-black text-emerald-400">0</p></div>
+                        <div class="glass p-3 rounded-xl text-center border-b-2 border-red-500"><p class="text-[9px] font-black text-white/50 uppercase">Falta en App</p><p id="kpi-aud-rojo" class="text-xl font-black text-red-400">0</p></div>
+                        <div class="glass p-3 rounded-xl text-center border-b-2 border-amber-500"><p class="text-[9px] font-black text-white/50 uppercase">Sobra en App</p><p id="kpi-aud-ama" class="text-xl font-black text-amber-400">0</p></div>
                     </div>
-                    <div class="overflow-x-auto flex-1 scroll-custom max-h-[500px]">
-                        <table class="w-full text-sm text-left border-collapse min-w-[800px]">
-                            <thead class="sticky top-0 bg-[#311042] z-10 shadow-md">
-                                <tr class="text-[10px] uppercase text-purple-200 border-b border-white/10">
-                                    <th class="py-3 px-4">Fecha / Locación</th>
-                                    <th class="py-3 px-4">Médico</th>
-                                    <th class="py-3 px-4">Estudio</th>
-                                    <th class="py-3 px-2 text-center" title="Excel">EXC</th>
-                                    <th class="py-3 px-2 text-center" title="App Firebase">APP</th>
-                                    <th class="py-3 px-4 text-center">Acciones Resolutivas</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-auditoria" class="divide-y divide-white/5 font-medium text-white/90 text-xs">
-                                <tr><td colspan="6" class="text-center py-10 text-white/40 italic">Cargando base de datos en la nube...</td></tr>
-                            </tbody>
-                        </table>
+                    <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden">
+                        <div class="p-3 border-b border-white/10 bg-black/30 flex justify-between items-center">
+                            <h3 class="font-black text-[11px] text-purple-200 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
+                        </div>
+                        <div class="overflow-x-auto scroll-custom max-h-[500px]">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="sticky top-0 bg-[#1e103c] z-10 shadow-md text-[9px] uppercase text-purple-300">
+                                    <tr><th class="p-3">Fecha/Lugar</th><th class="p-3">Médico</th><th class="p-3">Estudio</th><th class="p-3 text-center">EXC</th><th class="p-3 text-center">APP</th><th class="p-3 text-center">Acción</th></tr>
+                                </thead>
+                                <tbody id="tabla-auditoria" class="divide-y divide-white/5 font-medium text-white/90 text-xs">
+                                    <tr><td colspan="6" class="text-center py-10 text-white/30 italic">Esperando archivos...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="glass p-6 rounded-3xl shadow-2xl mt-4 border-t-4 border-sky-500">
-            <h2 class="text-lg font-black tracking-tight mb-4 flex items-center gap-2"><i class="fa-solid fa-ticket text-sky-400"></i> HISTORIAL DE TICKETS Y SEGUIMIENTO</h2>
-            <div class="overflow-x-auto scroll-custom">
-                <table class="w-full text-sm text-left border-collapse min-w-[800px]">
-                    <thead>
-                        <tr class="text-[10px] uppercase bg-black/30 text-sky-200 border-b border-white/10">
-                            <th class="py-3 px-4">Fecha Ticket</th>
-                            <th class="py-3 px-4">Médico (Infractor)</th>
-                            <th class="py-3 px-4">Clasificación</th>
-                            <th class="py-3 px-4">Detalle Omitido/Extra</th>
-                            <th class="py-3 px-4">Notas Admin</th>
-                            <th class="py-3 px-4 text-center">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-tickets" class="divide-y divide-white/5 font-medium text-white/90 text-xs">
-                        <tr><td colspan="6" class="text-center py-6 text-white/40 italic">No hay tickets generados.</td></tr>
-                    </tbody>
-                </table>
+        <div id="sec-tnc" class="hidden animate-fade-in">
+            <div class="glass p-5 rounded-3xl shadow-xl flex flex-col h-[75vh]">
+                <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
+                    <h2 class="text-lg font-black text-sky-300"><i class="fa-solid fa-list-check"></i> Control de Trabajos No Conformes (TNC)</h2>
+                    <div class="flex gap-2">
+                        <button onclick="abrirModalTncManual()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all shadow"><i class="fa-solid fa-plus mr-1"></i> Nuevo TNC Manual</button>
+                        <button onclick="exportarTNCs()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all shadow"><i class="fa-solid fa-file-excel mr-1"></i> Exportar Reporte</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto scroll-custom flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-black/40 z-10 text-[10px] uppercase text-sky-200 border-b border-white/10">
+                            <tr><th class="p-3">Fecha Suceso</th><th class="p-3">Médico / Lugar</th><th class="p-3">Estudio</th><th class="p-3">Categoría TNC</th><th class="p-3">Notas</th><th class="p-3 text-center">Estado</th><th class="p-3 text-center">Gestión</th></tr>
+                        </thead>
+                        <tbody id="tabla-tickets" class="divide-y divide-white/5 font-medium text-white/90 text-xs">
+                            <tr><td colspan="7" class="text-center py-10 text-white/30 italic">Cargando TNCs...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-perfil" class="hidden animate-fade-in">
+            <div class="glass p-6 rounded-3xl shadow-xl">
+                <div class="flex flex-col md:flex-row gap-6 mb-6 items-center bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-2xl shadow-lg border-2 border-white/20"><i class="fa-solid fa-user-doctor"></i></div>
+                    <div class="flex-1 w-full">
+                        <label class="block text-[10px] font-black text-white/50 uppercase mb-1">Buscar Expediente Médico</label>
+                        <input type="text" id="input-buscar-medico" list="lista-medicos-perfil" onchange="cargarPerfilMedico()" class="w-full p-3 bg-white/10 text-white rounded-xl outline-none font-bold uppercase border border-white/10 focus:border-purple-400 transition-colors" placeholder="Escribe el nombre del médico...">
+                    </div>
+                </div>
+
+                <div id="contenido-perfil" class="hidden grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 space-y-4">
+                        <div class="bg-red-500/10 border border-red-500/20 p-5 rounded-2xl text-center">
+                            <p class="text-[10px] font-black text-red-300 uppercase tracking-widest">Total TNCs Registrados</p>
+                            <p id="perf-total-tnc" class="text-4xl font-black text-red-500 mt-2">0</p>
+                        </div>
+                        <div class="bg-black/30 border border-white/5 p-4 rounded-2xl">
+                            <h4 class="text-xs font-black text-white/70 uppercase mb-3 text-center border-b border-white/10 pb-2">Desglose de Fallas</h4>
+                            <div class="relative h-48 w-full"><canvas id="chart-tnc-medico"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-black/20 border border-white/5 p-5 rounded-2xl flex flex-col max-h-[400px]">
+                        <h4 class="text-sm font-black text-purple-300 uppercase mb-3 flex items-center gap-2"><i class="fa-solid fa-timeline"></i> Historial de Incidencias</h4>
+                        <div class="overflow-y-auto scroll-custom flex-1 pr-2 space-y-3" id="perf-historial">
+                            </div>
+                    </div>
+                </div>
+                <div id="mensaje-perfil-vacio" class="text-center py-10 text-white/40 italic font-medium">Selecciona un médico para visualizar su expediente de calidad.</div>
             </div>
         </div>
 
     </div>
 
-    <div id="modal-ticket" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-ticket-card" class="glass bg-[#2a0e38]/95 p-6 rounded-3xl shadow-2xl max-w-md w-full text-white transform scale-95 transition-transform duration-300 border border-white/20">
-            <h3 class="text-lg font-black mb-4 text-sky-400 border-b border-white/10 pb-2"><i class="fa-solid fa-ticket mr-2"></i> Levantar Incidencia</h3>
-            <p id="t-info" class="text-xs text-white/70 mb-4 bg-black/30 p-3 rounded-xl border border-white/5"></p>
+    <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-tnc-card" class="glass bg-[#1a0b2e] p-6 rounded-3xl shadow-2xl max-w-md w-full text-white transform scale-95 transition-transform duration-300 border border-white/10">
+            <h3 class="text-lg font-black mb-4 text-purple-400 border-b border-white/10 pb-2 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
             
-            <input type="hidden" id="t-hash">
-            <label class="block text-xs font-bold text-white/90 uppercase mb-1">Motivo / Clasificación</label>
-            <select id="t-clasificacion" class="w-full p-3 bg-black/40 text-white rounded-xl outline-none mb-4 border border-white/10 text-sm font-bold">
-                <option value="Olvido de Captura">Olvido de Captura (No subió a App)</option>
-                <option value="Error de Dedo">Error de Dedo (Cantidades mal)</option>
-                <option value="Duplicado">Duplicado (Sobra en App)</option>
-                <option value="Falla de Red / App">Falla Técnica (Mala red en sucursal)</option>
-                <option value="No Identificado">Otro / No Identificado</option>
-            </select>
+            <input type="hidden" id="tnc-hash">
+            
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Origen</label>
+                    <select id="tnc-origen" onchange="actualizarCatalogoTNC()" class="w-full p-2.5 bg-black/50 text-white rounded-lg outline-none text-xs border border-white/10">
+                        <option value="Sucursal">Sucursal</option>
+                        <option value="Foráneo">Servicio Foráneo</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Estudio Afectado</label>
+                    <select id="tnc-estudio" onchange="actualizarCatalogoTNC()" class="w-full p-2.5 bg-black/50 text-white rounded-lg outline-none text-xs border border-white/10">
+                        </select>
+                </div>
+            </div>
 
-            <label class="block text-xs font-bold text-white/90 uppercase mb-1">Notas Internas (Opcional)</label>
-            <textarea id="t-notas" rows="2" class="w-full p-3 bg-black/40 text-white rounded-xl outline-none mb-6 border border-white/10 text-sm" placeholder="Ej. Se le mandó correo al Dr. para recordarle..."></textarea>
+            <div class="grid grid-cols-2 gap-3 mb-3" id="tnc-campos-manuales">
+                <div>
+                    <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Fecha</label>
+                    <input type="date" id="tnc-fecha" class="w-full p-2.5 bg-black/50 text-white rounded-lg outline-none text-xs border border-white/10">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Médico</label>
+                    <input type="text" id="tnc-medico" list="lista-medicos-perfil" class="w-full p-2.5 bg-black/50 text-white rounded-lg outline-none text-xs border border-white/10 uppercase">
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Empresa / Sucursal</label>
+                <input type="text" id="tnc-lugar" class="w-full p-2.5 bg-black/50 text-white rounded-lg outline-none text-xs border border-white/10 uppercase">
+            </div>
+
+            <label class="block text-[10px] font-bold text-emerald-400 uppercase mb-1 mt-4">Clasificación de la Inconformidad (Potencial TNC)</label>
+            <select id="tnc-clasificacion" class="w-full p-3 bg-red-900/30 text-white rounded-xl outline-none mb-3 border border-red-500/30 text-xs font-bold">
+                </select>
+
+            <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Observaciones Extras</label>
+            <textarea id="tnc-notas" rows="2" class="w-full p-3 bg-black/50 text-white rounded-xl outline-none mb-6 border border-white/10 text-xs" placeholder="Detalle específico del error..."></textarea>
 
             <div class="flex gap-3">
-                <button onclick="cerrarModal('ticket')" class="w-1/3 bg-white/10 hover:bg-white/20 font-bold py-3 rounded-xl transition-all">Cancelar</button>
-                <button onclick="guardarTicket()" class="w-2/3 bg-sky-600 hover:bg-sky-700 font-black py-3 rounded-xl shadow-lg transition-all"><i class="fa-solid fa-paper-plane mr-1"></i> Guardar Ticket</button>
+                <button onclick="cerrarModal('tnc')" class="w-1/3 bg-white/10 hover:bg-white/20 font-bold py-3 rounded-xl transition-all text-xs">Cancelar</button>
+                <button onclick="guardarTNC()" class="w-2/3 bg-purple-600 hover:bg-purple-700 font-black py-3 rounded-xl shadow-lg transition-all text-xs flex justify-center items-center gap-2"><i class="fa-solid fa-save"></i> Registrar TNC</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-correccion-card" class="glass bg-[#2a0e38]/95 p-6 rounded-3xl shadow-2xl max-w-md w-full text-white transform scale-95 transition-transform duration-300 border border-white/20 text-center">
-            <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-            <h3 class="text-lg font-black mb-2 text-white">Sincronizar a la Nube</h3>
-            <p class="text-sm text-white/70 mb-6">El sistema inyectará o corregirá este registro directamente en la base de datos de los médicos para que cuadre exactamente con el Excel.</p>
-            
-            <p id="c-info" class="text-xs text-white/90 mb-6 bg-black/30 p-3 rounded-xl border border-emerald-500/30 font-bold"></p>
+    <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-correccion-card" class="glass bg-[#064e3b] p-6 rounded-3xl shadow-2xl max-w-sm w-full text-white transform scale-95 transition-transform duration-300 border border-emerald-500/30 text-center">
+            <div class="w-14 h-14 bg-white/10 text-emerald-300 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <h3 class="text-base font-black mb-2">Forzar Sincronización</h3>
+            <p class="text-xs text-white/70 mb-5">El sistema ajustará Firebase para que cuadre con el Excel reportado.</p>
+            <p id="c-info" class="text-[11px] text-white bg-black/40 p-3 rounded-xl border border-white/10 font-bold mb-5"></p>
             <input type="hidden" id="c-hash">
             <input type="hidden" id="c-cant">
-
-            <div class="flex gap-3">
-                <button onclick="cerrarModal('correccion')" class="w-1/2 bg-white/10 hover:bg-white/20 font-bold py-3 rounded-xl transition-all">Cancelar</button>
-                <button id="btn-ejecutar-corr" onclick="ejecutarCorreccion()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 font-black py-3 rounded-xl shadow-lg transition-all"><i class="fa-solid fa-check-double mr-1"></i> Sincronizar</button>
+            <div class="flex gap-2">
+                <button onclick="cerrarModal('correccion')" class="w-1/2 bg-white/10 hover:bg-white/20 font-bold py-2.5 rounded-xl transition-all text-xs">Cancelar</button>
+                <button id="btn-ejecutar-corr" onclick="ejecutarCorreccion()" class="w-1/2 bg-emerald-500 hover:bg-emerald-400 text-[#064e3b] font-black py-2.5 rounded-xl shadow-lg transition-all text-xs">Ejecutar</button>
             </div>
         </div>
     </div>
 
+    <datalist id="lista-medicos-perfil"></datalist>
+
     <script>
+        // ==========================================
+        // 0. CATÁLOGOS Y DICCIONARIOS INTELIGENTES
+        // ==========================================
+        const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
+        const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales || {};
+        const listaMedicosFull = window.LAPI_CONFIG.medicos || [];
+        document.getElementById('lista-medicos-perfil').innerHTML = listaMedicosFull.map(m => `<option value="${m}">`).join('');
+
+        // DICCIONARIO TNC MAESTRO
+        const TNC_CATALOGO = {
+            "Sucursal": {
+                "Espirometría": ["CONSENTIMIENTO INFORMADO", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "SIGNOS VITALES Y SOMATOMETRÍA", "INTERROGATORIO Y/O ANTECEDENTES", "DISPONIBILIDAD DE MANIOBRA", "CALIDAD DE MANIOBRA", "REGISTRO EN SISTEMA WEB"],
+                "Agudeza Visual": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "REGISTRO DE AGUDEZA VISUAL", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB"],
+                "Electrocardiograma": ["DISPONIBILIDAD DE TRAZO", "FICHA DE IDENTIFICACIÓN", "CALIDAD DEL TRAZO"],
+                "Historia Clínica Empresa": ["EXPLORACIÓN FÍSICA", "AUDIOGRAMA", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB", "FICHA DE IDENTIFICACIÓN"], // Ajustado al default
+                "Genérico": ["FICHA DE IDENTIFICACIÓN", "REGISTRO EN SISTEMA WEB", "LETRA LEGIBLE", "CONTROL DOCUMENTAL"]
+            },
+            "Foráneo": {
+                "Historia Clínica": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA"],
+                "Audiometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA", "CALIDAD DEL AUDIOGRAMA"],
+                "Espirometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "SIGNOS VITALES Y SOMATOMETRÍA", "CALIDAD DE MANIOBRA"],
+                "Genérico": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "FICHA DE IDENTIFICACIÓN", "ERROR DE CAPTURA"]
+            },
+            "Global": [
+                "ESTUDIO FALTANTE (OMISIÓN DE CAPTURA APP)",
+                "ESTUDIO SOBRANTE (CAPTURA DUPLICADA APP)",
+                "OTRO / COMENTARIO ABIERTO"
+            ]
+        };
+
+        // Llenar selector de estudios del modal en base a los catálogos globales
+        function poblarEstudiosModal() {
+            let options = '<option value="">Selecciona Estudio...</option>';
+            const todos = [...new Set([...window.LAPI_CONFIG.estudiosForaneos, ...window.LAPI_CONFIG.estudiosSucursales])];
+            todos.forEach(e => options += `<option value="${e}">${e}</option>`);
+            document.getElementById('tnc-estudio').innerHTML = options;
+        }
+        poblarEstudiosModal();
+
+        // Variables Globales
         let rawDataSucursales = [];
         let excelDataGlobal = {};
         let appDataGlobal = {};
+        let chartMedico = null;
 
-        const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
-        const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales;
-        const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
-
+        // ==========================================
+        // UI & NAVEGACIÓN
+        // ==========================================
         function mostrarToast(mensaje, tipo = 'info') {
             const toast = document.createElement('div');
-            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-sky-500');
+            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-purple-500');
             const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-triangle-exclamation' : 'fa-info-circle');
-            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
-            toast.innerHTML = `<i class="fa-solid ${icono} text-lg"></i> <span class="leading-tight">${mensaje}</span>`;
+            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-xs flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
+            toast.innerHTML = `<i class="fa-solid ${icono} text-base"></i> <span class="leading-tight">${mensaje}</span>`;
             document.getElementById('toast-container').appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
+        }
+
+        function cambiarSeccion(sec) {
+            ['cruce', 'tnc', 'perfil'].forEach(s => {
+                document.getElementById(`sec-${s}`).classList.add('hidden');
+                document.getElementById(`nav-${s}`).classList.remove('tab-active', 'text-white');
+                document.getElementById(`nav-${s}`).classList.add('text-white/50');
+            });
+            document.getElementById(`sec-${sec}`).classList.remove('hidden');
+            document.getElementById(`nav-${sec}`).classList.remove('text-white/50');
+            document.getElementById(`nav-${sec}`).classList.add('tab-active', 'text-white');
         }
 
         function abrirModal(id) {
@@ -229,47 +328,16 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        function normalizarDato(texto, tipo) {
+        // ==========================================
+        // LÓGICA CORE: INICIO Y CRUCE DE DATOS
+        // ==========================================
+        function normalizarDato(texto) {
             if (!texto) return "Desconocido";
-            let limpio = texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            if (tipo === 'sucursal' || tipo === 'estudio') return texto.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-            return limpio;
+            return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
-
         function traducirMedico(iniciales) {
             const raw = String(iniciales).toUpperCase().trim();
-            return diccIniciales[raw] || `[${raw}]`; 
-        }
-
-        function obtenerFechaFormato(dateObj) {
-            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
-        }
-
-        function aplicarFiltroRapido(tipo) {
-            const hoy = new Date();
-            let iStr = '', fStr = obtenerFechaFormato(hoy);
-            if (tipo === 'hoy') iStr = fStr; 
-            else if (tipo === 'ayer') { const ayer = new Date(); ayer.setDate(ayer.getDate() - 1); iStr = obtenerFechaFormato(ayer); fStr = iStr; }
-            else if (tipo === 'semana') { const day = hoy.getDay(); const diff = hoy.getDate() - day + (day === 0 ? -6 : 1); iStr = obtenerFechaFormato(new Date(hoy.setDate(diff))); }
-            else if (tipo === 'todo') { iStr = ''; fStr = ''; }
-
-            document.getElementById('a-inicio').value = iStr;
-            document.getElementById('a-fin').value = fStr;
-            
-            const botones = document.querySelectorAll(`.btn-filtro-A`);
-            botones.forEach(btn => {
-                btn.classList.remove('bg-purple-600', 'hover:bg-purple-700', 'bg-white/10', 'hover:bg-white/20');
-                if (btn.id === `btn-a-${tipo}`) btn.classList.add('bg-purple-600', 'hover:bg-purple-700');
-                else btn.classList.add('bg-white/10', 'hover:bg-white/20');
-            });
-            if(Object.keys(excelDataGlobal).length > 0) reRenderAuditoria();
-        }
-
-        function limpiarBotonActivo() {
-            document.querySelectorAll(`.btn-filtro-A`).forEach(btn => {
-                btn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
-                btn.classList.add('bg-white/10', 'hover:bg-white/20');
-            });
+            return diccIniciales[raw] || raw; 
         }
 
         async function initAuditoria() {
@@ -279,7 +347,7 @@
                 const qsLegacy = await window.getDocs(qLegacy);
                 qsLegacy.forEach(doc => {
                     const data = doc.data();
-                    rawDataSucursales.push({ idReal: doc.id, agrupado: false, fecha: data.fecha, sucursal: normalizarDato(data.sucursal, 'sucursal'), estudio: normalizarDato(data.estudio, 'estudio'), medico: normalizarDato(data.medico, 'medico') });
+                    rawDataSucursales.push({ fecha: data.fecha, sucursal: normalizarDato(data.sucursal), estudio: normalizarDato(data.estudio), medico: normalizarDato(data.medico) });
                 });
 
                 const qNativos = window.query(window.collection(window.db, "registros_diarios_sucursales"));
@@ -288,62 +356,20 @@
                     const data = doc.data();
                     if (data.estudios) {
                         Object.keys(data.estudios).forEach(estudio => {
-                            const cantidad = data.estudios[estudio] || 0;
-                            for (let k = 0; k < cantidad; k++) {
-                                rawDataSucursales.push({ idReal: doc.id, agrupado: true, fecha: data.fecha, sucursal: normalizarDato(data.sucursal, 'sucursal'), estudio: normalizarDato(estudio, 'estudio'), medico: normalizarDato(data.medico, 'medico') });
+                            for (let k = 0; k < (data.estudios[estudio]||0); k++) {
+                                rawDataSucursales.push({ fecha: data.fecha, sucursal: normalizarDato(data.sucursal), estudio: normalizarDato(estudio), medico: normalizarDato(data.medico) });
                             }
                         });
                     }
                 });
-
-                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Base sincronizada';
                 document.getElementById('btn-auditoria').disabled = false;
-                document.getElementById('tabla-auditoria').innerHTML = '<tr><td colspan="6" class="text-center py-10 text-white/40 italic">Sube los reportes en Excel para comenzar.</td></tr>';
-                aplicarFiltroRapido('todo');
-
-            } catch (error) {
-                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-circle-xmark text-red-400 mr-1"></i> Error de enlace';
-                mostrarToast("Fallo de comunicación con Firebase.", "error");
-            }
-        }
-
-        async function cargarTickets() {
-            try {
-                const q = window.query(window.collection(window.db, "tickets_auditoria"), window.orderBy("timestamp", "desc"));
-                const qs = await window.getDocs(q);
-                const tbody = document.getElementById('tabla-tickets');
-                tbody.innerHTML = '';
-                
-                if(qs.empty) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-white/40 italic">No hay incidencias registradas.</td></tr>';
-                    return;
-                }
-
-                qs.forEach(doc => {
-                    const d = doc.data();
-                    const fechaTxt = d.timestamp ? new Date(d.timestamp.seconds*1000).toLocaleDateString('es-ES') : d.fechaOperativa;
-                    const badge = d.estado === 'Abierto' ? '<span class="bg-red-500/20 text-red-400 px-2 py-1 rounded-md text-[9px] border border-red-500/30">ABIERTO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-md text-[9px] border border-emerald-500/30">RESUELTO</span>';
-                    
-                    tbody.innerHTML += `
-                        <tr class="border-b border-white/5 hover:bg-white/5 transition">
-                            <td class="py-3 px-4">${fechaTxt}</td>
-                            <td class="py-3 px-4 font-bold text-sky-200">${d.medico} <br><span class="text-[9px] font-normal text-white/50">${d.sucursal}</span></td>
-                            <td class="py-3 px-4 uppercase text-[10px]">${d.clasificacion}</td>
-                            <td class="py-3 px-4 text-xs">${d.estudio} (Dif: <b class="${d.diferencia > 0 ? 'text-red-400' : 'text-amber-400'}">${d.diferencia > 0 ? '+'+d.diferencia : d.diferencia}</b>)</td>
-                            <td class="py-3 px-4 text-[10px] text-white/60 max-w-[200px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
-                            <td class="py-3 px-4 text-center">${badge}</td>
-                        </tr>
-                    `;
-                });
-            } catch (e) { console.error("Error cargando tickets:", e); }
+            } catch (error) { mostrarToast("Error sincronizando BD", "error"); }
         }
 
         async function ejecutarCruceDeDatos() {
             const input = document.getElementById('archivoAuditoria');
-            const btn = document.getElementById('btn-auditoria');
             if(input.files.length === 0) return mostrarToast("Sube al menos un archivo Excel.", "error");
-
-            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Cruzando información...';
+            document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cruzando...';
             excelDataGlobal = {};
 
             try {
@@ -361,34 +387,23 @@
                             let cL = filas[r].map(v => String(v).trim().toUpperCase());
                             
                             if(cL.join(" ").includes("FECHA")){
-                                let str = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim();
-                                let p = str.replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
+                                let p = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim().replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
                                 if(p.length>=3){
-                                    let d=p[0].padStart(2,'0'), mR=p[1], a=p[2];
-                                    let mN = isNaN(mR) ? (mesesTexto[mR.substring(0,3)] || 0) : parseInt(mR,10)-1;
-                                    if(a.length===2) a="20"+a; else if(a.length!==4) a="2026";
-                                    fEx = `${a}-${String(mN+1).padStart(2,'0')}-${d}`; 
+                                    let mN = isNaN(p[1]) ? (mesesTexto[p[1].substring(0,3)] || 0) : parseInt(p[1],10)-1;
+                                    fEx = `${p[2].length===2?'20'+p[2]:p[2]}-${String(mN+1).padStart(2,'0')}-${p[0].padStart(2,'0')}`; 
                                 }
                             }
-                            let cS = cL.findIndex(v=>v.includes("SUCURSAL"));
-                            if(cS!==-1) sEx = cL[cS+1] || cL[cS+2];
-                            if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){
-                                iEnc=r; filas[r].forEach((val, idx)=>{ if(val) mapa[String(val).toUpperCase().trim()] = idx; });
-                            }
+                            let cS = cL.findIndex(v=>v.includes("SUCURSAL")); if(cS!==-1) sEx = cL[cS+1] || cL[cS+2];
+                            if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){ iEnc=r; filas[r].forEach((val, idx)=>{ if(val) mapa[String(val).toUpperCase().trim()] = idx; }); }
                         }
 
                         if(iEnc!==-1){
-                            sEx = normalizarDato(sEx, 'sucursal');
+                            sEx = normalizarDato(sEx);
                             for(let r=iEnc+1; r<filas.length; r++){
-                                let f = filas[r]; if(!f || !f[mapa["NOMBRE"]]) continue;
-                                if(f.join(" ").toUpperCase().includes("PENDIENTES")) break;
-
+                                let f = filas[r]; if(!f || !f[mapa["NOMBRE"]] || f.join(" ").toUpperCase().includes("PENDIENTES")) break;
                                 Object.keys(estudiosMapeo).forEach(key => {
-                                    let cIdx = mapa[key];
-                                    if(cIdx!==undefined && f[cIdx] && !String(f[cIdx]).toUpperCase().includes("PEND")){
-                                        const estudioFinal = estudiosMapeo[key];
-                                        const medicoTraducido = normalizarDato(traducirMedico(f[cIdx]), 'medico');
-                                        const hash = `${fEx}|${sEx}|${medicoTraducido}|${estudioFinal}`;
+                                    if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
+                                        const hash = `${fEx}|${sEx}|${normalizarDato(traducirMedico(f[mapa[key]]))}|${estudiosMapeo[key]}`;
                                         excelDataGlobal[hash] = (excelDataGlobal[hash] || 0) + 1;
                                     }
                                 });
@@ -396,136 +411,298 @@
                         }
                     }
                 }
-
+                
                 appDataGlobal = {};
                 rawDataSucursales.forEach(reg => {
-                    const medicoLimpio = normalizarDato(reg.medico, 'medico');
-                    const hash = `${reg.fecha}|${reg.sucursal}|${medicoLimpio}|${reg.estudio}`;
+                    const hash = `${reg.fecha}|${reg.sucursal}|${reg.medico}|${reg.estudio}`;
                     appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
                 });
-
                 reRenderAuditoria();
-                mostrarToast("Reportes procesados correctamente", "exito");
-            } catch(e) { mostrarToast("Error analizando el Excel", "error"); console.error(e); }
+            } catch(e) { mostrarToast("Error leyendo Excel", "error"); console.error(e); }
+            document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-play mr-1"></i> Iniciar Cruce';
+        }
 
-            btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-bezier-curve"></i> Conciliar Información';
+        // Filtros Rápidos
+        function aplicarFiltroRapido(tipo) {
+            const hoy = new Date(); let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+            if (tipo === 'hoy') iStr = fStr; 
+            else if (tipo === 'ayer') { const ayer = new Date(); ayer.setDate(ayer.getDate() - 1); iStr = `${ayer.getFullYear()}-${String(ayer.getMonth() + 1).padStart(2, '0')}-${String(ayer.getDate()).padStart(2, '0')}`; fStr = iStr; }
+            else if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
+            else if (tipo === 'todo') { iStr = ''; fStr = ''; }
+            document.getElementById('a-inicio').value = iStr; document.getElementById('a-fin').value = fStr;
+            reRenderAuditoria();
         }
 
         function reRenderAuditoria() {
-            const tbody = document.getElementById('tabla-auditoria');
-            tbody.innerHTML = '';
+            const tbody = document.getElementById('tabla-auditoria'); tbody.innerHTML = '';
+            const fIni = document.getElementById('a-inicio').value; const fFin = document.getElementById('a-fin').value;
+            let match=0, faltaEnApp=0, extraEnApp=0; let html = "";
             
-            const fIni = document.getElementById('a-inicio').value;
-            const fFin = document.getElementById('a-fin').value;
-
-            let match=0, faltaEnApp=0, extraEnApp=0;
-            const todasLasLlaves = new Set([...Object.keys(excelDataGlobal), ...Object.keys(appDataGlobal)]);
-            const fechasEnExcel = [...new Set(Object.keys(excelDataGlobal).map(k => k.split('|')[0]))];
-            
-            let renglonesHtml = "";
+            const hashesExcel = new Set(Object.keys(excelDataGlobal));
+            const fechasExcel = [...new Set([...hashesExcel].map(k => k.split('|')[0]))];
+            const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
 
             todasLasLlaves.forEach(hash => {
                 const [fecha, sucursal, medico, estudio] = hash.split('|');
-                if(!fechasEnExcel.includes(fecha)) return; 
-                if(fIni && fecha < fIni) return;
-                if(fFin && fecha > fFin) return;
+                if(!fechasExcel.includes(fecha)) return; // Solo analizar dias que se subieron
+                if(fIni && fecha < fIni) return; if(fFin && fecha > fFin) return;
 
-                const cantExcel = excelDataGlobal[hash] || 0;
-                const cantApp = appDataGlobal[hash] || 0;
+                const cE = excelDataGlobal[hash] || 0; const cA = appDataGlobal[hash] || 0;
+                let cHTML='', aHTML='';
 
-                let accionesHtml = '';
-                let bgClase = '';
-
-                if(cantExcel === cantApp) {
-                    match++;
-                    accionesHtml = `<span class="text-emerald-500 text-lg"><i class="fa-solid fa-check"></i></span>`;
+                if(cE === cA) {
+                    match++; cHTML = 'bg-emerald-500/5 hover:bg-emerald-500/10';
+                    aHTML = `<span class="text-emerald-500"><i class="fa-solid fa-check"></i> OK</span>`;
                 } else {
-                    if (cantExcel > cantApp) { faltaEnApp++; bgClase = 'bg-red-500/10'; } 
-                    else { extraEnApp++; bgClase = 'bg-amber-500/10'; }
-                    
-                    accionesHtml = `
-                        <div class="flex justify-center gap-2">
-                            <button onclick="prepararCorreccion('${hash}', ${cantExcel})" class="bg-emerald-600 hover:bg-emerald-500 text-white p-2 rounded-lg text-xs font-bold transition shadow" title="Corregir en Base de Datos"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
-                            <button onclick="prepararTicket('${hash}', ${cantExcel}, ${cantApp})" class="bg-sky-600 hover:bg-sky-500 text-white p-2 rounded-lg text-xs font-bold transition shadow" title="Levantar Ticket de Incidencia"><i class="fa-solid fa-ticket"></i></button>
-                        </div>
+                    if (cE > cA) { faltaEnApp++; cHTML = 'bg-red-500/10 hover:bg-red-500/20'; } else { extraEnApp++; cHTML = 'bg-amber-500/10 hover:bg-amber-500/20'; }
+                    aHTML = `
+                        <button onclick="prepararCorreccion('${hash}', ${cE})" class="bg-emerald-600 hover:bg-emerald-500 text-white p-1.5 rounded text-[10px] shadow" title="Inyectar a Firebase"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                        <button onclick="abrirModalTncAutomatica('${hash}', ${cE}, ${cA})" class="bg-purple-600 hover:bg-purple-500 text-white p-1.5 rounded text-[10px] shadow" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button>
                     `;
                 }
-
-                renglonesHtml += `
-                    <tr class="${bgClase} transition hover:bg-white/5">
-                        <td class="py-2.5 px-4 font-bold text-xs text-white/90 leading-tight">${fecha}<br><span class="text-[10px] text-purple-300/80 uppercase font-black tracking-wider">${sucursal}</span></td>
-                        <td class="py-2.5 px-4 text-xs font-bold uppercase text-white/80">${medico}</td>
-                        <td class="py-2.5 px-4 text-xs font-bold text-purple-300 uppercase">${estudio}</td>
-                        <td class="py-2.5 px-2 text-center font-black text-lg text-white/50">${cantExcel}</td>
-                        <td class="py-2.5 px-2 text-center font-black text-lg text-white">${cantApp}</td>
-                        <td class="py-2.5 px-4 text-center">${accionesHtml}</td>
-                    </tr>
-                `;
+                html += `<tr class="${cHTML} transition border-b border-white/5"><td class="p-2">${fecha}<br><span class="text-[9px] text-white/50">${sucursal}</span></td><td class="p-2 font-bold">${medico}</td><td class="p-2 text-purple-300 text-[10px]">${estudio}</td><td class="p-2 text-center text-white/50 font-black">${cE}</td><td class="p-2 text-center font-black">${cA}</td><td class="p-2 text-center flex justify-center gap-1">${aHTML}</td></tr>`;
             });
 
-            tbody.innerHTML = renglonesHtml || '<tr><td colspan="6" class="text-center py-10 text-white/40 italic">No hay datos en este rango.</td></tr>';
-            
-            document.getElementById('kpi-aud-match').innerText = match;
-            document.getElementById('kpi-aud-rojo').innerText = faltaEnApp;
-            document.getElementById('kpi-aud-ama').innerText = extraEnApp;
-            document.getElementById('total-filas-auditoria').innerText = (match + faltaEnApp + extraEnApp) + " Evaluadas";
+            tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-6 text-white/30 italic">Sin datos en este rango.</td></tr>';
+            document.getElementById('kpi-aud-match').innerText = match; document.getElementById('kpi-aud-rojo').innerText = faltaEnApp; document.getElementById('kpi-aud-ama').innerText = extraEnApp;
         }
 
-        // --- SISTEMA DE TICKETS ---
-        function prepararTicket(hash, cantExcel, cantApp) {
+        // ==========================================
+        // GESTIÓN DE TNCS (TICKETS)
+        // ==========================================
+        function actualizarCatalogoTNC() {
+            const origen = document.getElementById('tnc-origen').value;
+            const estudio = document.getElementById('tnc-estudio').value;
+            const sel = document.getElementById('tnc-clasificacion');
+            sel.innerHTML = '';
+            
+            // 1. Agregar los Globales siempre
+            TNC_CATALOGO.Global.forEach(t => sel.innerHTML += `<option value="${t}" class="font-bold text-red-300">${t}</option>`);
+            
+            // 2. Agregar los específicos
+            const catOrigen = TNC_CATALOGO[origen] || {};
+            const opciones = catOrigen[estudio] || catOrigen["Genérico"] || [];
+            
+            if(opciones.length > 0) sel.innerHTML += `<option disabled>--- TNCs Específicos de ${estudio || 'este tipo'} ---</option>`;
+            opciones.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
+        }
+
+        function abrirModalTncAutomatica(hash, cantExcel, cantApp) {
             const [fecha, suc, med, est] = hash.split('|');
-            document.getElementById('t-hash').value = hash;
-            const dif = cantExcel - cantApp;
-            const txtDif = dif > 0 ? `Faltan ${dif} captura(s)` : `Sobran ${Math.abs(dif)} captura(s)`;
+            document.getElementById('tnc-hash').value = hash;
             
-            document.getElementById('t-info').innerHTML = `<b>${med}</b> omitió/duplicó <b>${est}</b> el ${fecha} en ${suc}. <br><span class="text-amber-300 font-black mt-1 inline-block">${txtDif}</span>`;
-            document.getElementById('t-clasificacion').value = dif > 0 ? "Olvido de Captura" : "Duplicado";
-            document.getElementById('t-notas').value = "";
-            abrirModal('ticket');
+            document.getElementById('tnc-origen').value = 'Sucursal'; // Viene de Excel = Sucursal
+            document.getElementById('tnc-estudio').value = est;
+            document.getElementById('tnc-fecha').value = fecha;
+            document.getElementById('tnc-medico').value = med;
+            document.getElementById('tnc-lugar').value = suc;
+            document.getElementById('tnc-campos-manuales').classList.add('hidden'); // Ocultar porque ya están precargados y fijos
+            
+            actualizarCatalogoTNC();
+            const dif = cantExcel - cantApp;
+            document.getElementById('tnc-clasificacion').value = dif > 0 ? TNC_CATALOGO.Global[0] : TNC_CATALOGO.Global[1];
+            document.getElementById('tnc-notas').value = `Detectado por sistema (Dif: ${dif>0?'+'+dif:dif})`;
+            
+            abrirModal('tnc');
         }
 
-        async function guardarTicket() {
-            const hash = document.getElementById('t-hash').value;
-            const [fecha, sucursal, medico, estudio] = hash.split('|');
-            const cantExcel = excelDataGlobal[hash] || 0;
-            const cantApp = appDataGlobal[hash] || 0;
-            const dif = cantExcel - cantApp;
+        function abrirModalTncManual() {
+            document.getElementById('tnc-hash').value = "";
+            document.getElementById('tnc-campos-manuales').classList.remove('hidden');
+            document.getElementById('tnc-origen').value = 'Foráneo';
+            document.getElementById('tnc-estudio').value = '';
+            document.getElementById('tnc-fecha').value = '';
+            document.getElementById('tnc-medico').value = '';
+            document.getElementById('tnc-lugar').value = '';
+            document.getElementById('tnc-notas').value = '';
+            actualizarCatalogoTNC();
+            abrirModal('tnc');
+        }
+
+        async function guardarTNC() {
+            const origen = document.getElementById('tnc-origen').value;
+            const estudio = document.getElementById('tnc-estudio').value;
+            const clasif = document.getElementById('tnc-clasificacion').value;
+            const notas = document.getElementById('tnc-notas').value;
+            const hash = document.getElementById('tnc-hash').value;
             
-            const clasif = document.getElementById('t-clasificacion').value;
-            const notas = document.getElementById('t-notas').value;
+            let fecha, lugar, medico;
+            if(hash) {
+                [fecha, lugar, medico] = hash.split('|');
+            } else {
+                fecha = document.getElementById('tnc-fecha').value;
+                medico = document.getElementById('tnc-medico').value.toUpperCase();
+                lugar = document.getElementById('tnc-lugar').value.toUpperCase();
+                if(!fecha || !medico || !estudio) return mostrarToast("Llena los campos obligatorios", "error");
+            }
 
             try {
                 await window.addDoc(window.collection(window.db, "tickets_auditoria"), {
-                    fechaOperativa: fecha, sucursal, medico, estudio,
-                    cantidadExcel: cantExcel, cantidadApp: cantApp, diferencia: dif,
+                    origen, fechaOperativa: fecha, sucursal: lugar, medico, estudio,
                     clasificacion: clasif, comentarios: notas,
                     estado: 'Abierto', timestamp: new Date()
                 });
-                mostrarToast("Ticket guardado exitosamente", "exito");
-                cerrarModal('ticket');
-                cargarTickets();
-            } catch(e) { mostrarToast("Error guardando el ticket", "error"); }
+                mostrarToast("TNC Registrado Oficialmente", "exito");
+                cerrarModal('tnc');
+                cargarTNCs();
+            } catch(e) { mostrarToast("Error guardando TNC", "error"); }
         }
 
-        // --- SISTEMA DE CORRECCIÓN (MAGIA) ---
+        async function cargarTNCs() {
+            try {
+                const q = window.query(window.collection(window.db, "tickets_auditoria"), window.orderBy("timestamp", "desc"));
+                const qs = await window.getDocs(q);
+                const tbody = document.getElementById('tabla-tickets'); tbody.innerHTML = '';
+                
+                if(qs.empty) { tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-white/30 italic">No hay TNCs registrados.</td></tr>'; return; }
+
+                qs.forEach(doc => {
+                    const d = doc.data();
+                    const bColor = d.estado === 'Abierto' ? 'text-red-400 bg-red-500/20 border-red-500/30' : 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30';
+                    const bTxt = d.estado === 'Abierto' ? 'ABIERTO' : 'RESUELTO';
+                    const acc = d.estado === 'Abierto' ? `<button onclick="resolverTNC('${doc.id}')" class="bg-emerald-600 hover:bg-emerald-500 p-1.5 rounded shadow text-[9px] font-bold"><i class="fa-solid fa-check"></i> Cerrar</button>` : `<span class="text-emerald-500"><i class="fa-solid fa-check-double"></i></span>`;
+
+                    tbody.innerHTML += `
+                        <tr class="border-b border-white/5 hover:bg-white/5">
+                            <td class="p-3">${d.fechaOperativa}</td>
+                            <td class="p-3 font-bold text-purple-200">${d.medico}<br><span class="text-[9px] font-normal text-white/50 uppercase">${d.origen} | ${d.sucursal}</span></td>
+                            <td class="p-3 text-[10px] text-white/80">${d.estudio}</td>
+                            <td class="p-3 text-[10px] font-bold text-red-300 uppercase">${d.clasificacion}</td>
+                            <td class="p-3 text-[9px] text-white/50 max-w-[150px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
+                            <td class="p-3 text-center"><span class="px-2 py-1 rounded border text-[8px] font-black ${bColor}">${bTxt}</span></td>
+                            <td class="p-3 text-center">${acc}</td>
+                        </tr>
+                    `;
+                });
+            } catch (e) { console.error("Error TNCs:", e); }
+        }
+
+        async function resolverTNC(id) {
+            if(!confirm("¿Marcar este TNC como resuelto?")) return;
+            try {
+                await window.updateDoc(window.doc(window.db, "tickets_auditoria", id), { estado: 'Resuelto', resueltoEn: new Date() });
+                mostrarToast("TNC Cerrado", "exito"); cargarTNCs();
+            } catch (e) { mostrarToast("Fallo al actualizar", "error"); }
+        }
+
+        async function exportarTNCs() {
+            try {
+                const q = window.query(window.collection(window.db, "tickets_auditoria"), window.orderBy("timestamp", "desc"));
+                const qs = await window.getDocs(q);
+                if(qs.empty) return mostrarToast("No hay datos.", "info");
+                
+                let data = [];
+                qs.forEach(doc => {
+                    const d = doc.data();
+                    data.push({
+                        "ESTADO": d.estado,
+                        "FECHA_INCIDENCIA": d.fechaOperativa,
+                        "ORIGEN": d.origen,
+                        "LUGAR": d.sucursal,
+                        "MEDICO": d.medico,
+                        "ESTUDIO": d.estudio,
+                        "CATEGORIA_TNC": d.clasificacion,
+                        "OBSERVACIONES": d.comentarios || ''
+                    });
+                });
+                
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "TNC_Reporte");
+                XLSX.writeFile(wb, `LAPI_TNC_Reporte_${new Date().toISOString().split('T')[0]}.xlsx`);
+            } catch (e) { mostrarToast("Error al exportar", "error"); }
+        }
+
+        // ==========================================
+        // PERFIL MÉDICO (EXPEDIENTE)
+        // ==========================================
+        async function cargarPerfilMedico() {
+            const nom = document.getElementById('input-buscar-medico').value.trim().toUpperCase();
+            if(!nom) return;
+            
+            document.getElementById('mensaje-perfil-vacio').classList.add('hidden');
+            document.getElementById('contenido-perfil').classList.remove('hidden');
+            document.getElementById('perf-historial').innerHTML = '<p class="text-center text-white/50 italic py-4">Buscando expediente...</p>';
+            
+            try {
+                const q = window.query(window.collection(window.db, "tickets_auditoria"), window.where("medico", "==", nom));
+                const qs = await window.getDocs(q);
+                
+                let total = 0; let fallas = {}; let html = "";
+                
+                if(qs.empty) {
+                    html = '<div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl text-center"><i class="fa-solid fa-award text-emerald-400 text-2xl mb-2"></i><p class="text-xs text-emerald-300 font-bold">Expediente limpio. 0 TNCs registrados.</p></div>';
+                } else {
+                    let docsAr = []; qs.forEach(d => docsAr.push(d.data()));
+                    docsAr.sort((a,b) => b.fechaOperativa.localeCompare(a.fechaOperativa)); // Ordenar localmente
+                    
+                    docsAr.forEach(d => {
+                        total++;
+                        fallas[d.clasificacion] = (fallas[d.clasificacion] || 0) + 1;
+                        const icon = d.estado === 'Abierto' ? '<i class="fa-solid fa-circle text-red-500 text-[8px]"></i>' : '<i class="fa-solid fa-circle text-emerald-500 text-[8px]"></i>';
+                        html += `
+                            <div class="bg-black/40 border border-white/5 p-3 rounded-xl flex flex-col gap-1">
+                                <div class="flex justify-between items-center"><span class="text-[10px] text-white/50 font-bold">${d.fechaOperativa} | ${d.origen}</span> ${icon}</div>
+                                <p class="text-xs font-black text-red-300 uppercase">${d.clasificacion}</p>
+                                <p class="text-[10px] text-purple-200">${d.estudio}</p>
+                            </div>
+                        `;
+                    });
+                }
+                
+                document.getElementById('perf-total-tnc').innerText = total;
+                document.getElementById('perf-historial').innerHTML = html;
+                dibujarGraficaPerfil(fallas);
+                
+            } catch (e) { mostrarToast("Error buscando perfil", "error"); console.log(e); }
+        }
+
+        function dibujarGraficaPerfil(dataObj) {
+            if(chartMedico) chartMedico.destroy();
+            const labels = Object.keys(dataObj);
+            const data = Object.values(dataObj);
+            
+            if(labels.length === 0) {
+                document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<p class="text-center text-white/30 text-xs mt-10">Sin datos para graficar</p><canvas id="chart-tnc-medico" class="hidden"></canvas>';
+                return;
+            } else {
+                document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<canvas id="chart-tnc-medico"></canvas>';
+            }
+
+            const ctx = document.getElementById('chart-tnc-medico').getContext('2d');
+            chartMedico = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#ef4444', '#f59e0b', '#8b5cf6', '#3b82f6', '#10b981'],
+                        borderWidth: 0, hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        // ==========================================
+        // CORRECCIÓN INYECCIÓN 
+        // ==========================================
         function prepararCorreccion(hash, cantCorrecta) {
             const [fecha, suc, med, est] = hash.split('|');
-            document.getElementById('c-hash').value = hash;
-            document.getElementById('c-cant').value = cantCorrecta;
-            
-            document.getElementById('c-info').innerHTML = `El estudio <b>${est}</b> del <b>Dr. ${med}</b> (${fecha}) se forzará a tener exactamente <b>${cantCorrecta}</b> registros en Firebase.`;
+            document.getElementById('c-hash').value = hash; document.getElementById('c-cant').value = cantCorrecta;
+            document.getElementById('c-info').innerHTML = `Se forzarán <b>${cantCorrecta}</b> registros de <b>${est}</b> al perfil de <b>${med}</b> (${fecha}).`;
             abrirModal('correccion');
         }
 
         async function ejecutarCorreccion() {
             const btn = document.getElementById('btn-ejecutar-corr');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...'; btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
 
-            const hash = document.getElementById('c-hash').value;
-            const cantCorrecta = parseInt(document.getElementById('c-cant').value);
+            const hash = document.getElementById('c-hash').value; const cantCorrecta = parseInt(document.getElementById('c-cant').value);
             const [fecha, sucursal, medico, estudio] = hash.split('|');
-
-            // Formar el ID del documento PWA agrupado
             const docId = `SUC_${fecha}_${sucursal.replace(/\s+/g,'')}_${medico.replace(/\s+/g,'')}`;
 
             try {
@@ -533,42 +710,18 @@
                 const docSnap = await window.getDoc(docRef);
 
                 if(docSnap.exists()) {
-                    let datos = docSnap.data();
-                    if(!datos.estudios) datos.estudios = {};
-                    datos.estudios[estudio] = cantCorrecta;
-                    datos.ultimaActualizacion = new Date();
+                    let datos = docSnap.data(); if(!datos.estudios) datos.estudios = {};
+                    datos.estudios[estudio] = cantCorrecta; datos.ultimaActualizacion = new Date();
                     await window.setDoc(docRef, datos);
                 } else {
-                    // Si ni siquiera existía el doc (El médico jamás entró a la app ese día)
-                    let nuevosDatos = {
-                        tipo: "sucursal_agrupada", fecha: fecha, sucursal: sucursal, medico: medico,
-                        estudios: { [estudio]: cantCorrecta },
-                        observaciones: "Generado auto por Auditoría",
-                        ultimaActualizacion: new Date()
-                    };
-                    await window.setDoc(docRef, nuevosDatos);
+                    await window.setDoc(docRef, { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: cantCorrecta }, observaciones: "Generado por Sistema de Calidad", ultimaActualizacion: new Date() });
                 }
-
-                // Cerramos ticket automáticamente si existía
-                await window.addDoc(window.collection(window.db, "tickets_auditoria"), {
-                    fechaOperativa: fecha, sucursal, medico, estudio,
-                    clasificacion: "Corrección Automática", comentarios: "Ajuste directo desde panel.",
-                    estado: 'Cerrado', timestamp: new Date(), diferencia: 0
-                });
-
-                mostrarToast("Base de datos sincronizada con éxito", "exito");
+                mostrarToast("App Sincronizada Automáticamente", "exito");
                 cerrarModal('correccion');
-                
-                // Recargar toda la info para que las tablas cuadren
-                await initAuditoria(); 
-                if(Object.keys(excelDataGlobal).length > 0) ejecutarCruceDeDatos();
-
-            } catch (e) {
-                mostrarToast("Fallo al inyectar datos a Firebase", "error"); console.error(e);
-            }
-            btn.innerHTML = '<i class="fa-solid fa-check-double mr-1"></i> Sincronizar'; btn.disabled = false;
+                await initAuditoria(); if(Object.keys(excelDataGlobal).length > 0) ejecutarCruceDeDatos();
+            } catch (e) { mostrarToast("Fallo al inyectar datos", "error"); }
+            btn.innerHTML = 'Ejecutar'; btn.disabled = false;
         }
-
     </script>
 </body>
 </html>
