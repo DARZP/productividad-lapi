@@ -46,72 +46,77 @@
     </script>
     
     <style>
-        .glass { background: rgba(255, 255, 255, 0.10); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.15); }
-        body { background: linear-gradient(135deg, #0f172a 0%, #2e1065 100%); font-family: 'Inter', sans-serif; }
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
         .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
-        .scroll-custom::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-        .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-        .tab-active { background: rgba(124, 58, 237, 0.3); border-color: #a78bfa; color: white; }
+        .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .tab-active { background: white; color: #6d28d9; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     </style>
 </head>
-<body class="text-white p-2 md:p-4 min-h-screen flex flex-col items-center pb-20">
+<body class="text-slate-800 p-2 md:p-4 min-h-screen flex flex-col items-center pb-20">
 
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
     <div class="w-full max-w-7xl flex-1 flex flex-col">
         
-        <div class="glass p-5 rounded-3xl shadow-2xl mb-4 flex flex-col md:flex-row justify-between items-center gap-4 border-l-4 border-purple-500">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-gradient-to-r from-purple-700 to-indigo-600 p-6 rounded-3xl shadow-xl text-white gap-4">
             <div>
-                <h1 class="text-xl font-black tracking-tight flex items-center gap-3">
-                    <i class="fa-solid fa-shield-halved text-purple-400 text-2xl"></i> CENTRO DE CALIDAD Y TNC
+                <h1 class="text-2xl font-black tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-shield-halved text-purple-300"></i> CENTRO DE CALIDAD Y TNC
                 </h1>
+                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest text-purple-200">Auditoría Operativa</p>
             </div>
-            <div class="flex bg-black/40 p-1.5 rounded-xl border border-white/10 w-full md:w-auto">
-                <button onclick="cambiarSeccion('cruce')" id="nav-cruce" class="tab-active flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all border border-transparent"><i class="fa-solid fa-code-compare mr-1"></i> Cruce Excel</button>
-                <button onclick="cambiarSeccion('tnc')" id="nav-tnc" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all border border-transparent text-white/50 hover:text-white"><i class="fa-solid fa-list-check mr-1"></i> Gestión TNC</button>
-                <button onclick="cambiarSeccion('perfil')" id="nav-perfil" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all border border-transparent text-white/50 hover:text-white"><i class="fa-solid fa-user-doctor mr-1"></i> Expediente</button>
+            
+            <div class="flex flex-wrap gap-2 bg-black/20 p-1.5 rounded-xl w-full md:w-auto">
+                <button onclick="cambiarSeccion('cruce')" id="nav-cruce" class="tab-active flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all"><i class="fa-solid fa-code-compare mr-1"></i> Cruce Excel</button>
+                <button onclick="cambiarSeccion('tnc')" id="nav-tnc" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-white/70 hover:text-white"><i class="fa-solid fa-list-check mr-1"></i> Gestión TNC</button>
+                <button onclick="cambiarSeccion('perfil')" id="nav-perfil" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-white/70 hover:text-white"><i class="fa-solid fa-user-doctor mr-1"></i> Expediente</button>
             </div>
         </div>
 
         <div id="sec-cruce" class="block animate-fade-in">
-            <div class="grid grid-cols-1 xl:grid-cols-4 gap-4 mb-4">
-                <div class="xl:col-span-1 space-y-4">
-                    <div class="glass p-5 rounded-2xl shadow-xl">
-                        <h3 class="font-black text-xs uppercase tracking-wider mb-3 text-purple-300"><i class="fa-solid fa-upload mr-1"></i> Carga de Archivos</h3>
-                        <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="w-full mb-3 text-xs text-white/70 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer bg-black/20 p-2 rounded-xl">
-                        <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" disabled class="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 text-white font-black py-2.5 rounded-xl transition-all shadow-lg text-xs"><i class="fa-solid fa-play mr-1"></i> Iniciar Cruce</button>
+            <div class="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-6">
+                <div class="xl:col-span-1 space-y-6">
+                    <div class="glass p-5 rounded-2xl shadow-sm border-l-4 border-purple-500">
+                        <h3 class="font-black text-xs uppercase tracking-wider mb-3 text-slate-500"><i class="fa-solid fa-upload mr-1"></i> Carga de Archivos</h3>
+                        <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="w-full mb-4 text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[11px] file:font-black file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer bg-slate-50 border border-slate-200 p-2 rounded-xl">
+                        <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" disabled class="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-slate-300 disabled:text-slate-500 text-white font-black py-3 rounded-xl transition-all shadow-md text-sm active:scale-95"><i class="fa-solid fa-play mr-1"></i> Iniciar Cruce</button>
                     </div>
-                    <div class="glass p-5 rounded-2xl shadow-xl border-l-2 border-emerald-500">
-                        <h3 class="font-black text-xs uppercase tracking-wider mb-3 text-emerald-300"><i class="fa-solid fa-calendar-days mr-1"></i> Filtro de Periodo</h3>
-                        <div class="grid grid-cols-2 gap-2 mb-3">
-                            <button onclick="aplicarFiltroRapido('hoy')" class="bg-white/5 hover:bg-white/10 text-[10px] font-bold py-1.5 rounded-lg border border-white/5">Hoy</button>
-                            <button onclick="aplicarFiltroRapido('ayer')" class="bg-white/5 hover:bg-white/10 text-[10px] font-bold py-1.5 rounded-lg border border-white/5">Ayer</button>
-                            <button onclick="aplicarFiltroRapido('semana')" class="bg-white/5 hover:bg-white/10 text-[10px] font-bold py-1.5 rounded-lg border border-white/5">Semana</button>
-                            <button onclick="aplicarFiltroRapido('todo')" class="bg-purple-600 text-[10px] font-bold py-1.5 rounded-lg">Todo</button>
+                    
+                    <div class="glass p-5 rounded-2xl shadow-sm border-l-4 border-emerald-500">
+                        <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-calendar-days mr-1"></i> Filtro de Periodo</h3>
+                        <div class="grid grid-cols-2 gap-2 mb-4">
+                            <button onclick="aplicarFiltroRapido('hoy')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold py-2 rounded-lg transition">Hoy</button>
+                            <button onclick="aplicarFiltroRapido('ayer')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold py-2 rounded-lg transition">Ayer</button>
+                            <button onclick="aplicarFiltroRapido('semana')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold py-2 rounded-lg transition">Semana</button>
+                            <button onclick="aplicarFiltroRapido('todo')" class="bg-emerald-100 text-emerald-700 text-[11px] font-bold py-2 rounded-lg transition">Todo</button>
                         </div>
-                        <input type="date" id="a-inicio" class="w-full p-2 bg-black/30 text-white rounded-lg text-xs font-bold outline-none mb-2 border border-white/10">
-                        <input type="date" id="a-fin" class="w-full p-2 bg-black/30 text-white rounded-lg text-xs font-bold outline-none mb-3 border border-white/10">
-                        <button onclick="reRenderAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2 rounded-xl transition-all text-xs">Aplicar</button>
+                        <input type="date" id="a-inicio" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-3 border border-slate-300">
+                        <input type="date" id="a-fin" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-4 border border-slate-300">
+                        <button onclick="reRenderAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl transition-all text-sm active:scale-95">Aplicar Filtro</button>
                     </div>
                 </div>
                 
                 <div class="xl:col-span-3 flex flex-col">
-                    <div class="grid grid-cols-3 gap-3 mb-4">
-                        <div class="glass p-3 rounded-xl text-center border-b-2 border-emerald-500"><p class="text-[9px] font-black text-white/50 uppercase">Match Correcto</p><p id="kpi-aud-match" class="text-xl font-black text-emerald-400">0</p></div>
-                        <div class="glass p-3 rounded-xl text-center border-b-2 border-red-500"><p class="text-[9px] font-black text-white/50 uppercase">Falta en App</p><p id="kpi-aud-rojo" class="text-xl font-black text-red-400">0</p></div>
-                        <div class="glass p-3 rounded-xl text-center border-b-2 border-amber-500"><p class="text-[9px] font-black text-white/50 uppercase">Sobra en App</p><p id="kpi-aud-ama" class="text-xl font-black text-amber-400">0</p></div>
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="glass p-4 rounded-2xl text-center border-b-4 border-emerald-500 shadow-sm"><p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Match Correcto</p><p id="kpi-aud-match" class="text-3xl font-black text-emerald-600 mt-1">0</p></div>
+                        <div class="glass p-4 rounded-2xl text-center border-b-4 border-red-500 shadow-sm"><p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Falta en App</p><p id="kpi-aud-rojo" class="text-3xl font-black text-red-600 mt-1">0</p></div>
+                        <div class="glass p-4 rounded-2xl text-center border-b-4 border-amber-500 shadow-sm"><p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sobra en App</p><p id="kpi-aud-ama" class="text-3xl font-black text-amber-600 mt-1">0</p></div>
                     </div>
-                    <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden">
-                        <div class="p-3 border-b border-white/10 bg-black/30 flex justify-between items-center">
-                            <h3 class="font-black text-[11px] text-purple-200 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
+                    
+                    <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200">
+                        <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
+                            <span id="status-db" class="text-[10px] text-slate-500 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Conectando...</span>
                         </div>
                         <div class="overflow-x-auto scroll-custom max-h-[500px]">
                             <table class="w-full text-left border-collapse">
-                                <thead class="sticky top-0 bg-[#1e103c] z-10 shadow-md text-[9px] uppercase text-purple-300">
-                                    <tr><th class="p-3">Fecha/Lugar</th><th class="p-3">Médico</th><th class="p-3">Estudio</th><th class="p-3 text-center">EXC</th><th class="p-3 text-center">APP</th><th class="p-3 text-center">Acción</th></tr>
+                                <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm text-[10px] uppercase text-slate-500">
+                                    <tr><th class="p-4">Fecha / Lugar</th><th class="p-4">Médico Traducido</th><th class="p-4">Estudio</th><th class="p-4 text-center">Excel</th><th class="p-4 text-center">App</th><th class="p-4 text-center">Acción Resolutiva</th></tr>
                                 </thead>
-                                <tbody id="tabla-auditoria" class="divide-y divide-white/5 font-medium text-white/90 text-xs">
-                                    <tr><td colspan="6" class="text-center py-10 text-white/30 italic">Esperando archivos...</td></tr>
+                                <tbody id="tabla-auditoria" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs">
+                                    <tr><td colspan="6" class="text-center py-12 text-slate-400 italic">Esperando archivos Excel para iniciar el cruce...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -121,21 +126,21 @@
         </div>
 
         <div id="sec-tnc" class="hidden animate-fade-in">
-            <div class="glass p-5 rounded-3xl shadow-xl flex flex-col h-[75vh]">
-                <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
-                    <h2 class="text-lg font-black text-sky-300"><i class="fa-solid fa-list-check"></i> Control de Trabajos No Conformes (TNC)</h2>
-                    <div class="flex gap-2">
-                        <button onclick="abrirModalTncManual()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all shadow"><i class="fa-solid fa-plus mr-1"></i> Nuevo TNC Manual</button>
-                        <button onclick="exportarTNCs()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all shadow"><i class="fa-solid fa-file-excel mr-1"></i> Exportar Reporte</button>
+            <div class="glass p-6 rounded-3xl shadow-sm flex flex-col h-[75vh] border border-slate-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-200 pb-4 gap-4">
+                    <h2 class="text-lg font-black text-slate-800"><i class="fa-solid fa-list-check text-purple-600 mr-2"></i> Control de Trabajos No Conformes (TNC)</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="abrirModalTncManual()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-plus mr-1"></i> TNC Manual</button>
+                        <button onclick="exportarTNCs()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-file-excel mr-1"></i> Exportar Reporte</button>
                     </div>
                 </div>
                 <div class="overflow-x-auto scroll-custom flex-1">
                     <table class="w-full text-left border-collapse">
-                        <thead class="sticky top-0 bg-black/40 z-10 text-[10px] uppercase text-sky-200 border-b border-white/10">
-                            <tr><th class="p-3">Fecha Suceso</th><th class="p-3">Médico / Lugar</th><th class="p-3">Estudio</th><th class="p-3">Categoría TNC</th><th class="p-3">Notas</th><th class="p-3 text-center">Estado</th><th class="p-3 text-center">Gestión</th></tr>
+                        <thead class="sticky top-0 bg-slate-50 z-10 text-[11px] uppercase text-slate-500 border-b border-slate-200 shadow-sm">
+                            <tr><th class="p-4">Fecha Suceso</th><th class="p-4">Médico / Lugar</th><th class="p-4">Estudio</th><th class="p-4">Categoría TNC</th><th class="p-4">Notas Internas</th><th class="p-4 text-center">Estado</th><th class="p-4 text-center">Gestión</th></tr>
                         </thead>
-                        <tbody id="tabla-tickets" class="divide-y divide-white/5 font-medium text-white/90 text-xs">
-                            <tr><td colspan="7" class="text-center py-10 text-white/30 italic">Cargando TNCs...</td></tr>
+                        <tbody id="tabla-tickets" class="divide-y divide-slate-100 font-medium text-slate-700 text-sm">
+                            <tr><td colspan="7" class="text-center py-10 text-slate-400 italic">Cargando incidencias...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -143,100 +148,100 @@
         </div>
 
         <div id="sec-perfil" class="hidden animate-fade-in">
-            <div class="glass p-6 rounded-3xl shadow-xl">
-                <div class="flex flex-col md:flex-row gap-6 mb-6 items-center bg-black/20 p-4 rounded-2xl border border-white/5">
-                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-2xl shadow-lg border-2 border-white/20"><i class="fa-solid fa-user-doctor"></i></div>
+            <div class="glass p-8 rounded-3xl shadow-sm border border-slate-200">
+                <div class="flex flex-col md:flex-row gap-6 mb-8 items-center bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl shadow-md"><i class="fa-solid fa-user-doctor"></i></div>
                     <div class="flex-1 w-full">
-                        <label class="block text-[10px] font-black text-white/50 uppercase mb-1">Buscar Expediente Médico</label>
-                        <input type="text" id="input-buscar-medico" list="lista-medicos-perfil" onchange="cargarPerfilMedico()" class="w-full p-3 bg-white/10 text-white rounded-xl outline-none font-bold uppercase border border-white/10 focus:border-purple-400 transition-colors" placeholder="Escribe el nombre del médico...">
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Buscar Expediente de Calidad</label>
+                        <input type="text" id="input-buscar-medico" list="lista-medicos-perfil" onchange="cargarPerfilMedico()" class="w-full p-4 bg-white text-slate-800 rounded-xl outline-none font-bold uppercase border border-slate-300 focus:border-purple-500 transition-colors shadow-sm" placeholder="Escribe el nombre del médico...">
                     </div>
                 </div>
 
-                <div id="contenido-perfil" class="hidden grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1 space-y-4">
-                        <div class="bg-red-500/10 border border-red-500/20 p-5 rounded-2xl text-center">
-                            <p class="text-[10px] font-black text-red-300 uppercase tracking-widest">Total TNCs Registrados</p>
-                            <p id="perf-total-tnc" class="text-4xl font-black text-red-500 mt-2">0</p>
+                <div id="contenido-perfil" class="hidden grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-red-50 border border-red-100 p-6 rounded-2xl text-center shadow-sm">
+                            <p class="text-xs font-black text-red-400 uppercase tracking-widest">Total TNCs Históricos</p>
+                            <p id="perf-total-tnc" class="text-5xl font-black text-red-600 mt-2">0</p>
                         </div>
-                        <div class="bg-black/30 border border-white/5 p-4 rounded-2xl">
-                            <h4 class="text-xs font-black text-white/70 uppercase mb-3 text-center border-b border-white/10 pb-2">Desglose de Fallas</h4>
+                        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                            <h4 class="text-xs font-black text-slate-500 uppercase mb-4 text-center border-b border-slate-100 pb-2">Desglose de Errores</h4>
                             <div class="relative h-48 w-full"><canvas id="chart-tnc-medico"></canvas></div>
                         </div>
                     </div>
-                    <div class="lg:col-span-2 bg-black/20 border border-white/5 p-5 rounded-2xl flex flex-col max-h-[400px]">
-                        <h4 class="text-sm font-black text-purple-300 uppercase mb-3 flex items-center gap-2"><i class="fa-solid fa-timeline"></i> Historial de Incidencias</h4>
+                    <div class="lg:col-span-2 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col max-h-[450px]">
+                        <h4 class="text-sm font-black text-slate-800 uppercase mb-4 flex items-center gap-2 border-b border-slate-100 pb-3"><i class="fa-solid fa-timeline text-purple-500"></i> Historial de Incidencias</h4>
                         <div class="overflow-y-auto scroll-custom flex-1 pr-2 space-y-3" id="perf-historial">
                             </div>
                     </div>
                 </div>
-                <div id="mensaje-perfil-vacio" class="text-center py-10 text-white/40 italic font-medium">Selecciona un médico para visualizar su expediente de calidad.</div>
+                <div id="mensaje-perfil-vacio" class="text-center py-16 text-slate-400 italic font-medium text-lg">Selecciona un médico en la barra superior para visualizar su expediente.</div>
             </div>
         </div>
 
     </div>
 
-    <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-tnc-card" class="glass bg-[#1a0b2e] p-6 rounded-3xl shadow-2xl max-w-md w-full text-white transform scale-95 transition-transform duration-300 border border-white/10">
-            <h3 class="text-lg font-black mb-4 text-purple-400 border-b border-white/10 pb-2 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
+    <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300">
+            <h3 class="text-xl font-black mb-5 text-purple-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
             
             <input type="hidden" id="tnc-hash">
             
-            <div class="grid grid-cols-2 gap-3 mb-3">
+            <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Origen</label>
-                    <select id="tnc-origen" onchange="actualizarCatalogoTNC()" class="w-full p-2.5 bg-black/50 text-white rounded-lg outline-none text-xs border border-white/10">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Origen</label>
+                    <select id="tnc-origen" onchange="actualizarCatalogoTNC()" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold">
                         <option value="Sucursal">Sucursal</option>
                         <option value="Foráneo">Servicio Foráneo</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Estudio Afectado</label>
-                    <select id="tnc-estudio" onchange="actualizarCatalogoTNC()" class="w-full p-2.5 bg-black/50 text-white rounded-lg outline-none text-xs border border-white/10">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Estudio Afectado</label>
+                    <select id="tnc-estudio" onchange="actualizarCatalogoTNC()" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold">
                         </select>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mb-3" id="tnc-campos-manuales">
+            <div class="grid grid-cols-2 gap-4 mb-4" id="tnc-campos-manuales">
                 <div>
-                    <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Fecha</label>
-                    <input type="date" id="tnc-fecha" class="w-full p-2.5 bg-black/50 text-white rounded-lg outline-none text-xs border border-white/10">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Fecha</label>
+                    <input type="date" id="tnc-fecha" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Médico</label>
-                    <input type="text" id="tnc-medico" list="lista-medicos-perfil" class="w-full p-2.5 bg-black/50 text-white rounded-lg outline-none text-xs border border-white/10 uppercase">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Médico</label>
+                    <input type="text" id="tnc-medico" list="lista-medicos-perfil" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold uppercase">
                 </div>
             </div>
             
-            <div class="mb-3">
-                <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Empresa / Sucursal</label>
-                <input type="text" id="tnc-lugar" class="w-full p-2.5 bg-black/50 text-white rounded-lg outline-none text-xs border border-white/10 uppercase">
+            <div class="mb-5">
+                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Empresa / Sucursal</label>
+                <input type="text" id="tnc-lugar" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold uppercase">
             </div>
 
-            <label class="block text-[10px] font-bold text-emerald-400 uppercase mb-1 mt-4">Clasificación de la Inconformidad (Potencial TNC)</label>
-            <select id="tnc-clasificacion" class="w-full p-3 bg-red-900/30 text-white rounded-xl outline-none mb-3 border border-red-500/30 text-xs font-bold">
+            <label class="block text-[11px] font-bold text-red-600 uppercase mb-2">Clasificación (Potencial TNC)</label>
+            <select id="tnc-clasificacion" class="w-full p-3 bg-red-50 text-red-700 rounded-xl outline-none mb-4 border border-red-200 text-sm font-bold shadow-sm">
                 </select>
 
-            <label class="block text-[10px] font-bold text-white/60 uppercase mb-1">Observaciones Extras</label>
-            <textarea id="tnc-notas" rows="2" class="w-full p-3 bg-black/50 text-white rounded-xl outline-none mb-6 border border-white/10 text-xs" placeholder="Detalle específico del error..."></textarea>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Observaciones / Evidencia</label>
+            <textarea id="tnc-notas" rows="2" class="w-full p-3 bg-slate-50 text-slate-700 rounded-xl outline-none mb-6 border border-slate-200 text-sm placeholder-slate-400" placeholder="Añade detalles sobre el error..."></textarea>
 
             <div class="flex gap-3">
-                <button onclick="cerrarModal('tnc')" class="w-1/3 bg-white/10 hover:bg-white/20 font-bold py-3 rounded-xl transition-all text-xs">Cancelar</button>
-                <button onclick="guardarTNC()" class="w-2/3 bg-purple-600 hover:bg-purple-700 font-black py-3 rounded-xl shadow-lg transition-all text-xs flex justify-center items-center gap-2"><i class="fa-solid fa-save"></i> Registrar TNC</button>
+                <button onclick="cerrarModal('tnc')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition-all">Cancelar</button>
+                <button onclick="guardarTNC()" class="w-2/3 bg-purple-600 hover:bg-purple-700 text-white font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2"><i class="fa-solid fa-save"></i> Guardar TNC</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-correccion-card" class="glass bg-[#064e3b] p-6 rounded-3xl shadow-2xl max-w-sm w-full text-white transform scale-95 transition-transform duration-300 border border-emerald-500/30 text-center">
-            <div class="w-14 h-14 bg-white/10 text-emerald-300 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-            <h3 class="text-base font-black mb-2">Forzar Sincronización</h3>
-            <p class="text-xs text-white/70 mb-5">El sistema ajustará Firebase para que cuadre con el Excel reportado.</p>
-            <p id="c-info" class="text-[11px] text-white bg-black/40 p-3 rounded-xl border border-white/10 font-bold mb-5"></p>
+    <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-correccion-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-emerald-200 text-center">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <h3 class="text-lg font-black mb-2 text-slate-800">Forzar Sincronización</h3>
+            <p class="text-sm text-slate-500 mb-5">El sistema ajustará Firebase para que cuadre exactamente con el Excel subido.</p>
+            <p id="c-info" class="text-xs text-emerald-800 bg-emerald-50 p-3 rounded-xl border border-emerald-200 font-bold mb-6"></p>
             <input type="hidden" id="c-hash">
             <input type="hidden" id="c-cant">
-            <div class="flex gap-2">
-                <button onclick="cerrarModal('correccion')" class="w-1/2 bg-white/10 hover:bg-white/20 font-bold py-2.5 rounded-xl transition-all text-xs">Cancelar</button>
-                <button id="btn-ejecutar-corr" onclick="ejecutarCorreccion()" class="w-1/2 bg-emerald-500 hover:bg-emerald-400 text-[#064e3b] font-black py-2.5 rounded-xl shadow-lg transition-all text-xs">Ejecutar</button>
+            <div class="flex gap-3">
+                <button onclick="cerrarModal('correccion')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar</button>
+                <button id="btn-ejecutar-corr" onclick="ejecutarCorreccion()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Sincronizar</button>
             </div>
         </div>
     </div>
@@ -245,20 +250,19 @@
 
     <script>
         // ==========================================
-        // 0. CATÁLOGOS Y DICCIONARIOS INTELIGENTES
+        // 0. CATÁLOGOS
         // ==========================================
         const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales || {};
         const listaMedicosFull = window.LAPI_CONFIG.medicos || [];
         document.getElementById('lista-medicos-perfil').innerHTML = listaMedicosFull.map(m => `<option value="${m}">`).join('');
 
-        // DICCIONARIO TNC MAESTRO
         const TNC_CATALOGO = {
             "Sucursal": {
                 "Espirometría": ["CONSENTIMIENTO INFORMADO", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "SIGNOS VITALES Y SOMATOMETRÍA", "INTERROGATORIO Y/O ANTECEDENTES", "DISPONIBILIDAD DE MANIOBRA", "CALIDAD DE MANIOBRA", "REGISTRO EN SISTEMA WEB"],
                 "Agudeza Visual": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "REGISTRO DE AGUDEZA VISUAL", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB"],
                 "Electrocardiograma": ["DISPONIBILIDAD DE TRAZO", "FICHA DE IDENTIFICACIÓN", "CALIDAD DEL TRAZO"],
-                "Historia Clínica Empresa": ["EXPLORACIÓN FÍSICA", "AUDIOGRAMA", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB", "FICHA DE IDENTIFICACIÓN"], // Ajustado al default
+                "Historia Clínica Empresa": ["EXPLORACIÓN FÍSICA", "AUDIOGRAMA", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB", "FICHA DE IDENTIFICACIÓN"], 
                 "Genérico": ["FICHA DE IDENTIFICACIÓN", "REGISTRO EN SISTEMA WEB", "LETRA LEGIBLE", "CONTROL DOCUMENTAL"]
             },
             "Foráneo": {
@@ -274,7 +278,6 @@
             ]
         };
 
-        // Llenar selector de estudios del modal en base a los catálogos globales
         function poblarEstudiosModal() {
             let options = '<option value="">Selecciona Estudio...</option>';
             const todos = [...new Set([...window.LAPI_CONFIG.estudiosForaneos, ...window.LAPI_CONFIG.estudiosSucursales])];
@@ -283,21 +286,21 @@
         }
         poblarEstudiosModal();
 
-        // Variables Globales
         let rawDataSucursales = [];
         let excelDataGlobal = {};
         let appDataGlobal = {};
         let chartMedico = null;
+        const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
 
         // ==========================================
         // UI & NAVEGACIÓN
         // ==========================================
         function mostrarToast(mensaje, tipo = 'info') {
             const toast = document.createElement('div');
-            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-purple-500');
+            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-purple-600');
             const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-triangle-exclamation' : 'fa-info-circle');
-            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-xs flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
-            toast.innerHTML = `<i class="fa-solid ${icono} text-base"></i> <span class="leading-tight">${mensaje}</span>`;
+            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-lg font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
+            toast.innerHTML = `<i class="fa-solid ${icono} text-lg"></i> <span class="leading-tight">${mensaje}</span>`;
             document.getElementById('toast-container').appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
@@ -306,12 +309,12 @@
         function cambiarSeccion(sec) {
             ['cruce', 'tnc', 'perfil'].forEach(s => {
                 document.getElementById(`sec-${s}`).classList.add('hidden');
-                document.getElementById(`nav-${s}`).classList.remove('tab-active', 'text-white');
-                document.getElementById(`nav-${s}`).classList.add('text-white/50');
+                document.getElementById(`nav-${s}`).classList.remove('tab-active');
+                document.getElementById(`nav-${s}`).classList.add('text-white/70');
             });
             document.getElementById(`sec-${sec}`).classList.remove('hidden');
-            document.getElementById(`nav-${sec}`).classList.remove('text-white/50');
-            document.getElementById(`nav-${sec}`).classList.add('tab-active', 'text-white');
+            document.getElementById(`nav-${sec}`).classList.remove('text-white/70');
+            document.getElementById(`nav-${sec}`).classList.add('tab-active');
         }
 
         function abrirModal(id) {
@@ -328,9 +331,6 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        // ==========================================
-        // LÓGICA CORE: INICIO Y CRUCE DE DATOS
-        // ==========================================
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
@@ -362,13 +362,14 @@
                         });
                     }
                 });
+                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
                 document.getElementById('btn-auditoria').disabled = false;
-            } catch (error) { mostrarToast("Error sincronizando BD", "error"); }
+            } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error'; }
         }
 
         async function ejecutarCruceDeDatos() {
             const input = document.getElementById('archivoAuditoria');
-            if(input.files.length === 0) return mostrarToast("Sube al menos un archivo Excel.", "error");
+            if(input.files.length === 0) return mostrarToast("Sube un archivo Excel.", "error");
             document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cruzando...';
             excelDataGlobal = {};
 
@@ -422,7 +423,6 @@
             document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-play mr-1"></i> Iniciar Cruce';
         }
 
-        // Filtros Rápidos
         function aplicarFiltroRapido(tipo) {
             const hoy = new Date(); let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
             if (tipo === 'hoy') iStr = fStr; 
@@ -444,26 +444,26 @@
 
             todasLasLlaves.forEach(hash => {
                 const [fecha, sucursal, medico, estudio] = hash.split('|');
-                if(!fechasExcel.includes(fecha)) return; // Solo analizar dias que se subieron
+                if(!fechasExcel.includes(fecha)) return; 
                 if(fIni && fecha < fIni) return; if(fFin && fecha > fFin) return;
 
                 const cE = excelDataGlobal[hash] || 0; const cA = appDataGlobal[hash] || 0;
                 let cHTML='', aHTML='';
 
                 if(cE === cA) {
-                    match++; cHTML = 'bg-emerald-500/5 hover:bg-emerald-500/10';
-                    aHTML = `<span class="text-emerald-500"><i class="fa-solid fa-check"></i> OK</span>`;
+                    match++; cHTML = 'bg-emerald-50 hover:bg-emerald-100';
+                    aHTML = `<span class="text-emerald-500 font-bold"><i class="fa-solid fa-check"></i> OK</span>`;
                 } else {
-                    if (cE > cA) { faltaEnApp++; cHTML = 'bg-red-500/10 hover:bg-red-500/20'; } else { extraEnApp++; cHTML = 'bg-amber-500/10 hover:bg-amber-500/20'; }
+                    if (cE > cA) { faltaEnApp++; cHTML = 'bg-red-50 hover:bg-red-100'; } else { extraEnApp++; cHTML = 'bg-amber-50 hover:bg-amber-100'; }
                     aHTML = `
-                        <button onclick="prepararCorreccion('${hash}', ${cE})" class="bg-emerald-600 hover:bg-emerald-500 text-white p-1.5 rounded text-[10px] shadow" title="Inyectar a Firebase"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
-                        <button onclick="abrirModalTncAutomatica('${hash}', ${cE}, ${cA})" class="bg-purple-600 hover:bg-purple-500 text-white p-1.5 rounded text-[10px] shadow" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button>
+                        <button onclick="prepararCorreccion('${hash}', ${cE})" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Inyectar a Firebase"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                        <button onclick="abrirModalTncAutomatica('${hash}', ${cE}, ${cA})" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button>
                     `;
                 }
-                html += `<tr class="${cHTML} transition border-b border-white/5"><td class="p-2">${fecha}<br><span class="text-[9px] text-white/50">${sucursal}</span></td><td class="p-2 font-bold">${medico}</td><td class="p-2 text-purple-300 text-[10px]">${estudio}</td><td class="p-2 text-center text-white/50 font-black">${cE}</td><td class="p-2 text-center font-black">${cA}</td><td class="p-2 text-center flex justify-center gap-1">${aHTML}</td></tr>`;
+                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursal}</span></td><td class="p-3 font-bold">${medico}</td><td class="p-3 text-purple-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black">${cE}</td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
             });
 
-            tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-6 text-white/30 italic">Sin datos en este rango.</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">Sube Excel o ajusta el filtro de fechas.</td></tr>';
             document.getElementById('kpi-aud-match').innerText = match; document.getElementById('kpi-aud-rojo').innerText = faltaEnApp; document.getElementById('kpi-aud-ama').innerText = extraEnApp;
         }
 
@@ -476,33 +476,27 @@
             const sel = document.getElementById('tnc-clasificacion');
             sel.innerHTML = '';
             
-            // 1. Agregar los Globales siempre
-            TNC_CATALOGO.Global.forEach(t => sel.innerHTML += `<option value="${t}" class="font-bold text-red-300">${t}</option>`);
+            TNC_CATALOGO.Global.forEach(t => sel.innerHTML += `<option value="${t}" class="font-bold text-red-700">${t}</option>`);
+            const opciones = (TNC_CATALOGO[origen] || {})[estudio] || (TNC_CATALOGO[origen] || {})["Genérico"] || [];
             
-            // 2. Agregar los específicos
-            const catOrigen = TNC_CATALOGO[origen] || {};
-            const opciones = catOrigen[estudio] || catOrigen["Genérico"] || [];
-            
-            if(opciones.length > 0) sel.innerHTML += `<option disabled>--- TNCs Específicos de ${estudio || 'este tipo'} ---</option>`;
+            if(opciones.length > 0) sel.innerHTML += `<option disabled>--- TNCs de ${estudio || 'este tipo'} ---</option>`;
             opciones.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
         }
 
         function abrirModalTncAutomatica(hash, cantExcel, cantApp) {
             const [fecha, suc, med, est] = hash.split('|');
             document.getElementById('tnc-hash').value = hash;
-            
-            document.getElementById('tnc-origen').value = 'Sucursal'; // Viene de Excel = Sucursal
+            document.getElementById('tnc-origen').value = 'Sucursal'; 
             document.getElementById('tnc-estudio').value = est;
             document.getElementById('tnc-fecha').value = fecha;
             document.getElementById('tnc-medico').value = med;
             document.getElementById('tnc-lugar').value = suc;
-            document.getElementById('tnc-campos-manuales').classList.add('hidden'); // Ocultar porque ya están precargados y fijos
+            document.getElementById('tnc-campos-manuales').classList.add('hidden');
             
             actualizarCatalogoTNC();
             const dif = cantExcel - cantApp;
             document.getElementById('tnc-clasificacion').value = dif > 0 ? TNC_CATALOGO.Global[0] : TNC_CATALOGO.Global[1];
-            document.getElementById('tnc-notas').value = `Detectado por sistema (Dif: ${dif>0?'+'+dif:dif})`;
-            
+            document.getElementById('tnc-notas').value = `Detectado en Auditoría Ciega (Diferencia: ${dif>0?'+'+dif:dif})`;
             abrirModal('tnc');
         }
 
@@ -545,7 +539,7 @@
                 mostrarToast("TNC Registrado Oficialmente", "exito");
                 cerrarModal('tnc');
                 cargarTNCs();
-            } catch(e) { mostrarToast("Error guardando TNC", "error"); }
+            } catch(e) { mostrarToast("Error guardando TNC (Verifica Reglas de Firebase)", "error"); }
         }
 
         async function cargarTNCs() {
@@ -554,23 +548,23 @@
                 const qs = await window.getDocs(q);
                 const tbody = document.getElementById('tabla-tickets'); tbody.innerHTML = '';
                 
-                if(qs.empty) { tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-white/30 italic">No hay TNCs registrados.</td></tr>'; return; }
+                if(qs.empty) { tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-slate-400 italic">No hay TNCs registrados.</td></tr>'; return; }
 
                 qs.forEach(doc => {
                     const d = doc.data();
-                    const bColor = d.estado === 'Abierto' ? 'text-red-400 bg-red-500/20 border-red-500/30' : 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30';
+                    const bColor = d.estado === 'Abierto' ? 'text-red-700 bg-red-100 border-red-200' : 'text-emerald-700 bg-emerald-100 border-emerald-200';
                     const bTxt = d.estado === 'Abierto' ? 'ABIERTO' : 'RESUELTO';
-                    const acc = d.estado === 'Abierto' ? `<button onclick="resolverTNC('${doc.id}')" class="bg-emerald-600 hover:bg-emerald-500 p-1.5 rounded shadow text-[9px] font-bold"><i class="fa-solid fa-check"></i> Cerrar</button>` : `<span class="text-emerald-500"><i class="fa-solid fa-check-double"></i></span>`;
+                    const acc = d.estado === 'Abierto' ? `<button onclick="resolverTNC('${doc.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 px-3 rounded-lg shadow-sm text-[10px] font-bold transition"><i class="fa-solid fa-check"></i> Cerrar</button>` : `<span class="text-emerald-500 text-lg"><i class="fa-solid fa-check-double"></i></span>`;
 
                     tbody.innerHTML += `
-                        <tr class="border-b border-white/5 hover:bg-white/5">
-                            <td class="p-3">${d.fechaOperativa}</td>
-                            <td class="p-3 font-bold text-purple-200">${d.medico}<br><span class="text-[9px] font-normal text-white/50 uppercase">${d.origen} | ${d.sucursal}</span></td>
-                            <td class="p-3 text-[10px] text-white/80">${d.estudio}</td>
-                            <td class="p-3 text-[10px] font-bold text-red-300 uppercase">${d.clasificacion}</td>
-                            <td class="p-3 text-[9px] text-white/50 max-w-[150px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
-                            <td class="p-3 text-center"><span class="px-2 py-1 rounded border text-[8px] font-black ${bColor}">${bTxt}</span></td>
-                            <td class="p-3 text-center">${acc}</td>
+                        <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                            <td class="p-4 font-semibold">${d.fechaOperativa}</td>
+                            <td class="p-4 font-bold text-purple-700">${d.medico}<br><span class="text-[10px] font-bold text-slate-400 uppercase">${d.origen} | ${d.sucursal}</span></td>
+                            <td class="p-4 text-xs font-bold text-slate-600">${d.estudio}</td>
+                            <td class="p-4 text-xs font-black text-red-600 uppercase">${d.clasificacion}</td>
+                            <td class="p-4 text-xs text-slate-500 max-w-[200px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
+                            <td class="p-4 text-center"><span class="px-2.5 py-1 rounded border text-[9px] font-black ${bColor}">${bTxt}</span></td>
+                            <td class="p-4 text-center">${acc}</td>
                         </tr>
                     `;
                 });
@@ -594,21 +588,10 @@
                 let data = [];
                 qs.forEach(doc => {
                     const d = doc.data();
-                    data.push({
-                        "ESTADO": d.estado,
-                        "FECHA_INCIDENCIA": d.fechaOperativa,
-                        "ORIGEN": d.origen,
-                        "LUGAR": d.sucursal,
-                        "MEDICO": d.medico,
-                        "ESTUDIO": d.estudio,
-                        "CATEGORIA_TNC": d.clasificacion,
-                        "OBSERVACIONES": d.comentarios || ''
-                    });
+                    data.push({ "ESTADO": d.estado, "FECHA_INCIDENCIA": d.fechaOperativa, "ORIGEN": d.origen, "LUGAR": d.sucursal, "MEDICO": d.medico, "ESTUDIO": d.estudio, "CATEGORIA_TNC": d.clasificacion, "OBSERVACIONES": d.comentarios || '' });
                 });
-                
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "TNC_Reporte");
-                XLSX.writeFile(wb, `LAPI_TNC_Reporte_${new Date().toISOString().split('T')[0]}.xlsx`);
+                const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "TNC_Reporte");
+                XLSX.writeFile(wb, `LAPI_TNC_${new Date().toISOString().split('T')[0]}.xlsx`);
             } catch (e) { mostrarToast("Error al exportar", "error"); }
         }
 
@@ -621,7 +604,7 @@
             
             document.getElementById('mensaje-perfil-vacio').classList.add('hidden');
             document.getElementById('contenido-perfil').classList.remove('hidden');
-            document.getElementById('perf-historial').innerHTML = '<p class="text-center text-white/50 italic py-4">Buscando expediente...</p>';
+            document.getElementById('perf-historial').innerHTML = '<p class="text-center text-slate-400 italic py-6">Buscando expediente en la base de datos...</p>';
             
             try {
                 const q = window.query(window.collection(window.db, "tickets_auditoria"), window.where("medico", "==", nom));
@@ -630,20 +613,19 @@
                 let total = 0; let fallas = {}; let html = "";
                 
                 if(qs.empty) {
-                    html = '<div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl text-center"><i class="fa-solid fa-award text-emerald-400 text-2xl mb-2"></i><p class="text-xs text-emerald-300 font-bold">Expediente limpio. 0 TNCs registrados.</p></div>';
+                    html = '<div class="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl text-center"><i class="fa-solid fa-award text-emerald-500 text-4xl mb-3"></i><p class="text-sm text-emerald-700 font-bold">Expediente impecable. 0 TNCs registrados.</p></div>';
                 } else {
                     let docsAr = []; qs.forEach(d => docsAr.push(d.data()));
-                    docsAr.sort((a,b) => b.fechaOperativa.localeCompare(a.fechaOperativa)); // Ordenar localmente
+                    docsAr.sort((a,b) => b.fechaOperativa.localeCompare(a.fechaOperativa));
                     
                     docsAr.forEach(d => {
-                        total++;
-                        fallas[d.clasificacion] = (fallas[d.clasificacion] || 0) + 1;
-                        const icon = d.estado === 'Abierto' ? '<i class="fa-solid fa-circle text-red-500 text-[8px]"></i>' : '<i class="fa-solid fa-circle text-emerald-500 text-[8px]"></i>';
+                        total++; fallas[d.clasificacion] = (fallas[d.clasificacion] || 0) + 1;
+                        const icon = d.estado === 'Abierto' ? '<i class="fa-solid fa-circle text-red-500 text-[10px]"></i>' : '<i class="fa-solid fa-circle text-emerald-500 text-[10px]"></i>';
                         html += `
-                            <div class="bg-black/40 border border-white/5 p-3 rounded-xl flex flex-col gap-1">
-                                <div class="flex justify-between items-center"><span class="text-[10px] text-white/50 font-bold">${d.fechaOperativa} | ${d.origen}</span> ${icon}</div>
-                                <p class="text-xs font-black text-red-300 uppercase">${d.clasificacion}</p>
-                                <p class="text-[10px] text-purple-200">${d.estudio}</p>
+                            <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col gap-1 shadow-sm">
+                                <div class="flex justify-between items-center"><span class="text-[11px] text-slate-500 font-bold">${d.fechaOperativa} | ${d.origen}</span> ${icon}</div>
+                                <p class="text-xs font-black text-red-600 uppercase">${d.clasificacion}</p>
+                                <p class="text-[11px] font-bold text-slate-700">${d.estudio}</p>
                             </div>
                         `;
                     });
@@ -658,42 +640,26 @@
 
         function dibujarGraficaPerfil(dataObj) {
             if(chartMedico) chartMedico.destroy();
-            const labels = Object.keys(dataObj);
-            const data = Object.values(dataObj);
+            const labels = Object.keys(dataObj); const data = Object.values(dataObj);
             
             if(labels.length === 0) {
-                document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<p class="text-center text-white/30 text-xs mt-10">Sin datos para graficar</p><canvas id="chart-tnc-medico" class="hidden"></canvas>';
+                document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<p class="text-center text-slate-400 text-xs mt-16 font-medium">Sin datos para graficar</p><canvas id="chart-tnc-medico" class="hidden"></canvas>';
                 return;
-            } else {
-                document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<canvas id="chart-tnc-medico"></canvas>';
-            }
+            } else { document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<canvas id="chart-tnc-medico"></canvas>'; }
 
-            const ctx = document.getElementById('chart-tnc-medico').getContext('2d');
-            chartMedico = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: ['#ef4444', '#f59e0b', '#8b5cf6', '#3b82f6', '#10b981'],
-                        borderWidth: 0, hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    cutout: '70%'
-                }
+            chartMedico = new Chart(document.getElementById('chart-tnc-medico').getContext('2d'), {
+                type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#ef4444', '#f59e0b', '#8b5cf6', '#3b82f6', '#10b981'], borderWidth: 0, hoverOffset: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
             });
         }
 
         // ==========================================
-        // CORRECCIÓN INYECCIÓN 
+        // CORRECCIÓN INYECCIÓN (Magia)
         // ==========================================
         function prepararCorreccion(hash, cantCorrecta) {
             const [fecha, suc, med, est] = hash.split('|');
             document.getElementById('c-hash').value = hash; document.getElementById('c-cant').value = cantCorrecta;
-            document.getElementById('c-info').innerHTML = `Se forzarán <b>${cantCorrecta}</b> registros de <b>${est}</b> al perfil de <b>${med}</b> (${fecha}).`;
+            document.getElementById('c-info').innerHTML = `Se inyectarán <b>${cantCorrecta}</b> estudios de <b>${est}</b> al perfil de <b>${med}</b>.`;
             abrirModal('correccion');
         }
 
@@ -714,13 +680,13 @@
                     datos.estudios[estudio] = cantCorrecta; datos.ultimaActualizacion = new Date();
                     await window.setDoc(docRef, datos);
                 } else {
-                    await window.setDoc(docRef, { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: cantCorrecta }, observaciones: "Generado por Sistema de Calidad", ultimaActualizacion: new Date() });
+                    await window.setDoc(docRef, { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: cantCorrecta }, observaciones: "Generado auto por Auditoría", ultimaActualizacion: new Date() });
                 }
-                mostrarToast("App Sincronizada Automáticamente", "exito");
+                mostrarToast("Base de datos sincronizada", "exito");
                 cerrarModal('correccion');
                 await initAuditoria(); if(Object.keys(excelDataGlobal).length > 0) ejecutarCruceDeDatos();
-            } catch (e) { mostrarToast("Fallo al inyectar datos", "error"); }
-            btn.innerHTML = 'Ejecutar'; btn.disabled = false;
+            } catch (e) { mostrarToast("Fallo (Verifica Reglas de Firebase)", "error"); }
+            btn.innerHTML = 'Sincronizar'; btn.disabled = false;
         }
     </script>
 </body>
