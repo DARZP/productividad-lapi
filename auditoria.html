@@ -130,7 +130,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-slate-200 pb-4 gap-4">
                     <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><i class="fa-solid fa-list-check text-purple-600"></i> Control de Trabajos No Conformes (TNC)</h2>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="abrirModalTncManual()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-plus mr-1"></i> Levantar TNC</button>
+                        <button onclick="abrirBuscadorUniversal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-search mr-1"></i> Buscar Servicio y Levantar TNC</button>
                         <button onclick="exportarTNCs()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-file-excel mr-1"></i> Exportar</button>
                     </div>
                 </div>
@@ -143,11 +143,11 @@
 
                 <div class="overflow-x-auto scroll-custom flex-1">
                     <table class="w-full text-left border-collapse">
-                        <thead class="sticky top-0 bg-slate-50 z-10 text-[10px] uppercase text-slate-500 border-b border-slate-200">
-                            <tr><th class="p-4">Servicio</th><th class="p-4">Médico</th><th class="p-4">Categoría TNC</th><th class="p-4">Notas Internas</th><th class="p-4 text-center">Estado</th><th class="p-4 text-center">Acciones</th></tr>
+                        <thead class="sticky top-0 bg-slate-50 z-10 text-[11px] uppercase text-slate-500 border-b border-slate-200 shadow-sm">
+                            <tr><th class="p-4">Fecha Suceso</th><th class="p-4">Médico / Lugar</th><th class="p-4">Estudio</th><th class="p-4">Categoría TNC</th><th class="p-4">Notas Internas</th><th class="p-4 text-center">Estado</th><th class="p-4 text-center">Gestión</th></tr>
                         </thead>
-                        <tbody id="tabla-tickets" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs">
-                            <tr><td colspan="6" class="text-center py-10 text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin"></i> Cargando TNCs...</td></tr>
+                        <tbody id="tabla-tickets" class="divide-y divide-slate-100 font-medium text-slate-700 text-sm">
+                            <tr><td colspan="7" class="text-center py-10 text-slate-400 italic">Cargando incidencias...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -177,8 +177,7 @@
                     </div>
                     <div class="lg:col-span-2 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col max-h-[450px]">
                         <h4 class="text-sm font-black text-slate-800 uppercase mb-4 flex items-center gap-2 border-b border-slate-100 pb-3"><i class="fa-solid fa-timeline text-purple-500"></i> Historial de Incidencias</h4>
-                        <div class="overflow-y-auto scroll-custom flex-1 pr-2 space-y-3" id="perf-historial">
-                            </div>
+                        <div class="overflow-y-auto scroll-custom flex-1 pr-2 space-y-3" id="perf-historial"></div>
                     </div>
                 </div>
                 <div id="mensaje-perfil-vacio" class="text-center py-16 text-slate-400 italic font-medium text-lg">Selecciona un médico en la barra superior para visualizar su expediente.</div>
@@ -188,49 +187,48 @@
     </div>
 
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300">
-            <h3 class="text-xl font-black mb-5 text-purple-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
+        <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300">
+            <h3 class="text-xl font-black mb-4 text-purple-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
             
             <input type="hidden" id="tnc-hash">
+            <input type="hidden" id="tnc-origen">
+            <input type="hidden" id="tnc-fecha">
+            <input type="hidden" id="tnc-medico">
+            <input type="hidden" id="tnc-lugar">
+            <input type="hidden" id="tnc-estudio">
             
-            <div class="grid grid-cols-2 gap-4 mb-4" id="tnc-campos-manuales">
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Origen</label>
-                    <select id="tnc-origen" onchange="actualizarCatalogoTNC(); actualizarUIOrigen();" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold">
+            <div id="tnc-paso-1" class="block">
+                <p class="text-xs text-slate-500 mb-2 font-bold">1. Busca el servicio exacto en la base de datos:</p>
+                <div class="flex gap-2 mb-3">
+                    <select id="tnc-filtro-origen" onchange="ejecutarBuscadorTNC()" class="w-1/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600">
+                        <option value="Todos">Todos</option>
                         <option value="Sucursal">Sucursal</option>
-                        <option value="Foráneo">Servicio Foráneo</option>
+                        <option value="Foráneo">Foráneo</option>
                     </select>
+                    <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Buscar por médico, fecha, lugar o estudio..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
                 </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Fecha</label>
-                    <input type="date" id="tnc-fecha" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold">
+                <div id="tnc-resultados-busqueda" class="max-h-52 overflow-y-auto scroll-custom space-y-1 mb-4 border border-slate-200 rounded-lg p-1 bg-slate-50">
+                    <p class="text-center text-xs text-slate-400 py-4">Teclea para empezar a buscar...</p>
                 </div>
-                <div class="col-span-2">
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Médico Responsable</label>
-                    <input type="text" id="tnc-medico" list="lista-medicos-perfil" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold uppercase" placeholder="Selecciona al médico...">
-                </div>
-                <div class="col-span-2">
-                    <label id="lbl-lugar" class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Sucursal</label>
-                    <input type="text" id="tnc-lugar" list="lista-sucursales-tnc" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold uppercase" placeholder="Selecciona Sucursal...">
-                </div>
-            </div>
-            
-            <div class="mb-4">
-                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Estudio Afectado</label>
-                <select id="tnc-estudio" onchange="actualizarCatalogoTNC()" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold">
-                    </select>
+                <button onclick="cerrarModal('tnc')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar y Cerrar</button>
             </div>
 
-            <label class="block text-[11px] font-bold text-red-600 uppercase mb-2">Clasificación (Potencial TNC)</label>
-            <select id="tnc-clasificacion" class="w-full p-3 bg-red-50 text-red-700 rounded-xl outline-none mb-4 border border-red-200 text-sm font-bold shadow-sm">
-                </select>
+            <div id="tnc-paso-2" class="hidden">
+                <div class="bg-purple-50 border border-purple-200 p-3 rounded-xl mb-4 flex justify-between items-center shadow-sm">
+                    <div id="tnc-servicio-seleccionado" class="text-xs text-purple-900 font-bold leading-tight"></div>
+                    <button onclick="resetBuscadorTNC()" class="text-purple-600 hover:text-purple-800 bg-white p-2 rounded-lg shadow-sm" title="Cambiar Servicio"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
 
-            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Observaciones / Evidencia</label>
-            <textarea id="tnc-notas" rows="2" class="w-full p-3 bg-slate-50 text-slate-700 rounded-xl outline-none mb-6 border border-slate-200 text-sm placeholder-slate-400" placeholder="Añade detalles sobre el error..."></textarea>
+                <label class="block text-[11px] font-bold text-red-600 uppercase mb-2">2. Clasificación (Potencial TNC)</label>
+                <select id="tnc-clasificacion" class="w-full p-3 bg-red-50 text-red-700 rounded-xl outline-none mb-4 border border-red-200 text-sm font-bold shadow-sm"></select>
 
-            <div class="flex gap-3">
-                <button onclick="cerrarModal('tnc')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition-all">Cancelar</button>
-                <button onclick="guardarTNC()" class="w-2/3 bg-purple-600 hover:bg-purple-700 text-white font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2"><i class="fa-solid fa-save"></i> Guardar TNC</button>
+                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">3. Observaciones / Evidencia</label>
+                <textarea id="tnc-notas" rows="2" class="w-full p-3 bg-slate-50 text-slate-700 rounded-xl outline-none mb-6 border border-slate-200 text-sm placeholder-slate-400" placeholder="Añade detalles sobre el error..."></textarea>
+
+                <div class="flex gap-3">
+                    <button onclick="resetBuscadorTNC()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Atrás</button>
+                    <button onclick="guardarTNC()" class="w-2/3 bg-purple-600 hover:bg-purple-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2"><i class="fa-solid fa-save"></i> Guardar TNC</button>
+                </div>
             </div>
         </div>
     </div>
@@ -251,14 +249,12 @@
     </div>
 
     <datalist id="lista-medicos-perfil"></datalist>
-    <datalist id="lista-sucursales-tnc"></datalist>
-    <datalist id="lista-empresas-tnc"></datalist>
 
     <script>
         // ==========================================
         // 0. GLOBALES, DICCIONARIOS Y CONFIG
         // ==========================================
-        let rawDataSucursales = [];
+        let rawDataGlobal = []; // Base de datos viva en memoria para el buscador
         let excelDataGlobal = {};
         let appDataGlobal = {};
         let chartMedico = null;
@@ -268,10 +264,7 @@
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales || {};
         const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
 
-        // Llenar listas dinámicas
         document.getElementById('lista-medicos-perfil').innerHTML = (window.LAPI_CONFIG.medicos || []).map(m => `<option value="${m}">`).join('');
-        document.getElementById('lista-sucursales-tnc').innerHTML = (window.LAPI_CONFIG.sucursales || []).map(s => `<option value="${s}">`).join('');
-        document.getElementById('lista-empresas-tnc').innerHTML = (window.LAPI_CONFIG.empresas || []).map(e => `<option value="${e}">`).join('');
 
         const TNC_CATALOGO = {
             "Sucursal": {
@@ -290,18 +283,9 @@
             "Global": ["ESTUDIO FALTANTE (OMISIÓN APP)", "ESTUDIO SOBRANTE (DUPLICADO APP)", "OTRO / COMENTARIO"]
         };
 
-        function poblarEstudiosModal() {
-            let options = '<option value="">Selecciona Estudio...</option>';
-            const todos = [...new Set([...window.LAPI_CONFIG.estudiosForaneos, ...window.LAPI_CONFIG.estudiosSucursales])];
-            todos.forEach(e => options += `<option value="${e}">${e}</option>`);
-            document.getElementById('tnc-estudio').innerHTML = options;
-        }
-        poblarEstudiosModal();
-
         window.iniciarAppAuditoria = function() {
             initAuditoria();
             cargarTNCs();
-            verificarParametrosURL();
         }
 
         // ==========================================
@@ -353,25 +337,20 @@
         }
 
         // ==========================================
-        // 2. PUERTA TRASERA: PARÁMETROS URL
+        // 2. PUERTA TRASERA: PARÁMETROS URL Y ADMIN
         // ==========================================
         function verificarParametrosURL() {
             const params = new URLSearchParams(window.location.search);
             if(params.has('medico')) {
                 cambiarSeccion('tnc');
-                document.getElementById('tnc-hash').value = "";
-                document.getElementById('tnc-origen').value = params.get('origen') || 'Sucursal';
+                const p_origen = params.get('origen') || 'Sucursal';
+                const p_fecha = params.get('fecha') || '';
+                const p_lugar = params.get('lugar') || '';
+                const p_medico = params.get('medico') || '';
+                const p_estudio = params.get('estudio') || '';
                 
-                // Actualiza visualmente la etiqueta de Lugar dependiendo del origen
-                window.actualizarUIOrigen();
-                
-                document.getElementById('tnc-fecha').value = params.get('fecha') || '';
-                document.getElementById('tnc-lugar').value = params.get('lugar') || '';
-                document.getElementById('tnc-medico').value = params.get('medico') || '';
-                
-                const estudioParam = params.get('estudio') || '';
-                document.getElementById('tnc-estudio').value = estudioParam;
-                actualizarCatalogoTNC();
+                // Ejecutamos la funcion que llena y avanza al Paso 2 automáticamente
+                window.seleccionarRegistroTNC(p_origen, p_fecha, p_lugar, p_medico, p_estudio);
                 
                 abrirModal('tnc');
                 window.history.replaceState({}, document.title, window.location.pathname);
@@ -379,32 +358,44 @@
         }
 
         // ==========================================
-        // 3. SECCIÓN 1: CRUCE DE DATOS
+        // 3. CARGA GLOBAL Y CRUCE DE DATOS
         // ==========================================
         async function initAuditoria() {
             try {
-                rawDataSucursales = [];
-                const qLegacy = window.query(window.collection(window.db, "registros"), window.where("tipo", "==", "sucursal"));
-                const qsLegacy = await window.getDocs(qLegacy);
-                qsLegacy.forEach(doc => {
+                rawDataGlobal = [];
+                
+                // Foráneos y Legacy
+                const q1 = window.query(window.collection(window.db, "registros"));
+                const qs1 = await window.getDocs(q1);
+                qs1.forEach(doc => {
                     const data = doc.data();
-                    rawDataSucursales.push({ fecha: data.fecha, sucursal: normalizarDato(data.sucursal), estudio: normalizarDato(data.estudio), medico: normalizarDato(data.medico) });
+                    if(data.tipo === "sucursal") {
+                        rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: normalizarDato(data.estudio), medico: normalizarDato(data.medico) });
+                    } else if(data.detalles) {
+                        data.detalles.forEach(det => {
+                            rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), estudio: normalizarDato(det.estudio), medico: normalizarDato(det.medico) });
+                        });
+                    }
                 });
 
-                const qNativos = window.query(window.collection(window.db, "registros_diarios_sucursales"));
-                const qsNativos = await window.getDocs(qNativos);
-                qsNativos.forEach(doc => {
+                // Sucursales PWA Nativas
+                const q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"));
+                const qs2 = await window.getDocs(q2);
+                qs2.forEach(doc => {
                     const data = doc.data();
-                    if (data.estudios) {
-                        Object.keys(data.estudios).forEach(estudio => {
-                            for (let k = 0; k < (data.estudios[estudio]||0); k++) {
-                                rawDataSucursales.push({ fecha: data.fecha, sucursal: normalizarDato(data.sucursal), estudio: normalizarDato(estudio), medico: normalizarDato(data.medico) });
+                    if(data.estudios) {
+                        Object.keys(data.estudios).forEach(est => {
+                            for(let k=0; k<(data.estudios[est]||0); k++){
+                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: normalizarDato(est), medico: normalizarDato(data.medico) });
                             }
                         });
                     }
                 });
+                
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
                 document.getElementById('btn-auditoria').disabled = false;
+                
+                verificarParametrosURL(); // Revisar si venimos desde el admin
             } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; }
         }
 
@@ -418,7 +409,6 @@
                 for(let i=0; i<input.files.length; i++){
                     let data = await input.files[i].arrayBuffer();
                     let wb = XLSX.read(data, {type:'array'});
-                    
                     for(let sn of wb.SheetNames){
                         let sheet = wb.Sheets[sn];
                         let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
@@ -455,8 +445,9 @@
                 }
                 
                 appDataGlobal = {};
-                rawDataSucursales.forEach(reg => {
-                    const hash = `${reg.fecha}|${reg.sucursal}|${reg.medico}|${reg.estudio}`;
+                // Solo usamos los de Sucursal para el cruce
+                rawDataGlobal.filter(r => r.tipo === "Sucursal").forEach(reg => {
+                    const hash = `${reg.fecha}|${reg.lugar}|${reg.medico}|${reg.estudio}`;
                     appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
                 });
                 reRenderAuditoria();
@@ -509,86 +500,117 @@
         }
 
         // ==========================================
-        // 4. GESTIÓN DE TNC (CICLO DE VIDA)
+        // 4. MÓDULO BUSCADOR TNC
         // ==========================================
-        window.actualizarUIOrigen = function() {
-            const origen = document.getElementById('tnc-origen').value;
-            const lblLugar = document.getElementById('lbl-lugar');
-            const inputLugar = document.getElementById('tnc-lugar');
-            
-            // Vaciar el campo para forzar la selección nueva
-            inputLugar.value = '';
-
-            if (origen === 'Sucursal') {
-                lblLugar.innerText = 'Sucursal';
-                inputLugar.setAttribute('list', 'lista-sucursales-tnc');
-                inputLugar.placeholder = 'Selecciona Sucursal...';
-            } else {
-                lblLugar.innerText = 'Empresa';
-                inputLugar.setAttribute('list', 'lista-empresas-tnc');
-                inputLugar.placeholder = 'Selecciona Empresa...';
-            }
+        window.abrirBuscadorUniversal = function() {
+            document.getElementById('tnc-hash').value = "";
+            resetBuscadorTNC();
+            abrirModal('tnc');
+            ejecutarBuscadorTNC(); // Auto-llenar las últimas actividades
         }
 
-        window.actualizarCatalogoTNC = function() {
-            const origen = document.getElementById('tnc-origen').value;
-            const estudio = document.getElementById('tnc-estudio').value;
+        window.resetBuscadorTNC = function() {
+            document.getElementById('tnc-paso-1').classList.remove('hidden');
+            document.getElementById('tnc-paso-2').classList.add('hidden');
+            document.getElementById('tnc-filtro-texto').value = '';
+            document.getElementById('tnc-filtro-origen').value = 'Todos';
+            document.getElementById('tnc-notas').value = '';
+            ejecutarBuscadorTNC();
+        }
+
+        window.ejecutarBuscadorTNC = function() {
+            const origen = document.getElementById('tnc-filtro-origen').value;
+            const txt = document.getElementById('tnc-filtro-texto').value.toUpperCase().trim();
+            const contenedor = document.getElementById('tnc-resultados-busqueda');
+
+            let filtrados = rawDataGlobal;
+            if(origen !== "Todos") filtrados = filtrados.filter(r => r.tipo === origen);
+            
+            if(txt) {
+                filtrados = filtrados.filter(r => r.medico.includes(txt) || r.lugar.includes(txt) || r.fecha.includes(txt) || r.estudio.includes(txt));
+            }
+
+            // Ordenar por fecha y agrupar visualmente duplicados (ya que expandimos las cantidades)
+            filtrados.sort((a,b) => b.fecha.localeCompare(a.fecha));
+            
+            let mostrados = new Set();
+            let html = '';
+            
+            filtrados.forEach(r => {
+                const llave = `${r.tipo}|${r.fecha}|${r.lugar}|${r.medico}|${r.estudio}`;
+                if(!mostrados.has(llave)) {
+                    const arg = `'${r.tipo}', '${r.fecha}', '${r.lugar}', '${r.medico}', '${r.estudio}'`;
+                    const color = r.tipo === 'Sucursal' ? 'text-sky-600 bg-sky-50' : 'text-orange-600 bg-orange-50';
+                    
+                    html += `
+                        <button onclick="seleccionarRegistroTNC(${arg})" class="w-full text-left p-3 bg-white hover:bg-purple-50 border border-slate-100 rounded-xl text-xs transition flex justify-between items-center shadow-sm">
+                            <div>
+                                <b class="text-purple-700 text-sm">${r.medico}</b> <span class="text-slate-400 font-bold ml-1">${r.fecha}</span><br>
+                                <span class="text-slate-600 font-bold">${r.estudio}</span> <span class="text-slate-500">en ${r.lugar}</span>
+                            </div>
+                            <span class="${color} px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider">${r.tipo}</span>
+                        </button>
+                    `;
+                    mostrados.add(llave);
+                }
+            });
+
+            // Limitar a los 30 más recientes para que no se trabe
+            contenedor.innerHTML = html.split('</button>').slice(0, 30).join('</button>') || '<p class="text-center text-xs text-slate-400 py-6">No se encontraron servicios que coincidan.</p>';
+        }
+
+        window.seleccionarRegistroTNC = function(origen, fecha, lugar, medico, estudio) {
+            // Llenar campos ocultos
+            document.getElementById('tnc-origen').value = origen;
+            document.getElementById('tnc-fecha').value = fecha;
+            document.getElementById('tnc-lugar').value = lugar;
+            document.getElementById('tnc-medico').value = medico;
+            document.getElementById('tnc-estudio').value = estudio;
+
+            // Mostrar resumen
+            document.getElementById('tnc-servicio-seleccionado').innerHTML = `
+                <span class="text-[10px] text-purple-500 uppercase tracking-widest block mb-1">Servicio Afectado</span>
+                <span class="text-sm font-black text-slate-800">${medico}</span><br>
+                <span class="font-bold text-slate-500">${estudio} <span class="font-normal mx-1">|</span> ${fecha} <span class="font-normal mx-1">|</span> ${lugar} (${origen})</span>
+            `;
+
+            // Llenar Catálogo
             const sel = document.getElementById('tnc-clasificacion');
             sel.innerHTML = '';
-            
             TNC_CATALOGO.Global.forEach(t => sel.innerHTML += `<option value="${t}" class="font-bold text-red-700">${t}</option>`);
             const opciones = (TNC_CATALOGO[origen] || {})[estudio] || (TNC_CATALOGO[origen] || {})["Genérico"] || [];
-            
             if(opciones.length > 0) sel.innerHTML += `<option disabled>--- TNCs de ${estudio || 'este tipo'} ---</option>`;
             opciones.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
+
+            // Transición de Pasos
+            document.getElementById('tnc-paso-1').classList.add('hidden');
+            document.getElementById('tnc-paso-2').classList.remove('hidden');
         }
 
         window.abrirModalTncAutomatica = function(hash, cantExcel, cantApp) {
             const [fecha, suc, med, est] = hash.split('|');
             document.getElementById('tnc-hash').value = hash;
-            document.getElementById('tnc-origen').value = 'Sucursal'; 
-            window.actualizarUIOrigen();
             
-            document.getElementById('tnc-fecha').value = fecha;
-            document.getElementById('tnc-medico').value = med;
-            document.getElementById('tnc-lugar').value = suc;
-            document.getElementById('tnc-estudio').value = est;
+            // Reutiliza la función del Buscador para saltar al Paso 2 directo
+            seleccionarRegistroTNC("Sucursal", fecha, suc, med, est);
             
-            document.getElementById('tnc-campos-manuales').classList.add('hidden');
-            
-            actualizarCatalogoTNC();
             const dif = cantExcel - cantApp;
             document.getElementById('tnc-clasificacion').value = dif > 0 ? TNC_CATALOGO.Global[0] : TNC_CATALOGO.Global[1];
             document.getElementById('tnc-notas').value = `Detectado en Auditoría Ciega (Diferencia: ${dif>0?'+'+dif:dif})`;
             abrirModal('tnc');
         }
 
-        window.abrirModalTncManual = function() {
-            document.getElementById('tnc-hash').value = "";
-            document.getElementById('tnc-campos-manuales').classList.remove('hidden');
-            document.getElementById('tnc-origen').value = 'Sucursal';
-            window.actualizarUIOrigen();
-            
-            document.getElementById('tnc-estudio').value = '';
-            document.getElementById('tnc-fecha').value = '';
-            document.getElementById('tnc-medico').value = '';
-            document.getElementById('tnc-lugar').value = '';
-            document.getElementById('tnc-notas').value = '';
-            actualizarCatalogoTNC();
-            abrirModal('tnc');
-        }
-
         window.guardarTNC = async function() {
             const origen = document.getElementById('tnc-origen').value;
+            const fecha = document.getElementById('tnc-fecha').value;
+            const lugar = document.getElementById('tnc-lugar').value;
+            const medico = document.getElementById('tnc-medico').value;
             const estudio = document.getElementById('tnc-estudio').value;
+            
             const clasif = document.getElementById('tnc-clasificacion').value;
             const notas = document.getElementById('tnc-notas').value;
-            
-            const fecha = document.getElementById('tnc-fecha').value;
-            const medico = document.getElementById('tnc-medico').value.toUpperCase();
-            const lugar = document.getElementById('tnc-lugar').value.toUpperCase();
 
-            if(!fecha || !medico || !estudio || !lugar) return mostrarToast("Faltan datos clave", "error");
+            if(!fecha || !medico || !estudio || !lugar) return mostrarToast("Hubo un error cargando los datos del servicio", "error");
 
             try {
                 await window.addDoc(window.collection(window.db, "tickets_auditoria"), {
@@ -599,7 +621,7 @@
                 mostrarToast("TNC Registrado Oficialmente", "exito");
                 cerrarModal('tnc');
                 cargarTNCs();
-            } catch(e) { mostrarToast("Error guardando TNC (Verifica Reglas de Firebase)", "error"); }
+            } catch(e) { mostrarToast("Error guardando TNC", "error"); }
         }
 
         async function cargarTNCs() {
@@ -630,7 +652,7 @@
             const tbody = document.getElementById('tabla-tickets'); tbody.innerHTML = '';
             
             if(filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">No hay TNCs en estado ${estadoFiltro}.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-slate-400 italic">No hay TNCs en estado ${estadoFiltro}.</td></tr>`;
                 return;
             }
 
@@ -658,11 +680,9 @@
                             <p class="font-bold text-purple-700 uppercase">${d.medico}</p>
                             <p class="text-[9px] font-bold text-slate-500 uppercase">${d.sucursal}</p>
                         </td>
-                        <td class="p-4 text-xs font-bold text-slate-600">
-                            ${d.estudio} <br>
-                            <p class="text-[10px] font-black text-red-500 mt-1">${d.clasificacion}</p>
-                        </td>
-                        <td class="p-4 text-xs text-slate-500 max-w-[200px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
+                        <td class="p-4 text-xs font-bold text-slate-600">${d.estudio}</td>
+                        <td class="p-4 text-[10px] font-black text-red-600 uppercase">${d.clasificacion}</td>
+                        <td class="p-4 text-xs text-slate-500 max-w-[150px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
                         <td class="p-4 text-center"><span class="px-2.5 py-1 rounded border text-[9px] font-black">${badge}</span></td>
                         <td class="p-4 text-center">${acciones}</td>
                     </tr>
@@ -735,7 +755,7 @@
                 document.getElementById('perf-historial').innerHTML = html;
                 dibujarGraficaPerfil(fallas);
                 
-            } catch (e) { mostrarToast("Error buscando perfil", "error"); console.log(e); }
+            } catch (e) { mostrarToast("Error buscando perfil", "error"); }
         }
 
         function dibujarGraficaPerfil(dataObj) {
@@ -754,7 +774,7 @@
         }
 
         // ==========================================
-        // CORRECCIÓN INYECCIÓN (Magia)
+        // CORRECCIÓN INYECCIÓN 
         // ==========================================
         window.prepararCorreccion = function(hash, cantCorrecta) {
             const [fecha, suc, med, est] = hash.split('|');
