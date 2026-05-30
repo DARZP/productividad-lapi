@@ -39,9 +39,8 @@
         window.setDoc = setDoc;
         window.addDoc = addDoc;
         window.updateDoc = updateDoc;
-        window.orderBy = orderBy; // Se exporta antes de iniciar
+        window.orderBy = orderBy; 
 
-        // Iniciar la app después de que Firebase está cargado globalmente
         window.iniciarAppAuditoria();
     </script>
     
@@ -129,7 +128,7 @@
         <div id="sec-tnc" class="hidden animate-fade-in">
             <div class="glass p-6 rounded-3xl shadow-sm flex flex-col h-[78vh] border border-slate-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-slate-200 pb-4 gap-4">
-                    <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><i class="fa-solid fa-list-check text-purple-600"></i> Control de Trabajos No Conformes</h2>
+                    <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><i class="fa-solid fa-list-check text-purple-600"></i> Control de Trabajos No Conformes (TNC)</h2>
                     <div class="flex flex-wrap gap-2">
                         <button onclick="abrirModalTncManual()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-plus mr-1"></i> Levantar TNC</button>
                         <button onclick="exportarTNCs()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-file-excel mr-1"></i> Exportar</button>
@@ -197,7 +196,7 @@
             <div class="grid grid-cols-2 gap-4 mb-4" id="tnc-campos-manuales">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Origen</label>
-                    <select id="tnc-origen" onchange="actualizarCatalogoTNC()" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold">
+                    <select id="tnc-origen" onchange="actualizarCatalogoTNC(); actualizarUIOrigen();" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold">
                         <option value="Sucursal">Sucursal</option>
                         <option value="Foráneo">Servicio Foráneo</option>
                     </select>
@@ -208,11 +207,11 @@
                 </div>
                 <div class="col-span-2">
                     <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Médico Responsable</label>
-                    <input type="text" id="tnc-medico" list="lista-medicos-perfil" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold uppercase" placeholder="Escribe el nombre...">
+                    <input type="text" id="tnc-medico" list="lista-medicos-perfil" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold uppercase" placeholder="Selecciona al médico...">
                 </div>
                 <div class="col-span-2">
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Lugar (Sucursal o Empresa)</label>
-                    <input type="text" id="tnc-lugar" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold uppercase" placeholder="Ej. Lomas Verdes / Aeromexico">
+                    <label id="lbl-lugar" class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Sucursal</label>
+                    <input type="text" id="tnc-lugar" list="lista-sucursales-tnc" class="w-full p-2.5 bg-slate-50 text-slate-700 rounded-lg outline-none text-sm border border-slate-200 font-semibold uppercase" placeholder="Selecciona Sucursal...">
                 </div>
             </div>
             
@@ -252,6 +251,8 @@
     </div>
 
     <datalist id="lista-medicos-perfil"></datalist>
+    <datalist id="lista-sucursales-tnc"></datalist>
+    <datalist id="lista-empresas-tnc"></datalist>
 
     <script>
         // ==========================================
@@ -265,8 +266,12 @@
 
         const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales || {};
-        const listaMedicosFull = window.LAPI_CONFIG.medicos || [];
-        document.getElementById('lista-medicos-perfil').innerHTML = listaMedicosFull.map(m => `<option value="${m}">`).join('');
+        const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
+
+        // Llenar listas dinámicas
+        document.getElementById('lista-medicos-perfil').innerHTML = (window.LAPI_CONFIG.medicos || []).map(m => `<option value="${m}">`).join('');
+        document.getElementById('lista-sucursales-tnc').innerHTML = (window.LAPI_CONFIG.sucursales || []).map(s => `<option value="${s}">`).join('');
+        document.getElementById('lista-empresas-tnc').innerHTML = (window.LAPI_CONFIG.empresas || []).map(e => `<option value="${e}">`).join('');
 
         const TNC_CATALOGO = {
             "Sucursal": {
@@ -285,8 +290,6 @@
             "Global": ["ESTUDIO FALTANTE (OMISIÓN APP)", "ESTUDIO SOBRANTE (DUPLICADO APP)", "OTRO / COMENTARIO"]
         };
 
-        const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
-
         function poblarEstudiosModal() {
             let options = '<option value="">Selecciona Estudio...</option>';
             const todos = [...new Set([...window.LAPI_CONFIG.estudiosForaneos, ...window.LAPI_CONFIG.estudiosSucursales])];
@@ -295,7 +298,6 @@
         }
         poblarEstudiosModal();
 
-        // Inicializador Global invocado desde Module Script
         window.iniciarAppAuditoria = function() {
             initAuditoria();
             cargarTNCs();
@@ -316,7 +318,7 @@
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
         }
 
-        function cambiarSeccion(sec) {
+        window.cambiarSeccion = function(sec) {
             ['cruce', 'tnc', 'perfil'].forEach(s => {
                 document.getElementById(`sec-${s}`).classList.add('hidden');
                 document.getElementById(`nav-${s}`).classList.remove('tab-active', 'text-slate-800');
@@ -327,14 +329,14 @@
             document.getElementById(`nav-${sec}`).classList.add('tab-active', 'text-slate-800');
         }
 
-        function abrirModal(id) {
+        window.abrirModal = function(id) {
             const modal = document.getElementById(`modal-${id}`);
             const card = document.getElementById(`modal-${id}-card`);
             modal.classList.remove('hidden');
             setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
         }
 
-        function cerrarModal(id) {
+        window.cerrarModal = function(id) {
             const modal = document.getElementById(`modal-${id}`);
             const card = document.getElementById(`modal-${id}-card`);
             modal.classList.add('opacity-0'); card.classList.add('scale-95');
@@ -359,17 +361,19 @@
                 cambiarSeccion('tnc');
                 document.getElementById('tnc-hash').value = "";
                 document.getElementById('tnc-origen').value = params.get('origen') || 'Sucursal';
+                
+                // Actualiza visualmente la etiqueta de Lugar dependiendo del origen
+                window.actualizarUIOrigen();
+                
                 document.getElementById('tnc-fecha').value = params.get('fecha') || '';
                 document.getElementById('tnc-lugar').value = params.get('lugar') || '';
                 document.getElementById('tnc-medico').value = params.get('medico') || '';
                 
                 const estudioParam = params.get('estudio') || '';
-                // Setear estudio y obligar al catalogo a actualizarse
                 document.getElementById('tnc-estudio').value = estudioParam;
                 actualizarCatalogoTNC();
                 
                 abrirModal('tnc');
-                // Limpiar URL para que no vuelva a abrir al refrescar
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
@@ -404,7 +408,7 @@
             } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; }
         }
 
-        async function ejecutarCruceDeDatos() {
+        window.ejecutarCruceDeDatos = async function() {
             const input = document.getElementById('archivoAuditoria');
             if(input.files.length === 0) return mostrarToast("Sube un archivo Excel.", "error");
             document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cruzando...';
@@ -460,7 +464,7 @@
             document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-play mr-1"></i> Iniciar Cruce';
         }
 
-        function aplicarFiltroRapido(tipo) {
+        window.aplicarFiltroRapido = function(tipo) {
             const hoy = new Date(); let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
             if (tipo === 'hoy') iStr = fStr; 
             else if (tipo === 'ayer') { const ayer = new Date(); ayer.setDate(ayer.getDate() - 1); iStr = `${ayer.getFullYear()}-${String(ayer.getMonth() + 1).padStart(2, '0')}-${String(ayer.getDate()).padStart(2, '0')}`; fStr = iStr; }
@@ -470,7 +474,7 @@
             reRenderAuditoria();
         }
 
-        function reRenderAuditoria() {
+        window.reRenderAuditoria = function() {
             const tbody = document.getElementById('tabla-auditoria'); tbody.innerHTML = '';
             const fIni = document.getElementById('a-inicio').value; const fFin = document.getElementById('a-fin').value;
             let match=0, faltaEnApp=0, extraEnApp=0; let html = "";
@@ -507,7 +511,26 @@
         // ==========================================
         // 4. GESTIÓN DE TNC (CICLO DE VIDA)
         // ==========================================
-        function actualizarCatalogoTNC() {
+        window.actualizarUIOrigen = function() {
+            const origen = document.getElementById('tnc-origen').value;
+            const lblLugar = document.getElementById('lbl-lugar');
+            const inputLugar = document.getElementById('tnc-lugar');
+            
+            // Vaciar el campo para forzar la selección nueva
+            inputLugar.value = '';
+
+            if (origen === 'Sucursal') {
+                lblLugar.innerText = 'Sucursal';
+                inputLugar.setAttribute('list', 'lista-sucursales-tnc');
+                inputLugar.placeholder = 'Selecciona Sucursal...';
+            } else {
+                lblLugar.innerText = 'Empresa';
+                inputLugar.setAttribute('list', 'lista-empresas-tnc');
+                inputLugar.placeholder = 'Selecciona Empresa...';
+            }
+        }
+
+        window.actualizarCatalogoTNC = function() {
             const origen = document.getElementById('tnc-origen').value;
             const estudio = document.getElementById('tnc-estudio').value;
             const sel = document.getElementById('tnc-clasificacion');
@@ -520,14 +543,18 @@
             opciones.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
         }
 
-        function abrirModalTncAutomatica(hash, cantExcel, cantApp) {
+        window.abrirModalTncAutomatica = function(hash, cantExcel, cantApp) {
             const [fecha, suc, med, est] = hash.split('|');
             document.getElementById('tnc-hash').value = hash;
             document.getElementById('tnc-origen').value = 'Sucursal'; 
+            window.actualizarUIOrigen();
+            
             document.getElementById('tnc-fecha').value = fecha;
             document.getElementById('tnc-medico').value = med;
             document.getElementById('tnc-lugar').value = suc;
             document.getElementById('tnc-estudio').value = est;
+            
+            document.getElementById('tnc-campos-manuales').classList.add('hidden');
             
             actualizarCatalogoTNC();
             const dif = cantExcel - cantApp;
@@ -536,9 +563,12 @@
             abrirModal('tnc');
         }
 
-        function abrirModalTncManual() {
+        window.abrirModalTncManual = function() {
             document.getElementById('tnc-hash').value = "";
-            document.getElementById('tnc-origen').value = 'Foráneo';
+            document.getElementById('tnc-campos-manuales').classList.remove('hidden');
+            document.getElementById('tnc-origen').value = 'Sucursal';
+            window.actualizarUIOrigen();
+            
             document.getElementById('tnc-estudio').value = '';
             document.getElementById('tnc-fecha').value = '';
             document.getElementById('tnc-medico').value = '';
@@ -548,7 +578,7 @@
             abrirModal('tnc');
         }
 
-        async function guardarTNC() {
+        window.guardarTNC = async function() {
             const origen = document.getElementById('tnc-origen').value;
             const estudio = document.getElementById('tnc-estudio').value;
             const clasif = document.getElementById('tnc-clasificacion').value;
@@ -569,7 +599,7 @@
                 mostrarToast("TNC Registrado Oficialmente", "exito");
                 cerrarModal('tnc');
                 cargarTNCs();
-            } catch(e) { mostrarToast("Error guardando TNC", "error"); }
+            } catch(e) { mostrarToast("Error guardando TNC (Verifica Reglas de Firebase)", "error"); }
         }
 
         async function cargarTNCs() {
@@ -583,7 +613,7 @@
                     ticketsGlobal.push(d);
                 });
                 
-                filtrarTickets('Abierto');
+                window.filtrarTickets('Abierto');
             } catch (e) { console.error("Error TNCs:", e); }
         }
 
@@ -612,7 +642,7 @@
                     acciones = `<button onclick="cambiarEstadoTNC('${d.id}', 'Resuelto')" class="bg-amber-500 hover:bg-amber-400 text-white py-1.5 px-3 rounded-lg shadow text-[10px] font-bold transition">Marcar Resuelto</button>`;
                 } else if(d.estado === 'Resuelto') {
                     badge = '<span class="px-2.5 py-1 rounded bg-amber-100 text-amber-700 border border-amber-200">Por Validar</span>';
-                    acciones = `<button onclick="cambiarEstadoTNC('${d.id}', 'Cerrado')" class="bg-emerald-600 hover:bg-emerald-500 text-white py-1.5 px-3 rounded-lg shadow text-[10px] font-bold transition">Validar y Cerrar</button>`;
+                    acciones = `<button onclick="cambiarEstadoTNC('${d.id}', 'Cerrado')" class="bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 px-3 rounded-lg shadow text-[10px] font-bold transition">Validar y Cerrar</button>`;
                 } else {
                     badge = '<span class="px-2.5 py-1 rounded bg-emerald-50 text-emerald-600 border border-emerald-200">Cerrado</span>';
                     acciones = `<span class="text-emerald-500 text-lg"><i class="fa-solid fa-check-double"></i></span>`;
@@ -633,7 +663,7 @@
                             <p class="text-[10px] font-black text-red-500 mt-1">${d.clasificacion}</p>
                         </td>
                         <td class="p-4 text-xs text-slate-500 max-w-[200px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
-                        <td class="p-4 text-center font-black">${badge}</td>
+                        <td class="p-4 text-center"><span class="px-2.5 py-1 rounded border text-[9px] font-black">${badge}</span></td>
                         <td class="p-4 text-center">${acciones}</td>
                     </tr>
                 `;
@@ -724,16 +754,16 @@
         }
 
         // ==========================================
-        // CORRECCIÓN INYECCIÓN 
+        // CORRECCIÓN INYECCIÓN (Magia)
         // ==========================================
-        function prepararCorreccion(hash, cantCorrecta) {
+        window.prepararCorreccion = function(hash, cantCorrecta) {
             const [fecha, suc, med, est] = hash.split('|');
             document.getElementById('c-hash').value = hash; document.getElementById('c-cant').value = cantCorrecta;
             document.getElementById('c-info').innerHTML = `Se inyectarán <b>${cantCorrecta}</b> estudios de <b>${est}</b> al perfil de <b>${med}</b>.`;
             abrirModal('correccion');
         }
 
-        async function ejecutarCorreccion() {
+        window.ejecutarCorreccion = async function() {
             const btn = document.getElementById('btn-ejecutar-corr');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
 
