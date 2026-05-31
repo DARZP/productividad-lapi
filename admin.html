@@ -1028,15 +1028,25 @@
         };
 
         // =========================================================================
-        // SERVICE WORKER (PWA)
+        // SERVICE WORKER (PWA) Y CONTROL DE VERSIONES SILENCIOSO
         // =========================================================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('App Instalable Lista!', reg.scope))
-                    .catch(err => console.log('Error instalando App: ', err));
+                    .then(reg => console.log('PWA: Actualización silenciosa lista'))
+                    .catch(err => console.log('Error PWA: ', err));
             });
         }
+
+        // =========================================================================
+        // INYECCIÓN VISUAL DE LA VERSIÓN (FLOTANTE)
+        // =========================================================================
+        document.addEventListener("DOMContentLoaded", () => {
+            const versionDiv = document.createElement('div');
+            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
+            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
+            document.body.appendChild(versionDiv);
+        });
     </script>
 
     <div id="modal-tnc-admin" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
