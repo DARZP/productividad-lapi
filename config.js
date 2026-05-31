@@ -388,29 +388,4 @@ window.LAPI_CONFIG = {
         "NORDICO": "Nórdico", 
         "OTRO": "Otro" 
     }
-
-    // ==========================================
-    // 7. DICCIONARIO DE INICIALES (AUDITORÍA)
-    // ==========================================
-    diccionarioIniciales: {
-        "GM": "Medina Molina Guadalupe",
-        "MASR": "Salinas Rojas Miguel Angel",
-        "DA": "Diego Arias",
-        "AAUJ": "Alanis Aparicio Ulises Jasiel",
-        "UA": "Alanis Aparicio Ulises Jasiel",  
-        "MGZH": "Maria Guadalupe Zapata Hernandez",
-        "LLGM": "Lopez Lopez Guadalupe Mireya",
-        "EP": "Perez Bautista Esther",
-        "MZ": "Zarate Flores Myriam Alejandra",
-        "JM": "Muñoz Perez Jazmin Nayeli",
-            "Dominguez Mojica Jannet Alejandra",
-        "MC": "Contreras Herrera Maribel del Carmen",
-        "CBG": "Bustos Gonzalez Claudia Montserrat",
-            ""Cervantes Erendira Montserrat",
-        "AV": "Velasco Duran Araceli",
-        "JA": "Angeles Velazquez Jennifer Tabata",
-            "Leilany Montserrat Sanchez",
-            
-        
-    }
 };
