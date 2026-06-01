@@ -1,24 +1,181 @@
-// ==========================================
-    // 7. DICCIONARIO DE INICIALES (AUDITORÍA)
-    // ==========================================
-    //diccionarioIniciales: {
-      //"GM": "Medina Molina Guadalupe",
-      //"MASR": "Salinas Rojas Miguel Angel",
-      //"DA": "Diego Arias",
-        #"AAUJ": "Alanis Aparicio Ulises Jasiel",
-        #"UA": "Alanis Aparicio Ulises Jasiel",  
-        #"MGZH": "Maria Guadalupe Zapata Hernandez",
-        #"LLGM": "Lopez Lopez Guadalupe Mireya",
-        #"EP": "Perez Bautista Esther",
-        #"MZ": "Zarate Flores Myriam Alejandra",
-        #"JM": "Muñoz Perez Jazmin Nayeli",
-        #    "Dominguez Mojica Jannet Alejandra",
-        #"MC": "Contreras Herrera Maribel del Carmen",
-        "CBG": "Bustos Gonzalez Claudia Montserrat",
+ //"DA": "Diego Arias",
             ""Cervantes Erendira Montserrat",
-        "AV": "Velasco Duran Araceli",
-        "JA": "Angeles Velazquez Jennifer Tabata",
             "Leilany Montserrat Sanchez",
-            
+
+
+        "AAUJ": "Alanis Aparicio Ulises Jasiel",
+        "Alberto Gomez",
+        "Angeles Valenzuela",
         
-    }
+        "Angelica Itzel",
+        "Angello",
+        
+        
+
+        
+        
+        
+
+        
+
+        
+
+            
+
+           
+            
+
+        
+
+        "David Emmanuel",
+        
+
+        "Delgado Elizalde Diana Edit",
+        "Diego Arias",
+        
+        
+
+        "Elzy Chacon",
+        "Estefany Becherel",
+        "Fernanda",
+        
+
+        "Garcia Malanco Jose Antonio",
+        
+        "Giselle Vizuet",
+        
+        "Ingrid Bernal",
+        "Isabel Palma",
+        "Jannet Alejandra",
+        "Jazmin Morales",
+        "Jose Alejandro",
+        "Jose Juan",
+        "Juan Manuel",
+        "LLGM": "Lopez Lopez Guadalupe Mireya",
+        
+        "Macedo Licona Sandra Lilian",
+        "MGZH": "Maria Guadalupe Zapata Hernandez",
+        "Mariana Gaviño",
+        "Mauricio Ruiz",
+        
+        "Olvera Aguilar Diana Karen",
+        "Patricia Kassandra",
+        
+        "Reyes Perez Victor",
+        "Rodriguez Peña Dolores Berenice",
+        "Ruz Chumba Nazaret Jaqueline",
+        "Saavedra Olvera Miriam Elizabeth",
+        "MASR": "Salinas Rojas Miguel Angel",
+        "Sanchez Gonzalez Alma del Rosario",
+        "Sanchez Sanchez Claudia Ivonne",
+       
+        "Susana Cayetano",
+        "Vazquez Euan Daniela de los Angeles",
+        "Yasmin Cruz",
+        "Yirelka Yeraldine",
+      
+
+        BALBUENA 
+        "JM": "Muñoz Perez Jazmin Nayeli",
+        "MZ": "Zarate Flores Myriam Alejandra",
+        "EP": "Perez Bautista Esther",
+
+        CUAUTITLÁN
+        "JA": "Angeles Velazquez Jennifer Tabata",
+        "CBG": "Bustos Gonzalez Claudia Montserrat",   
+        MCG "Cervantes Erendira Montserrat",
+        "AV": "Velasco Duran Araceli",
+        "MSH": "Leilany Montserrat Sanchez",
+
+        CONDESA
+        "UA": "Alanis Aparicio Ulises Jasiel", 
+        "MC": "Contreras Herrera Maribel del Carmen",
+
+        CALZADA DEL HUESO
+        "AF": "Flores Miranda Adriana",
+        "PI": "Islas Veivar Patricia Guadalupe",
+        "CR": "Ramirez Ramirez Carlos Antonio", 
+        "BC": "Camacho Ortiz Barbara Alejandra",
+
+        ENCUENTRO FORTUNA
+        "AD": "Dominguez Mojica Jannet Alejandra",
+        "JC": "Cuevas Garcia Javier Alejandro",
+        "AF": "Fuerte Morales Aleydis",  
+
+        GABRIEL MANCERA 
+        "VM": "Monjaraz Sanchez Viviana",
+        "LO": "Ordoñez Mejia Luis Enrique",
+
+        INTERLOMAS
+        "EE": "Escobar Rios Erika Yeraldi",
+        "CT": "Tahuilan Enciso Cinthia",
+
+        LINDAVISTA
+        "SD": "Delgadillo Fredy Sebastian",
+        "AG": "Gonzalez Lucas Alondra Estefania",
+        "DL": "Lino Reynoso Deany Alondra",
+
+        LOMAS VERDES
+        "MIR": MARTHA IZAGUIRRE ROJAS
+        "BD": DULCE MARIA BUENROSTRO PEREZ
+        "LC": "Cruz Zavala Lucero",
+        "JT": "Toriz Segura Jessica Noemi",
+
+        MARTIN CARRERA
+        "Luevano Sanchez Sara Maria",
+
+        METEPEC
+        "RML": "Montoya Linares Rebeca",
+        "SSR": "Rueda Pedraza Sabine Shecid",
+        "MRC": Cabrera Velazquez Miguel Ramon",
+
+        MIXCOAC
+        "PP": PAULA PICHARDO
+        "BF": BRENDA FLORES
+
+        PLATEROS
+        "PA": "Paulina Alba",
+        "AM": "Garcia Morado Ana Lourdes",
+
+        PLAZA CENTRAL
+        "IA": "Arizcorreta Colchado Ivonne Guadalupe",
+        "BC": "Chavez Muñoz Brizeth Alondra",
+
+        POLANCO
+        "KF": "Fernandez Contreras Karla Alitzel",
+        "AS": "Soriano Arvea Ariagna Anahi",
+        "GH": "Hernandez Gonzalez Giovanni Mariano",
+        "PP": "Pineda Lopez Patricia",
+
+        SANTA FE
+        "GM": "Medina Molina Guadalupe",
+
+        SANTA MARTHA
+        "JD": "Duque Hernandez Jaqueline",
+        "AD" "Dominguez Mojica Jannet Alejandra",
+        "AC" "Cabrera Hernandez Ana Beatriz",
+        "LC": "Lucero Cruz",
+
+        SATELITE
+        
+
+        "Calzada del Hueso", 
+        "Condesa", 
+        "Cuautitlán", 
+        "Encuentro Fortuna", 
+        "Gabriel Mancera", 
+        "Gran Sur", 
+        "Interlomas", 
+        "Lindavista", 
+        "Lomas Verdes", 
+        "Martín Carrera", 
+        "Mérida, Centro", 
+        "Metepec", 
+        "Mixcoac", 
+        "Plateros", 
+        "Plaza Central", 
+        "Polanco", 
+        "Revolución", 
+        "Santa Fe", 
+        "Santa Martha", 
+        "Satélite"
