@@ -6,44 +6,16 @@
         "AAUJ": "Alanis Aparicio Ulises Jasiel",
         "Alberto Gomez",
         "Angeles Valenzuela",
-        
         "Angelica Itzel",
         "Angello",
-        
-        
-
-        
-        
-        
-
-        
-
-        
-
-            
-
-           
-            
-
-        
-
         "David Emmanuel",
-        
-
         "Delgado Elizalde Diana Edit",
         "Diego Arias",
-        
-        
-
         "Elzy Chacon",
         "Estefany Becherel",
         "Fernanda",
-        
-
         "Garcia Malanco Jose Antonio",
-        
         "Giselle Vizuet",
-        
         "Ingrid Bernal",
         "Isabel Palma",
         "Jannet Alejandra",
@@ -51,24 +23,13 @@
         "Jose Alejandro",
         "Jose Juan",
         "Juan Manuel",
-        "LLGM": "Lopez Lopez Guadalupe Mireya",
-        
         "Macedo Licona Sandra Lilian",
-        "MGZH": "Maria Guadalupe Zapata Hernandez",
         "Mariana Gaviño",
         "Mauricio Ruiz",
-        
-        "Olvera Aguilar Diana Karen",
         "Patricia Kassandra",
-        
-        "Reyes Perez Victor",
         "Rodriguez Peña Dolores Berenice",
         "Ruz Chumba Nazaret Jaqueline",
-        "Saavedra Olvera Miriam Elizabeth",
-        "MASR": "Salinas Rojas Miguel Angel",
         "Sanchez Gonzalez Alma del Rosario",
-        "Sanchez Sanchez Claudia Ivonne",
-       
         "Susana Cayetano",
         "Vazquez Euan Daniela de los Angeles",
         "Yasmin Cruz",
@@ -157,25 +118,21 @@
         "LC": "Lucero Cruz",
 
         SATELITE
-        
+        "MASR": "Salinas Rojas Miguel Angel",
+        "MGZH": "Maria Guadalupe Zapata Hernandez",        
+        "LLGM": "Lopez Lopez Guadalupe Mireya",
 
-        "Calzada del Hueso", 
-        "Condesa", 
-        "Cuautitlán", 
-        "Encuentro Fortuna", 
-        "Gabriel Mancera", 
+        REVOLUCIÓN
+        "MS": "Saavedra Olvera Miriam Elizabeth",
+        "VR": "Reyes Perez Victor",
+        "CS": "Sanchez Sanchez Claudia Ivonne",
+        "DO": "Olvera Aguilar Diana Karen",
+   
+
+
+
         "Gran Sur", 
-        "Interlomas", 
-        "Lindavista", 
-        "Lomas Verdes", 
-        "Martín Carrera", 
+ 
         "Mérida, Centro", 
-        "Metepec", 
-        "Mixcoac", 
-        "Plateros", 
-        "Plaza Central", 
-        "Polanco", 
-        "Revolución", 
-        "Santa Fe", 
-        "Santa Martha", 
-        "Satélite"
+  
+   
