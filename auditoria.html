@@ -120,10 +120,17 @@
                     </div>
                     
                     <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200">
-                        <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real (Filtrado por Sucursal)</h3>
-                            <span id="status-db" class="text-[10px] text-slate-500 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Conectando BD...</span>
+                        
+                        <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
+                            
+                            <div class="flex items-center gap-2">
+                                <button id="btn-bulk-inyectar" onclick="inyectarFaltantesMasivo()" style="display:none;" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Inyectar Faltantes</button>
+                                <button id="btn-bulk-tnc" onclick="generarTncMasivo()" style="display:none;" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Generar TNCs</button>
+                                <span id="status-db" class="text-[10px] text-slate-500 font-bold ml-2"><i class="fa-solid fa-spinner fa-spin"></i> Conectando...</span>
+                            </div>
                         </div>
+
                         <div class="overflow-x-auto scroll-custom max-h-[500px]">
                             <table class="w-full text-left border-collapse">
                                 <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm text-[10px] uppercase text-slate-500">
@@ -274,6 +281,10 @@
         let chartMedico = null;
         let ticketsGlobal = [];
 
+        // ALMACÉN PARA BOTONES MASIVOS
+        window.discrepanciasInyectar = [];
+        window.discrepanciasTNC = [];
+
         const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales || {};
         const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
@@ -300,7 +311,7 @@
         window.iniciarAppAuditoria = function() {
             initAuditoria();
             cargarTNCs();
-        }
+        };
 
         // ==========================================================
         // HERRAMIENTAS DE INTERFAZ (MODALES, TOASTS Y TABS)
@@ -394,7 +405,7 @@
                 mostrarToast(`Auditoría lista: ${archProcesados} Excels integrados automáticamente.`, "exito");
                 btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Extracción Completada';
             } catch (err) { console.error("Error M2M:", err); mostrarToast("Fallo en sincronización OneDrive", "error"); }
-        }
+        };
 
         // ==========================================================
         // 2. MOTOR ESTRICTO CONTEXTUAL (SUCURSAL + INICIAL)
@@ -404,7 +415,6 @@
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
-        // 🔥 AGRUPADOR DE ESTUDIOS (UNIFICA HISTORIA CLÍNICA)
         function agruparEstudio(est, tipoOrigen) {
             if(!est) return "Desconocido";
             let n = normalizarDato(est);
@@ -415,24 +425,31 @@
             return n;
         }
 
-        // 🔥 TRADUCTOR ESTRICTO CONTEXTUAL
         function traducirMedico(rawMed, rawSuc) {
             if (!rawMed) return "Desconocido";
             
+            // 1. Limpieza extrema: quitar puntos, espacios extras y cualquier etiqueta de error vieja guardada en BD
             let med = String(rawMed).toUpperCase().trim().replace(/\./g, '');
+            med = med.replace(/\[INICIAL NO REGISTRADA:\s*/g, '').replace(/\]/g, '').trim();
+            
             let suc = String(rawSuc).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             
-            // 1. Busca estrictamente en el diccionario tomando en cuenta la SUCURSAL
+            // 2. MAGIA: Si el médico es simplemente "X" (o sus variantes comunes de check), lo pasamos intacto
+            if (med === 'X' || med === '✔' || med === 'OK') {
+                return "X";
+            }
+
+            // 3. Busca estrictamente en el diccionario tomando en cuenta la SUCURSAL
             if (diccIniciales[suc] && diccIniciales[suc][med]) {
                 return normalizarDato(diccIniciales[suc][med]);
             }
             
-            // 2. Si escriben el nombre completo en el Excel y cuadra con la base...
+            // 4. Si escriben el nombre completo en el Excel/App y cuadra con la base...
             const medicos = window.LAPI_CONFIG.medicos || [];
             const exactMatch = medicos.find(m => m.toUpperCase().trim() === med);
             if(exactMatch) return exactMatch;
 
-            // 3. Si no es un match exacto ni está en el diccionario, lo resaltamos para corrección
+            // 5. Si no es un match exacto ni está en el diccionario
             return `[INICIAL NO REGISTRADA: ${med}]`; 
         }
 
@@ -464,7 +481,6 @@
                         let f = filas[r]; if(!f || !f[mapa["NOMBRE"]] || f.join(" ").toUpperCase().includes("PENDIENTES")) break;
                         Object.keys(estudiosMapeo).forEach(key => {
                             if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
-                                // AQUI SE ENVÍA TANTO EL MÉDICO COMO LA SUCURSAL AL TRADUCTOR
                                 const hash = `${fEx}|${sEx}|${normalizarDato(traducirMedico(f[mapa[key]], sEx))}|${agruparEstudio(estudiosMapeo[key], "Sucursal")}`;
                                 excelDataGlobal[hash] = (excelDataGlobal[hash] || 0) + 1;
                             }
@@ -497,7 +513,7 @@
                 reRenderAuditoria();
             } catch(e) { mostrarToast("Error leyendo Excel", "error"); console.error(e); }
             document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-upload mr-1"></i> Procesar Archivos Locales';
-        }
+        };
 
         function verificarParametrosURL() {
             const params = new URLSearchParams(window.location.search);
@@ -522,7 +538,7 @@
                             fecha: data.fecha, 
                             lugar: normalizarDato(data.sucursal), 
                             estudio: agruparEstudio(data.estudio, "Sucursal"), 
-                            // MAGIA: Filtramos también la App para igualarla con el Excel
+                            // Filtramos Firebase con el traductor para que empate con Excel
                             medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) 
                         });
                     } else if(data.detalles) {
@@ -558,9 +574,7 @@
                 });
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
                 verificarParametrosURL(); 
-            } catch (error) { 
-                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; 
-            }
+            } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; }
         }
 
         window.aplicarFiltroRapido = function(tipo) {
@@ -571,13 +585,17 @@
             else if (tipo === 'todo') { iStr = ''; fStr = ''; }
             document.getElementById('a-inicio').value = iStr; document.getElementById('a-fin').value = fStr;
             reRenderAuditoria();
-        }
+        };
 
         window.reRenderAuditoria = function() {
             const tbody = document.getElementById('tabla-auditoria'); tbody.innerHTML = '';
             const fIni = document.getElementById('a-inicio').value; const fFin = document.getElementById('a-fin').value;
             let match=0, faltaEnApp=0, extraEnApp=0; let html = "";
             
+            // Vaciamos los contenedores de acciones masivas
+            window.discrepanciasInyectar = [];
+            window.discrepanciasTNC = [];
+
             const hashesExcel = new Set(Object.keys(excelDataGlobal));
             const combinacionesExcel = new Set([...hashesExcel].map(k => { const p = k.split('|'); return `${p[0]}|${p[1]}`; }));
             const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
@@ -594,7 +612,15 @@
                     match++; cHTML = 'bg-emerald-50 hover:bg-emerald-100';
                     aHTML = `<span class="text-emerald-500 font-bold"><i class="fa-solid fa-check"></i> OK</span>`;
                 } else {
-                    if (cE > cA) { faltaEnApp++; cHTML = 'bg-red-50 hover:bg-red-100'; } else { extraEnApp++; cHTML = 'bg-amber-50 hover:bg-amber-100'; }
+                    if (cE > cA) { 
+                        faltaEnApp++; cHTML = 'bg-red-50 hover:bg-red-100'; 
+                        window.discrepanciasInyectar.push({hash: hash, cant: cE});
+                    } else { 
+                        extraEnApp++; cHTML = 'bg-amber-50 hover:bg-amber-100'; 
+                    }
+                    
+                    window.discrepanciasTNC.push({hash: hash, cE: cE, cA: cA});
+
                     aHTML = `
                         <button onclick="prepararCorreccion('${hash}', ${cE})" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Inyectar a Firebase"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
                         <button onclick="abrirModalTncAutomatica('${hash}', ${cE}, ${cA})" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button>
@@ -608,7 +634,11 @@
 
             tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">Sube Excel de la sucursal que deseas auditar.</td></tr>';
             document.getElementById('kpi-aud-match').innerText = match; document.getElementById('kpi-aud-rojo').innerText = faltaEnApp; document.getElementById('kpi-aud-ama').innerText = extraEnApp;
-        }
+
+            // Mostrar u ocultar botones masivos dependiendo de si hay discrepancias
+            document.getElementById('btn-bulk-inyectar').style.display = window.discrepanciasInyectar.length > 0 ? 'inline-block' : 'none';
+            document.getElementById('btn-bulk-tnc').style.display = window.discrepanciasTNC.length > 0 ? 'inline-block' : 'none';
+        };
 
         // ==========================================
         // 4. MÓDULO BUSCADOR TNC 
@@ -618,7 +648,7 @@
             resetBuscadorTNC();
             abrirModal('tnc');
             ejecutarBuscadorTNC();
-        }
+        };
 
         window.resetBuscadorTNC = function() {
             document.getElementById('tnc-paso-1').classList.remove('hidden');
@@ -627,7 +657,7 @@
             document.getElementById('tnc-filtro-origen').value = 'Todos';
             document.getElementById('tnc-notas').value = '';
             ejecutarBuscadorTNC();
-        }
+        };
 
         window.ejecutarBuscadorTNC = function() {
             const origen = document.getElementById('tnc-filtro-origen').value;
@@ -660,7 +690,7 @@
                 }
             });
             contenedor.innerHTML = html.split('</button>').slice(0, 30).join('</button>') || '<p class="text-center text-xs text-slate-400 py-6">No se encontraron servicios que coincidan.</p>';
-        }
+        };
 
         window.seleccionarRegistroTNC = function(origen, fecha, lugar, medico, estudio) {
             document.getElementById('tnc-origen').value = origen;
@@ -683,7 +713,7 @@
 
             document.getElementById('tnc-paso-1').classList.add('hidden');
             document.getElementById('tnc-paso-2').classList.remove('hidden');
-        }
+        };
 
         window.abrirModalTncAutomatica = function(hash, cantExcel, cantApp) {
             const [fecha, suc, med, est] = hash.split('|');
@@ -693,7 +723,7 @@
             document.getElementById('tnc-clasificacion').value = dif > 0 ? TNC_CATALOGO.Global[0] : TNC_CATALOGO.Global[1];
             document.getElementById('tnc-notas').value = `Detectado en Auditoría Ciega (Diferencia: ${dif>0?'+'+dif:dif})`;
             abrirModal('tnc');
-        }
+        };
 
         window.guardarTNC = async function() {
             const origen = document.getElementById('tnc-origen').value;
@@ -714,7 +744,7 @@
                 mostrarToast("TNC Registrado Oficialmente", "exito");
                 cerrarModal('tnc'); cargarTNCs();
             } catch(e) { mostrarToast("Error guardando TNC", "error"); }
-        }
+        };
 
         async function cargarTNCs() {
             try {
@@ -767,7 +797,7 @@
                     </tr>
                 `;
             });
-        }
+        };
 
         window.cambiarEstadoTNC = async function(id, nuevoEstado) {
             let msg = nuevoEstado === 'Resuelto' ? "¿El médico ya respondió/corrigió este TNC?" : "¿Has verificado la corrección para archivar este TNC?";
@@ -779,14 +809,14 @@
                 await window.updateDoc(window.doc(window.db, "tickets_auditoria", id), actualizacion);
                 mostrarToast(`TNC movido a ${nuevoEstado}`, "exito"); cargarTNCs(); 
             } catch (e) { mostrarToast("Fallo al actualizar", "error"); }
-        }
+        };
 
         window.exportarTNCs = async function() {
             if(ticketsGlobal.length === 0) return mostrarToast("No hay datos.", "info");
             let data = [];
             ticketsGlobal.forEach(d => { data.push({ "ESTADO": d.estado, "ORIGEN": d.origen, "FECHA_SERVICIO": d.fechaOperativa, "LUGAR": d.sucursal, "MEDICO": d.medico, "ESTUDIO": d.estudio, "CATEGORIA_TNC": d.clasificacion, "NOTAS": d.comentarios || '' }); });
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "TNC_Reporte"); XLSX.writeFile(wb, `LAPI_TNC_Reporte_${new Date().toISOString().split('T')[0]}.xlsx`);
-        }
+        };
 
         // ==========================================
         // 5. PERFIL MÉDICO (EXPEDIENTE)
@@ -825,7 +855,7 @@
                 document.getElementById('perf-historial').innerHTML = html;
                 dibujarGraficaPerfil(fallas);
             } catch (e) { mostrarToast("Error buscando perfil", "error"); console.log(e); }
-        }
+        };
 
         function dibujarGraficaPerfil(dataObj) {
             if(chartMedico) chartMedico.destroy();
@@ -842,14 +872,14 @@
         }
 
         // ==========================================
-        // CORRECCIÓN INYECCIÓN (Magia)
+        // ACCIONES MASIVAS Y CORRECCIÓN INYECCIÓN
         // ==========================================
         window.prepararCorreccion = function(hash, cantCorrecta) {
             const [fecha, suc, med, est] = hash.split('|');
             document.getElementById('c-hash').value = hash; document.getElementById('c-cant').value = cantCorrecta;
             document.getElementById('c-info').innerHTML = `Se inyectarán <b>${cantCorrecta}</b> estudios de <b>${est}</b> al perfil de <b>${med}</b>.`;
             abrirModal('correccion');
-        }
+        };
 
         window.ejecutarCorreccion = async function() {
             const btn = document.getElementById('btn-ejecutar-corr');
@@ -872,10 +902,80 @@
                 }
                 mostrarToast("Base de datos sincronizada", "exito");
                 cerrarModal('correccion');
-                await initAuditoria(); if(Object.keys(excelDataGlobal).length > 0) ejecutarCruceDeDatos();
+                await initAuditoria(); if(Object.keys(excelDataGlobal).length > 0) reRenderAuditoria();
             } catch (e) { mostrarToast("Fallo (Verifica Reglas de Firebase)", "error"); }
             btn.innerHTML = 'Sincronizar'; btn.disabled = false;
-        }
+        };
+
+        window.inyectarFaltantesMasivo = async function() {
+            if(!confirm(`¿Estás seguro de inyectar de un golpe los ${window.discrepanciasInyectar.length} registros que faltan en la base de datos?`)) return;
+            
+            const btn = document.getElementById('btn-bulk-inyectar');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Inyectando...';
+            btn.disabled = true;
+
+            try {
+                for(let item of window.discrepanciasInyectar) {
+                    const hash = item.hash;
+                    const cantCorrecta = item.cant;
+                    const [fecha, sucursal, medico, estudio] = hash.split('|');
+                    const docId = `SUC_${fecha}_${sucursal.replace(/\s+/g,'')}_${medico.replace(/\s+/g,'')}`;
+                    
+                    const docRef = window.doc(window.db, "registros_diarios_sucursales", docId);
+                    const docSnap = await window.getDoc(docRef);
+                    if(docSnap.exists()) {
+                        let datos = docSnap.data(); if(!datos.estudios) datos.estudios = {};
+                        datos.estudios[estudio] = cantCorrecta; datos.ultimaActualizacion = new Date();
+                        await window.setDoc(docRef, datos);
+                    } else {
+                        await window.setDoc(docRef, { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: cantCorrecta }, observaciones: "Generado por Auditoría Masiva", ultimaActualizacion: new Date() });
+                    }
+                }
+                mostrarToast("Inyección masiva completada", "exito");
+                await initAuditoria(); 
+                if(Object.keys(excelDataGlobal).length > 0) reRenderAuditoria();
+            } catch(e) { 
+                console.error("Error en inyección masiva:", e); 
+                mostrarToast("Ocurrió un error en la inyección masiva", "error");
+            }
+            
+            btn.innerHTML = txtOriginal;
+            btn.disabled = false;
+        };
+
+        window.generarTncMasivo = async function() {
+            if(!confirm(`¿Deseas levantar automáticamente ${window.discrepanciasTNC.length} TNCs por estas diferencias?`)) return;
+            
+            const btn = document.getElementById('btn-bulk-tnc');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generando TNCs...';
+            btn.disabled = true;
+
+            try {
+                for(let item of window.discrepanciasTNC) {
+                    const hash = item.hash;
+                    const [fecha, lugar, medico, estudio] = hash.split('|');
+                    const dif = item.cE - item.cA;
+                    const clasif = dif > 0 ? "ESTUDIO FALTANTE (OMISIÓN APP)" : "ESTUDIO SOBRANTE (DUPLICADO APP)";
+                    const notas = `Detectado en Auditoría Ciega Masiva (Diferencia: ${dif > 0 ? '+' + dif : dif})`;
+
+                    await window.addDoc(window.collection(window.db, "tickets_auditoria"), {
+                        origen: "Sucursal", 
+                        fechaOperativa: fecha, sucursal: lugar, medico: medico, estudio: estudio,
+                        clasificacion: clasif, comentarios: notas, estado: 'Abierto', timestamp: new Date()
+                    });
+                }
+                mostrarToast("TNCs masivos generados con éxito", "exito");
+                cargarTNCs(); 
+            } catch(e) { 
+                console.error("Error generando TNCs masivos:", e); 
+                mostrarToast("Error generando los TNCs", "error"); 
+            }
+            
+            btn.innerHTML = txtOriginal;
+            btn.disabled = false;
+        };
 
         // =========================================================================
         // SERVICE WORKER Y VERSIÓN FLOTANTE
