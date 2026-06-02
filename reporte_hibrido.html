@@ -37,14 +37,46 @@
             const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
             document.getElementById('fecha-inicio').value = primerDia.toISOString().split('T')[0];
             document.getElementById('fecha-fin').value = ultimoDia.toISOString().split('T')[0];
+
+            // Setup Drag & Drop Zone
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('file-masivo');
+
+            if(dropzone && fileInput) {
+                dropzone.addEventListener('click', () => fileInput.click());
+                
+                dropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add('border-emerald-500', 'bg-emerald-50');
+                });
+
+                dropzone.addEventListener('dragleave', () => {
+                    dropzone.classList.remove('border-emerald-500', 'bg-emerald-50');
+                });
+
+                dropzone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.remove('border-emerald-500', 'bg-emerald-50');
+                    if (e.dataTransfer.files.length > 0) {
+                        window.procesarArchivosMasivos(e.dataTransfer.files);
+                    }
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        window.procesarArchivosMasivos(e.target.files);
+                    }
+                });
+            }
         });
     </script>
     
     <style>
         body { background-color: #f1f5f9; font-family: 'Inter', sans-serif; }
         .glass { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-        .sucursal-lista { transition: all 0.2s ease-in-out; }
-        .sucursal-lista:hover { transform: translateY(-2px); }
+        .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
         @media print {
             @page { margin: 10mm; size: A4 portrait; }
@@ -84,16 +116,28 @@
 
     <div id="panel-sucursales" class="w-full max-w-6xl no-print bg-white p-6 rounded-3xl mb-6 shadow-sm border border-slate-200 hidden">
         <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
-            <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i> 2. Cargar Excels por Sucursal</h3>
+            <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest"><i class="fa-solid fa-wand-magic-sparkles text-indigo-600 mr-2"></i> 2. Auto-Detección de Excels</h3>
             <div class="flex gap-2">
                 <button onclick="exportarExcel('sucursales')" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] uppercase tracking-widest transition"><i class="fa-solid fa-file-excel mr-1"></i> Data Sucursales</button>
                 <button onclick="exportarExcel('foraneos')" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] uppercase tracking-widest transition"><i class="fa-solid fa-file-excel mr-1"></i> Data Foráneos</button>
             </div>
         </div>
         
-        <p class="text-xs text-slate-500 font-medium mb-4">Selecciona el (o los) archivo(s) Excel de cada sucursal. Los datos se irán sumando automáticamente al documento.</p>
-        
-        <div id="grid-sucursales" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div id="dropzone" class="border-4 border-dashed border-slate-300 rounded-2xl p-10 text-center hover:bg-slate-50 transition cursor-pointer flex flex-col items-center justify-center min-h-[200px]">
+                <i class="fa-solid fa-file-excel text-5xl text-emerald-500 mb-4"></i>
+                <p class="text-slate-700 font-black text-lg mb-1">Arrastra aquí todos tus Excels</p>
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">El sistema detectará la sucursal automáticamente</p>
+                <input type="file" id="file-masivo" class="hidden" accept=".xlsx, .xls, .csv" multiple>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col h-full max-h-[250px]">
+                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-200 pb-2">Archivos Integrados</h4>
+                <div id="lista-archivos" class="overflow-y-auto scroll-custom flex-1 space-y-2 pr-2">
+                    <p class="text-center text-slate-400 italic text-xs py-10">Esperando archivos...</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="w-full max-w-6xl bg-white p-6 md:p-10 rounded-[2rem] shadow-md border border-slate-200 hidden" id="documento-reporte">
@@ -282,7 +326,7 @@
         }
 
         // ===============================================
-        // FASE 1: DESCARGAR LA NUBE Y CREAR BOTONES
+        // FASE 1: DESCARGAR LA NUBE
         // ===============================================
         window.iniciarPeriodo = async function() {
             const btn = document.getElementById('btn-iniciar');
@@ -294,7 +338,7 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Conectando...'; 
             btn.disabled = true;
 
-            // Resetear el estado para un nuevo periodo
+            // Resetear el estado
             window.estadoReporte = {
                 t_Global: 0, t_Suc: 0, t_For: 0, c_Estudios: {},
                 f_Empresas: new Set(), f_cEmpresas: {}, f_Tendencia: {}, f_Medicos: {},
@@ -302,7 +346,7 @@
                 s_cDias: { 'Lunes':0, 'Martes':0, 'Miércoles':0, 'Jueves':0, 'Viernes':0, 'Sábado':0, 'Domingo':0 }
             };
             window.datosExportarSucursales = []; window.datosExportarForaneos = [];
-            
+            document.getElementById('lista-archivos').innerHTML = ''; // Limpiar lista visual
             document.getElementById('r-periodo').innerText = `${fIni} AL ${fFin}`;
 
             try {
@@ -343,26 +387,10 @@
                     }
                 });
 
-                // Crear los botones de las Sucursales. NOTA: Agregado 'multiple' al input
-                const grid = document.getElementById('grid-sucursales');
-                grid.innerHTML = '';
-                window.LAPI_CONFIG.sucursales.forEach(suc => {
-                    grid.innerHTML += `
-                        <div class="relative sucursal-lista">
-                            <input type="file" id="file-${suc}" class="hidden" accept=".xlsx, .xls" onchange="procesarExcelSucursal('${suc}', this)" multiple>
-                            <button id="btn-${suc}" onclick="document.getElementById('file-${suc}').click()" class="w-full p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 transition flex items-center justify-between shadow-sm">
-                                <span class="truncate pr-2">${suc}</span>
-                                <div id="icon-${suc}"><i class="fa-solid fa-cloud-arrow-up text-slate-300 text-sm"></i></div>
-                            </button>
-                        </div>
-                    `;
-                });
-
                 document.getElementById('panel-sucursales').classList.remove('hidden');
                 document.getElementById('documento-reporte').classList.remove('hidden');
                 
                 renderizarDashboard();
-                
                 btn.innerHTML = '<i class="fa-solid fa-check text-emerald-300 mr-1"></i> Nube Lista'; 
 
             } catch (e) {
@@ -374,30 +402,38 @@
         };
 
         // ===============================================
-        // FASE 2: PROCESAR EXCELS MULTIPLES (CHECKBOX)
+        // FASE 2: PROCESAMIENTO MASIVO (AUTO-DETECCIÓN)
         // ===============================================
-        window.procesarExcelSucursal = async function(nombreSucursalObj, inputElement) {
-            if(inputElement.files.length === 0) return;
-
+        window.procesarArchivosMasivos = async function(files) {
             const fIni = document.getElementById('fecha-inicio').value;
             const fFin = document.getElementById('fecha-fin').value;
-            const btnUI = document.getElementById(`btn-${nombreSucursalObj}`);
-            const iconUI = document.getElementById(`icon-${nombreSucursalObj}`);
-            
-            iconUI.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sky-500"></i>`;
+            const listaUI = document.getElementById('lista-archivos');
+            const dropzone = document.getElementById('dropzone');
 
-            try {
-                // Bucle para procesar TODOS los archivos seleccionados de golpe
-                for(let i = 0; i < inputElement.files.length; i++) {
-                    let file = inputElement.files[i];
+            // Limpiar mensaje temporal
+            if(listaUI.innerHTML.includes("Esperando")) listaUI.innerHTML = '';
+            
+            // UI de carga en el Dropzone
+            dropzone.innerHTML = `
+                <i class="fa-solid fa-cog fa-spin text-5xl text-sky-500 mb-4"></i>
+                <p class="text-slate-700 font-black text-lg mb-1">Procesando ${files.length} archivo(s)...</p>
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Extrayendo información y catalogando</p>
+            `;
+
+            for(let i = 0; i < files.length; i++) {
+                let file = files[i];
+                try {
                     let arrayBuffer = await file.arrayBuffer();
                     let wb = XLSX.read(arrayBuffer, {type:'array'});
+                    let sExDetectada = "Desconocida";
+                    let cuentaEstudiosArchivo = 0;
                     
                     for(let sn of wb.SheetNames){
                         let sheet = wb.Sheets[sn];
                         let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
-                        let fEx = "1900-01-01", iEnc = -1, mapa = {};
+                        let fEx = "1900-01-01", sEx = "Desconocida", iEnc = -1, mapa = {};
 
+                        // Detección de Cabeceras
                         for(let r=0; r<Math.min(20, filas.length); r++){
                             if(!filas[r]) continue;
                             let cL = filas[r].map(v => String(v).trim().toUpperCase());
@@ -409,11 +445,22 @@
                                     fEx = `${p[2].length===2?'20'+p[2]:p[2]}-${String(mN+1).padStart(2,'0')}-${p[0].padStart(2,'0')}`; 
                                 }
                             }
-                            if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){ iEnc=r; filas[r].forEach((val, idx)=>{ if(val) mapa[String(val).toUpperCase().trim()] = idx; }); }
+                            
+                            // AUTO-DETECCIÓN DE SUCURSAL
+                            let cS = cL.findIndex(v=>v.includes("SUCURSAL")); 
+                            if(cS!==-1) sEx = cL[cS+1] || cL[cS+2];
+                            
+                            if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){ 
+                                iEnc=r; 
+                                filas[r].forEach((val, idx)=>{ if(val) mapa[String(val).toUpperCase().trim()] = idx; }); 
+                            }
                         }
 
                         if(iEnc!==-1){
-                            // Verificamos si cae en el rango de fechas seleccionado
+                            sEx = normalizarDato(sEx);
+                            sExDetectada = sEx; // Guardamos para la UI
+
+                            // Rango de fechas
                             if(fEx >= fIni && fEx <= fFin) {
                                 const diaSemana = obtenerDiaSemana(fEx);
                                 for(let r=iEnc+1; r<filas.length; r++){
@@ -421,41 +468,62 @@
                                     
                                     Object.keys(estudiosMapeo).forEach(key => {
                                         if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
-                                            
+                                            cuentaEstudiosArchivo++;
                                             let estRaw = estudiosMapeo[key];
                                             let est = unificarEstudio(estRaw);
-                                            let med = traducirMedico(f[mapa[key]], nombreSucursalObj);
+                                            // MANDAMOS LA SUCURSAL DETECTADA AL TRADUCTOR
+                                            let med = traducirMedico(f[mapa[key]], sEx);
 
                                             window.estadoReporte.t_Global++; window.estadoReporte.t_Suc++;
                                             if(!window.estadoReporte.c_Estudios[est]) window.estadoReporte.c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
                                             window.estadoReporte.c_Estudios[est].suc++; window.estadoReporte.c_Estudios[est].tot++;
 
                                             window.estadoReporte.s_Tendencia[fEx] = (window.estadoReporte.s_Tendencia[fEx] || 0) + 1;
-                                            window.estadoReporte.s_cSucursales[nombreSucursalObj] = (window.estadoReporte.s_cSucursales[nombreSucursalObj] || 0) + 1;
+                                            window.estadoReporte.s_cSucursales[sEx] = (window.estadoReporte.s_cSucursales[sEx] || 0) + 1;
                                             window.estadoReporte.s_cDias[diaSemana] += 1;
                                             window.estadoReporte.s_Medicos[med] = (window.estadoReporte.s_Medicos[med] || 0) + 1;
 
-                                            window.datosExportarSucursales.push({ "FECHA": fEx, "SUCURSAL": nombreSucursalObj, "MÉDICO": med, "ESTUDIO": estRaw, "ORIGEN": "Excel" });
+                                            window.datosExportarSucursales.push({ "FECHA": fEx, "SUCURSAL": sEx, "MÉDICO": med, "ESTUDIO": estRaw, "ORIGEN": "Excel" });
                                         }
                                     });
                                 }
                             }
                         }
                     }
+
+                    // Feed Visual de Éxito
+                    let colorBadge = sExDetectada !== "Desconocida" ? "text-emerald-700 bg-emerald-100 border-emerald-200" : "text-amber-700 bg-amber-100 border-amber-200";
+                    listaUI.innerHTML = `
+                        <div class="flex flex-col bg-white p-2 rounded-lg border border-slate-200 shadow-sm animate-fade-in">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="truncate pr-2 font-bold text-slate-700 text-[11px]" title="${file.name}">${file.name}</span>
+                                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border ${colorBadge}">${sExDetectada}</span>
+                            </div>
+                            <span class="text-[9px] text-slate-400 font-bold"><i class="fa-solid fa-microscope text-sky-500 mr-1"></i> ${cuentaEstudiosArchivo} Estudios extraídos</span>
+                        </div>
+                    ` + listaUI.innerHTML;
+
+                } catch (e) {
+                    console.error("Error procesando", file.name, e);
+                    listaUI.innerHTML = `
+                        <div class="flex flex-col bg-red-50 p-2 rounded-lg border border-red-200 shadow-sm animate-fade-in">
+                            <div class="flex justify-between items-center">
+                                <span class="truncate pr-2 font-bold text-red-700 text-[11px]">${file.name}</span>
+                                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border text-red-700 bg-red-100 border-red-200">Error <i class="fa-solid fa-xmark"></i></span>
+                            </div>
+                        </div>
+                    ` + listaUI.innerHTML;
                 }
-
-                // Cambiar el botón a "Subido Correctamente" mostrando la cantidad de archivos
-                btnUI.className = "w-full p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-black text-emerald-700 transition flex items-center justify-between shadow-sm";
-                iconUI.innerHTML = `<span class="text-[10px] mr-1 text-emerald-600">${inputElement.files.length} arch.</span><i class="fa-solid fa-check-circle text-emerald-500 text-lg"></i>`;
-
-                renderizarDashboard();
-
-            } catch (e) {
-                console.error("Error leyendo archivos de", nombreSucursalObj, e);
-                alert(`Error al leer los archivos de ${nombreSucursalObj}. Verifica que sean Excels válidos.`);
-                iconUI.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-500 text-lg"></i>`;
-                btnUI.classList.add('bg-red-50', 'border-red-200');
             }
+
+            // Restaurar Dropzone
+            dropzone.innerHTML = `
+                <i class="fa-solid fa-check-circle text-5xl text-emerald-500 mb-4"></i>
+                <p class="text-slate-700 font-black text-lg mb-1">Archivos Integrados</p>
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Arrastra más Excels si lo necesitas</p>
+            `;
+
+            renderizarDashboard();
         };
 
         // ===============================================
@@ -506,8 +574,6 @@
             let aMedSuc = Object.keys(S.s_Medicos).map(k => ({ n: k, v: S.s_Medicos[k] })).sort((a,b) => b.v - a.v);
             let tbodyMedSuc = document.getElementById('tabla-medicos-sucursales'); tbodyMedSuc.innerHTML = '';
             aMedSuc.forEach(m => { tbodyMedSuc.innerHTML += `<tr><td class="p-3 uppercase text-sky-700">${m.n}</td><td class="p-3 text-center font-black">${m.v}</td></tr>`; });
-
-            document.getElementById('panel-exportacion').classList.remove('hidden');
         }
 
         // ===============================================
