@@ -388,5 +388,104 @@ window.LAPI_CONFIG = {
         "CERTIFICADO": "Certificado", 
         "NORDICO": "Nórdico", 
         "OTRO": "Otro" 
+    }, // <-- Asegúrate de que esta coma esté aquí para separar
+
+    // ==========================================
+    // 7. DICCIONARIO CONTEXTUAL (SUCURSAL -> INICIALES)
+    // ==========================================
+    diccionarioIniciales: {
+        "BALBUENA": {
+            "JM": "Muñoz Perez Jazmin Nayeli",
+            "MZ": "Zarate Flores Myriam Alejandra",
+            "EP": "Perez Bautista Esther"
+        },
+        "CUAUTITLAN": {
+            "JA": "Angeles Velazquez Jennifer Tabata",
+            "CBG": "Bustos Gonzalez Claudia Montserrat",
+            "MCG": "Cervantes Erendira Montserrat",
+            "AV": "Velasco Duran Araceli",
+            "MSH": "Leilany Montserrat Sanchez"
+        },
+        "CONDESA": {
+            "UA": "Alanis Aparicio Ulises Jasiel",
+            "MC": "Contreras Herrera Maribel del Carmen"
+        },
+        "CALZADA DEL HUESO": {
+            "AF": "Flores Miranda Adriana",
+            "PI": "Islas Veivar Patricia Guadalupe",
+            "CR": "Ramirez Ramirez Carlos Antonio",
+            "BC": "Camacho Ortiz Barbara Alejandra"
+        },
+        "ENCUENTRO FORTUNA": {
+            "AD": "Dominguez Mojica Jannet Alejandra",
+            "JC": "Cuevas Garcia Javier Alejandro",
+            "AF": "Fuerte Morales Aleydis"
+        },
+        "GABRIEL MANCERA": {
+            "VM": "Monjaraz Sanchez Viviana",
+            "LO": "Ordoñez Mejia Luis Enrique"
+        },
+        "INTERLOMAS": {
+            "EE": "Escobar Rios Erika Yeraldi",
+            "CT": "Tahuilan Enciso Cinthia"
+        },
+        "LINDAVISTA": {
+            "SD": "Delgadillo Fredy Sebastian",
+            "AG": "Gonzalez Lucas Alondra Estefania",
+            "DL": "Lino Reynoso Deany Alondra"
+        },
+        "LOMAS VERDES": {
+            "MIR": "Martha Izaguirre Rojas",
+            "BD": "Dulce Maria Buenrostro Perez",
+            "LC": "Cruz Zavala Lucero",
+            "JT": "Toriz Segura Jessica Noemi"
+        },
+        "MARTIN CARRERA": {
+            "LS": "Luevano Sanchez Sara Maria",
+            "LUEVANO": "Luevano Sanchez Sara Maria"
+        },
+        "METEPEC": {
+            "RML": "Montoya Linares Rebeca",
+            "SSR": "Rueda Pedraza Sabine Shecid",
+            "MRC": "Cabrera Velazquez Miguel Ramon"
+        },
+        "MIXCOAC": {
+            "PP": "Paula Pichardo",
+            "BF": "Brenda Flores"
+        },
+        "PLATEROS": {
+            "PA": "Paulina Alba",
+            "AM": "Garcia Morado Ana Lourdes"
+        },
+        "PLAZA CENTRAL": {
+            "IA": "Arizcorreta Colchado Ivonne Guadalupe",
+            "BC": "Chavez Muñoz Brizeth Alondra"
+        },
+        "POLANCO": {
+            "KF": "Fernandez Contreras Karla Alitzel",
+            "AS": "Soriano Arvea Ariagna Anahi",
+            "GH": "Hernandez Gonzalez Giovanni Mariano",
+            "PP": "Pineda Lopez Patricia"
+        },
+        "SANTA FE": {
+            "GM": "Medina Molina Guadalupe"
+        },
+        "SANTA MARTHA": {
+            "JD": "Duque Hernandez Jaqueline",
+            "AD": "Dominguez Mojica Jannet Alejandra",
+            "AC": "Cabrera Hernandez Ana Beatriz",
+            "LC": "Lucero Cruz"
+        },
+        "SATELITE": {
+            "MASR": "Salinas Rojas Miguel Angel",
+            "MGZH": "Maria Guadalupe Zapata Hernandez",
+            "LLGM": "Lopez Lopez Guadalupe Mireya"
+        },
+        "REVOLUCION": {
+            "MS": "Saavedra Olvera Miriam Elizabeth",
+            "VR": "Reyes Perez Victor",
+            "CS": "Sanchez Sanchez Claudia Ivonne",
+            "DO": "Olvera Aguilar Diana Karen"
+        }
     }
 };
