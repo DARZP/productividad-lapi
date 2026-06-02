@@ -303,6 +303,49 @@
         }
 
         // ==========================================================
+        // HERRAMIENTAS DE INTERFAZ (MODALES, TOASTS Y TABS)
+        // ==========================================================
+        window.mostrarToast = function(mensaje, tipo = 'info') {
+            const toast = document.createElement('div');
+            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-purple-600');
+            const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-triangle-exclamation' : 'fa-info-circle');
+            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-lg font-bold text-xs flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
+            toast.innerHTML = `<i class="fa-solid ${icono} text-base"></i> <span class="leading-tight">${mensaje}</span>`;
+            document.getElementById('toast-container').appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
+            setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
+        };
+
+        window.cambiarSeccion = function(sec) {
+            ['cruce', 'tnc', 'perfil'].forEach(s => {
+                document.getElementById(`sec-${s}`).classList.add('hidden');
+                document.getElementById(`nav-${s}`).classList.remove('tab-active', 'text-slate-800');
+                document.getElementById(`nav-${s}`).classList.add('text-white/70');
+            });
+            document.getElementById(`sec-${sec}`).classList.remove('hidden');
+            document.getElementById(`nav-${sec}`).classList.remove('text-white/70');
+            document.getElementById(`nav-${sec}`).classList.add('tab-active', 'text-slate-800');
+        };
+
+        window.abrirModal = function(id) {
+            const modal = document.getElementById(`modal-${id}`);
+            const card = document.getElementById(`modal-${id}-card`);
+            if(modal && card) {
+                modal.classList.remove('hidden');
+                setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
+            }
+        };
+
+        window.cerrarModal = function(id) {
+            const modal = document.getElementById(`modal-${id}`);
+            const card = document.getElementById(`modal-${id}-card`);
+            if(modal && card) {
+                modal.classList.add('opacity-0'); card.classList.add('scale-95');
+                setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            }
+        };
+
+        // ==========================================================
         // 1. MSAL (ONEDRIVE) 
         // ==========================================================
         const msalConfig = {
