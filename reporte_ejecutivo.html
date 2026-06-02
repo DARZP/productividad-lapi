@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Ejecutivo LAPI</title>
+    <title>Reporte Integral LAPI</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -30,156 +30,174 @@
         window.where = where;
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Cargar mes actual por defecto
             const hoy = new Date();
             const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
             const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-            
             document.getElementById('fecha-inicio').value = primerDia.toISOString().split('T')[0];
             document.getElementById('fecha-fin').value = ultimoDia.toISOString().split('T')[0];
-            
             window.generarReporte();
         });
     </script>
     
     <style>
         body { background-color: #f1f5f9; font-family: 'Inter', sans-serif; }
-        .glass { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+        .glass { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         
-        /* MAGIA PARA PDF A4 */
+        /* IMPRESIÓN (PDF) EXACTA */
         @media print {
-            @page { margin: 8mm; size: A4 portrait; }
+            @page { margin: 10mm; size: A4 portrait; }
             body { background-color: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .no-print { display: none !important; }
             .glass { box-shadow: none !important; border: 1px solid #cbd5e1 !important; break-inside: avoid; margin-bottom: 15px;}
             
-            /* Ajustes de grilla para impresión */
-            .print-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
+            .print-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 15px !important; }
             .print-col-span-2 { grid-column: span 2 / span 2 !important; }
-            .print-col-span-1 { grid-column: span 1 / span 1 !important; }
             
-            canvas { max-height: 200px !important; width: 100% !important; }
-            .kpi-text { font-size: 1.8rem !important; }
-            .kpi-title { font-size: 0.65rem !important; }
+            canvas { max-height: 220px !important; width: 100% !important; }
+            .page-break { page-break-before: always; display: block; height: 1px; }
             
-            /* Salto de página antes de la tabla para que salga limpia */
-            .page-break { page-break-before: always; }
+            .header-print { border-bottom: 3px solid #0f172a !important; padding-bottom: 10px !important; margin-bottom: 20px !important; }
         }
     </style>
 </head>
 <body class="text-slate-800 p-2 md:p-6 min-h-screen flex flex-col items-center">
 
-    <div class="w-full max-w-6xl no-print bg-slate-900 text-white p-6 rounded-3xl mb-6 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl">
+    <div class="w-full max-w-6xl no-print bg-slate-900 text-white p-6 rounded-3xl mb-6 flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl">
         <div>
-            <h2 class="text-2xl font-black flex items-center gap-2"><i class="fa-solid fa-chart-line text-emerald-400"></i> Inteligencia de Negocios LAPI</h2>
-            <p class="text-xs text-slate-400 font-bold mt-1 tracking-widest uppercase">Reporte Ejecutivo de Productividad</p>
+            <h2 class="text-xl font-black flex items-center gap-2"><i class="fa-solid fa-file-invoice text-emerald-400"></i> Generador de Reportes</h2>
+            <p class="text-xs text-slate-400 font-bold mt-1 tracking-widest uppercase">Estadísticas por Módulos</p>
         </div>
         <div class="flex flex-wrap items-end gap-3 w-full md:w-auto">
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Periodo Actual (Desde)</label>
-                <input type="date" id="fecha-inicio" class="p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold outline-none text-white focus:border-emerald-500">
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Desde</label>
+                <input type="date" id="fecha-inicio" class="p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold outline-none text-white">
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">(Hasta)</label>
-                <input type="date" id="fecha-fin" class="p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold outline-none text-white focus:border-emerald-500">
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Hasta</label>
+                <input type="date" id="fecha-fin" class="p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold outline-none text-white">
             </div>
             <div class="flex gap-2">
-                <button onclick="generarReporte()" id="btn-generar" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2.5 px-5 rounded-xl shadow-lg transition-all text-xs active:scale-95"><i class="fa-solid fa-bolt mr-1"></i> Actualizar</button>
-                <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-2.5 px-5 rounded-xl shadow-lg transition-all text-xs active:scale-95"><i class="fa-solid fa-print mr-1"></i> Imprimir PDF</button>
+                <button onclick="generarReporte()" id="btn-generar" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2.5 px-5 rounded-xl transition-all text-xs active:scale-95"><i class="fa-solid fa-bolt mr-1"></i> Generar</button>
+                <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-2.5 px-5 rounded-xl transition-all text-xs active:scale-95"><i class="fa-solid fa-print mr-1"></i> Imprimir PDF</button>
             </div>
         </div>
     </div>
 
-    <div class="w-full max-w-6xl bg-white p-6 md:p-10 rounded-[2rem] shadow-xl border border-slate-200" id="documento-reporte">
+    <div class="w-full max-w-6xl bg-white p-6 md:p-10 rounded-[2rem] shadow-md border border-slate-200" id="documento-reporte">
         
-        <div class="flex justify-between items-end border-b-4 border-slate-900 pb-5 mb-6">
+        <div class="header-print flex justify-between items-end pb-4 mb-6">
             <div>
-                <h1 class="text-4xl font-black tracking-tight text-slate-900">Resumen Operativo</h1>
-                <p id="r-periodo" class="text-sm font-black text-indigo-600 uppercase tracking-widest mt-2">--/--/---- al --/--/----</p>
+                <h1 class="text-3xl font-black tracking-tight text-slate-900">Resumen Operativo LAPI</h1>
+                <p id="r-periodo" class="text-sm font-black text-indigo-600 uppercase tracking-widest mt-1">--/--/---- al --/--/----</p>
             </div>
-            <div class="text-right">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Generado el</p>
-                <p id="r-fecha-hoy" class="text-xs font-bold text-slate-600 mt-1 bg-slate-100 px-3 py-1 rounded-lg"></p>
-            </div>
-        </div>
-
-        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 mb-6 text-sm text-indigo-900 font-medium leading-relaxed shadow-sm">
-            <b class="font-black text-indigo-700 uppercase tracking-widest text-[10px] block mb-2"><i class="fa-solid fa-robot mr-1"></i> Resumen Automático</b>
-            <p id="r-insight">Analizando base de datos para generar conclusiones operativas...</p>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 print-grid">
-            <div class="glass p-5 rounded-2xl border-t-4 border-indigo-600 text-center relative overflow-hidden">
-                <p class="kpi-title text-[10px] font-black text-slate-400 uppercase tracking-widest">Estudios Totales</p>
-                <p id="kpi-total" class="kpi-text text-4xl font-black text-slate-800 mt-1">0</p>
-                <p id="kpi-crecimiento" class="text-[10px] font-bold mt-2 bg-slate-50 py-1 rounded-md">--</p>
+            <div class="glass p-4 rounded-xl border-l-4 border-indigo-600 text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estudios Totales</p>
+                <p id="kpi-total" class="text-3xl font-black text-slate-800 mt-1">0</p>
             </div>
-            <div class="glass p-5 rounded-2xl border-t-4 border-sky-500 text-center">
-                <p class="kpi-title text-[10px] font-black text-slate-400 uppercase tracking-widest">Volumen Sucursal</p>
-                <p id="kpi-sucursal" class="kpi-text text-4xl font-black text-sky-600 mt-1">0</p>
-                <p id="kpi-crecimiento-suc" class="text-[10px] font-bold mt-2 bg-slate-50 py-1 rounded-md">--</p>
+            <div class="glass p-4 rounded-xl border-l-4 border-sky-500 text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Volumen Sucursal</p>
+                <p id="kpi-sucursal" class="text-3xl font-black text-sky-600 mt-1">0</p>
             </div>
-            <div class="glass p-5 rounded-2xl border-t-4 border-orange-500 text-center">
-                <p class="kpi-title text-[10px] font-black text-slate-400 uppercase tracking-widest">Volumen Foráneos</p>
-                <p id="kpi-foraneo" class="kpi-text text-4xl font-black text-orange-600 mt-1">0</p>
-                <p id="kpi-crecimiento-for" class="text-[10px] font-bold mt-2 bg-slate-50 py-1 rounded-md">--</p>
+            <div class="glass p-4 rounded-xl border-l-4 border-orange-500 text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Volumen Foráneos</p>
+                <p id="kpi-foraneo" class="text-3xl font-black text-orange-600 mt-1">0</p>
             </div>
-            <div class="glass p-5 rounded-2xl border-t-4 border-emerald-500 text-center bg-emerald-50/50">
-                <p class="kpi-title text-[10px] font-black text-emerald-600/60 uppercase tracking-widest">🏆 Médico Líder</p>
-                <p id="kpi-medico" class="kpi-text text-sm font-black text-emerald-800 mt-3 uppercase leading-tight truncate">--</p>
-                <p id="kpi-medico-val" class="text-xs font-bold text-emerald-600 mt-1">0 estudios</p>
+            <div class="glass p-4 rounded-xl border-l-4 border-emerald-500 text-center">
+                <p class="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest">Empresas Atendidas</p>
+                <p id="kpi-empresas" class="text-3xl font-black text-emerald-600 mt-1">0</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 print-grid">
-            <div class="glass p-5 rounded-2xl md:col-span-2 print-col-span-2 shadow-sm">
-                <h3 class="text-xs font-black text-slate-500 uppercase mb-3 tracking-widest"><i class="fa-solid fa-timeline text-indigo-500 mr-1"></i> Evolución de Productividad Diaria</h3>
-                <div class="relative w-full h-48"><canvas id="chart-linea-tiempo"></canvas></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 print-grid">
+            <div class="glass p-5 rounded-xl print-col-span-1 shadow-sm">
+                <h3 class="text-[11px] font-black text-slate-500 uppercase mb-3 tracking-widest text-center border-b border-slate-100 pb-2">Distribución de Origen</h3>
+                <div class="relative w-full h-48"><canvas id="chart-origen"></canvas></div>
             </div>
-            <div class="glass p-5 rounded-2xl print-col-span-1 shadow-sm flex flex-col justify-between">
-                <h3 class="text-xs font-black text-slate-500 uppercase mb-3 tracking-widest text-center"><i class="fa-solid fa-pie-chart text-sky-500 mr-1"></i> Origen</h3>
-                <div class="relative w-full h-40"><canvas id="chart-origen"></canvas></div>
+            <div class="glass p-5 rounded-xl md:col-span-2 print-col-span-2 shadow-sm">
+                <h3 class="text-[11px] font-black text-slate-500 uppercase mb-3 tracking-widest border-b border-slate-100 pb-2">Volumen por Tipo de Estudio (Global)</h3>
+                <div class="relative w-full h-48"><canvas id="chart-estudios-global"></canvas></div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 print-grid">
-            <div class="glass p-5 rounded-2xl shadow-sm print-col-span-1">
-                <h3 class="text-xs font-black text-slate-500 uppercase mb-3 tracking-widest"><i class="fa-solid fa-building text-orange-500 mr-1"></i> Top 5 Empresas (Foráneos)</h3>
-                <div class="relative w-full h-48"><canvas id="chart-empresas"></canvas></div>
-            </div>
-            <div class="glass p-5 rounded-2xl shadow-sm print-col-span-1">
-                <h3 class="text-xs font-black text-slate-500 uppercase mb-3 tracking-widest"><i class="fa-solid fa-microscope text-purple-500 mr-1"></i> Top 5 Estudios (Global)</h3>
-                <div class="relative w-full h-48"><canvas id="chart-estudios"></canvas></div>
-            </div>
+        <div class="glass rounded-xl overflow-hidden shadow-sm mb-6">
+            <div class="bg-slate-800 p-4 border-b border-slate-200"><h3 class="text-xs font-black text-white uppercase tracking-widest">Desglose Cuantitativo de Estudios</h3></div>
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-100 text-[10px] uppercase text-slate-500 border-b border-slate-200">
+                    <tr><th class="p-3">Tipo de Estudio</th><th class="p-3 text-center text-sky-600">Total Sucursal</th><th class="p-3 text-center text-orange-600">Total Foráneos</th><th class="p-3 text-center text-indigo-700 font-black">Suma Global</th></tr>
+                </thead>
+                <tbody id="tabla-desglose" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs"></tbody>
+            </table>
         </div>
 
         <div class="page-break"></div>
 
-        <div class="glass rounded-2xl overflow-hidden shadow-sm mt-6">
-            <div class="bg-slate-900 p-5 border-b border-slate-200 flex justify-between items-center">
-                <h3 class="text-sm font-black text-white uppercase tracking-widest"><i class="fa-solid fa-table-list text-indigo-400 mr-2"></i> Desglose Cuantitativo Analítico</h3>
-                <span class="bg-indigo-600 text-white text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-widest" id="t-periodo-badge"></span>
+        <div class="header-print flex justify-between items-end pb-3 mb-6 mt-6">
+            <h2 class="text-2xl font-black tracking-tight text-slate-800 uppercase">Servicios Foráneos</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 print-grid">
+            <div class="glass p-5 rounded-xl shadow-sm print-col-span-2">
+                <h3 class="text-[11px] font-black text-slate-500 uppercase mb-3 tracking-widest border-b border-slate-100 pb-2">Tendencia Diaria de Estudios (Foráneos)</h3>
+                <div class="relative w-full h-48"><canvas id="chart-foraneos-tendencia"></canvas></div>
             </div>
+            
+            <div class="glass p-5 rounded-xl shadow-sm">
+                <h3 class="text-[11px] font-black text-slate-500 uppercase mb-3 tracking-widest border-b border-slate-100 pb-2">Productividad por Empresa</h3>
+                <div class="relative w-full h-56"><canvas id="chart-foraneos-empresas"></canvas></div>
+            </div>
+            <div class="glass p-5 rounded-xl shadow-sm">
+                <h3 class="text-[11px] font-black text-slate-500 uppercase mb-3 tracking-widest border-b border-slate-100 pb-2">Top Médicos (Cant. Estudios)</h3>
+                <div class="relative w-full h-56"><canvas id="chart-foraneos-medicos"></canvas></div>
+            </div>
+            
+            <div class="glass p-5 rounded-xl shadow-sm print-col-span-2 md:col-span-2">
+                <h3 class="text-[11px] font-black text-slate-500 uppercase mb-3 tracking-widest border-b border-slate-100 pb-2">Horas Acumuladas por Médico</h3>
+                <div class="relative w-full h-48"><canvas id="chart-foraneos-horas"></canvas></div>
+            </div>
+        </div>
+
+        <div class="glass rounded-xl overflow-hidden shadow-sm mb-6">
+            <div class="bg-orange-500 p-3 border-b border-orange-600"><h3 class="text-xs font-black text-white uppercase tracking-widest">Desglose Operativo: Médicos Foráneos</h3></div>
             <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-100 text-[10px] uppercase text-slate-600 border-b-2 border-slate-200">
-                    <tr>
-                        <th class="p-4">Tipo de Estudio Confirmado</th>
-                        <th class="p-4 text-center text-sky-700">Total Sucursal</th>
-                        <th class="p-4 text-center text-orange-700">Total Foráneos</th>
-                        <th class="p-4 text-center text-indigo-800 font-black">Suma Global</th>
-                    </tr>
+                <thead class="bg-slate-50 text-[10px] uppercase text-slate-500 border-b border-slate-200">
+                    <tr><th class="p-3">Médico</th><th class="p-3 text-center">Total Estudios Realizados</th><th class="p-3 text-center">Horas en Campo Acumuladas</th></tr>
                 </thead>
-                <tbody id="tabla-desglose" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs">
-                    <tr><td colspan="4" class="text-center py-8 italic text-slate-400">Generando reporte de base de datos...</td></tr>
-                </tbody>
-                <tfoot class="bg-slate-50 border-t-2 border-slate-200">
-                    <tr>
-                        <td class="p-4 font-black text-slate-800 text-right uppercase text-xs">Gran Total LAPI:</td>
-                        <td class="p-4 text-center font-black text-sky-700 text-sm" id="t-suc">0</td>
-                        <td class="p-4 text-center font-black text-orange-700 text-sm" id="t-for">0</td>
-                        <td class="p-4 text-center font-black text-indigo-700 text-base" id="t-tot">0</td>
-                    </tr>
-                </tfoot>
+                <tbody id="tabla-medicos-foraneos" class="divide-y divide-slate-100 font-bold text-slate-700 text-xs"></tbody>
+            </table>
+        </div>
+
+        <div class="page-break"></div>
+
+        <div class="header-print flex justify-between items-end pb-3 mb-6 mt-6">
+            <h2 class="text-2xl font-black tracking-tight text-slate-800 uppercase">Sucursales Fijas</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 print-grid">
+            <div class="glass p-5 rounded-xl shadow-sm print-col-span-2 md:col-span-2">
+                <h3 class="text-[11px] font-black text-slate-500 uppercase mb-3 tracking-widest border-b border-slate-100 pb-2">Tendencia Diaria (Sucursales)</h3>
+                <div class="relative w-full h-48"><canvas id="chart-sucursales-tendencia"></canvas></div>
+            </div>
+            
+            <div class="glass p-5 rounded-xl shadow-sm">
+                <h3 class="text-[11px] font-black text-slate-500 uppercase mb-3 tracking-widest border-b border-slate-100 pb-2">Top Sucursales</h3>
+                <div class="relative w-full h-56"><canvas id="chart-sucursales-top"></canvas></div>
+            </div>
+            <div class="glass p-5 rounded-xl shadow-sm">
+                <h3 class="text-[11px] font-black text-slate-500 uppercase mb-3 tracking-widest border-b border-slate-100 pb-2">Estudios por Día de la Semana</h3>
+                <div class="relative w-full h-56"><canvas id="chart-sucursales-dias"></canvas></div>
+            </div>
+        </div>
+
+        <div class="glass rounded-xl overflow-hidden shadow-sm mb-6">
+            <div class="bg-sky-500 p-3 border-b border-sky-600"><h3 class="text-xs font-black text-white uppercase tracking-widest">Productividad: Médicos en Sucursal</h3></div>
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50 text-[10px] uppercase text-slate-500 border-b border-slate-200">
+                    <tr><th class="p-3">Médico en Plantilla</th><th class="p-3 text-center">Total Estudios Realizados</th></tr>
+                </thead>
+                <tbody id="tabla-medicos-sucursales" class="divide-y divide-slate-100 font-bold text-slate-700 text-xs"></tbody>
             </table>
         </div>
 
@@ -195,48 +213,19 @@
 
         function unificarEstudio(est) {
             if(!est) return "Desconocido";
-            let n = normalizarDato(est);
-            let upper = n.toUpperCase();
-            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") {
-                return "Historia Clínica";
-            }
-            return n;
+            let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clínica";
+            if (upper.includes("ESPIROMETRIA")) return "Espirometría";
+            if (upper.includes("AUDIOMETRIA")) return "Audiometría";
+            if (upper.includes("ELECTROCARDIOGRAMA")) return "Electrocardiograma";
+            if (upper.includes("VISUAL")) return "Examen Capacidad Visual";
+            return normalizarDato(est);
         }
 
-        // Calcula el rango de fechas anterior del mismo tamaño (Ej. Si fue Mayo 1-31, saca Abril 1-30)
-        function calcularPeriodoAnterior(fIni, fFin) {
-            let d1 = new Date(fIni + 'T00:00:00');
-            let d2 = new Date(fFin + 'T00:00:00');
-            let diffT = d2.getTime() - d1.getTime();
-            let diffDias = diffT / (1000 * 3600 * 24);
-
-            let dPrevFin = new Date(d1); dPrevFin.setDate(dPrevFin.getDate() - 1);
-            let dPrevIni = new Date(dPrevFin); dPrevIni.setDate(dPrevIni.getDate() - diffDias);
-
-            return {
-                prevIni: dPrevIni.toISOString().split('T')[0],
-                prevFin: dPrevFin.toISOString().split('T')[0]
-            };
-        }
-
-        function pintarCrecimiento(idElemento, valActual, valAnterior) {
-            const el = document.getElementById(idElemento);
-            if(valAnterior === 0) {
-                if(valActual > 0) el.innerHTML = `<span class="text-emerald-500"><i class="fa-solid fa-arrow-trend-up"></i> +100%</span> vs P. Anterior`;
-                else el.innerHTML = `<span class="text-slate-400">Sin cambios</span>`;
-                return;
-            }
-            
-            let porcentaje = ((valActual - valAnterior) / valAnterior) * 100;
-            let pStr = porcentaje.toFixed(1) + "%";
-            
-            if(porcentaje > 0) {
-                el.innerHTML = `<span class="text-emerald-600 font-black"><i class="fa-solid fa-caret-up"></i> +${pStr}</span> vs P. Anterior`;
-            } else if(porcentaje < 0) {
-                el.innerHTML = `<span class="text-red-500 font-black"><i class="fa-solid fa-caret-down"></i> ${pStr}</span> vs P. Anterior`;
-            } else {
-                el.innerHTML = `<span class="text-slate-500">Mismo volumen (0%)</span>`;
-            }
+        function obtenerDiaSemana(fechaStr) {
+            const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const d = new Date(fechaStr + "T12:00:00");
+            return dias[d.getDay()];
         }
 
         window.generarReporte = async function() {
@@ -247,218 +236,196 @@
             if(!fIni || !fFin) { alert("Selecciona fecha de inicio y fin."); return; }
             if(fIni > fFin) { alert("La fecha de inicio no puede ser mayor a la final."); return; }
 
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analizando...';
-            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analizando...'; btn.disabled = true;
 
-            const periodosPrevios = calcularPeriodoAnterior(fIni, fFin);
-            const P_INI = periodosPrevios.prevIni;
-            
-            document.getElementById('r-periodo').innerText = `PERIODO EVALUADO: ${fIni} al ${fFin}`;
-            document.getElementById('t-periodo-badge').innerText = `${fIni} / ${fFin}`;
-            document.getElementById('r-fecha-hoy').innerText = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            document.getElementById('r-periodo').innerText = `${fIni} AL ${fFin}`;
 
             try {
-                // VARIABLES PERIODO ACTUAL
-                let currTotal = 0; let currSuc = 0; let currFor = 0;
-                let conteoEstudios = {}; 
-                let conteoMedicos = {};
-                let conteoEmpresas = {};
-                let lineaTiempo = {}; // { "2026-05-01": total }
+                // VARIABLES GLOBALES
+                let t_Global = 0, t_Suc = 0, t_For = 0;
+                let c_Estudios = {}; // { est: { suc, for, tot } }
+                
+                // VARIABLES FORÁNEOS
+                let f_Empresas = new Set();
+                let f_cEmpresas = {}; // { emp: cant }
+                let f_Tendencia = {}; // { fecha: cant }
+                let f_Medicos = {}; // { med: { estudios: 0, horas: 0 } }
 
-                // VARIABLES PERIODO ANTERIOR (Para calcular % de crecimiento)
-                let prevTotal = 0; let prevSuc = 0; let prevFor = 0;
+                // VARIABLES SUCURSALES
+                let s_Tendencia = {}; // { fecha: cant }
+                let s_cSucursales = {}; // { suc: cant }
+                let s_cDias = { 'Lunes':0, 'Martes':0, 'Miércoles':0, 'Jueves':0, 'Viernes':0, 'Sábado':0, 'Domingo':0 };
+                let s_Medicos = {}; // { med: cant }
 
-                // 1. Extraer Nativos (Sucursales App) DESDE el periodo previo hasta el actual
-                const q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", ">=", P_INI), window.where("fecha", "<=", fFin));
+                // 1. EXTRAYENDO FORÁNEOS Y LEGACY SUCURSAL
+                const q1 = window.query(window.collection(window.db, "registros"), window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                const qs1 = await window.getDocs(q1);
+                
+                qs1.forEach(doc => {
+                    const data = doc.data();
+                    const diaSemana = obtenerDiaSemana(data.fecha);
+
+                    if(data.tipo === "sucursal") {
+                        // SUCURSAL LEGACY
+                        t_Global++; t_Suc++;
+                        let est = unificarEstudio(data.estudio); let med = normalizarDato(data.medico); let suc = normalizarDato(data.sucursal);
+                        
+                        if(!c_Estudios[est]) c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
+                        c_Estudios[est].suc++; c_Estudios[est].tot++;
+                        
+                        s_Tendencia[data.fecha] = (s_Tendencia[data.fecha] || 0) + 1;
+                        s_cSucursales[suc] = (s_cSucursales[suc] || 0) + 1;
+                        s_cDias[diaSemana] += 1;
+                        s_Medicos[med] = (s_Medicos[med] || 0) + 1;
+
+                    } else if(data.detalles) {
+                        // FORÁNEO
+                        let emp = normalizarDato(data.empresa);
+                        f_Empresas.add(emp);
+                        let horas = parseFloat(data.horasLaboradas) || 0;
+                        
+                        // Para no duplicar horas si un médico hace 2 estudios en el mismo servicio, sacamos únicos
+                        let medicosUnicosEnServicio = new Set();
+
+                        data.detalles.forEach(det => {
+                            let cant = parseInt(det.cant) || 1;
+                            let est = unificarEstudio(det.estudio); let med = normalizarDato(det.medico);
+                            medicosUnicosEnServicio.add(med);
+
+                            t_Global += cant; t_For += cant;
+                            if(!c_Estudios[est]) c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
+                            c_Estudios[est].for += cant; c_Estudios[est].tot += cant;
+
+                            f_cEmpresas[emp] = (f_cEmpresas[emp] || 0) + cant;
+                            f_Tendencia[data.fecha] = (f_Tendencia[data.fecha] || 0) + cant;
+                            
+                            if(!f_Medicos[med]) f_Medicos[med] = { estudios: 0, horas: 0 };
+                            f_Medicos[med].estudios += cant;
+                        });
+
+                        // Sumar horas al médico por el viaje
+                        medicosUnicosEnServicio.forEach(m => {
+                            if(f_Medicos[m]) f_Medicos[m].horas += horas;
+                        });
+                    }
+                });
+
+                // 2. EXTRAYENDO SUCURSALES NATIVAS PWA
+                const q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
                 const qs2 = await window.getDocs(q2);
                 
                 qs2.forEach(doc => {
                     const data = doc.data();
-                    let esActual = (data.fecha >= fIni && data.fecha <= fFin);
-                    let cantDia = 0;
+                    let med = normalizarDato(data.medico);
+                    let suc = normalizarDato(data.sucursal);
+                    const diaSemana = obtenerDiaSemana(data.fecha);
 
                     if(data.estudios) {
                         Object.keys(data.estudios).forEach(rawEst => {
                             let cant = parseInt(data.estudios[rawEst]) || 0;
                             if(cant > 0) {
-                                cantDia += cant;
-                                if(esActual) {
-                                    let est = unificarEstudio(rawEst);
-                                    let med = normalizarDato(data.medico);
-                                    
-                                    currTotal += cant; currSuc += cant;
-                                    if(!conteoEstudios[est]) conteoEstudios[est] = { suc: 0, for: 0, total: 0 };
-                                    conteoEstudios[est].suc += cant; conteoEstudios[est].total += cant;
-                                    conteoMedicos[med] = (conteoMedicos[med] || 0) + cant;
-                                } else {
-                                    prevTotal += cant; prevSuc += cant;
-                                }
-                            }
-                        });
-                    }
-                    if(esActual && cantDia > 0) lineaTiempo[data.fecha] = (lineaTiempo[data.fecha] || 0) + cantDia;
-                });
-
-                // 2. Extraer Foráneos y Legacy DESDE el periodo previo hasta el actual
-                const q1 = window.query(window.collection(window.db, "registros"), window.where("fecha", ">=", P_INI), window.where("fecha", "<=", fFin));
-                const qs1 = await window.getDocs(q1);
-                
-                qs1.forEach(doc => {
-                    const data = doc.data();
-                    let esActual = (data.fecha >= fIni && data.fecha <= fFin);
-                    let cantDia = 0;
-
-                    if(data.tipo === "sucursal") {
-                        cantDia = 1;
-                        if(esActual) {
-                            let est = unificarEstudio(data.estudio);
-                            let med = normalizarDato(data.medico);
-                            currTotal++; currSuc++;
-                            if(!conteoEstudios[est]) conteoEstudios[est] = { suc: 0, for: 0, total: 0 };
-                            conteoEstudios[est].suc++; conteoEstudios[est].total++;
-                            conteoMedicos[med] = (conteoMedicos[med] || 0) + 1;
-                        } else {
-                            prevTotal++; prevSuc++;
-                        }
-                    } else if(data.detalles) {
-                        data.detalles.forEach(det => {
-                            let cant = parseInt(det.cant) || 1;
-                            cantDia += cant;
-                            if(esActual) {
-                                let est = unificarEstudio(det.estudio);
-                                let med = normalizarDato(det.medico);
-                                let emp = normalizarDato(data.empresa);
-
-                                currTotal += cant; currFor += cant;
-                                conteoEmpresas[emp] = (conteoEmpresas[emp] || 0) + cant;
+                                let est = unificarEstudio(rawEst);
+                                t_Global += cant; t_Suc += cant;
                                 
-                                if(!conteoEstudios[est]) conteoEstudios[est] = { suc: 0, for: 0, total: 0 };
-                                conteoEstudios[est].for += cant; conteoEstudios[est].total += cant;
-                                conteoMedicos[med] = (conteoMedicos[med] || 0) + cant;
-                            } else {
-                                prevTotal += cant; prevFor += cant;
+                                if(!c_Estudios[est]) c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
+                                c_Estudios[est].suc += cant; c_Estudios[est].tot += cant;
+
+                                s_Tendencia[data.fecha] = (s_Tendencia[data.fecha] || 0) + cant;
+                                s_cSucursales[suc] = (s_cSucursales[suc] || 0) + cant;
+                                s_cDias[diaSemana] += cant;
+                                s_Medicos[med] = (s_Medicos[med] || 0) + cant;
                             }
                         });
                     }
-                    if(esActual && cantDia > 0) lineaTiempo[data.fecha] = (lineaTiempo[data.fecha] || 0) + cantDia;
                 });
 
-                // ================= PINTAR KPIs Y CRECIMIENTOS =================
-                document.getElementById('kpi-total').innerText = currTotal.toLocaleString();
-                document.getElementById('kpi-sucursal').innerText = currSuc.toLocaleString();
-                document.getElementById('kpi-foraneo').innerText = currFor.toLocaleString();
-
-                pintarCrecimiento('kpi-crecimiento', currTotal, prevTotal);
-                pintarCrecimiento('kpi-crecimiento-suc', currSuc, prevSuc);
-                pintarCrecimiento('kpi-crecimiento-for', currFor, prevFor);
-
-                let topMedico = Object.keys(conteoMedicos).reduce((a, b) => conteoMedicos[a] > conteoMedicos[b] ? a : b, "--");
-                document.getElementById('kpi-medico').innerText = topMedico;
-                document.getElementById('kpi-medico-val').innerText = topMedico !== "--" ? `${conteoMedicos[topMedico]} estudios realizados` : '0 estudios';
-
-                // ================= GENERAR INSIGHT (Texto IA) =================
-                let insightText = `En el periodo evaluado, se concluyeron un total de <b>${currTotal} estudios</b>. `;
+                // ==========================================
+                // IMPRESIÓN DE DATOS (DOM) Y GRÁFICAS
+                // ==========================================
                 
-                if(currTotal > prevTotal) {
-                    let pCrec = (((currTotal - prevTotal) / prevTotal) * 100).toFixed(1);
-                    insightText += `Esto representa un <b class="text-emerald-600">aumento del ${pCrec}%</b> en comparación con el periodo inmediatamente anterior. `;
-                } else if(currTotal < prevTotal) {
-                    let pCrec = (((prevTotal - currTotal) / prevTotal) * 100).toFixed(1);
-                    insightText += `Esto refleja una <b class="text-red-600">disminución del ${pCrec}%</b> respecto al periodo anterior. `;
-                } else { insightText += `El volumen operativo se mantuvo estable frente al periodo anterior. `; }
+                // KPIs Globales
+                document.getElementById('kpi-total').innerText = t_Global.toLocaleString();
+                document.getElementById('kpi-sucursal').innerText = t_Suc.toLocaleString();
+                document.getElementById('kpi-foraneo').innerText = t_For.toLocaleString();
+                document.getElementById('kpi-empresas').innerText = f_Empresas.size;
 
-                let mayorCarga = currSuc > currFor ? 'las sucursales fijas' : 'los servicios foráneos';
-                insightText += `La mayor carga operativa fue absorbida por <b>${mayorCarga}</b>. `;
+                // Gráfica: Origen
+                dibujarGrafico('chart-origen', 'doughnut', ['Sucursal', 'Foráneos'], [t_Suc, t_For], ['#0ea5e9', '#f97316']);
+
+                // Gráfica: Estudios Globales
+                let aEstGlobal = Object.keys(c_Estudios).map(k => ({ n: k, v: c_Estudios[k].tot })).sort((a,b) => b.v - a.v);
+                dibujarGrafico('chart-estudios-global', 'bar', aEstGlobal.map(e=>e.n), aEstGlobal.map(e=>e.v), ['#8b5cf6'], 'x');
+
+                // Tabla: Desglose Global
+                let tbodyDesglose = document.getElementById('tabla-desglose'); tbodyDesglose.innerHTML = '';
+                aEstGlobal.forEach(e => {
+                    let d = c_Estudios[e.n];
+                    tbodyDesglose.innerHTML += `<tr><td class="p-3 font-bold uppercase">${e.n}</td><td class="p-3 text-center text-sky-600 font-bold">${d.suc}</td><td class="p-3 text-center text-orange-600 font-bold">${d.for}</td><td class="p-3 text-center text-indigo-700 font-black">${d.tot}</td></tr>`;
+                });
+
+                // --- SECCIÓN FORÁNEOS ---
+                let fechasForSort = Object.keys(f_Tendencia).sort();
+                dibujarGrafico('chart-foraneos-tendencia', 'line', fechasForSort, fechasForSort.map(f => f_Tendencia[f]), ['#f97316']);
+
+                let aEmpresas = Object.keys(f_cEmpresas).map(k => ({ n: k, v: f_cEmpresas[k] })).sort((a,b) => b.v - a.v).slice(0,10);
+                dibujarGrafico('chart-foraneos-empresas', 'bar', aEmpresas.map(e=>e.n), aEmpresas.map(e=>e.v), ['#f97316'], 'x');
+
+                let aMedFor = Object.keys(f_Medicos).map(k => ({ n: k, est: f_Medicos[k].estudios, hrs: f_Medicos[k].horas })).sort((a,b) => b.est - a.est);
+                dibujarGrafico('chart-foraneos-medicos', 'bar', aMedFor.map(m=>m.n), aMedFor.map(m=>m.est), ['#3b82f6'], 'x');
                 
-                let topEmp = Object.keys(conteoEmpresas).reduce((a, b) => conteoEmpresas[a] > conteoEmpresas[b] ? a : b, "");
-                if(topEmp) insightText += `El cliente corporativo con mayor demanda en campo fue <b>${topEmp}</b> con ${conteoEmpresas[topEmp]} atenciones.`;
+                let aMedHrs = [...aMedFor].sort((a,b) => b.hrs - a.hrs);
+                dibujarGrafico('chart-foraneos-horas', 'bar', aMedHrs.map(m=>m.n), aMedHrs.map(m=>m.hrs.toFixed(1)), ['#10b981'], 'x');
 
-                document.getElementById('r-insight').innerHTML = insightText;
+                let tbodyMedFor = document.getElementById('tabla-medicos-foraneos'); tbodyMedFor.innerHTML = '';
+                aMedFor.forEach(m => {
+                    tbodyMedFor.innerHTML += `<tr><td class="p-3 uppercase text-orange-700">${m.n}</td><td class="p-3 text-center font-black">${m.est}</td><td class="p-3 text-center text-slate-500">${m.hrs.toFixed(1)} hrs</td></tr>`;
+                });
 
-                // ================= PREPARAR DATOS GRÁFICAS =================
-                // 1. Línea de Tiempo (Ordenar fechas)
-                let fechasSort = Object.keys(lineaTiempo).sort();
-                let dataTiempo = fechasSort.map(f => lineaTiempo[f]);
-                dibujarGrafico('chart-linea-tiempo', 'line', fechasSort, dataTiempo, ['#6366f1']);
+                // --- SECCIÓN SUCURSALES ---
+                let fechasSucSort = Object.keys(s_Tendencia).sort();
+                dibujarGrafico('chart-sucursales-tendencia', 'line', fechasSucSort, fechasSucSort.map(f => s_Tendencia[f]), ['#0ea5e9']);
 
-                // 2. Origen (Doughnut)
-                dibujarGrafico('chart-origen', 'doughnut', ['Sucursal', 'Foráneos'], [currSuc, currFor], ['#0ea5e9', '#f97316']);
+                let aSucursales = Object.keys(s_cSucursales).map(k => ({ n: k, v: s_cSucursales[k] })).sort((a,b) => b.v - a.v).slice(0,10);
+                dibujarGrafico('chart-sucursales-top', 'bar', aSucursales.map(s=>s.n), aSucursales.map(s=>s.v), ['#0ea5e9'], 'x');
 
-                // 3. Top Empresas Foráneas (Barra)
-                let arrEmpresas = Object.keys(conteoEmpresas).map(k => ({ nombre: k, total: conteoEmpresas[k] })).sort((a,b) => b.total - a.total).slice(0, 5);
-                dibujarGrafico('chart-empresas', 'bar', arrEmpresas.map(e => e.nombre), arrEmpresas.map(e => e.total), ['#f97316'], 'y');
+                const ordenDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+                dibujarGrafico('chart-sucursales-dias', 'bar', ordenDias, ordenDias.map(d => s_cDias[d]), ['#f59e0b'], 'x');
 
-                // 4. Top Estudios (Barra)
-                let arrEstudios = Object.keys(conteoEstudios).map(k => ({ nombre: k, total: conteoEstudios[k].total })).sort((a,b) => b.total - a.total).slice(0, 5);
-                dibujarGrafico('chart-estudios', 'bar', arrEstudios.map(e => e.nombre), arrEstudios.map(e => e.total), ['#8b5cf6'], 'y');
-
-                // ================= TABLA DE DESGLOSE =================
-                let tbody = document.getElementById('tabla-desglose');
-                tbody.innerHTML = '';
-                
-                let todosLosEstudios = Object.keys(conteoEstudios).sort((a,b) => conteoEstudios[b].total - conteoEstudios[a].total);
-                
-                if(todosLosEstudios.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-400 font-bold">No hay registros de productividad en este rango.</td></tr>';
-                    document.getElementById('t-suc').innerText = 0; document.getElementById('t-for').innerText = 0; document.getElementById('t-tot').innerText = 0;
-                } else {
-                    todosLosEstudios.forEach(est => {
-                        let d = conteoEstudios[est];
-                        tbody.innerHTML += `
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="p-4 font-black text-slate-600 uppercase">${est}</td>
-                                <td class="p-4 text-center text-sky-600 font-bold">${d.suc.toLocaleString()}</td>
-                                <td class="p-4 text-center text-orange-600 font-bold">${d.for.toLocaleString()}</td>
-                                <td class="p-4 text-center text-indigo-700 font-black text-sm">${d.total.toLocaleString()}</td>
-                            </tr>
-                        `;
-                    });
-                    document.getElementById('t-suc').innerText = currSuc.toLocaleString();
-                    document.getElementById('t-for').innerText = currFor.toLocaleString();
-                    document.getElementById('t-tot').innerText = currTotal.toLocaleString();
-                }
+                let aMedSuc = Object.keys(s_Medicos).map(k => ({ n: k, v: s_Medicos[k] })).sort((a,b) => b.v - a.v);
+                let tbodyMedSuc = document.getElementById('tabla-medicos-sucursales'); tbodyMedSuc.innerHTML = '';
+                aMedSuc.forEach(m => {
+                    tbodyMedSuc.innerHTML += `<tr><td class="p-3 uppercase text-sky-700">${m.n}</td><td class="p-3 text-center font-black">${m.v}</td></tr>`;
+                });
 
             } catch (e) {
                 console.error("Error generando reporte:", e);
-                alert("Error extrayendo los datos de la nube.");
+                alert("Error extrayendo los datos de la base.");
             }
 
-            btn.innerHTML = '<i class="fa-solid fa-bolt mr-1"></i> Actualizar';
-            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-bolt mr-1"></i> Generar'; btn.disabled = false;
         }
 
-        // Motor de Gráficas
+        // Motor de Gráficas Reutilizable
         function dibujarGrafico(canvasId, tipo, labels, data, colores, indexAxis = 'x') {
             if(graficos[canvasId]) graficos[canvasId].destroy();
-            
             let colorFondo = tipo === 'line' ? colores[0] + '20' : colores[0];
-            let colorBorde = colores[0];
-
+            
             let conf = {
                 type: tipo,
-                data: { labels: labels, datasets: [{ data: data, backgroundColor: colorFondo, borderColor: colorBorde, borderWidth: 2, borderRadius: tipo==='bar'?4:0, fill: tipo === 'line', tension: 0.3 }] },
-                options: { 
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: tipo === 'doughnut', position: 'bottom' } }
-                }
+                data: { labels: labels, datasets: [{ data: data, backgroundColor: colorFondo, borderColor: colores[0], borderWidth: 2, borderRadius: tipo==='bar'?4:0, fill: tipo === 'line', tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: tipo === 'doughnut', position: 'bottom' } } }
             };
 
             if (tipo === 'doughnut') {
-                conf.data.datasets[0].backgroundColor = colores; 
-                conf.data.datasets[0].borderWidth = 0;
-                conf.options.cutout = '70%';
+                conf.data.datasets[0].backgroundColor = colores; conf.data.datasets[0].borderWidth = 0; conf.options.cutout = '70%';
             } else if (tipo === 'bar') {
                 conf.options.indexAxis = indexAxis; 
                 conf.options.scales = {
-                    y: { beginAtZero: true, grid: { display: indexAxis === 'x' }, ticks: { font: { size: 10, weight: 'bold' } } },
-                    x: { beginAtZero: true, grid: { display: indexAxis === 'y' }, ticks: { font: { size: 10, weight: 'bold' } } }
+                    y: { beginAtZero: true, grid: { display: indexAxis === 'x', color: '#f1f5f9' }, ticks: { font: { size: 9, weight: 'bold' } } },
+                    x: { beginAtZero: true, grid: { display: indexAxis === 'y', color: '#f1f5f9' }, ticks: { font: { size: 9, weight: 'bold' } } }
                 };
             } else if (tipo === 'line') {
-                conf.options.scales = {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { weight: 'bold' } } },
-                    x: { grid: { display: false }, ticks: { font: { size: 9 }, maxTicksLimit: 10 } }
-                };
-                conf.options.plugins.legend.display = false;
+                conf.options.scales = { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false }, ticks: { font: { size: 9 }, maxTicksLimit: 12 } } };
             }
 
             graficos[canvasId] = new Chart(document.getElementById(canvasId), conf);
