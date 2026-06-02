@@ -62,6 +62,7 @@
 </head>
 <body class="text-slate-800 p-2 md:p-6 min-h-screen flex flex-col items-center">
 
+    <!-- PANEL DE CONTROL (Oculto en PDF) -->
     <div class="w-full max-w-6xl no-print bg-slate-900 text-white p-6 rounded-3xl mb-6 flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl">
         <div>
             <h2 class="text-xl font-black flex items-center gap-2"><i class="fa-solid fa-file-invoice text-emerald-400"></i> Generador de Reportes</h2>
@@ -83,8 +84,12 @@
         </div>
     </div>
 
+    <!-- DOCUMENTO OFICIAL A4 -->
     <div class="w-full max-w-6xl bg-white p-6 md:p-10 rounded-[2rem] shadow-md border border-slate-200" id="documento-reporte">
         
+        <!-- ============================================== -->
+        <!-- SECCIÓN 1: RESUMEN GLOBAL                      -->
+        <!-- ============================================== -->
         <div class="header-print flex justify-between items-end pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-black tracking-tight text-slate-900">Resumen Operativo LAPI</h1>
@@ -122,6 +127,7 @@
             </div>
         </div>
 
+        <!-- TABLA DESGLOSE -->
         <div class="glass rounded-xl overflow-hidden shadow-sm mb-6">
             <div class="bg-slate-800 p-4 border-b border-slate-200"><h3 class="text-xs font-black text-white uppercase tracking-widest">Desglose Cuantitativo de Estudios</h3></div>
             <table class="w-full text-left border-collapse">
@@ -134,6 +140,9 @@
 
         <div class="page-break"></div>
 
+        <!-- ============================================== -->
+        <!-- SECCIÓN 2: FORÁNEOS                            -->
+        <!-- ============================================== -->
         <div class="header-print flex justify-between items-end pb-3 mb-6 mt-6">
             <h2 class="text-2xl font-black tracking-tight text-slate-800 uppercase">Servicios Foráneos</h2>
         </div>
@@ -159,6 +168,7 @@
             </div>
         </div>
 
+        <!-- TABLA MÉDICOS FORÁNEOS -->
         <div class="glass rounded-xl overflow-hidden shadow-sm mb-6">
             <div class="bg-orange-500 p-3 border-b border-orange-600"><h3 class="text-xs font-black text-white uppercase tracking-widest">Desglose Operativo: Médicos Foráneos</h3></div>
             <table class="w-full text-left border-collapse">
@@ -171,6 +181,9 @@
 
         <div class="page-break"></div>
 
+        <!-- ============================================== -->
+        <!-- SECCIÓN 3: SUCURSALES                          -->
+        <!-- ============================================== -->
         <div class="header-print flex justify-between items-end pb-3 mb-6 mt-6">
             <h2 class="text-2xl font-black tracking-tight text-slate-800 uppercase">Sucursales Fijas</h2>
         </div>
@@ -191,6 +204,7 @@
             </div>
         </div>
 
+        <!-- TABLA MÉDICOS SUCURSALES -->
         <div class="glass rounded-xl overflow-hidden shadow-sm mb-6">
             <div class="bg-sky-500 p-3 border-b border-sky-600"><h3 class="text-xs font-black text-white uppercase tracking-widest">Productividad: Médicos en Sucursal</h3></div>
             <table class="w-full text-left border-collapse">
@@ -206,9 +220,54 @@
     <script>
         let graficos = {};
 
+        // ==============================================
+        // DICCIONARIO CONTEXTUAL (SUCURSAL -> INICIALES -> NOMBRE)
+        // ==============================================
+        const DICCIONARIO_MEDICOS = {
+            "BALBUENA": { "JM": "Muñoz Perez Jazmin Nayeli", "MZ": "Zarate Flores Myriam Alejandra", "EP": "Perez Bautista Esther" },
+            "CUAUTITLAN": { "JA": "Angeles Velazquez Jennifer Tabata", "CBG": "Bustos Gonzalez Claudia Montserrat", "MCG": "Cervantes Erendira Montserrat", "AV": "Velasco Duran Araceli", "MSH": "Leilany Montserrat Sanchez" },
+            "CONDESA": { "UA": "Alanis Aparicio Ulises Jasiel", "MC": "Contreras Herrera Maribel del Carmen" },
+            "CALZADA DEL HUESO": { "AF": "Flores Miranda Adriana", "PI": "Islas Veivar Patricia Guadalupe", "CR": "Ramirez Ramirez Carlos Antonio", "BC": "Camacho Ortiz Barbara Alejandra" },
+            "ENCUENTRO FORTUNA": { "AD": "Dominguez Mojica Jannet Alejandra", "JC": "Cuevas Garcia Javier Alejandro", "AF": "Fuerte Morales Aleydis" },
+            "GABRIEL MANCERA": { "VM": "Monjaraz Sanchez Viviana", "LO": "Ordoñez Mejia Luis Enrique" },
+            "INTERLOMAS": { "EE": "Escobar Rios Erika Yeraldi", "CT": "Tahuilan Enciso Cinthia" },
+            "LINDAVISTA": { "SD": "Delgadillo Fredy Sebastian", "AG": "Gonzalez Lucas Alondra Estefania", "DL": "Lino Reynoso Deany Alondra" },
+            "LOMAS VERDES": { "MIR": "Martha Izaguirre Rojas", "BD": "Dulce Maria Buenrostro Perez", "LC": "Cruz Zavala Lucero", "JT": "Toriz Segura Jessica Noemi" },
+            "MARTIN CARRERA": { "LS": "Luevano Sanchez Sara Maria", "SL": "Luevano Sanchez Sara Maria" },
+            "METEPEC": { "RML": "Montoya Linares Rebeca", "SSR": "Rueda Pedraza Sabine Shecid", "MRC": "Cabrera Velazquez Miguel Ramon" },
+            "MIXCOAC": { "PP": "Paula Pichardo", "BF": "Brenda Flores" },
+            "PLATEROS": { "PA": "Paulina Alba", "AM": "Garcia Morado Ana Lourdes" },
+            "PLAZA CENTRAL": { "IA": "Arizcorreta Colchado Ivonne Guadalupe", "BC": "Chavez Muñoz Brizeth Alondra" },
+            "POLANCO": { "KF": "Fernandez Contreras Karla Alitzel", "AS": "Soriano Arvea Ariagna Anahi", "GH": "Hernandez Gonzalez Giovanni Mariano", "PP": "Pineda Lopez Patricia" },
+            "SANTA FE": { "GM": "Medina Molina Guadalupe" },
+            "SANTA MARTHA": { "JD": "Duque Hernandez Jaqueline", "AD": "Dominguez Mojica Jannet Alejandra", "AC": "Cabrera Hernandez Ana Beatriz", "LC": "Lucero Cruz" },
+            "SATELITE": { "MASR": "Salinas Rojas Miguel Angel", "MGZH": "Maria Guadalupe Zapata Hernandez", "LLGM": "Lopez Lopez Guadalupe Mireya" },
+            "REVOLUCION": { "MS": "Saavedra Olvera Miriam Elizabeth", "VR": "Reyes Perez Victor", "CS": "Sanchez Sanchez Claudia Ivonne", "DO": "Olvera Aguilar Diana Karen" }
+        };
+
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        }
+
+        // ==============================================
+        // TRADUCTOR INTELIGENTE Y CONTEXTUAL DE MÉDICOS
+        // ==============================================
+        function traducirMedicoReporte(rawMed, rawSuc) {
+            if (!rawMed) return "Desconocido";
+            
+            // Extraer inicial limpia
+            let med = String(rawMed).toUpperCase().trim().replace(/\./g, '');
+            // Extraer sucursal limpia sin acentos para cruzar con nuestro diccionario
+            let suc = String(rawSuc).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+            // Preguntamos si existe la sucursal Y la inicial en nuestro diccionario
+            if (DICCIONARIO_MEDICOS[suc] && DICCIONARIO_MEDICOS[suc][med]) {
+                return normalizarDato(DICCIONARIO_MEDICOS[suc][med]);
+            }
+            
+            // Si no está, lo devuelve tal cual lo escribieron normalizado
+            return normalizarDato(rawMed);
         }
 
         function unificarEstudio(est) {
@@ -268,7 +327,11 @@
                     if(data.tipo === "sucursal") {
                         // SUCURSAL LEGACY
                         t_Global++; t_Suc++;
-                        let est = unificarEstudio(data.estudio); let med = normalizarDato(data.medico); let suc = normalizarDato(data.sucursal);
+                        let est = unificarEstudio(data.estudio); 
+                        let suc = normalizarDato(data.sucursal);
+                        
+                        // Traductor inteligente alimentado con Médico y Sucursal
+                        let med = traducirMedicoReporte(data.medico, suc); 
                         
                         if(!c_Estudios[est]) c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
                         c_Estudios[est].suc++; c_Estudios[est].tot++;
@@ -281,15 +344,17 @@
                     } else if(data.detalles) {
                         // FORÁNEO
                         let emp = normalizarDato(data.empresa);
+                        let suc = normalizarDato(data.sucursal || "FORÁNEO");
                         f_Empresas.add(emp);
                         let horas = parseFloat(data.horasLaboradas) || 0;
-                        
-                        // Para no duplicar horas si un médico hace 2 estudios en el mismo servicio, sacamos únicos
                         let medicosUnicosEnServicio = new Set();
 
                         data.detalles.forEach(det => {
                             let cant = parseInt(det.cant) || 1;
-                            let est = unificarEstudio(det.estudio); let med = normalizarDato(det.medico);
+                            let est = unificarEstudio(det.estudio); 
+                            
+                            // Traductor inteligente
+                            let med = traducirMedicoReporte(det.medico, suc);
                             medicosUnicosEnServicio.add(med);
 
                             t_Global += cant; t_For += cant;
@@ -303,7 +368,7 @@
                             f_Medicos[med].estudios += cant;
                         });
 
-                        // Sumar horas al médico por el viaje
+                        // Sumar horas al médico
                         medicosUnicosEnServicio.forEach(m => {
                             if(f_Medicos[m]) f_Medicos[m].horas += horas;
                         });
@@ -316,8 +381,10 @@
                 
                 qs2.forEach(doc => {
                     const data = doc.data();
-                    let med = normalizarDato(data.medico);
                     let suc = normalizarDato(data.sucursal);
+                    
+                    // Traductor inteligente
+                    let med = traducirMedicoReporte(data.medico, suc);
                     const diaSemana = obtenerDiaSemana(data.fecha);
 
                     if(data.estudios) {
