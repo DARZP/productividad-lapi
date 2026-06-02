@@ -474,10 +474,23 @@
                 qs1.forEach(doc => {
                     const data = doc.data();
                     if(data.tipo === "sucursal") {
-                        rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: agruparEstudio(data.estudio, "Sucursal"), medico: normalizarDato(data.medico) });
+                        rawDataGlobal.push({ 
+                            tipo: "Sucursal", 
+                            fecha: data.fecha, 
+                            lugar: normalizarDato(data.sucursal), 
+                            estudio: agruparEstudio(data.estudio, "Sucursal"), 
+                            // MAGIA: Filtramos también la App para igualarla con el Excel
+                            medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) 
+                        });
                     } else if(data.detalles) {
                         data.detalles.forEach(det => {
-                            rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), estudio: agruparEstudio(det.estudio, "Foráneo"), medico: normalizarDato(det.medico) });
+                            rawDataGlobal.push({ 
+                                tipo: "Foráneo", 
+                                fecha: data.fecha, 
+                                lugar: normalizarDato(data.empresa), 
+                                estudio: agruparEstudio(det.estudio, "Foráneo"), 
+                                medico: normalizarDato(traducirMedico(det.medico, data.sucursal || "FORÁNEO")) 
+                            });
                         });
                     }
                 });
@@ -489,14 +502,22 @@
                     if(data.estudios) {
                         Object.keys(data.estudios).forEach(est => {
                             for(let k=0; k<(data.estudios[est]||0); k++){
-                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: agruparEstudio(est, "Sucursal"), medico: normalizarDato(data.medico) });
+                                rawDataGlobal.push({ 
+                                    tipo: "Sucursal", 
+                                    fecha: data.fecha, 
+                                    lugar: normalizarDato(data.sucursal), 
+                                    estudio: agruparEstudio(est, "Sucursal"), 
+                                    medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) 
+                                });
                             }
                         });
                     }
                 });
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
                 verificarParametrosURL(); 
-            } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; }
+            } catch (error) { 
+                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; 
+            }
         }
 
         window.aplicarFiltroRapido = function(tipo) {
