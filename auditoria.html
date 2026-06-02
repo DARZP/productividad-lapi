@@ -121,7 +121,6 @@
                     
                     <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200">
                         
-                        <!-- HEADER CON BOTONES MASIVOS -->
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
                             
@@ -147,9 +146,6 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN 2 Y 3: TNC Y PERFIL                -->
-        <!-- ========================================== -->
         <div id="sec-tnc" class="hidden animate-fade-in">
             <div class="glass p-6 rounded-3xl shadow-sm flex flex-col h-[78vh] border border-slate-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-slate-200 pb-4 gap-4">
@@ -211,7 +207,6 @@
 
     </div>
 
-    <!-- MODALES -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-purple-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
@@ -259,7 +254,6 @@
         </div>
     </div>
 
-    <!-- MODAL LUPA (NUEVO) -->
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
@@ -451,6 +445,18 @@
             return n;
         }
 
+        function unificarEstudio(est) {
+            if(!est) return "Desconocido";
+            let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clínica";
+            if (upper.includes("ESPIROMETRIA")) return "Espirometría";
+            if (upper.includes("AUDIOMETRIA")) return "Audiometría";
+            if (upper.includes("ELECTROCARDIOGRAMA")) return "Electrocardiograma";
+            if (upper.includes("VISUAL")) return "Examen Capacidad Visual";
+            if (upper.includes("CONSULTA")) return "Consulta Médica";
+            return normalizarDato(est);
+        }
+
         function traducirMedico(rawMed, rawSuc) {
             if (!rawMed) return "Desconocido";
             
@@ -534,7 +540,7 @@
                         Object.keys(estudiosMapeo).forEach(key => {
                             if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
                                 let estRaw = estudiosMapeo[key];
-                                let est = unificarEstudio(estRaw);
+                                let est = unificarEstudio(estRaw); // Se corrigió la función faltante
                                 let med = traducirMedico(f[mapa[key]], sEx);
                                 
                                 // Extraer los datos detallados
