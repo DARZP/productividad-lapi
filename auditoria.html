@@ -83,7 +83,7 @@
                         <div class="absolute top-0 right-0 bg-sky-100 text-sky-600 text-[9px] font-black px-2 py-1 rounded-bl-lg">M2M ENABLED</div>
                         <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Origen de Datos</h3>
                         
-                        <button id="btn-auditoria-onedrive" onclick="conectarOneDrive()" class="w-full bg-[#0078d4] hover:bg-[#005a9e] text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm active:scale-95 mb-4 flex items-center justify-center gap-2">
+                        <button id="btn-auditoria-onedrive" onclick="conectarOneDrive()" class="w-full bg-[#0078d4] hover:bg-[#005a9e] text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm active:scale-scale-95 mb-4 flex items-center justify-center gap-2">
                             <i class="fa-brands fa-microsoft text-lg"></i> Extraer de OneDrive
                         </button>
 
@@ -121,13 +121,14 @@
                     
                     <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200">
                         
+                        <!-- HEADER CON BOTONES MASIVOS -->
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
                             
                             <div class="flex items-center gap-2">
                                 <button id="btn-bulk-inyectar" onclick="inyectarFaltantesMasivo()" style="display:none;" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Inyectar Faltantes</button>
                                 <button id="btn-bulk-tnc" onclick="generarTncMasivo()" style="display:none;" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Generar TNCs</button>
-                                <span id="status-db" class="text-[10px] text-slate-500 font-bold ml-2"><i class="fa-solid fa-spinner fa-spin"></i> Conectando...</span>
+                                <span id="status-db" class="text-[10px] text-slate-500 font-bold ml-2"><i class="fa-solid fa-spinner fa-spin"></i> Inicializando BD...</span>
                             </div>
                         </div>
 
@@ -146,6 +147,9 @@
             </div>
         </div>
 
+        <!-- ========================================== -->
+        <!-- SECCIÓN 2 Y 3: TNC Y PERFIL                -->
+        <!-- ========================================== -->
         <div id="sec-tnc" class="hidden animate-fade-in">
             <div class="glass p-6 rounded-3xl shadow-sm flex flex-col h-[78vh] border border-slate-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-slate-200 pb-4 gap-4">
@@ -207,6 +211,7 @@
 
     </div>
 
+    <!-- MODALES -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200">
             <h3 class="text-xl font-black mb-4 text-purple-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
@@ -281,7 +286,6 @@
         let chartMedico = null;
         let ticketsGlobal = [];
 
-        // ALMACÉN PARA BOTONES MASIVOS
         window.discrepanciasInyectar = [];
         window.discrepanciasTNC = [];
 
@@ -395,12 +399,7 @@
                     archProcesados++;
                 }
 
-                appDataGlobal = {};
-                rawDataGlobal.filter(r => r.tipo === "Sucursal").forEach(reg => {
-                    const hash = `${reg.fecha}|${reg.lugar}|${reg.medico}|${reg.estudio}`;
-                    appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
-                });
-                
+                sincronizarAppGlobal();
                 reRenderAuditoria();
                 mostrarToast(`Auditoría lista: ${archProcesados} Excels integrados automáticamente.`, "exito");
                 btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Extracción Completada';
@@ -408,7 +407,7 @@
         };
 
         // ==========================================================
-        // 2. MOTOR ESTRICTO CONTEXTUAL (SUCURSAL + INICIAL)
+        // 2. MOTOR ESTRICTO CONTEXTUAL Y EXTRACTOR INTELIGENTE
         // ==========================================================
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
@@ -428,28 +427,39 @@
         function traducirMedico(rawMed, rawSuc) {
             if (!rawMed) return "Desconocido";
             
-            // 1. Limpieza extrema: quitar puntos, espacios extras y cualquier etiqueta de error vieja guardada en BD
-            let med = String(rawMed).toUpperCase().trim().replace(/\./g, '');
+            // Limpieza inicial: elimina prefijos inútiles y quita acentos para comparar
+            let med = String(rawMed).toUpperCase().trim();
+            med = med.replace(/^DR\(A\)\.?\s*/, '').replace(/^DRA\.?\s*/, '').replace(/^DR\.?\s*/, '');
+            med = med.replace(/\./g, '');
             med = med.replace(/\[INICIAL NO REGISTRADA:\s*/g, '').replace(/\]/g, '').trim();
             
-            let suc = String(rawSuc).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            let suc = normalizarDato(rawSuc).toUpperCase();
             
-            // 2. MAGIA: Si el médico es simplemente "X" (o sus variantes comunes de check), lo pasamos intacto
+            // LA "X" YA NO ES UN ERROR
             if (med === 'X' || med === '✔' || med === 'OK') {
                 return "X";
             }
 
-            // 3. Busca estrictamente en el diccionario tomando en cuenta la SUCURSAL
+            // Busca en el diccionario de Iniciales (Tomando en cuenta la SUCURSAL)
             if (diccIniciales[suc] && diccIniciales[suc][med]) {
                 return normalizarDato(diccIniciales[suc][med]);
             }
             
-            // 4. Si escriben el nombre completo en el Excel/App y cuadra con la base...
+            // Búsqueda Inteligente contra el Catálogo Oficial (Ignora acentos totalmente)
+            const medNormalizado = normalizarDato(med).toUpperCase();
             const medicos = window.LAPI_CONFIG.medicos || [];
-            const exactMatch = medicos.find(m => m.toUpperCase().trim() === med);
+            
+            // Match Perfecto
+            const exactMatch = medicos.find(m => normalizarDato(m).toUpperCase() === medNormalizado);
             if(exactMatch) return exactMatch;
 
-            // 5. Si no es un match exacto ni está en el diccionario
+            // Match Parcial (Ej. Si en firebase guardaron "Chavez Munoz Brizeth" pero el oficial es "Chavez Muñoz Brizeth Alondra")
+            const partialMatch = medicos.find(m => {
+                const mNorm = normalizarDato(m).toUpperCase();
+                return mNorm.includes(medNormalizado) || medNormalizado.includes(mNorm);
+            });
+            if(partialMatch) return partialMatch;
+
             return `[INICIAL NO REGISTRADA: ${med}]`; 
         }
 
@@ -493,6 +503,15 @@
         // ==========================================================
         // 3. UI, CRUCE MANUAL Y REDERIZADO
         // ==========================================================
+        
+        window.sincronizarAppGlobal = function() {
+            appDataGlobal = {};
+            rawDataGlobal.filter(r => r.tipo === "Sucursal").forEach(reg => {
+                const hash = `${reg.fecha}|${reg.lugar}|${reg.medico}|${reg.estudio}`;
+                appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
+            });
+        };
+
         window.ejecutarCruceDeDatos = async function() {
             const input = document.getElementById('archivoAuditoria');
             if(input.files.length === 0) return mostrarToast("Sube un archivo Excel.", "error");
@@ -505,11 +524,7 @@
                     await procesarArrayBufferExcel(data); 
                 }
                 
-                appDataGlobal = {};
-                rawDataGlobal.filter(r => r.tipo === "Sucursal").forEach(reg => {
-                    const hash = `${reg.fecha}|${reg.lugar}|${reg.medico}|${reg.estudio}`;
-                    appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
-                });
+                sincronizarAppGlobal();
                 reRenderAuditoria();
             } catch(e) { mostrarToast("Error leyendo Excel", "error"); console.error(e); }
             document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-upload mr-1"></i> Procesar Archivos Locales';
@@ -528,28 +543,53 @@
         async function initAuditoria() {
             try {
                 rawDataGlobal = [];
+                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando BD...';
+
                 const q1 = window.query(window.collection(window.db, "registros"));
                 const qs1 = await window.getDocs(q1);
+                
                 qs1.forEach(doc => {
                     const data = doc.data();
-                    if(data.tipo === "sucursal") {
-                        rawDataGlobal.push({ 
-                            tipo: "Sucursal", 
-                            fecha: data.fecha, 
-                            lugar: normalizarDato(data.sucursal), 
-                            estudio: agruparEstudio(data.estudio, "Sucursal"), 
-                            // Filtramos Firebase con el traductor para que empate con Excel
-                            medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) 
-                        });
-                    } else if(data.detalles) {
-                        data.detalles.forEach(det => {
-                            rawDataGlobal.push({ 
-                                tipo: "Foráneo", 
-                                fecha: data.fecha, 
-                                lugar: normalizarDato(data.empresa), 
-                                estudio: agruparEstudio(det.estudio, "Foráneo"), 
-                                medico: normalizarDato(traducirMedico(det.medico, data.sucursal || "FORÁNEO")) 
+                    let esSucursal = (data.tipo === "sucursal" || data.tipo === "Sucursal");
+                    
+                    if (esSucursal) {
+                        // LA MAGIA: Si el usuario guardó como Sucursal pero metió varios estudios en un carrito
+                        if (data.detalles && data.detalles.length > 0) {
+                            data.detalles.forEach(det => {
+                                let cant = parseInt(det.cant) || 1;
+                                for(let k=0; k<cant; k++) {
+                                    rawDataGlobal.push({ 
+                                        tipo: "Sucursal", 
+                                        fecha: data.fecha, 
+                                        lugar: normalizarDato(data.sucursal), 
+                                        estudio: agruparEstudio(det.estudio, "Sucursal"), 
+                                        medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)) 
+                                    });
+                                }
                             });
+                        } else if (data.estudio) {
+                            // Si lo guardó como un registro individual simple
+                            rawDataGlobal.push({ 
+                                tipo: "Sucursal", 
+                                fecha: data.fecha, 
+                                lugar: normalizarDato(data.sucursal), 
+                                estudio: agruparEstudio(data.estudio, "Sucursal"), 
+                                medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) 
+                            });
+                        }
+                    } else if (data.detalles) {
+                        // FORÁNEO
+                        data.detalles.forEach(det => {
+                            let cant = parseInt(det.cant) || 1;
+                            for(let k=0; k<cant; k++) {
+                                rawDataGlobal.push({ 
+                                    tipo: "Foráneo", 
+                                    fecha: data.fecha, 
+                                    lugar: normalizarDato(data.empresa), 
+                                    estudio: agruparEstudio(det.estudio, "Foráneo"), 
+                                    medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")) 
+                                });
+                            }
                         });
                     }
                 });
@@ -560,7 +600,8 @@
                     const data = doc.data();
                     if(data.estudios) {
                         Object.keys(data.estudios).forEach(est => {
-                            for(let k=0; k<(data.estudios[est]||0); k++){
+                            let cant = parseInt(data.estudios[est]) || 0;
+                            for(let k=0; k<cant; k++){
                                 rawDataGlobal.push({ 
                                     tipo: "Sucursal", 
                                     fecha: data.fecha, 
@@ -572,9 +613,18 @@
                         });
                     }
                 });
+                
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
+                sincronizarAppGlobal();
+                
+                // Si le diste al botón muy rápido, esto auto-refrescará la tabla en cuanto la base de datos termine
+                if(Object.keys(excelDataGlobal).length > 0) reRenderAuditoria();
+                
                 verificarParametrosURL(); 
-            } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; }
+            } catch (error) { 
+                console.error(error);
+                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; 
+            }
         }
 
         window.aplicarFiltroRapido = function(tipo) {
@@ -592,7 +642,6 @@
             const fIni = document.getElementById('a-inicio').value; const fFin = document.getElementById('a-fin').value;
             let match=0, faltaEnApp=0, extraEnApp=0; let html = "";
             
-            // Vaciamos los contenedores de acciones masivas
             window.discrepanciasInyectar = [];
             window.discrepanciasTNC = [];
 
@@ -635,7 +684,6 @@
             tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">Sube Excel de la sucursal que deseas auditar.</td></tr>';
             document.getElementById('kpi-aud-match').innerText = match; document.getElementById('kpi-aud-rojo').innerText = faltaEnApp; document.getElementById('kpi-aud-ama').innerText = extraEnApp;
 
-            // Mostrar u ocultar botones masivos dependiendo de si hay discrepancias
             document.getElementById('btn-bulk-inyectar').style.display = window.discrepanciasInyectar.length > 0 ? 'inline-block' : 'none';
             document.getElementById('btn-bulk-tnc').style.display = window.discrepanciasTNC.length > 0 ? 'inline-block' : 'none';
         };
@@ -902,7 +950,7 @@
                 }
                 mostrarToast("Base de datos sincronizada", "exito");
                 cerrarModal('correccion');
-                await initAuditoria(); if(Object.keys(excelDataGlobal).length > 0) reRenderAuditoria();
+                await initAuditoria(); 
             } catch (e) { mostrarToast("Fallo (Verifica Reglas de Firebase)", "error"); }
             btn.innerHTML = 'Sincronizar'; btn.disabled = false;
         };
@@ -934,7 +982,6 @@
                 }
                 mostrarToast("Inyección masiva completada", "exito");
                 await initAuditoria(); 
-                if(Object.keys(excelDataGlobal).length > 0) reRenderAuditoria();
             } catch(e) { 
                 console.error("Error en inyección masiva:", e); 
                 mostrarToast("Ocurrió un error en la inyección masiva", "error");
