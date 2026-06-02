@@ -83,7 +83,7 @@
                         <div class="absolute top-0 right-0 bg-sky-100 text-sky-600 text-[9px] font-black px-2 py-1 rounded-bl-lg">M2M ENABLED</div>
                         <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Origen de Datos</h3>
                         
-                        <button id="btn-auditoria-onedrive" onclick="conectarOneDrive()" class="w-full bg-[#0078d4] hover:bg-[#005a9e] text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm active:scale-scale-95 mb-4 flex items-center justify-center gap-2">
+                        <button id="btn-auditoria-onedrive" onclick="conectarOneDrive()" class="w-full bg-[#0078d4] hover:bg-[#005a9e] text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm active:scale-95 mb-4 flex items-center justify-center gap-2">
                             <i class="fa-brands fa-microsoft text-lg"></i> Extraer de OneDrive
                         </button>
 
@@ -213,7 +213,7 @@
 
     <!-- MODALES -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200">
+        <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-purple-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
             
             <input type="hidden" id="tnc-hash">
@@ -223,7 +223,7 @@
             <input type="hidden" id="tnc-lugar">
             <input type="hidden" id="tnc-estudio">
             
-            <div id="tnc-paso-1" class="block">
+            <div id="tnc-paso-1" class="block overflow-y-auto pr-2 scroll-custom flex-1">
                 <p class="text-xs text-slate-500 mb-2 font-bold">1. Busca el servicio exacto en la base de datos:</p>
                 <div class="flex gap-2 mb-3">
                     <select id="tnc-filtro-origen" onchange="ejecutarBuscadorTNC()" class="w-1/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600">
@@ -233,13 +233,13 @@
                     </select>
                     <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Ej. Lomas Verdes, Juan, HC..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
                 </div>
-                <div id="tnc-resultados-busqueda" class="max-h-52 overflow-y-auto scroll-custom space-y-1 mb-4 border border-slate-200 rounded-lg p-1 bg-slate-50">
+                <div id="tnc-resultados-busqueda" class="space-y-1 mb-4 border border-slate-200 rounded-lg p-1 bg-slate-50">
                     <p class="text-center text-xs text-slate-400 py-4">Teclea para buscar...</p>
                 </div>
-                <button onclick="cerrarModal('tnc')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar y Cerrar</button>
+                <button onclick="cerrarModal('tnc')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all mt-auto">Cancelar y Cerrar</button>
             </div>
 
-            <div id="tnc-paso-2" class="hidden">
+            <div id="tnc-paso-2" class="hidden flex-col flex-1">
                 <div class="bg-purple-50 border border-purple-200 p-3 rounded-xl mb-4 flex justify-between items-center shadow-sm">
                     <div id="tnc-servicio-seleccionado" class="text-xs text-purple-900 font-bold leading-tight"></div>
                     <button onclick="resetBuscadorTNC()" class="text-purple-600 hover:text-purple-800 bg-white p-2 rounded-lg shadow-sm" title="Cambiar Servicio"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -251,10 +251,33 @@
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">3. Observaciones / Evidencia</label>
                 <textarea id="tnc-notas" rows="2" class="w-full p-3 bg-slate-50 text-slate-700 rounded-xl outline-none mb-6 border border-slate-200 text-sm placeholder-slate-400" placeholder="Añade detalles sobre el error..."></textarea>
 
-                <div class="flex gap-3">
+                <div class="flex gap-3 mt-auto">
                     <button onclick="resetBuscadorTNC()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Atrás</button>
                     <button onclick="guardarTNC()" class="w-2/3 bg-purple-600 hover:bg-purple-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2"><i class="fa-solid fa-save"></i> Guardar TNC</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LUPA (NUEVO) -->
+    <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
+                <h3 class="text-lg font-black text-purple-700 flex items-center gap-2"><i class="fa-solid fa-magnifying-glass"></i> Desglose del Excel</h3>
+                <button onclick="cerrarModal('lupa')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div id="lupa-info" class="text-xs text-slate-500 mb-3 bg-slate-50 p-3 rounded-xl border border-slate-200"></div>
+            <div class="overflow-y-auto scroll-custom flex-1 border border-slate-200 rounded-xl">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm text-[10px] uppercase text-slate-500">
+                        <tr><th class="p-3 border-b">N° Orden</th><th class="p-3 border-b">Paciente</th></tr>
+                    </thead>
+                    <tbody id="lupa-tbody" class="divide-y divide-slate-100 text-xs font-medium text-slate-700">
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex gap-3">
+                <button onclick="cerrarModal('lupa')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cerrar Lupa</button>
             </div>
         </div>
     </div>
@@ -281,7 +304,7 @@
         // 0. GLOBALES, DICCIONARIOS Y CONFIG
         // ==========================================
         let rawDataGlobal = []; 
-        let excelDataGlobal = {};
+        let excelDataGlobal = {}; // AHORA ES UN OBJETO CON ARRAYS (Modo Lupa)
         let appDataGlobal = {};
         let chartMedico = null;
         let ticketsGlobal = [];
@@ -290,27 +313,12 @@
         window.discrepanciasTNC = [];
 
         const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
+        
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales || {};
+        estudiosMapeo["CONSULTA MEDICA"] = "Consulta Médica";
+        estudiosMapeo["CONSULTA MÉDICA"] = "Consulta Médica";
+
         const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
-
-        document.getElementById('lista-medicos-perfil').innerHTML = (window.LAPI_CONFIG.medicos || []).map(m => `<option value="${m}">`).join('');
-
-        const TNC_CATALOGO = {
-            "Sucursal": {
-                "Espirometría": ["CONSENTIMIENTO INFORMADO", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "SIGNOS VITALES Y SOMATOMETRÍA", "INTERROGATORIO Y/O ANTECEDENTES", "DISPONIBILIDAD DE MANIOBRA", "CALIDAD DE MANIOBRA", "REGISTRO EN SISTEMA WEB"],
-                "Agudeza Visual": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "REGISTRO DE AGUDEZA VISUAL", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB"],
-                "Electrocardiograma": ["DISPONIBILIDAD DE TRAZO", "FICHA DE IDENTIFICACIÓN", "CALIDAD DEL TRAZO"],
-                "Historia Clínica": ["EXPLORACIÓN FÍSICA", "AUDIOGRAMA", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB", "FICHA DE IDENTIFICACIÓN"], 
-                "Genérico": ["FICHA DE IDENTIFICACIÓN", "REGISTRO EN SISTEMA WEB", "LETRA LEGIBLE", "CONTROL DOCUMENTAL"]
-            },
-            "Foráneo": {
-                "Historia Clínica": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA"],
-                "Audiometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA", "CALIDAD DEL AUDIOGRAMA"],
-                "Espirometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "SIGNOS VITALES Y SOMATOMETRÍA", "CALIDAD DE MANIOBRA"],
-                "Genérico": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "FICHA DE IDENTIFICACIÓN", "ERROR DE CAPTURA"]
-            },
-            "Global": ["ESTUDIO FALTANTE (OMISIÓN APP)", "ESTUDIO SOBRANTE (DUPLICADO APP)", "OTRO / COMENTARIO"]
-        };
 
         window.iniciarAppAuditoria = function() {
             initAuditoria();
@@ -358,6 +366,24 @@
                 modal.classList.add('opacity-0'); card.classList.add('scale-95');
                 setTimeout(() => { modal.classList.add('hidden'); }, 300);
             }
+        };
+
+        window.verLupa = function(hash) {
+            const lista = excelDataGlobal[hash] || [];
+            const [fecha, sucursal, medico, estudio] = hash.split('|');
+            
+            document.getElementById('lupa-info').innerHTML = `
+                <span class="font-black text-slate-700">${medico}</span><br>
+                ${estudio} <span class="mx-1">|</span> ${fecha} <span class="mx-1">|</span> ${sucursal}
+            `;
+
+            let tbody = document.getElementById('lupa-tbody');
+            tbody.innerHTML = '';
+            lista.forEach(item => {
+                tbody.innerHTML += `<tr class="hover:bg-purple-50 transition"><td class="p-3 font-bold text-slate-500">${item.orden}</td><td class="p-3 text-slate-800">${item.paciente}</td></tr>`;
+            });
+
+            abrirModal('lupa');
         };
 
         // ==========================================================
@@ -421,13 +447,13 @@
             if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") {
                 return "Historia Clínica";
             }
+            if (upper.includes("CONSULTA")) return "Consulta Médica";
             return n;
         }
 
         function traducirMedico(rawMed, rawSuc) {
             if (!rawMed) return "Desconocido";
             
-            // Limpieza inicial: elimina prefijos inútiles y quita acentos para comparar
             let med = String(rawMed).toUpperCase().trim();
             med = med.replace(/^DR\(A\)\.?\s*/, '').replace(/^DRA\.?\s*/, '').replace(/^DR\.?\s*/, '');
             med = med.replace(/\./g, '');
@@ -435,25 +461,20 @@
             
             let suc = normalizarDato(rawSuc).toUpperCase();
             
-            // LA "X" YA NO ES UN ERROR
             if (med === 'X' || med === '✔' || med === 'OK') {
                 return "X";
             }
 
-            // Busca en el diccionario de Iniciales (Tomando en cuenta la SUCURSAL)
             if (diccIniciales[suc] && diccIniciales[suc][med]) {
                 return normalizarDato(diccIniciales[suc][med]);
             }
             
-            // Búsqueda Inteligente contra el Catálogo Oficial (Ignora acentos totalmente)
             const medNormalizado = normalizarDato(med).toUpperCase();
             const medicos = window.LAPI_CONFIG.medicos || [];
             
-            // Match Perfecto
             const exactMatch = medicos.find(m => normalizarDato(m).toUpperCase() === medNormalizado);
             if(exactMatch) return exactMatch;
 
-            // Match Parcial (Ej. Si en firebase guardaron "Chavez Munoz Brizeth" pero el oficial es "Chavez Muñoz Brizeth Alondra")
             const partialMatch = medicos.find(m => {
                 const mNorm = normalizarDato(m).toUpperCase();
                 return mNorm.includes(medNormalizado) || medNormalizado.includes(mNorm);
@@ -481,18 +502,51 @@
                             fEx = `${p[2].length===2?'20'+p[2]:p[2]}-${String(mN+1).padStart(2,'0')}-${p[0].padStart(2,'0')}`; 
                         }
                     }
-                    let cS = cL.findIndex(v=>v.includes("SUCURSAL")); if(cS!==-1) sEx = cL[cS+1] || cL[cS+2];
-                    if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){ iEnc=r; filas[r].forEach((val, idx)=>{ if(val) mapa[String(val).toUpperCase().trim()] = idx; }); }
+                    
+                    let cS = cL.findIndex(v=>v.includes("SUCURSAL")); 
+                    if(cS!==-1) sEx = cL[cS+1] || cL[cS+2];
+                    
+                    if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){ 
+                        iEnc=r; 
+                        filas[r].forEach((val, idx)=>{ 
+                            if(val) {
+                                let colTxt = String(val).toUpperCase().trim();
+                                mapa[colTxt] = idx; 
+                                if(colTxt.includes("ORDEN")) mapa["_ORDEN_DINAMICO_"] = idx;
+                            }
+                        }); 
+                    }
                 }
 
                 if(iEnc!==-1){
                     sEx = normalizarDato(sEx);
                     for(let r=iEnc+1; r<filas.length; r++){
-                        let f = filas[r]; if(!f || !f[mapa["NOMBRE"]] || f.join(" ").toUpperCase().includes("PENDIENTES")) break;
+                        let f = filas[r]; 
+                        if(!f) continue;
+                        let fStr = f.join(" ").toUpperCase();
+                        
+                        // Cortafuegos de pendientes
+                        if(fStr.includes("PENDIENTES") || fStr.includes("ESTUDIOS PENDIENTES")) break;
+                        
+                        // Saltarse filas en blanco
+                        if(mapa["NOMBRE"] === undefined || !f[mapa["NOMBRE"]] || String(f[mapa["NOMBRE"]]).trim() === "") continue;
+
                         Object.keys(estudiosMapeo).forEach(key => {
                             if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
-                                const hash = `${fEx}|${sEx}|${normalizarDato(traducirMedico(f[mapa[key]], sEx))}|${agruparEstudio(estudiosMapeo[key], "Sucursal")}`;
-                                excelDataGlobal[hash] = (excelDataGlobal[hash] || 0) + 1;
+                                let estRaw = estudiosMapeo[key];
+                                let est = unificarEstudio(estRaw);
+                                let med = traducirMedico(f[mapa[key]], sEx);
+                                
+                                // Extraer los datos detallados
+                                let nombrePaciente = f[mapa["NOMBRE"]] ? String(f[mapa["NOMBRE"]]).trim() : "DESCONOCIDO";
+                                let idxOrden = mapa["_ORDEN_DINAMICO_"];
+                                let numeroOrden = (idxOrden !== undefined && f[idxOrden]) ? String(f[idxOrden]).trim() : "S/N";
+
+                                const hash = `${fEx}|${sEx}|${normalizarDato(med)}|${est}`;
+                                
+                                // GUARDAMOS EN LA LUPA (Array) EN LUGAR DE SUMAR +1
+                                if(!excelDataGlobal[hash]) excelDataGlobal[hash] = [];
+                                excelDataGlobal[hash].push({ orden: numeroOrden, paciente: nombrePaciente });
                             }
                         });
                     }
@@ -553,7 +607,6 @@
                     let esSucursal = (data.tipo === "sucursal" || data.tipo === "Sucursal");
                     
                     if (esSucursal) {
-                        // LA MAGIA: Si el usuario guardó como Sucursal pero metió varios estudios en un carrito
                         if (data.detalles && data.detalles.length > 0) {
                             data.detalles.forEach(det => {
                                 let cant = parseInt(det.cant) || 1;
@@ -568,7 +621,6 @@
                                 }
                             });
                         } else if (data.estudio) {
-                            // Si lo guardó como un registro individual simple
                             rawDataGlobal.push({ 
                                 tipo: "Sucursal", 
                                 fecha: data.fecha, 
@@ -578,7 +630,6 @@
                             });
                         }
                     } else if (data.detalles) {
-                        // FORÁNEO
                         data.detalles.forEach(det => {
                             let cant = parseInt(det.cant) || 1;
                             for(let k=0; k<cant; k++) {
@@ -617,9 +668,7 @@
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
                 sincronizarAppGlobal();
                 
-                // Si le diste al botón muy rápido, esto auto-refrescará la tabla en cuanto la base de datos termine
                 if(Object.keys(excelDataGlobal).length > 0) reRenderAuditoria();
-                
                 verificarParametrosURL(); 
             } catch (error) { 
                 console.error(error);
@@ -654,8 +703,14 @@
                 if(!combinacionesExcel.has(`${fecha}|${sucursal}`)) return; 
                 if(fIni && fecha < fIni) return; if(fFin && fecha > fFin) return;
 
-                const cE = excelDataGlobal[hash] || 0; const cA = appDataGlobal[hash] || 0;
+                // AHORA LEE LA LONGITUD DE LA LISTA EN VEZ DE UN NÚMERO
+                const listaExcel = excelDataGlobal[hash] || [];
+                const cE = listaExcel.length; 
+                const cA = appDataGlobal[hash] || 0;
                 let cHTML='', aHTML='';
+
+                // BOTÓN MODO LUPA
+                let btnLupa = cE > 0 ? `<button onclick="verLupa('${hash}')" class="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 px-2 py-1 rounded ml-2 transition shadow-sm" title="Ver desglose del Excel"><i class="fa-solid fa-magnifying-glass"></i></button>` : '';
 
                 if(cE === cA) {
                     match++; cHTML = 'bg-emerald-50 hover:bg-emerald-100';
@@ -678,7 +733,7 @@
                 
                 let alertMedico = medico.includes('[') ? `text-red-500 font-black` : `text-slate-700 font-bold`;
 
-                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursal}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-purple-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black">${cE}</td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
+                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursal}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-purple-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black"><div class="flex items-center justify-center">${cE} ${btnLupa}</div></td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
             });
 
             tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">Sube Excel de la sucursal que deseas auditar.</td></tr>';
