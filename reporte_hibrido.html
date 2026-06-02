@@ -61,7 +61,6 @@
 </head>
 <body class="text-slate-800 p-2 md:p-6 min-h-screen flex flex-col items-center">
 
-    <!-- PANEL DE CONTROL FASE 1 -->
     <div class="w-full max-w-6xl no-print bg-slate-900 text-white p-6 rounded-3xl mb-6 flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl">
         <div>
             <h2 class="text-xl font-black flex items-center gap-2"><i class="fa-solid fa-server text-emerald-400"></i> Generador Híbrido Incremental</h2>
@@ -83,7 +82,6 @@
         </div>
     </div>
 
-    <!-- PANEL DE CONTROL FASE 2: SUCURSALES (CHECKBOXES) -->
     <div id="panel-sucursales" class="w-full max-w-6xl no-print bg-white p-6 rounded-3xl mb-6 shadow-sm border border-slate-200 hidden">
         <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
             <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i> 2. Cargar Excels por Sucursal</h3>
@@ -93,16 +91,13 @@
             </div>
         </div>
         
-        <p class="text-xs text-slate-500 font-medium mb-4">Sube el reporte concentrado de cada sucursal. Los datos se irán sumando automáticamente al documento inferior.</p>
+        <p class="text-xs text-slate-500 font-medium mb-4">Selecciona el (o los) archivo(s) Excel de cada sucursal. Los datos se irán sumando automáticamente al documento.</p>
         
-        <!-- Cuadrícula inyectada por JS -->
         <div id="grid-sucursales" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
     </div>
 
-    <!-- DOCUMENTO OFICIAL A4 -->
     <div class="w-full max-w-6xl bg-white p-6 md:p-10 rounded-[2rem] shadow-md border border-slate-200 hidden" id="documento-reporte">
         
-        <!-- SECCIÓN 1: RESUMEN GLOBAL -->
         <div class="header-print flex justify-between items-end pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-black tracking-tight text-slate-900">Resumen Operativo LAPI</h1>
@@ -140,7 +135,6 @@
             </div>
         </div>
 
-        <!-- TABLA DESGLOSE -->
         <div class="glass rounded-xl overflow-hidden shadow-sm mb-6">
             <div class="bg-slate-800 p-4 border-b border-slate-200"><h3 class="text-xs font-black text-white uppercase tracking-widest">Desglose Cuantitativo de Estudios</h3></div>
             <table class="w-full text-left border-collapse">
@@ -153,7 +147,6 @@
 
         <div class="page-break"></div>
 
-        <!-- SECCIÓN 2: FORÁNEOS -->
         <div class="header-print flex justify-between items-end pb-3 mb-6 mt-6">
             <h2 class="text-2xl font-black tracking-tight text-slate-800 uppercase">Servicios Foráneos (Nube)</h2>
         </div>
@@ -186,7 +179,6 @@
 
         <div class="page-break"></div>
 
-        <!-- SECCIÓN 3: SUCURSALES -->
         <div class="header-print flex justify-between items-end pb-3 mb-6 mt-6">
             <h2 class="text-2xl font-black tracking-tight text-slate-800 uppercase">Sucursales Fijas (Excel)</h2>
         </div>
@@ -351,16 +343,16 @@
                     }
                 });
 
-                // Crear los botones de las Sucursales
+                // Crear los botones de las Sucursales. NOTA: Agregado 'multiple' al input
                 const grid = document.getElementById('grid-sucursales');
                 grid.innerHTML = '';
                 window.LAPI_CONFIG.sucursales.forEach(suc => {
                     grid.innerHTML += `
                         <div class="relative sucursal-lista">
-                            <input type="file" id="file-${suc}" class="hidden" accept=".xlsx, .xls" onchange="procesarExcelSucursal('${suc}', this)">
+                            <input type="file" id="file-${suc}" class="hidden" accept=".xlsx, .xls" onchange="procesarExcelSucursal('${suc}', this)" multiple>
                             <button id="btn-${suc}" onclick="document.getElementById('file-${suc}').click()" class="w-full p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 transition flex items-center justify-between shadow-sm">
                                 <span class="truncate pr-2">${suc}</span>
-                                <i id="icon-${suc}" class="fa-solid fa-cloud-arrow-up text-slate-300 text-sm"></i>
+                                <div id="icon-${suc}"><i class="fa-solid fa-cloud-arrow-up text-slate-300 text-sm"></i></div>
                             </button>
                         </div>
                     `;
@@ -382,86 +374,86 @@
         };
 
         // ===============================================
-        // FASE 2: PROCESAR UN EXCEL INDIVIDUAL (CHECKBOX)
+        // FASE 2: PROCESAR EXCELS MULTIPLES (CHECKBOX)
         // ===============================================
         window.procesarExcelSucursal = async function(nombreSucursalObj, inputElement) {
-            const file = inputElement.files[0];
-            if(!file) return;
+            if(inputElement.files.length === 0) return;
 
             const fIni = document.getElementById('fecha-inicio').value;
             const fFin = document.getElementById('fecha-fin').value;
             const btnUI = document.getElementById(`btn-${nombreSucursalObj}`);
             const iconUI = document.getElementById(`icon-${nombreSucursalObj}`);
             
-            iconUI.className = "fa-solid fa-spinner fa-spin text-sky-500";
+            iconUI.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sky-500"></i>`;
 
             try {
-                let arrayBuffer = await file.arrayBuffer();
-                let wb = XLSX.read(arrayBuffer, {type:'array'});
-                
-                for(let sn of wb.SheetNames){
-                    let sheet = wb.Sheets[sn];
-                    let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
-                    let fEx = "1900-01-01", iEnc = -1, mapa = {};
+                // Bucle para procesar TODOS los archivos seleccionados de golpe
+                for(let i = 0; i < inputElement.files.length; i++) {
+                    let file = inputElement.files[i];
+                    let arrayBuffer = await file.arrayBuffer();
+                    let wb = XLSX.read(arrayBuffer, {type:'array'});
+                    
+                    for(let sn of wb.SheetNames){
+                        let sheet = wb.Sheets[sn];
+                        let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
+                        let fEx = "1900-01-01", iEnc = -1, mapa = {};
 
-                    for(let r=0; r<Math.min(20, filas.length); r++){
-                        if(!filas[r]) continue;
-                        let cL = filas[r].map(v => String(v).trim().toUpperCase());
-                        
-                        if(cL.join(" ").includes("FECHA")){
-                            let p = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim().replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
-                            if(p.length>=3){
-                                let mN = isNaN(p[1]) ? (mesesTexto[p[1].substring(0,3)] || 0) : parseInt(p[1],10)-1;
-                                fEx = `${p[2].length===2?'20'+p[2]:p[2]}-${String(mN+1).padStart(2,'0')}-${p[0].padStart(2,'0')}`; 
+                        for(let r=0; r<Math.min(20, filas.length); r++){
+                            if(!filas[r]) continue;
+                            let cL = filas[r].map(v => String(v).trim().toUpperCase());
+                            
+                            if(cL.join(" ").includes("FECHA")){
+                                let p = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim().replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
+                                if(p.length>=3){
+                                    let mN = isNaN(p[1]) ? (mesesTexto[p[1].substring(0,3)] || 0) : parseInt(p[1],10)-1;
+                                    fEx = `${p[2].length===2?'20'+p[2]:p[2]}-${String(mN+1).padStart(2,'0')}-${p[0].padStart(2,'0')}`; 
+                                }
                             }
+                            if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){ iEnc=r; filas[r].forEach((val, idx)=>{ if(val) mapa[String(val).toUpperCase().trim()] = idx; }); }
                         }
-                        if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){ iEnc=r; filas[r].forEach((val, idx)=>{ if(val) mapa[String(val).toUpperCase().trim()] = idx; }); }
-                    }
 
-                    if(iEnc!==-1){
-                        // Verificamos si cae en el rango de fechas seleccionado
-                        if(fEx >= fIni && fEx <= fFin) {
-                            const diaSemana = obtenerDiaSemana(fEx);
-                            for(let r=iEnc+1; r<filas.length; r++){
-                                let f = filas[r]; if(!f || !f[mapa["NOMBRE"]] || f.join(" ").toUpperCase().includes("PENDIENTES")) break;
-                                
-                                Object.keys(estudiosMapeo).forEach(key => {
-                                    if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
-                                        
-                                        let estRaw = estudiosMapeo[key];
-                                        let est = unificarEstudio(estRaw);
-                                        // AQUI FORZAMOS EL TRADUCTOR A USAR EL NOMBRE DEL BOTON COMO CONTEXTO 
-                                        let med = traducirMedico(f[mapa[key]], nombreSucursalObj);
+                        if(iEnc!==-1){
+                            // Verificamos si cae en el rango de fechas seleccionado
+                            if(fEx >= fIni && fEx <= fFin) {
+                                const diaSemana = obtenerDiaSemana(fEx);
+                                for(let r=iEnc+1; r<filas.length; r++){
+                                    let f = filas[r]; if(!f || !f[mapa["NOMBRE"]] || f.join(" ").toUpperCase().includes("PENDIENTES")) break;
+                                    
+                                    Object.keys(estudiosMapeo).forEach(key => {
+                                        if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
+                                            
+                                            let estRaw = estudiosMapeo[key];
+                                            let est = unificarEstudio(estRaw);
+                                            let med = traducirMedico(f[mapa[key]], nombreSucursalObj);
 
-                                        // Sumamos al State Global
-                                        window.estadoReporte.t_Global++; window.estadoReporte.t_Suc++;
-                                        if(!window.estadoReporte.c_Estudios[est]) window.estadoReporte.c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
-                                        window.estadoReporte.c_Estudios[est].suc++; window.estadoReporte.c_Estudios[est].tot++;
+                                            window.estadoReporte.t_Global++; window.estadoReporte.t_Suc++;
+                                            if(!window.estadoReporte.c_Estudios[est]) window.estadoReporte.c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
+                                            window.estadoReporte.c_Estudios[est].suc++; window.estadoReporte.c_Estudios[est].tot++;
 
-                                        window.estadoReporte.s_Tendencia[fEx] = (window.estadoReporte.s_Tendencia[fEx] || 0) + 1;
-                                        window.estadoReporte.s_cSucursales[nombreSucursalObj] = (window.estadoReporte.s_cSucursales[nombreSucursalObj] || 0) + 1;
-                                        window.estadoReporte.s_cDias[diaSemana] += 1;
-                                        window.estadoReporte.s_Medicos[med] = (window.estadoReporte.s_Medicos[med] || 0) + 1;
+                                            window.estadoReporte.s_Tendencia[fEx] = (window.estadoReporte.s_Tendencia[fEx] || 0) + 1;
+                                            window.estadoReporte.s_cSucursales[nombreSucursalObj] = (window.estadoReporte.s_cSucursales[nombreSucursalObj] || 0) + 1;
+                                            window.estadoReporte.s_cDias[diaSemana] += 1;
+                                            window.estadoReporte.s_Medicos[med] = (window.estadoReporte.s_Medicos[med] || 0) + 1;
 
-                                        window.datosExportarSucursales.push({ "FECHA": fEx, "SUCURSAL": nombreSucursalObj, "MÉDICO": med, "ESTUDIO": estRaw });
-                                    }
-                                });
+                                            window.datosExportarSucursales.push({ "FECHA": fEx, "SUCURSAL": nombreSucursalObj, "MÉDICO": med, "ESTUDIO": estRaw, "ORIGEN": "Excel" });
+                                        }
+                                    });
+                                }
                             }
                         }
                     }
                 }
 
-                // Cambiar el botón a "Subido Correctamente"
+                // Cambiar el botón a "Subido Correctamente" mostrando la cantidad de archivos
                 btnUI.className = "w-full p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-black text-emerald-700 transition flex items-center justify-between shadow-sm";
-                iconUI.className = "fa-solid fa-check-circle text-emerald-500 text-lg";
+                iconUI.innerHTML = `<span class="text-[10px] mr-1 text-emerald-600">${inputElement.files.length} arch.</span><i class="fa-solid fa-check-circle text-emerald-500 text-lg"></i>`;
 
-                // Re-renderizar todo el documento
                 renderizarDashboard();
 
             } catch (e) {
-                console.error("Error leyendo archivo de", nombreSucursalObj, e);
-                alert(`Error al leer el archivo de ${nombreSucursalObj}. Verifica que sea un Excel válido.`);
-                iconUI.className = "fa-solid fa-triangle-exclamation text-red-500 text-lg";
+                console.error("Error leyendo archivos de", nombreSucursalObj, e);
+                alert(`Error al leer los archivos de ${nombreSucursalObj}. Verifica que sean Excels válidos.`);
+                iconUI.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-500 text-lg"></i>`;
                 btnUI.classList.add('bg-red-50', 'border-red-200');
             }
         };
@@ -514,6 +506,8 @@
             let aMedSuc = Object.keys(S.s_Medicos).map(k => ({ n: k, v: S.s_Medicos[k] })).sort((a,b) => b.v - a.v);
             let tbodyMedSuc = document.getElementById('tabla-medicos-sucursales'); tbodyMedSuc.innerHTML = '';
             aMedSuc.forEach(m => { tbodyMedSuc.innerHTML += `<tr><td class="p-3 uppercase text-sky-700">${m.n}</td><td class="p-3 text-center font-black">${m.v}</td></tr>`; });
+
+            document.getElementById('panel-exportacion').classList.remove('hidden');
         }
 
         // ===============================================
