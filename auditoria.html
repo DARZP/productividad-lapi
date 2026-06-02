@@ -354,7 +354,7 @@
         }
 
         // ==========================================================
-        // 2. MOTOR ESTRICTO DE DICCIONARIOS Y AGRUPACIÓN
+        // 2. MOTOR ESTRICTO CONTEXTUAL (SUCURSAL + INICIAL)
         // ==========================================================
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
@@ -372,20 +372,25 @@
             return n;
         }
 
-        // 🔥 MOTOR ESTRICTO DE INICIALES 
-        function traducirMedico(iniciales) {
-            let raw = String(iniciales).toUpperCase().trim().replace(/\./g, '');
+        // 🔥 TRADUCTOR ESTRICTO CONTEXTUAL
+        function traducirMedico(rawMed, rawSuc) {
+            if (!rawMed) return "Desconocido";
             
-            // 1. Busca estrictamente en el diccionario manual de config.js
-            if (diccIniciales[raw]) return diccIniciales[raw];
+            let med = String(rawMed).toUpperCase().trim().replace(/\./g, '');
+            let suc = String(rawSuc).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             
-            // 2. Si escriben el nombre completo en el Excel y cuadra con la base, lo dejamos pasar.
+            // 1. Busca estrictamente en el diccionario tomando en cuenta la SUCURSAL
+            if (diccIniciales[suc] && diccIniciales[suc][med]) {
+                return normalizarDato(diccIniciales[suc][med]);
+            }
+            
+            // 2. Si escriben el nombre completo en el Excel y cuadra con la base...
             const medicos = window.LAPI_CONFIG.medicos || [];
-            const exactMatch = medicos.find(m => m.toUpperCase().trim() === raw);
+            const exactMatch = medicos.find(m => m.toUpperCase().trim() === med);
             if(exactMatch) return exactMatch;
 
-            // 3. Si no existe en config.js, lo marcamos de rojo brillante para que el Admin lo agregue
-            return `[INICIAL NO REGISTRADA: ${raw}]`; 
+            // 3. Si no es un match exacto ni está en el diccionario, lo resaltamos para corrección
+            return `[INICIAL NO REGISTRADA: ${med}]`; 
         }
 
         async function procesarArrayBufferExcel(arrayBuffer) {
@@ -416,7 +421,8 @@
                         let f = filas[r]; if(!f || !f[mapa["NOMBRE"]] || f.join(" ").toUpperCase().includes("PENDIENTES")) break;
                         Object.keys(estudiosMapeo).forEach(key => {
                             if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
-                                const hash = `${fEx}|${sEx}|${normalizarDato(traducirMedico(f[mapa[key]]))}|${agruparEstudio(estudiosMapeo[key], "Sucursal")}`;
+                                // AQUI SE ENVÍA TANTO EL MÉDICO COMO LA SUCURSAL AL TRADUCTOR
+                                const hash = `${fEx}|${sEx}|${normalizarDato(traducirMedico(f[mapa[key]], sEx))}|${agruparEstudio(estudiosMapeo[key], "Sucursal")}`;
                                 excelDataGlobal[hash] = (excelDataGlobal[hash] || 0) + 1;
                             }
                         });
@@ -806,6 +812,24 @@
             } catch (e) { mostrarToast("Fallo (Verifica Reglas de Firebase)", "error"); }
             btn.innerHTML = 'Sincronizar'; btn.disabled = false;
         }
+
+        // =========================================================================
+        // SERVICE WORKER Y VERSIÓN FLOTANTE
+        // =========================================================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('PWA: Actualización silenciosa lista'))
+                    .catch(err => console.log('Error PWA: ', err));
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const versionDiv = document.createElement('div');
+            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
+            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
+            document.body.appendChild(versionDiv);
+        });
     </script>
 </body>
 </html>
