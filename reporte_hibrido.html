@@ -93,6 +93,7 @@
 </head>
 <body class="text-slate-800 p-2 md:p-6 min-h-screen flex flex-col items-center">
 
+    <!-- PANEL DE CONTROL FASE 1 -->
     <div class="w-full max-w-6xl no-print bg-slate-900 text-white p-6 rounded-3xl mb-6 flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl">
         <div>
             <h2 class="text-xl font-black flex items-center gap-2"><i class="fa-solid fa-server text-emerald-400"></i> Generador Híbrido Incremental</h2>
@@ -114,6 +115,7 @@
         </div>
     </div>
 
+    <!-- PANEL DE CONTROL FASE 2: DROPZONE INTELIGENTE -->
     <div id="panel-sucursales" class="w-full max-w-6xl no-print bg-white p-6 rounded-3xl mb-6 shadow-sm border border-slate-200 hidden">
         <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
             <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest"><i class="fa-solid fa-wand-magic-sparkles text-indigo-600 mr-2"></i> 2. Auto-Detección de Excels</h3>
@@ -124,6 +126,7 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Zona de Arrastre -->
             <div id="dropzone" class="border-4 border-dashed border-slate-300 rounded-2xl p-10 text-center hover:bg-slate-50 transition cursor-pointer flex flex-col items-center justify-center min-h-[200px]">
                 <i class="fa-solid fa-file-excel text-5xl text-emerald-500 mb-4"></i>
                 <p class="text-slate-700 font-black text-lg mb-1">Arrastra aquí todos tus Excels</p>
@@ -131,6 +134,7 @@
                 <input type="file" id="file-masivo" class="hidden" accept=".xlsx, .xls, .csv" multiple>
             </div>
 
+            <!-- Lista de Archivos Procesados -->
             <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col h-full max-h-[250px]">
                 <div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">
                     <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Archivos Integrados</h4>
@@ -143,8 +147,10 @@
         </div>
     </div>
 
+    <!-- DOCUMENTO OFICIAL A4 -->
     <div class="w-full max-w-6xl bg-white p-6 md:p-10 rounded-[2rem] shadow-md border border-slate-200 hidden" id="documento-reporte">
         
+        <!-- SECCIÓN 1: RESUMEN GLOBAL -->
         <div class="header-print flex justify-between items-end pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-black tracking-tight text-slate-900">Resumen Operativo LAPI</h1>
@@ -182,6 +188,7 @@
             </div>
         </div>
 
+        <!-- TABLA DESGLOSE -->
         <div class="glass rounded-xl overflow-hidden shadow-sm mb-6">
             <div class="bg-slate-800 p-4 border-b border-slate-200"><h3 class="text-xs font-black text-white uppercase tracking-widest">Desglose Cuantitativo de Estudios</h3></div>
             <table class="w-full text-left border-collapse">
@@ -194,6 +201,7 @@
 
         <div class="page-break"></div>
 
+        <!-- SECCIÓN 2: FORÁNEOS -->
         <div class="header-print flex justify-between items-end pb-3 mb-6 mt-6">
             <h2 class="text-2xl font-black tracking-tight text-slate-800 uppercase">Servicios Foráneos (Nube)</h2>
         </div>
@@ -226,6 +234,7 @@
 
         <div class="page-break"></div>
 
+        <!-- SECCIÓN 3: SUCURSALES -->
         <div class="header-print flex justify-between items-end pb-3 mb-6 mt-6">
             <h2 class="text-2xl font-black tracking-tight text-slate-800 uppercase">Sucursales Fijas (Excel)</h2>
         </div>
@@ -277,7 +286,12 @@
         window.datosExportarForaneos = [];
 
         const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
+        
+        // PARCHE DE EMERGENCIA: Aseguramos que Consulta Médica esté en el mapeo aunque falte en config.js
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales || {};
+        estudiosMapeo["CONSULTA MEDICA"] = "Consulta Médica";
+        estudiosMapeo["CONSULTA MÉDICA"] = "Consulta Médica";
+
         const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
 
         function normalizarDato(texto) {
@@ -293,6 +307,7 @@
             if (upper.includes("AUDIOMETRIA")) return "Audiometría";
             if (upper.includes("ELECTROCARDIOGRAMA")) return "Electrocardiograma";
             if (upper.includes("VISUAL")) return "Examen Capacidad Visual";
+            if (upper.includes("CONSULTA")) return "Consulta Médica";
             return normalizarDato(est);
         }
 
@@ -491,7 +506,16 @@
                             if(fEx >= fIni && fEx <= fFin) {
                                 const diaSemana = obtenerDiaSemana(fEx);
                                 for(let r=iEnc+1; r<filas.length; r++){
-                                    let f = filas[r]; if(!f || !f[mapa["NOMBRE"]] || f.join(" ").toUpperCase().includes("PENDIENTES")) break;
+                                    let f = filas[r]; 
+                                    if(!f) continue;
+                                    
+                                    let filaStr = f.join(" ").toUpperCase();
+                                    
+                                    // 1. CORTAFUEGOS DE PENDIENTES: Si detectamos que inicia la zona de pendientes, detenemos la lectura
+                                    if(filaStr.includes("PENDIENTES") || filaStr.includes("ESTUDIOS PENDIENTES")) break;
+
+                                    // 2. FILTRO ANTI-VACÍOS: Si la fila no tiene nombre de paciente, nos la saltamos sin romper el ciclo
+                                    if(mapa["NOMBRE"] === undefined || !f[mapa["NOMBRE"]] || String(f[mapa["NOMBRE"]]).trim() === "") continue;
                                     
                                     // Extraer Número de Orden
                                     let idxOrden = mapa["_ORDEN_DINAMICO_"];
