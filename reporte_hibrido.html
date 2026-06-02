@@ -93,6 +93,7 @@
 </head>
 <body class="text-slate-800 p-2 md:p-6 min-h-screen flex flex-col items-center">
 
+    <!-- PANEL DE CONTROL FASE 1 -->
     <div class="w-full max-w-6xl no-print bg-slate-900 text-white p-6 rounded-3xl mb-6 flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl">
         <div>
             <h2 class="text-xl font-black flex items-center gap-2"><i class="fa-solid fa-server text-emerald-400"></i> Generador Híbrido Incremental</h2>
@@ -114,6 +115,7 @@
         </div>
     </div>
 
+    <!-- PANEL DE CONTROL FASE 2: DROPZONE INTELIGENTE -->
     <div id="panel-sucursales" class="w-full max-w-6xl no-print bg-white p-6 rounded-3xl mb-6 shadow-sm border border-slate-200 hidden">
         <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
             <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest"><i class="fa-solid fa-wand-magic-sparkles text-indigo-600 mr-2"></i> 2. Auto-Detección de Excels</h3>
@@ -124,6 +126,7 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Zona de Arrastre -->
             <div id="dropzone" class="border-4 border-dashed border-slate-300 rounded-2xl p-10 text-center hover:bg-slate-50 transition cursor-pointer flex flex-col items-center justify-center min-h-[200px]">
                 <i class="fa-solid fa-file-excel text-5xl text-emerald-500 mb-4"></i>
                 <p class="text-slate-700 font-black text-lg mb-1">Arrastra aquí todos tus Excels</p>
@@ -131,17 +134,23 @@
                 <input type="file" id="file-masivo" class="hidden" accept=".xlsx, .xls, .csv" multiple>
             </div>
 
+            <!-- Lista de Archivos Procesados -->
             <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col h-full max-h-[250px]">
-                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-200 pb-2">Archivos Integrados</h4>
+                <div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Archivos Integrados</h4>
+                    <span id="contador-archivos" class="bg-emerald-100 text-emerald-700 text-[9px] font-black px-2 py-0.5 rounded">0 procesados</span>
+                </div>
                 <div id="lista-archivos" class="overflow-y-auto scroll-custom flex-1 space-y-2 pr-2">
-                    <p class="text-center text-slate-400 italic text-xs py-10">Esperando archivos...</p>
+                    <p class="text-center text-slate-400 italic text-xs py-10" id="msg-esperando">Esperando archivos...</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- DOCUMENTO OFICIAL A4 -->
     <div class="w-full max-w-6xl bg-white p-6 md:p-10 rounded-[2rem] shadow-md border border-slate-200 hidden" id="documento-reporte">
         
+        <!-- SECCIÓN 1: RESUMEN GLOBAL -->
         <div class="header-print flex justify-between items-end pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-black tracking-tight text-slate-900">Resumen Operativo LAPI</h1>
@@ -179,6 +188,7 @@
             </div>
         </div>
 
+        <!-- TABLA DESGLOSE -->
         <div class="glass rounded-xl overflow-hidden shadow-sm mb-6">
             <div class="bg-slate-800 p-4 border-b border-slate-200"><h3 class="text-xs font-black text-white uppercase tracking-widest">Desglose Cuantitativo de Estudios</h3></div>
             <table class="w-full text-left border-collapse">
@@ -191,6 +201,7 @@
 
         <div class="page-break"></div>
 
+        <!-- SECCIÓN 2: FORÁNEOS -->
         <div class="header-print flex justify-between items-end pb-3 mb-6 mt-6">
             <h2 class="text-2xl font-black tracking-tight text-slate-800 uppercase">Servicios Foráneos (Nube)</h2>
         </div>
@@ -223,6 +234,7 @@
 
         <div class="page-break"></div>
 
+        <!-- SECCIÓN 3: SUCURSALES -->
         <div class="header-print flex justify-between items-end pb-3 mb-6 mt-6">
             <h2 class="text-2xl font-black tracking-tight text-slate-800 uppercase">Sucursales Fijas (Excel)</h2>
         </div>
@@ -266,7 +278,8 @@
             c_Estudios: {},
             f_Empresas: new Set(), f_cEmpresas: {}, f_Tendencia: {}, f_Medicos: {},
             s_Tendencia: {}, s_cSucursales: {}, s_Medicos: {},
-            s_cDias: { 'Lunes':0, 'Martes':0, 'Miércoles':0, 'Jueves':0, 'Viernes':0, 'Sábado':0, 'Domingo':0 }
+            s_cDias: { 'Lunes':0, 'Martes':0, 'Miércoles':0, 'Jueves':0, 'Viernes':0, 'Sábado':0, 'Domingo':0 },
+            archivosProcesados: 0
         };
 
         window.datosExportarSucursales = [];
@@ -343,10 +356,13 @@
                 t_Global: 0, t_Suc: 0, t_For: 0, c_Estudios: {},
                 f_Empresas: new Set(), f_cEmpresas: {}, f_Tendencia: {}, f_Medicos: {},
                 s_Tendencia: {}, s_cSucursales: {}, s_Medicos: {},
-                s_cDias: { 'Lunes':0, 'Martes':0, 'Miércoles':0, 'Jueves':0, 'Viernes':0, 'Sábado':0, 'Domingo':0 }
+                s_cDias: { 'Lunes':0, 'Martes':0, 'Miércoles':0, 'Jueves':0, 'Viernes':0, 'Sábado':0, 'Domingo':0 },
+                archivosProcesados: 0
             };
             window.datosExportarSucursales = []; window.datosExportarForaneos = [];
-            document.getElementById('lista-archivos').innerHTML = ''; // Limpiar lista visual
+            
+            document.getElementById('lista-archivos').innerHTML = '<p class="text-center text-slate-400 italic text-xs py-10" id="msg-esperando">Esperando archivos...</p>';
+            document.getElementById('contador-archivos').innerText = '0 procesados';
             document.getElementById('r-periodo').innerText = `${fIni} AL ${fFin}`;
 
             try {
@@ -402,7 +418,7 @@
         };
 
         // ===============================================
-        // FASE 2: PROCESAMIENTO MASIVO (AUTO-DETECCIÓN)
+        // FASE 2: PROCESAMIENTO MASIVO OPTIMIZADO (ANTI-FREEZE)
         // ===============================================
         window.procesarArchivosMasivos = async function(files) {
             const fIni = document.getElementById('fecha-inicio').value;
@@ -410,19 +426,24 @@
             const listaUI = document.getElementById('lista-archivos');
             const dropzone = document.getElementById('dropzone');
 
-            // Limpiar mensaje temporal
-            if(listaUI.innerHTML.includes("Esperando")) listaUI.innerHTML = '';
+            // Quitar mensaje inicial si existe
+            let msgEsperando = document.getElementById('msg-esperando');
+            if(msgEsperando) msgEsperando.remove();
             
-            // UI de carga en el Dropzone
+            // UI de carga
             dropzone.innerHTML = `
                 <i class="fa-solid fa-cog fa-spin text-5xl text-sky-500 mb-4"></i>
                 <p class="text-slate-700 font-black text-lg mb-1">Procesando ${files.length} archivo(s)...</p>
-                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Extrayendo información y catalogando</p>
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">No cierres esta ventana</p>
             `;
 
             for(let i = 0; i < files.length; i++) {
                 let file = files[i];
+                
                 try {
+                    // YIELD BROWSER: Pausa de 30ms para que Chrome no piense que se trabó y pueda actualizar la UI
+                    await new Promise(resolve => setTimeout(resolve, 30));
+
                     let arrayBuffer = await file.arrayBuffer();
                     let wb = XLSX.read(arrayBuffer, {type:'array'});
                     let sExDetectada = "Desconocida";
@@ -446,7 +467,6 @@
                                 }
                             }
                             
-                            // AUTO-DETECCIÓN DE SUCURSAL
                             let cS = cL.findIndex(v=>v.includes("SUCURSAL")); 
                             if(cS!==-1) sEx = cL[cS+1] || cL[cS+2];
                             
@@ -458,9 +478,8 @@
 
                         if(iEnc!==-1){
                             sEx = normalizarDato(sEx);
-                            sExDetectada = sEx; // Guardamos para la UI
+                            sExDetectada = sEx;
 
-                            // Rango de fechas
                             if(fEx >= fIni && fEx <= fFin) {
                                 const diaSemana = obtenerDiaSemana(fEx);
                                 for(let r=iEnc+1; r<filas.length; r++){
@@ -471,7 +490,6 @@
                                             cuentaEstudiosArchivo++;
                                             let estRaw = estudiosMapeo[key];
                                             let est = unificarEstudio(estRaw);
-                                            // MANDAMOS LA SUCURSAL DETECTADA AL TRADUCTOR
                                             let med = traducirMedico(f[mapa[key]], sEx);
 
                                             window.estadoReporte.t_Global++; window.estadoReporte.t_Suc++;
@@ -491,9 +509,15 @@
                         }
                     }
 
-                    // Feed Visual de Éxito
+                    window.estadoReporte.archivosProcesados++;
+                    document.getElementById('contador-archivos').innerText = `${window.estadoReporte.archivosProcesados} procesados`;
+
+                    // YIELD BROWSER 2: Otro respiro antes de insertar HTML (Evita que el DOM se trabe)
+                    await new Promise(resolve => setTimeout(resolve, 10));
+
+                    // Inserción optimizada (insertAdjacentHTML no borra ni re-dibuja los divs viejos)
                     let colorBadge = sExDetectada !== "Desconocida" ? "text-emerald-700 bg-emerald-100 border-emerald-200" : "text-amber-700 bg-amber-100 border-amber-200";
-                    listaUI.innerHTML = `
+                    listaUI.insertAdjacentHTML('afterbegin', `
                         <div class="flex flex-col bg-white p-2 rounded-lg border border-slate-200 shadow-sm animate-fade-in">
                             <div class="flex justify-between items-center mb-1">
                                 <span class="truncate pr-2 font-bold text-slate-700 text-[11px]" title="${file.name}">${file.name}</span>
@@ -501,25 +525,25 @@
                             </div>
                             <span class="text-[9px] text-slate-400 font-bold"><i class="fa-solid fa-microscope text-sky-500 mr-1"></i> ${cuentaEstudiosArchivo} Estudios extraídos</span>
                         </div>
-                    ` + listaUI.innerHTML;
+                    `);
 
                 } catch (e) {
                     console.error("Error procesando", file.name, e);
-                    listaUI.innerHTML = `
+                    listaUI.insertAdjacentHTML('afterbegin', `
                         <div class="flex flex-col bg-red-50 p-2 rounded-lg border border-red-200 shadow-sm animate-fade-in">
                             <div class="flex justify-between items-center">
                                 <span class="truncate pr-2 font-bold text-red-700 text-[11px]">${file.name}</span>
                                 <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border text-red-700 bg-red-100 border-red-200">Error <i class="fa-solid fa-xmark"></i></span>
                             </div>
                         </div>
-                    ` + listaUI.innerHTML;
+                    `);
                 }
             }
 
-            // Restaurar Dropzone
+            // Restaurar Dropzone al finalizar
             dropzone.innerHTML = `
                 <i class="fa-solid fa-check-circle text-5xl text-emerald-500 mb-4"></i>
-                <p class="text-slate-700 font-black text-lg mb-1">Archivos Integrados</p>
+                <p class="text-slate-700 font-black text-lg mb-1">Carga Completada</p>
                 <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Arrastra más Excels si lo necesitas</p>
             `;
 
