@@ -121,12 +121,12 @@
                     
                     <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200">
                         
-                        <!-- HEADER CON BOTONES MASIVOS -->
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
                             
                             <div class="flex items-center gap-2">
                                 <button id="btn-bulk-inyectar" onclick="inyectarFaltantesMasivo()" style="display:none;" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Inyectar Faltantes</button>
+                                <button id="btn-bulk-eliminar" onclick="eliminarSobrantesMasivo()" style="display:none;" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-eraser mr-1"></i> Eliminar Sobrantes</button>
                                 <button id="btn-bulk-tnc" onclick="generarTncMasivo()" style="display:none;" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Generar TNCs</button>
                                 <span id="status-db" class="text-[10px] text-slate-500 font-bold ml-2"><i class="fa-solid fa-spinner fa-spin"></i> Inicializando BD...</span>
                             </div>
@@ -147,9 +147,6 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN 2 Y 3: TNC Y PERFIL                -->
-        <!-- ========================================== -->
         <div id="sec-tnc" class="hidden animate-fade-in">
             <div class="glass p-6 rounded-3xl shadow-sm flex flex-col h-[78vh] border border-slate-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-slate-200 pb-4 gap-4">
@@ -211,7 +208,6 @@
 
     </div>
 
-    <!-- MODALES -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-purple-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
@@ -259,7 +255,6 @@
         </div>
     </div>
 
-    <!-- MODAL LUPA -->
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
@@ -304,12 +299,14 @@
         // 0. GLOBALES, DICCIONARIOS Y CONFIG
         // ==========================================
         let rawDataGlobal = []; 
-        let excelDataGlobal = {}; // AHORA ES UN OBJETO CON ARRAYS (Modo Lupa)
+        let excelDataGlobal = {}; 
         let appDataGlobal = {};
         let chartMedico = null;
         let ticketsGlobal = [];
 
+        // ALMACEN DE BOTONES MASIVOS
         window.discrepanciasInyectar = [];
+        window.discrepanciasEliminar = [];
         window.discrepanciasTNC = [];
 
         const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
@@ -440,16 +437,14 @@
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
-        // LA MAGIA ANTI-ACENTOS EN LOS ESTUDIOS
         function agruparEstudio(est, tipoOrigen) {
             if(!est) return "Desconocido";
             let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clinica"; // Guardado sin acento
-            if (upper.includes("CONSULTA")) return "Consulta Medica"; // Guardado sin acento
-            if (upper.includes("ESPIROMETRIA")) return "Espirometria"; // Guardado sin acento
-            if (upper.includes("AUDIOMETRIA")) return "Audiometria"; // Guardado sin acento
+            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clinica";
+            if (upper.includes("CONSULTA")) return "Consulta Medica";
+            if (upper.includes("ESPIROMETRIA")) return "Espirometria";
+            if (upper.includes("AUDIOMETRIA")) return "Audiometria";
             
-            // Si es cualquier otro estudio, le quitamos los acentos y le damos formato "Normal" (Title Case)
             let n = upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
             return n;
         }
@@ -551,7 +546,7 @@
                         Object.keys(estudiosMapeo).forEach(key => {
                             if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
                                 let estRaw = estudiosMapeo[key];
-                                let est = unificarEstudio(estRaw); // Se corrigió la función faltante
+                                let est = unificarEstudio(estRaw);
                                 let med = traducirMedico(f[mapa[key]], sEx);
                                 
                                 // Extraer los datos detallados
@@ -561,7 +556,7 @@
 
                                 const hash = `${fEx}|${sEx}|${normalizarDato(med)}|${est}`;
                                 
-                                // GUARDAMOS EN LA LUPA (Array) EN LUGAR DE SUMAR +1
+                                // GUARDAMOS EN LA LUPA
                                 if(!excelDataGlobal[hash]) excelDataGlobal[hash] = [];
                                 excelDataGlobal[hash].push({ orden: numeroOrden, paciente: nombrePaciente });
                             }
@@ -709,6 +704,7 @@
             let match=0, faltaEnApp=0, extraEnApp=0; let html = "";
             
             window.discrepanciasInyectar = [];
+            window.discrepanciasEliminar = [];
             window.discrepanciasTNC = [];
 
             const hashesExcel = new Set(Object.keys(excelDataGlobal));
@@ -720,13 +716,11 @@
                 if(!combinacionesExcel.has(`${fecha}|${sucursal}`)) return; 
                 if(fIni && fecha < fIni) return; if(fFin && fecha > fFin) return;
 
-                // AHORA LEE LA LONGITUD DE LA LISTA EN VEZ DE UN NÚMERO
                 const listaExcel = excelDataGlobal[hash] || [];
                 const cE = listaExcel.length; 
                 const cA = appDataGlobal[hash] || 0;
                 let cHTML='', aHTML='';
 
-                // BOTÓN MODO LUPA
                 let btnLupa = cE > 0 ? `<button onclick="verLupa('${hash}')" class="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 px-2 py-1 rounded ml-2 transition shadow-sm" title="Ver desglose del Excel"><i class="fa-solid fa-magnifying-glass"></i></button>` : '';
 
                 if(cE === cA) {
@@ -738,12 +732,13 @@
                         window.discrepanciasInyectar.push({hash: hash, cant: cE});
                     } else { 
                         extraEnApp++; cHTML = 'bg-amber-50 hover:bg-amber-100'; 
+                        window.discrepanciasEliminar.push({hash: hash, cant: cE});
                     }
                     
                     window.discrepanciasTNC.push({hash: hash, cE: cE, cA: cA});
 
                     aHTML = `
-                        <button onclick="prepararCorreccion('${hash}', ${cE})" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Inyectar a Firebase"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                        <button onclick="prepararCorreccion('${hash}', ${cE})" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Ajustar a la cantidad del Excel"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
                         <button onclick="abrirModalTncAutomatica('${hash}', ${cE}, ${cA})" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button>
                     `;
                 }
@@ -757,6 +752,7 @@
             document.getElementById('kpi-aud-match').innerText = match; document.getElementById('kpi-aud-rojo').innerText = faltaEnApp; document.getElementById('kpi-aud-ama').innerText = extraEnApp;
 
             document.getElementById('btn-bulk-inyectar').style.display = window.discrepanciasInyectar.length > 0 ? 'inline-block' : 'none';
+            document.getElementById('btn-bulk-eliminar').style.display = window.discrepanciasEliminar.length > 0 ? 'inline-block' : 'none';
             document.getElementById('btn-bulk-tnc').style.display = window.discrepanciasTNC.length > 0 ? 'inline-block' : 'none';
         };
 
@@ -902,7 +898,7 @@
                     acciones = `<button onclick="cambiarEstadoTNC('${d.id}', 'Cerrado')" class="bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 px-3 rounded-lg shadow text-[10px] font-bold transition">Validar y Cerrar</button>`;
                 } else {
                     badge = '<span class="px-2.5 py-1 rounded bg-emerald-50 text-emerald-600 border border-emerald-200">Cerrado</span>';
-                    acciones = `<span class="textemerald-500 text-lg"><i class="fa-solid fa-check-double"></i></span>`;
+                    acciones = `<span class="text-emerald-500 text-lg"><i class="fa-solid fa-check-double"></i></span>`;
                 }
 
                 tbody.innerHTML += `
@@ -997,7 +993,7 @@
         window.prepararCorreccion = function(hash, cantCorrecta) {
             const [fecha, suc, med, est] = hash.split('|');
             document.getElementById('c-hash').value = hash; document.getElementById('c-cant').value = cantCorrecta;
-            document.getElementById('c-info').innerHTML = `Se inyectarán <b>${cantCorrecta}</b> estudios de <b>${est}</b> al perfil de <b>${med}</b>.`;
+            document.getElementById('c-info').innerHTML = `El sistema ajustará el perfil de <b>${med}</b> para que tenga exactamente <b>${cantCorrecta}</b> estudios de <b>${est}</b>.`;
             abrirModal('correccion');
         };
 
@@ -1059,6 +1055,45 @@
                 mostrarToast("Ocurrió un error en la inyección masiva", "error");
             }
             
+            btn.innerHTML = txtOriginal;
+            btn.disabled = false;
+        };
+
+        window.eliminarSobrantesMasivo = async function() {
+            if(!confirm(`¿Estás seguro de eliminar/ajustar los ${window.discrepanciasEliminar.length} registros que sobran en la base de datos?`)) return;
+
+            const btn = document.getElementById('btn-bulk-eliminar');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Ajustando...';
+            btn.disabled = true;
+
+            try {
+                for(let item of window.discrepanciasEliminar) {
+                    const hash = item.hash;
+                    const cantCorrecta = item.cant;
+                    const [fecha, sucursal, medico, estudio] = hash.split('|');
+                    const docId = `SUC_${fecha}_${sucursal.replace(/\s+/g,'')}_${medico.replace(/\s+/g,'')}`;
+
+                    const docRef = window.doc(window.db, "registros_diarios_sucursales", docId);
+                    const docSnap = await window.getDoc(docRef);
+
+                    if(docSnap.exists()) {
+                        let datos = docSnap.data(); 
+                        if(!datos.estudios) datos.estudios = {};
+                        datos.estudios[estudio] = cantCorrecta; 
+                        datos.ultimaActualizacion = new Date();
+                        await window.setDoc(docRef, datos);
+                    } else {
+                        await window.setDoc(docRef, { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: cantCorrecta }, observaciones: "Ajustado por Auditoría Masiva", ultimaActualizacion: new Date() });
+                    }
+                }
+                mostrarToast("Ajuste masivo completado", "exito");
+                await initAuditoria();
+            } catch(e) {
+                console.error("Error en ajuste masivo:", e);
+                mostrarToast("Ocurrió un error en el ajuste masivo", "error");
+            }
+
             btn.innerHTML = txtOriginal;
             btn.disabled = false;
         };
