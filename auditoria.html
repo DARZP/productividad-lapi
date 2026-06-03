@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditoría - LAPI Admin</title>
+    <title>Centro de Control LAPI - Calidad y Auditoría</title>
     
     <link rel="manifest" href="manifest_admin.json">
-    <meta name="theme-color" content="#10b981">
+    <meta name="theme-color" content="#7c3aed">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -101,7 +101,7 @@
                         <div class="absolute top-0 right-0 bg-sky-100 text-sky-600 text-[9px] font-black px-2 py-1 rounded-bl-lg">M2M ENABLED</div>
                         <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Origen de Datos</h3>
                         
-                        <button id="btn-auditoria-onedrive" onclick="conectarOneDrive()" class="w-full bg-[#0078d4] hover:bg-[#005a9e] text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm active:scale-95 mb-4 flex items-center justify-center gap-2">
+                        <button id="btn-auditoria-onedrive" onclick="iniciarExtraccionInteligente()" class="w-full bg-[#0078d4] hover:bg-[#005a9e] text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm active:scale-95 mb-4 flex items-center justify-center gap-2">
                             <i class="fa-brands fa-microsoft text-lg"></i> Extraer de OneDrive
                         </button>
 
@@ -122,7 +122,7 @@
                             <button onclick="aplicarFiltroRapido('hoy')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold py-2 rounded-lg transition">Hoy</button>
                             <button onclick="aplicarFiltroRapido('ayer')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold py-2 rounded-lg transition">Ayer</button>
                             <button onclick="aplicarFiltroRapido('semana')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold py-2 rounded-lg transition">Semana</button>
-                            <button onclick="aplicarFiltroRapido('todo')" class="bg-emerald-100 text-emerald-700 text-[11px] font-bold py-2 rounded-lg transition">Todo</button>
+                            <button onclick="aplicarFiltroRapido('mes')" class="bg-emerald-100 text-emerald-700 text-[11px] font-bold py-2 rounded-lg transition">Mes</button>
                         </div>
                         <input type="date" id="a-inicio" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-3 border border-slate-300">
                         <input type="date" id="a-fin" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-4 border border-slate-300">
@@ -156,7 +156,7 @@
                                     <tr><th class="p-4">Fecha / Lugar</th><th class="p-4">Médico</th><th class="p-4">Estudio</th><th class="p-4 text-center">Excel</th><th class="p-4 text-center">App</th><th class="p-4 text-center">Acción Resolutiva</th></tr>
                                 </thead>
                                 <tbody id="tabla-auditoria" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs">
-                                    <tr><td colspan="6" class="text-center py-12 text-slate-400 italic">Importa o sube un archivo Excel para iniciar el cruce...</td></tr>
+                                    <tr><td colspan=\"6\" class=\"text-center py-12 text-slate-400 italic\">Importa o sube un archivo Excel para iniciar el cruce...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -225,16 +225,33 @@
         </div>
     </main>
 
+    <div id="modal-onedrive" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-onedrive-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-blue-200 text-center flex flex-col max-h-[90vh]">
+            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-brands fa-microsoft"></i></div>
+            <h3 class="text-xl font-black mb-2 text-slate-800">Extracción de Nube</h3>
+            <p class="text-sm text-slate-500 mb-5">El sistema buscará los archivos Excel basándose en el mes seleccionado.</p>
+            
+            <div id="od-config">
+                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2 text-left">Periodo a buscar (Mes/Año)</label>
+                <input type="month" id="od-mes-buscar" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 font-bold text-slate-700 outline-none focus:border-blue-400">
+                <div class="flex gap-3 mt-4">
+                    <button onclick="cerrarModal('onedrive')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar</button>
+                    <button onclick="ejecutarExtraccionOneDrive()" class="w-1/2 bg-[#0078d4] hover:bg-[#005a9e] text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Buscar y Extraer</button>
+                </div>
+            </div>
+
+            <div id="od-status" class="hidden flex-col items-center">
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
+                <p id="od-status-text" class="text-sm font-bold text-slate-600 mb-4">Conectando con Microsoft Graph...</p>
+                <div id="od-lista-archivos" class="w-full text-left bg-slate-50 border border-slate-200 rounded-lg p-3 max-h-48 overflow-y-auto scroll-custom text-xs font-mono text-slate-500 space-y-1 mb-4"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-emerald-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
-            
-            <input type="hidden" id="tnc-hash">
-            <input type="hidden" id="tnc-origen">
-            <input type="hidden" id="tnc-fecha">
-            <input type="hidden" id="tnc-medico">
-            <input type="hidden" id="tnc-lugar">
-            <input type="hidden" id="tnc-estudio">
+            <input type="hidden" id="tnc-hash"><input type="hidden" id="tnc-origen"><input type="hidden" id="tnc-fecha"><input type="hidden" id="tnc-medico"><input type="hidden" id="tnc-lugar"><input type="hidden" id="tnc-estudio">
             
             <div id="tnc-paso-1" class="block overflow-y-auto pr-2 scroll-custom flex-1">
                 <p class="text-xs text-slate-500 mb-2 font-bold">1. Busca el servicio exacto en la base de datos:</p>
@@ -246,9 +263,7 @@
                     </select>
                     <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Ej. Lomas Verdes, Juan, HC..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
                 </div>
-                <div id="tnc-resultados-busqueda" class="space-y-1 mb-4 border border-slate-200 rounded-lg p-1 bg-slate-50">
-                    <p class="text-center text-xs text-slate-400 py-4">Teclea para buscar...</p>
-                </div>
+                <div id="tnc-resultados-busqueda" class="space-y-1 mb-4 border border-slate-200 rounded-lg p-1 bg-slate-50"><p class="text-center text-xs text-slate-400 py-4">Teclea para buscar...</p></div>
                 <button onclick="cerrarModal('tnc')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all mt-auto">Cancelar y Cerrar</button>
             </div>
 
@@ -257,13 +272,10 @@
                     <div id="tnc-servicio-seleccionado" class="text-xs text-emerald-900 font-bold leading-tight"></div>
                     <button onclick="resetBuscadorTNC()" class="text-emerald-600 hover:text-emerald-800 bg-white p-2 rounded-lg shadow-sm" title="Cambiar Servicio"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
-
                 <label class="block text-[11px] font-bold text-red-600 uppercase mb-2">2. Clasificación (Potencial TNC)</label>
                 <select id="tnc-clasificacion" class="w-full p-3 bg-red-50 text-red-700 rounded-xl outline-none mb-4 border border-red-200 text-sm font-bold shadow-sm"></select>
-
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">3. Observaciones / Evidencia</label>
                 <textarea id="tnc-notas" rows="2" class="w-full p-3 bg-slate-50 text-slate-700 rounded-xl outline-none mb-6 border border-slate-200 text-sm placeholder-slate-400" placeholder="Añade detalles sobre el error..."></textarea>
-
                 <div class="flex gap-3 mt-auto">
                     <button onclick="resetBuscadorTNC()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Atrás</button>
                     <button onclick="guardarTNC()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2"><i class="fa-solid fa-save"></i> Guardar TNC</button>
@@ -284,13 +296,10 @@
                     <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm text-[10px] uppercase text-slate-500">
                         <tr><th class="p-3 border-b">N° Orden</th><th class="p-3 border-b">Paciente</th></tr>
                     </thead>
-                    <tbody id="lupa-tbody" class="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-                    </tbody>
+                    <tbody id="lupa-tbody" class="divide-y divide-slate-100 text-xs font-medium text-slate-700"></tbody>
                 </table>
             </div>
-            <div class="mt-4 flex gap-3">
-                <button onclick="cerrarModal('lupa')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cerrar Lupa</button>
-            </div>
+            <div class="mt-4 flex gap-3"><button onclick="cerrarModal('lupa')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cerrar Lupa</button></div>
         </div>
     </div>
 
@@ -300,8 +309,7 @@
             <h3 class="text-lg font-black mb-2 text-slate-800">Forzar Sincronización</h3>
             <p class="text-sm text-slate-500 mb-5">El sistema ajustará Firebase para que cuadre exactamente con el Excel subido.</p>
             <p id="c-info" class="text-xs text-emerald-800 bg-emerald-50 p-3 rounded-xl border border-emerald-200 font-bold mb-6"></p>
-            <input type="hidden" id="c-hash">
-            <input type="hidden" id="c-cant">
+            <input type="hidden" id="c-hash"><input type="hidden" id="c-cant">
             <div class="flex gap-3">
                 <button onclick="cerrarModal('correccion')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar</button>
                 <button id="btn-ejecutar-corr" onclick="ejecutarCorreccion()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Sincronizar</button>
@@ -332,9 +340,10 @@
         estudiosMapeo["CONSULTA MÉDICA"] = "Consulta Médica";
 
         const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
+        const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 
         window.iniciarAppAuditoria = function() {
-            initAuditoria();
+            aplicarFiltroRapido('mes'); // Inicia cargando el mes actual por default
             cargarTNCs();
         };
 
@@ -400,7 +409,7 @@
         };
 
         // ==========================================================
-        // 1. MSAL (ONEDRIVE) 
+        // 1. MSAL (ONEDRIVE) - BÚSQUEDA AVANZADA POR CARPETAS
         // ==========================================================
         const msalConfig = {
             auth: {
@@ -409,40 +418,113 @@
                 redirectUri: window.location.href.split('?')[0] 
             }
         };
-
         const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-        window.conectarOneDrive = async function() {
+        window.iniciarExtraccionInteligente = function() {
+            const hoy = new Date();
+            document.getElementById('od-mes-buscar').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+            document.getElementById('od-config').classList.remove('hidden');
+            document.getElementById('od-status').classList.add('hidden');
+            document.getElementById('od-status').classList.remove('flex');
+            abrirModal('onedrive');
+        };
+
+        window.ejecutarExtraccionOneDrive = async function() {
+            const valMes = document.getElementById('od-mes-buscar').value;
+            if(!valMes) return alert("Selecciona un mes");
+            
+            const [año, mesNum] = valMes.split('-');
+            const mesLetra = mesesNombres[parseInt(mesNum) - 1];
+            // Construimos la ruta de búsqueda estilo: "2026 5. MAYO"
+            const queryBusqueda = `"${año}" AND "${mesNum}. ${mesLetra}"`;
+
+            document.getElementById('od-config').classList.add('hidden');
+            document.getElementById('od-status').classList.remove('hidden');
+            document.getElementById('od-status').classList.add('flex');
+            const statusTxt = document.getElementById('od-status-text');
+            const listaArchivos = document.getElementById('od-lista-archivos');
+            
+            listaArchivos.innerHTML = '';
+            statusTxt.innerText = "Iniciando sesión en Microsoft...";
+
             try {
-                mostrarToast("Conectando con Microsoft 365...", "info");
-                const loginResponse = await msalInstance.loginPopup({ scopes: ["User.Read", "Files.Read.All"] });
-                mostrarToast(`Hola ${loginResponse.account.name}. Extrayendo reportes...`, "exito");
-                
-                const tokenResponse = await msalInstance.acquireTokenSilent({ scopes: ["Files.Read.All"], account: loginResponse.account });
-
-                const btn = document.getElementById('btn-auditoria-onedrive');
-                const txtOriginal = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando BD...';
-
-                const headers = new Headers(); headers.append("Authorization", `Bearer ${tokenResponse.accessToken}`);
-                const searchRes = await fetch("https://graph.microsoft.com/v1.0/me/drive/root/search(q='.xlsx')?$top=30&$select=id,name,lastModifiedDateTime,@microsoft.graph.downloadUrl", { headers });
-                const data = await searchRes.json();
-                
-                if(!data.value || data.value.length === 0) { btn.innerHTML = txtOriginal; return mostrarToast("No se hallaron archivos Excel.", "error"); }
-
-                excelDataGlobal = {}; let archProcesados = 0;
-                for(let file of data.value) {
-                    const dlUrl = file["@microsoft.graph.downloadUrl"]; if(!dlUrl) continue;
-                    const fileRes = await fetch(dlUrl); const arrayBuffer = await fileRes.arrayBuffer();
-                    await procesarArrayBufferExcel(arrayBuffer); 
-                    archProcesados++;
+                // 1. Iniciar sesión y obtener Token
+                let tokenResponse;
+                try {
+                    const activeAccount = msalInstance.getAllAccounts()[0];
+                    if(activeAccount) {
+                        tokenResponse = await msalInstance.acquireTokenSilent({ scopes: ["Files.Read.All"], account: activeAccount });
+                    } else {
+                        throw new Error("No hay cuenta activa");
+                    }
+                } catch(err) {
+                    const loginResponse = await msalInstance.loginPopup({ scopes: ["User.Read", "Files.Read.All"] });
+                    tokenResponse = await msalInstance.acquireTokenSilent({ scopes: ["Files.Read.All"], account: loginResponse.account });
                 }
 
+                statusTxt.innerText = `Buscando carpetas de ${mesLetra} ${año}...`;
+                const headers = new Headers(); headers.append("Authorization", `Bearer ${tokenResponse.accessToken}`);
+                
+                // 2. Ejecutar búsqueda en Microsoft Graph
+                const searchRes = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root/search(q='${queryBusqueda}')?$top=50&$select=id,name,parentReference,@microsoft.graph.downloadUrl`, { headers });
+                const data = await searchRes.json();
+                
+                // 3. Filtrar archivos válidos
+                let archivosAProcesar = [];
+                if(data.value && data.value.length > 0) {
+                    data.value.forEach(item => {
+                        if(item.name.toLowerCase().endsWith('.xlsx') || item.name.toLowerCase().endsWith('.xls') || item.name.toLowerCase().endsWith('.csv')) {
+                            // Validar que el archivo esté dentro de una ruta de "Salud Ocupacional" para evitar procesar Excels personales
+                            if(item.parentReference && item.parentReference.path && item.parentReference.path.toLowerCase().includes('salud ocupacional')) {
+                                archivosAProcesar.push(item);
+                            }
+                        }
+                    });
+                }
+
+                if(archivosAProcesar.length === 0) {
+                    statusTxt.innerHTML = `<span class="text-red-500">No se encontraron Excels en la ruta solicitada.</span>`;
+                    setTimeout(() => cerrarModal('onedrive'), 3000);
+                    return;
+                }
+
+                statusTxt.innerText = `Descargando y procesando ${archivosAProcesar.length} archivos...`;
+                
+                excelDataGlobal = {}; 
+                let exitos = 0;
+
+                // 4. Descargar y procesar cada Excel encontrado
+                for(let file of archivosAProcesar) {
+                    const dlUrl = file["@microsoft.graph.downloadUrl"]; 
+                    if(!dlUrl) continue;
+                    
+                    try {
+                        listaArchivos.innerHTML = `<div><i class="fa-solid fa-spinner fa-spin text-blue-400 mr-1"></i> Leyendo: ${file.name}</div>` + listaArchivos.innerHTML;
+                        const fileRes = await fetch(dlUrl); 
+                        const arrayBuffer = await fileRes.arrayBuffer();
+                        await procesarArrayBufferExcel(arrayBuffer); 
+                        exitos++;
+                        // Actualizar UI
+                        listaArchivos.children[0].innerHTML = `<i class="fa-solid fa-check text-emerald-500 mr-1"></i> Listo: ${file.name}`;
+                    } catch(e) {
+                        console.error("Error al leer archivo:", file.name, e);
+                        listaArchivos.children[0].innerHTML = `<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error en: ${file.name}`;
+                    }
+                }
+
+                statusTxt.innerHTML = `<span class="text-emerald-600 font-black"><i class="fa-solid fa-check-double mr-1"></i> ¡Extracción Completada!</span>`;
                 sincronizarAppGlobal();
                 reRenderAuditoria();
-                mostrarToast(`Auditoría lista: ${archProcesados} Excels integrados automáticamente.`, "exito");
-                btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Extracción Completada';
-            } catch (err) { console.error("Error M2M:", err); mostrarToast("Fallo en sincronización OneDrive", "error"); }
+                
+                setTimeout(() => {
+                    cerrarModal('onedrive');
+                    mostrarToast(`${exitos} Excels extraídos de OneDrive.`, "exito");
+                }, 2000);
+
+            } catch (err) { 
+                console.error("Error M2M:", err); 
+                statusTxt.innerHTML = `<span class="text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Error en la conexión con Microsoft.</span>`;
+            }
         };
 
         // ==========================================================
@@ -489,13 +571,8 @@
             
             let suc = normalizarDato(rawSuc).toUpperCase();
             
-            if (med === 'X' || med === '✔' || med === 'OK') {
-                return "X";
-            }
-
-            if (diccIniciales[suc] && diccIniciales[suc][med]) {
-                return normalizarDato(diccIniciales[suc][med]);
-            }
+            if (med === 'X' || med === '✔' || med === 'OK') return "X";
+            if (diccIniciales[suc] && diccIniciales[suc][med]) return normalizarDato(diccIniciales[suc][med]);
             
             const medNormalizado = normalizarDato(med).toUpperCase();
             const medicos = window.LAPI_CONFIG.medicos || [];
@@ -565,14 +642,12 @@
                                 let est = unificarEstudio(estRaw);
                                 let med = traducirMedico(f[mapa[key]], sEx);
                                 
-                                // Extraer los datos detallados
                                 let nombrePaciente = f[mapa["NOMBRE"]] ? String(f[mapa["NOMBRE"]]).trim() : "DESCONOCIDO";
                                 let idxOrden = mapa["_ORDEN_DINAMICO_"];
                                 let numeroOrden = (idxOrden !== undefined && f[idxOrden]) ? String(f[idxOrden]).trim() : "S/N";
 
                                 const hash = `${fEx}|${sEx}|${normalizarDato(med)}|${est}`;
                                 
-                                // GUARDAMOS EN LA LUPA (Array) EN LUGAR DE SUMAR +1
                                 if(!excelDataGlobal[hash]) excelDataGlobal[hash] = [];
                                 excelDataGlobal[hash].push({ orden: numeroOrden, paciente: nombrePaciente });
                             }
@@ -585,7 +660,6 @@
         // ==========================================================
         // 3. UI, CRUCE MANUAL Y REDERIZADO
         // ==========================================================
-        
         window.sincronizarAppGlobal = function() {
             appDataGlobal = {};
             rawDataGlobal.filter(r => r.tipo === "Sucursal").forEach(reg => {
@@ -605,7 +679,6 @@
                     let data = await input.files[i].arrayBuffer();
                     await procesarArrayBufferExcel(data); 
                 }
-                
                 sincronizarAppGlobal();
                 reRenderAuditoria();
             } catch(e) { mostrarToast("Error leyendo Excel", "error"); console.error(e); }
@@ -639,35 +712,17 @@
                             data.detalles.forEach(det => {
                                 let cant = parseInt(det.cant) || 1;
                                 for(let k=0; k<cant; k++) {
-                                    rawDataGlobal.push({ 
-                                        tipo: "Sucursal", 
-                                        fecha: data.fecha, 
-                                        lugar: normalizarDato(data.sucursal), 
-                                        estudio: agruparEstudio(det.estudio, "Sucursal"), 
-                                        medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)) 
-                                    });
+                                    rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: agruparEstudio(det.estudio, "Sucursal"), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)) });
                                 }
                             });
                         } else if (data.estudio) {
-                            rawDataGlobal.push({ 
-                                tipo: "Sucursal", 
-                                fecha: data.fecha, 
-                                lugar: normalizarDato(data.sucursal), 
-                                estudio: agruparEstudio(data.estudio, "Sucursal"), 
-                                medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) 
-                            });
+                            rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: agruparEstudio(data.estudio, "Sucursal"), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
                         }
                     } else if (data.detalles) {
                         data.detalles.forEach(det => {
                             let cant = parseInt(det.cant) || 1;
                             for(let k=0; k<cant; k++) {
-                                rawDataGlobal.push({ 
-                                    tipo: "Foráneo", 
-                                    fecha: data.fecha, 
-                                    lugar: normalizarDato(data.empresa), 
-                                    estudio: agruparEstudio(det.estudio, "Foráneo"), 
-                                    medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")) 
-                                });
+                                rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), estudio: agruparEstudio(det.estudio, "Foráneo"), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")) });
                             }
                         });
                     }
@@ -681,13 +736,7 @@
                         Object.keys(data.estudios).forEach(est => {
                             let cant = parseInt(data.estudios[est]) || 0;
                             for(let k=0; k<cant; k++){
-                                rawDataGlobal.push({ 
-                                    tipo: "Sucursal", 
-                                    fecha: data.fecha, 
-                                    lugar: normalizarDato(data.sucursal), 
-                                    estudio: agruparEstudio(est, "Sucursal"), 
-                                    medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) 
-                                });
+                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: agruparEstudio(est, "Sucursal"), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
                             }
                         });
                     }
@@ -709,6 +758,7 @@
             if (tipo === 'hoy') iStr = fStr; 
             else if (tipo === 'ayer') { const ayer = new Date(); ayer.setDate(ayer.getDate() - 1); iStr = `${ayer.getFullYear()}-${String(ayer.getMonth() + 1).padStart(2, '0')}-${String(ayer.getDate()).padStart(2, '0')}`; fStr = iStr; }
             else if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
+            else if (tipo === 'mes') { iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`; }
             else if (tipo === 'todo') { iStr = ''; fStr = ''; }
             document.getElementById('a-inicio').value = iStr; document.getElementById('a-fin').value = fStr;
             reRenderAuditoria();
@@ -750,7 +800,6 @@
                         extraEnApp++; cHTML = 'bg-amber-50 hover:bg-amber-100'; 
                         window.discrepanciasEliminar.push({hash: hash, cant: cE});
                     }
-                    
                     window.discrepanciasTNC.push({hash: hash, cE: cE, cA: cA});
 
                     aHTML = `
@@ -975,195 +1024,4 @@
                         const icon = d.estado === 'Abierto' ? '<i class="fa-solid fa-circle text-red-500 text-[10px]"></i>' : '<i class="fa-solid fa-circle text-emerald-500 text-[10px]"></i>';
                         html += `
                             <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col gap-1 shadow-sm">
-                                <div class="flex justify-between items-center"><span class="text-[11px] text-slate-500 font-bold">${d.fechaOperativa} | ${d.origen}</span> ${icon}</div>
-                                <p class="text-xs font-black text-red-600 uppercase">${d.clasificacion}</p>
-                                <p class="text-[11px] font-bold text-slate-700">${d.estudio}</p>
-                            </div>
-                        `;
-                    });
-                }
-                
-                document.getElementById('perf-total-tnc').innerText = total;
-                document.getElementById('perf-historial').innerHTML = html;
-                dibujarGraficaPerfil(fallas);
-            } catch (e) { mostrarToast("Error buscando perfil", "error"); console.log(e); }
-        };
-
-        function dibujarGraficaPerfil(dataObj) {
-            if(chartMedico) chartMedico.destroy();
-            const labels = Object.keys(dataObj); const data = Object.values(dataObj);
-            if(labels.length === 0) {
-                document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<p class="text-center text-slate-400 text-xs mt-16 font-medium">Sin datos para graficar</p><canvas id="chart-tnc-medico" class="hidden"></canvas>';
-                return;
-            } else { document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<canvas id="chart-tnc-medico"></canvas>'; }
-
-            chartMedico = new Chart(document.getElementById('chart-tnc-medico').getContext('2d'), {
-                type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#ef4444', '#f59e0b', '#8b5cf6', '#3b82f6', '#10b981'], borderWidth: 0, hoverOffset: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
-            });
-        }
-
-        // ==========================================
-        // ACCIONES MASIVAS Y CORRECCIÓN INYECCIÓN
-        // ==========================================
-        window.prepararCorreccion = function(hash, cantCorrecta) {
-            const [fecha, suc, med, est] = hash.split('|');
-            document.getElementById('c-hash').value = hash; document.getElementById('c-cant').value = cantCorrecta;
-            document.getElementById('c-info').innerHTML = `El sistema ajustará el perfil de <b>${med}</b> para que tenga exactamente <b>${cantCorrecta}</b> estudios de <b>${est}</b>.`;
-            abrirModal('correccion');
-        };
-
-        window.ejecutarCorreccion = async function() {
-            const btn = document.getElementById('btn-ejecutar-corr');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
-
-            const hash = document.getElementById('c-hash').value; const cantCorrecta = parseInt(document.getElementById('c-cant').value);
-            const [fecha, sucursal, medico, estudio] = hash.split('|');
-            const docId = `SUC_${fecha}_${sucursal.replace(/\s+/g,'')}_${medico.replace(/\s+/g,'')}`;
-
-            try {
-                const docRef = window.doc(window.db, "registros_diarios_sucursales", docId);
-                const docSnap = await window.getDoc(docRef);
-
-                if(docSnap.exists()) {
-                    let datos = docSnap.data(); if(!datos.estudios) datos.estudios = {};
-                    datos.estudios[estudio] = cantCorrecta; datos.ultimaActualizacion = new Date();
-                    await window.setDoc(docRef, datos);
-                } else {
-                    await window.setDoc(docRef, { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: cantCorrecta }, observaciones: "Generado auto por Auditoría", ultimaActualizacion: new Date() });
-                }
-                mostrarToast("Base de datos sincronizada", "exito");
-                cerrarModal('correccion');
-                await initAuditoria(); 
-            } catch (e) { mostrarToast("Fallo (Verifica Reglas de Firebase)", "error"); }
-            btn.innerHTML = 'Sincronizar'; btn.disabled = false;
-        };
-
-        window.inyectarFaltantesMasivo = async function() {
-            if(!confirm(`¿Estás seguro de inyectar de un golpe los ${window.discrepanciasInyectar.length} registros que faltan en la base de datos?`)) return;
-            
-            const btn = document.getElementById('btn-bulk-inyectar');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Inyectando...';
-            btn.disabled = true;
-
-            try {
-                for(let item of window.discrepanciasInyectar) {
-                    const hash = item.hash;
-                    const cantCorrecta = item.cant;
-                    const [fecha, sucursal, medico, estudio] = hash.split('|');
-                    const docId = `SUC_${fecha}_${sucursal.replace(/\s+/g,'')}_${medico.replace(/\s+/g,'')}`;
-                    
-                    const docRef = window.doc(window.db, "registros_diarios_sucursales", docId);
-                    const docSnap = await window.getDoc(docRef);
-                    if(docSnap.exists()) {
-                        let datos = docSnap.data(); if(!datos.estudios) datos.estudios = {};
-                        datos.estudios[estudio] = cantCorrecta; datos.ultimaActualizacion = new Date();
-                        await window.setDoc(docRef, datos);
-                    } else {
-                        await window.setDoc(docRef, { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: cantCorrecta }, observaciones: "Generado por Auditoría Masiva", ultimaActualizacion: new Date() });
-                    }
-                }
-                mostrarToast("Inyección masiva completada", "exito");
-                await initAuditoria(); 
-            } catch(e) { 
-                console.error("Error en inyección masiva:", e); 
-                mostrarToast("Ocurrió un error en la inyección masiva", "error");
-            }
-            
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
-        };
-
-        window.eliminarSobrantesMasivo = async function() {
-            if(!confirm(`¿Estás seguro de eliminar/ajustar los ${window.discrepanciasEliminar.length} registros que sobran en la base de datos?`)) return;
-
-            const btn = document.getElementById('btn-bulk-eliminar');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Ajustando...';
-            btn.disabled = true;
-
-            try {
-                for(let item of window.discrepanciasEliminar) {
-                    const hash = item.hash;
-                    const cantCorrecta = item.cant;
-                    const [fecha, sucursal, medico, estudio] = hash.split('|');
-                    const docId = `SUC_${fecha}_${sucursal.replace(/\s+/g,'')}_${medico.replace(/\s+/g,'')}`;
-
-                    const docRef = window.doc(window.db, "registros_diarios_sucursales", docId);
-                    const docSnap = await window.getDoc(docRef);
-
-                    if(docSnap.exists()) {
-                        let datos = docSnap.data(); 
-                        if(!datos.estudios) datos.estudios = {};
-                        datos.estudios[estudio] = cantCorrecta; 
-                        datos.ultimaActualizacion = new Date();
-                        await window.setDoc(docRef, datos);
-                    } else {
-                        await window.setDoc(docRef, { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: cantCorrecta }, observaciones: "Ajustado por Auditoría Masiva", ultimaActualizacion: new Date() });
-                    }
-                }
-                mostrarToast("Ajuste masivo completado", "exito");
-                await initAuditoria();
-            } catch(e) {
-                console.error("Error en ajuste masivo:", e);
-                mostrarToast("Ocurrió un error en el ajuste masivo", "error");
-            }
-
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
-        };
-
-        window.generarTncMasivo = async function() {
-            if(!confirm(`¿Deseas levantar automáticamente ${window.discrepanciasTNC.length} TNCs por estas diferencias?`)) return;
-            
-            const btn = document.getElementById('btn-bulk-tnc');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generando TNCs...';
-            btn.disabled = true;
-
-            try {
-                for(let item of window.discrepanciasTNC) {
-                    const hash = item.hash;
-                    const [fecha, lugar, medico, estudio] = hash.split('|');
-                    const dif = item.cE - item.cA;
-                    const clasif = dif > 0 ? "ESTUDIO FALTANTE (OMISIÓN APP)" : "ESTUDIO SOBRANTE (DUPLICADO APP)";
-                    const notas = `Detectado en Auditoría Ciega Masiva (Diferencia: ${dif > 0 ? '+' + dif : dif})`;
-
-                    await window.addDoc(window.collection(window.db, "tickets_auditoria"), {
-                        origen: "Sucursal", 
-                        fechaOperativa: fecha, sucursal: lugar, medico: medico, estudio: estudio,
-                        clasificacion: clasif, comentarios: notas, estado: 'Abierto', timestamp: new Date()
-                    });
-                }
-                mostrarToast("TNCs masivos generados con éxito", "exito");
-                cargarTNCs(); 
-            } catch(e) { 
-                console.error("Error generando TNCs masivos:", e); 
-                mostrarToast("Error generando los TNCs", "error"); 
-            }
-            
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
-        };
-
-        // =========================================================================
-        // SERVICE WORKER Y VERSIÓN FLOTANTE
-        // =========================================================================
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('PWA: Actualización silenciosa lista'))
-                    .catch(err => console.log('Error PWA: ', err));
-            });
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const versionDiv = document.createElement('div');
-            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
-            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
-            document.body.appendChild(versionDiv);
-        });
-    </script>
-</body>
-</html>
+                                <div class="flex justify-between items-center"><span class="text-[11px] text-slate-500 font-bold">${d
