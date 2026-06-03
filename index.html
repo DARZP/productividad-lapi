@@ -318,7 +318,7 @@
                     <h3 class="font-black text-xl text-orange-200">${est}</h3>
                 </div>
                 <div id="lista-medicos-detalle" class="space-y-3 mb-4"></div>
-                <button onclick="agregarFilaMedico()" class="w-full bg-white/20 hover:bg-white/30 transition py-2.5 rounded-xl text-sm font-bold active:scale-95 mb-6"><i class="fa-solid fa-plus mr-1"></i> Añadir otro médico a este estudio</button>
+                <button onclick="agregarFilaMedico()" class="w-full bg-white/20 hover:bg-white/30 transition py-2.5 rounded-xl text-sm font-bold active:scale-95 mb-6"><i class="fa-solid fa-plus mr-1"></i> Añadir personal a este estudio</button>
                 <button onclick="guardarDetalle('${est}')" class="w-full bg-white text-orange-600 font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all">${indiceActual < seleccionados.length - 1 ? 'Siguiente Estudio <i class="fa-solid fa-arrow-right ml-1"></i>' : 'Ir al Resumen Final <i class="fa-solid fa-check ml-1"></i>'}</button>
             `;
             agregarFilaMedico();
@@ -327,7 +327,7 @@
         function agregarFilaMedico() {
             const div = document.createElement('div');
             div.className = "flex gap-2";
-            div.innerHTML = `<input list="lista-medicos" placeholder="Médico Asignado" class="med-name w-full p-3 rounded-xl bg-white/20 outline-none placeholder-white/50 text-sm font-bold">
+            div.innerHTML = `<input list="lista-medicos" placeholder="Personal Asignado" class="med-name w-full p-3 rounded-xl bg-white/20 outline-none placeholder-white/50 text-sm font-bold">
                              <input type="number" min="1" placeholder="Cant." class="med-cant w-1/3 p-3 rounded-xl bg-white/20 outline-none placeholder-white/50 text-center font-bold">`;
             document.getElementById('lista-medicos-detalle').appendChild(div);
         }
@@ -344,7 +344,7 @@
                 else if (medico && cant > 0) registroFinal.push({ estudio, medico, cant });
             });
 
-            if(errorValidacion || !hayDatos) return mostrarToast("Por favor asigna médicos válidos y cantidades mayores a 0.", "error");
+            if(errorValidacion || !hayDatos) return mostrarToast("Por favor asigna personal válidos y cantidades mayores a 0.", "error");
             
             if(indiceActual < seleccionados.length - 1) { 
                 indiceActual++; 
@@ -501,7 +501,7 @@
             });
 
             if(hayErrorDetalles || detallesNuevos.length === 0) {
-                return mostrarToast("Todos los estudios deben tener Tipo, Médico y Cantidad válida.", "error");
+                return mostrarToast("Todos los estudios deben tener Tipo, Personal y Cantidad válida.", "error");
             }
 
             const btn = document.getElementById('btn-guardar-cambios');
