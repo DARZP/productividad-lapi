@@ -3,23 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Global Dashboard</title>
+    <title>Global - LAPI Admin</title>
     
-    <!-- ETIQUETAS PWA -->
     <link rel="manifest" href="manifest_admin.json">
-    <meta name="theme-color" content="#0284c7">
+    <meta name="theme-color" content="#7c3aed">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="config.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+        import { getFirestore, collection, getDocs, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -34,1046 +30,303 @@
         window.db = getFirestore(app);
         window.getDocs = getDocs;
         window.collection = collection;
-        window.addDoc = addDoc;
         window.query = query;
         window.orderBy = orderBy;
-        window.addDoc = addDoc;
-        
-        // --- LÓGICA DE NOTIFICACIONES PUSH ---
-        const messaging = getMessaging(app);
+        window.doc = doc;
+        window.deleteDoc = deleteDoc;
+        window.updateDoc = updateDoc;
 
-        async function activarNotificaciones() {
-            try {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    console.log('Permiso concedido para notificaciones.');
-                    const token = await getToken(messaging, { vapidKey: 'BK0Ndpz4nfvrNYlvSYbda1Craz0mRg4zXIDxDItg56ywIEKxT8QHvsUGpR6XbVO8AcrWP9sReRPRMwyGjcKVIQo' });
-                    if (token) {
-                        await setDoc(doc(window.db, "admin_tokens", token), {
-                            token: token,
-                            fechaSuscripcion: new Date()
-                        });
-                        console.log("Computadora registrada como Administrador activo.");
-                    }
-                }
-            } catch (error) { console.error('Error al configurar notificaciones:', error); }
-        }
-
-        onMessage(messaging, (payload) => {
-            alert(`🚨 LAPI ALERTA: ${payload.notification.title}\n${payload.notification.body}`);
-        });
-
-        activarNotificaciones();
-        initDashboard();
+        window.iniciarAdmin();
     </script>
     
     <style>
-        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.4); }
-        .bg-lapi-orange { background: linear-gradient(135deg, #ff8c00 0%, #ff6a00 100%); }
-        .bg-lapi-blue { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
-        body { background-color: #f8fafc; }
-        .chart-container-global { transition: all 0.5s ease-in-out; overflow: hidden; }
-        .tab-btn.active { background-color: white; color: #1e293b; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .tab-btn { background-color: rgba(255,255,255,0.2); color: white; }
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
+        .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        /* Safe area for mobile bottom nav */
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 80px); }
     </style>
 </head>
-<body class="font-sans text-slate-800 p-4 md:p-6 min-h-screen flex flex-col">
+<body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <div class="max-w-7xl mx-auto flex-1 w-full">
-        <div id="header-box" class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 bg-lapi-orange p-6 rounded-3xl shadow-xl text-white gap-4 transition-colors duration-500">
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-4 pt-2 md:pt-8 gap-1 md:gap-6 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:shadow-[4px_0_20px_rgba(0,0,0,0.05)]">
+        <div class="hidden md:flex mb-6 text-purple-600 text-3xl"><i class="fa-solid fa-staff-snake"></i></div>
+        
+        <a href="admin.html" class="flex flex-col items-center p-2 text-purple-600 group">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-purple-100 text-purple-600 transition-all shadow-sm"><i class="fa-solid fa-globe text-xl"></i></div>
+            <span class="text-[10px] font-black mt-1 tracking-widest uppercase">Global</span>
+        </a>
+        <a href="reportes.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-indigo-600 group transition-all">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center group-hover:bg-indigo-50 transition-all"><i class="fa-solid fa-chart-pie text-xl"></i></div>
+            <span class="text-[10px] font-bold mt-1 tracking-widest uppercase">Reportes</span>
+        </a>
+        <a href="auditoria.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-emerald-600 group transition-all">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center group-hover:bg-emerald-50 transition-all"><i class="fa-solid fa-shield-halved text-xl"></i></div>
+            <span class="text-[10px] font-bold mt-1 tracking-widest uppercase">Auditoría</span>
+        </a>
+    </nav>
+
+    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-gradient-to-r from-purple-700 to-indigo-600 p-6 rounded-3xl shadow-xl text-white gap-4">
             <div>
-                <h1 class="text-3xl font-black tracking-tight">Global Admin</h1>
-                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest">Productividad</p>
+                <h1 class="text-3xl font-black tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-server text-purple-300"></i> MONITOR GLOBAL
+                </h1>
+                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest text-purple-200">Base de Datos Operativa</p>
             </div>
-            
-            <div class="flex gap-2 bg-black/10 p-1 rounded-xl w-full md:w-auto">
-                <button onclick="cambiarTab('foraneos')" id="btn-tab-foraneos" class="tab-btn active flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm transition">📍 Foráneos</button>
-                <button onclick="cambiarTab('sucursales')" id="btn-tab-sucursales" class="tab-btn flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm transition">🏢 Sucursales</button>
-            </div>
-        </div>
-
-        <div class="flex justify-end mb-4">
-            <button onclick="toggleAnalytics()" class="bg-white hover:bg-slate-50 transition px-5 py-2.5 rounded-xl font-bold flex gap-2 items-center justify-center border border-slate-200 text-sm text-slate-600 shadow-sm">
-                <i id="toggle-icon" class="fa-solid fa-eye"></i>
-                <span id="toggle-text">Mostrar Gráficas</span>
-            </button>
-        </div>
-
-        <div id="seccion-foraneos" class="block">
-            <div class="glass p-5 rounded-2xl shadow-sm mb-6 space-y-5 border-l-4 border-orange-500">
-                <div class="flex flex-wrap gap-2 items-center">
-                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest mr-2 w-full md:w-auto mb-2 md:mb-0">Filtros Rápidos</span>
-                    <button id="btn-f-hoy" onclick="aplicarFiltroRapido('F', 'hoy')" class="btn-filtro-F text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Hoy</button>
-                    <button id="btn-f-ayer" onclick="aplicarFiltroRapido('F', 'ayer')" class="btn-filtro-F text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Ayer</button>
-                    <button id="btn-f-semana" onclick="aplicarFiltroRapido('F', 'semana')" class="btn-filtro-F text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Esta Semana</button>
-                    <button id="btn-f-mes_actual" onclick="aplicarFiltroRapido('F', 'mes_actual')" class="btn-filtro-F text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Este Mes</button>
-                    <button id="btn-f-ano_actual" onclick="aplicarFiltroRapido('F', 'ano_actual')" class="btn-filtro-F text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Este Año</button>
-                    <button id="btn-f-acumulado" onclick="aplicarFiltroRapido('F', 'acumulado')" class="btn-filtro-F text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Acumulado</button>
-                </div>
-                
-                <div class="flex flex-wrap gap-4 border-t border-slate-200 pt-5">
-                    <div class="flex-1 min-w-[130px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Desde</label><input type="date" id="f-inicio" onchange="limpiarBotonActivo('F')" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none"></div>
-                    <div class="flex-1 min-w-[130px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Hasta</label><input type="date" id="f-fin" onchange="limpiarBotonActivo('F')" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none"></div>
-                    <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Empresa</label><input id="f-empresa" list="lista-empresas-admin" placeholder="Todas..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none uppercase"></div>
-                    <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Médico</label><input id="f-medico" list="lista-medicos-admin" placeholder="Todos..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none"></div>
-                    <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Estudio</label><input id="f-estudio" list="lista-estudios-admin" placeholder="Todos..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none"></div>
-                    
-                    <div class="flex-none w-full xl:w-auto flex items-end gap-2">
-                        <button onclick="ejecutarFiltrosForaneos()" class="flex-1 xl:flex-none px-6 p-2.5 bg-orange-500 text-white rounded-lg font-bold text-sm hover:bg-orange-600 transition">Aplicar</button>
-                        <button onclick="reestablecerTodo()" class="flex-1 xl:flex-none px-4 p-2.5 bg-slate-200 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-300 transition">Limpiar</button>
-                        <button onclick="exportarExcel('Foraneos')" class="flex-1 xl:flex-none px-4 p-2.5 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 transition shadow-sm"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
-                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-orange-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Estudios Totales</p><p id="kpi-f-estudios" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
-                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-sky-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Tiempo en Campo</p><p id="kpi-f-horas" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
-                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-emerald-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Empresas Atendidas</p><p id="kpi-f-empresas" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
-            </div>
-
-            <div class="chart-container-global grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 hidden">
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Estudios por Periodo</h3><div class="relative h-64"><canvas id="cF1"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Distribución por Tipo de Estudio</h3><div class="relative h-64"><canvas id="cF2"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Productividad por Empresa</h3><div class="relative h-64"><canvas id="cF3"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Top Médicos (Cant. Estudios)</h3><div class="relative h-64"><canvas id="cF7"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Horas laboradas por Periodo</h3><div class="relative h-64"><canvas id="cF4"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Horas Acumuladas por Médico</h3><div class="relative h-64"><canvas id="cF5"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm lg:col-span-2"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Empresas Atendidas por Periodo</h3><div class="relative h-64"><canvas id="cF6"></canvas></div></div>
-            </div>
-
-            <div class="glass p-5 rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm">Registros Detallados (Foráneos)</h3>
-                    <span class="text-xs bg-slate-200 text-slate-600 px-3 py-1 rounded-full font-bold" id="kpi-f-total-regs">0 Registros</span>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left border-collapse min-w-[700px]">
-                        <thead><tr class="text-xs uppercase bg-slate-100 text-slate-500 border-b"><th class="py-3 px-4">Día / Fecha</th><th class="py-3 px-4">Identificación</th><th class="py-3 px-4 text-center">Horario</th><th class="py-3 px-4">Detalle Médico</th><th class="py-3 px-4">Observaciones</th></tr></thead>
-                        <tbody id="tabla-foraneos" class="divide-y divide-slate-100 font-medium"></tbody>
-                    </table>
-                </div>
-                <button onclick="cargarMasForaneos()" class="mt-4 w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-sm hover:bg-slate-200 transition">Ver más registros...</button>
+            <div class="flex gap-2 bg-black/20 p-1.5 rounded-xl text-sm font-bold items-center px-4">
+                <i class="fa-solid fa-circle-nodes text-emerald-400 animate-pulse"></i> Sync Activo
             </div>
         </div>
 
-        <div id="seccion-sucursales" class="hidden">
-            <div class="glass p-5 rounded-2xl shadow-sm mb-6 space-y-5 border-l-4 border-sky-600">
-                <div class="flex flex-wrap gap-2 items-center">
-                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest mr-2 w-full md:w-auto mb-2 md:mb-0">Filtros Rápidos</span>
-                    <button id="btn-s-hoy" onclick="aplicarFiltroRapido('S', 'hoy')" class="btn-filtro-S text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Hoy</button>
-                    <button id="btn-s-ayer" onclick="aplicarFiltroRapido('S', 'ayer')" class="btn-filtro-S text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Ayer</button>
-                    <button id="btn-s-semana" onclick="aplicarFiltroRapido('S', 'semana')" class="btn-filtro-S text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Esta Semana</button>
-                    <button id="btn-s-mes_actual" onclick="aplicarFiltroRapido('S', 'mes_actual')" class="btn-filtro-S text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Este Mes</button>
-                    <button id="btn-s-ano_actual" onclick="aplicarFiltroRapido('S', 'ano_actual')" class="btn-filtro-S text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Este Año</button>
-                    <button id="btn-s-acumulado" onclick="aplicarFiltroRapido('S', 'acumulado')" class="btn-filtro-S text-white text-sm px-4 py-2 rounded-lg font-bold transition bg-slate-800 hover:bg-slate-700">Acumulado</button>
-                </div>
-                
-                <div class="flex flex-wrap gap-4 border-t border-slate-200 pt-5">
-                    <div class="flex-1 min-w-[130px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Desde</label><input type="date" id="s-inicio" onchange="limpiarBotonActivo('S')" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none"></div>
-                    <div class="flex-1 min-w-[130px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Hasta</label><input type="date" id="s-fin" onchange="limpiarBotonActivo('S')" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none"></div>
-                    <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Sucursal</label><input id="s-sucursal" list="lista-s-sucursal" placeholder="Todas..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none uppercase"></div>
-                    <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Empresa</label><input id="s-empresa" list="lista-s-empresa" placeholder="Todas..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none uppercase"></div>
-                    <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Médico</label><input id="s-medico" list="lista-s-medico" placeholder="Todos..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none uppercase"></div>
-                    <div class="flex-1 min-w-[160px]"><label class="block text-xs font-black text-slate-500 uppercase mb-1">Estudio</label><input id="s-estudio" list="lista-s-estudio" placeholder="Todos..." class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none uppercase"></div>
-                    
-                    <div class="flex-none w-full xl:w-auto flex items-end gap-2">
-                        <button onclick="ejecutarFiltrosSucursales()" class="flex-1 xl:flex-none px-6 p-2.5 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700 transition">Aplicar</button>
-                        <button onclick="reestablecerTodo()" class="flex-1 xl:flex-none px-4 p-2.5 bg-slate-200 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-300 transition">Limpiar</button>
-                        <button onclick="exportarExcel('Sucursales')" class="flex-1 xl:flex-none px-4 p-2.5 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 transition shadow-sm"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
-                    </div>
-                </div>
+        <div class="glass p-5 rounded-3xl shadow-sm mb-6 flex flex-col md:flex-row gap-4 justify-between items-center border-l-4 border-purple-500">
+            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                <button onclick="aplicarFiltroRapido('hoy')" class="flex-1 md:flex-none bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-xs font-black px-4 py-2.5 rounded-xl transition-colors uppercase tracking-widest">Hoy</button>
+                <button onclick="aplicarFiltroRapido('ayer')" class="flex-1 md:flex-none bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-xs font-black px-4 py-2.5 rounded-xl transition-colors uppercase tracking-widest">Ayer</button>
+                <button onclick="aplicarFiltroRapido('semana')" class="flex-1 md:flex-none bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-xs font-black px-4 py-2.5 rounded-xl transition-colors uppercase tracking-widest">Semana</button>
+                <button onclick="aplicarFiltroRapido('todo')" class="flex-1 md:flex-none bg-purple-100 text-purple-700 text-xs font-black px-4 py-2.5 rounded-xl transition-colors uppercase tracking-widest">Todo</button>
             </div>
-
-            <div class="glass p-5 rounded-2xl shadow-sm mb-6 border-l-4 border-emerald-500">
-                <h3 class="font-black text-slate-700 text-sm mb-3 uppercase">Procesamiento de registros a partir de de Excel (Concentrados de Sucursales)</h3>
-                <p class="text-xs text-slate-500 mb-4">Sube los concentrados diarios o mensuales. El sistema extraerá los datos y <b>omitirá los duplicados automáticamente</b> comparando contra la base de datos.</p>
-                
-                <div class="flex flex-wrap gap-4 items-center">
-                    <input type="file" id="archivoExcelSucursales" multiple accept=".csv, .xlsx, .xls, .ods" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 w-full sm:w-auto cursor-pointer">
-                    
-                    <button id="btnProcesarExcels" onclick="procesarExcelsSucursales()" class="bg-sky-600 hover:bg-sky-700 text-white px-6 py-2 rounded-lg font-bold text-sm transition shadow-lg w-full sm:w-auto">
-                        <i class="fa-solid fa-cogs mr-2"></i> 1. Analizar Archivos
-                    </button>
-                    <button id="btnSubirExcels" onclick="subirExcelsProcesados()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold text-sm transition shadow-lg w-full sm:w-auto hidden">
-                        <i class="fa-solid fa-cloud-upload mr-2"></i> 2. Subir Nuevos
-                    </button>
-                </div>
-
-                <div id="contenedor-progreso" class="mt-4 hidden">
-                    <div class="w-full bg-slate-200 rounded-full h-3">
-                        <div id="barra-progreso" class="bg-emerald-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
-                    </div>
-                    <p id="texto-progreso" class="text-xs font-bold text-slate-600 mt-2 text-right">0%</p>
-                </div>
-                
-                <div id="logProcesamiento" class="mt-2 text-xs font-mono text-slate-600 hidden bg-slate-100 p-3 rounded-lg max-h-40 overflow-y-auto"></div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-center">
-                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-sky-600"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Total Estudios</p><p id="kpi-s-estudios" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
-                <div class="glass p-5 rounded-2xl shadow-sm border-b-8 border-emerald-500"><p class="text-slate-500 text-xs font-black uppercase tracking-widest">Personal Activo</p><p id="kpi-s-personal" class="text-3xl font-black text-slate-800 mt-1">0</p></div>
-            </div>
-
-            <div class="chart-container-global grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 hidden">
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Tendencia Diaria (Sucursales)</h3><div class="relative h-64"><canvas id="cS1"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Estudios por Día de la Semana</h3><div class="relative h-64"><canvas id="cS2"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Top 10 Sucursales</h3><div class="relative h-64"><canvas id="cS3"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Distribución por Tipo de Estudio</h3><div class="relative h-64"><canvas id="cS4"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl shadow-sm"><h3 class="font-black text-slate-500 text-xs uppercase mb-4 border-b pb-2">Top Médicos</h3><div class="relative h-64"><canvas id="cS5"></canvas></div></div>
-            </div>
-
-            <div class="glass p-5 rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm">Registros Detallados (Sucursales)</h3>
-                    <span class="text-xs bg-slate-200 text-slate-600 px-3 py-1 rounded-full font-bold" id="kpi-s-total-regs">0 Registros</span>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left border-collapse min-w-[700px]">
-                        <thead><tr class="text-xs uppercase bg-slate-100 text-slate-500 border-b"><th class="py-3 px-4">Fecha</th><th class="py-3 px-4">Sucursal / Empresa</th><th class="py-3 px-4">Estudio Realizado</th><th class="py-3 px-4">Médico Asignado</th></tr></thead>
-                        <tbody id="tabla-sucursales" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-                <button onclick="cargarMasSucursales()" class="mt-4 w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-sm hover:bg-slate-200 transition">Ver más registros...</button>
+            <div class="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                <input type="date" id="filtro-fecha-inicio" onchange="cargarDatosAdmin()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2.5 outline-none focus:border-purple-400 transition-colors w-full md:w-auto">
+                <input type="date" id="filtro-fecha-fin" onchange="cargarDatosAdmin()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2.5 outline-none focus:border-purple-400 transition-colors w-full md:w-auto">
             </div>
         </div>
 
-    </div>
-
-    <!-- ENLACE PARA INSTALAR APP (Admin) -->
-    <div class="mt-8 mb-6 text-center w-full">
-        <button onclick="abrirModalPWA()" class="text-slate-500 hover:text-slate-700 text-sm font-bold underline transition-all active:scale-95">
-            <i class="fa-solid fa-mobile-screen mr-1"></i> ¿Cómo instalar este panel en mi dispositivo?
-        </button>
-    </div>
-
-    <!-- MODAL INSTRUCCIONES PWA (Estilo Admin) -->
-    <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-pwa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300">
-            <h3 class="text-xl font-black mb-5 text-center text-sky-700"><i class="fa-solid fa-download mr-2"></i> Instalar Panel</h3>
-            
-            <div class="mb-5 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <h4 class="font-bold border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-apple mr-1 text-lg"></i> iOS (iPhone/iPad)</h4>
-                <ol class="text-sm space-y-2 list-decimal list-inside font-medium text-slate-600">
-                    <li>Abre esta página en <b>Safari</b>.</li>
-                    <li>Toca el botón Compartir <i class="fa-solid fa-arrow-up-from-bracket mx-1"></i> abajo.</li>
-                    <li>Selecciona <b>Agregar a inicio</b> <i class="fa-solid fa-square-plus mx-1"></i>.</li>
-                </ol>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="glass p-5 rounded-3xl shadow-sm text-center transform transition hover:scale-105 border-b-4 border-purple-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Estudios</p>
+                <p id="kpi-total" class="text-4xl font-black text-purple-600 mt-1">0</p>
             </div>
-
-            <div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <h4 class="font-bold border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-android mr-1 text-lg"></i> Android o PC</h4>
-                <ol class="text-sm space-y-2 list-decimal list-inside font-medium text-slate-600">
-                    <li>Abre esta página en <b>Chrome/Edge</b>.</li>
-                    <li>Toca el menú <i class="fa-solid fa-ellipsis-vertical mx-1"></i> arriba a la derecha o busca el ícono de instalación <i class="fa-solid fa-desktop mx-1"></i>.</li>
-                    <li>Selecciona <b>Agregar a la Pantalla Principal / Instalar aplicación</b>.</li>
-                </ol>
+            <div class="glass p-5 rounded-3xl shadow-sm text-center transform transition hover:scale-105 border-b-4 border-sky-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sucursales</p>
+                <p id="kpi-sucursal" class="text-4xl font-black text-sky-600 mt-1">0</p>
             </div>
-
-            <button onclick="cerrarModalPWA()" class="w-full bg-sky-600 text-white hover:bg-sky-700 font-black py-3 rounded-xl transition-all active:scale-95 shadow-md">Entendido</button>
+            <div class="glass p-5 rounded-3xl shadow-sm text-center transform transition hover:scale-105 border-b-4 border-orange-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Foráneos</p>
+                <p id="kpi-foraneo" class="text-4xl font-black text-orange-600 mt-1">0</p>
+            </div>
+            <div class="glass p-5 rounded-3xl shadow-sm text-center transform transition hover:scale-105 border-b-4 border-emerald-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Empresas</p>
+                <p id="kpi-empresas" class="text-4xl font-black text-emerald-600 mt-1">0</p>
+            </div>
         </div>
-    </div>
 
-    <datalist id="lista-empresas-admin"></datalist>
-    <datalist id="lista-medicos-admin"></datalist>
-    <datalist id="lista-estudios-admin"></datalist>
-    <datalist id="lista-s-sucursal"></datalist>
-    <datalist id="lista-s-empresa"></datalist>
-    <datalist id="lista-s-medico"></datalist>
-    <datalist id="lista-s-estudio"></datalist>
+        <div class="glass rounded-3xl overflow-hidden shadow-sm flex flex-col min-h-[500px] border border-slate-200">
+            <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                <h3 class="font-black text-xs text-slate-700 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-table-list text-purple-500"></i> Base de Datos Cruda</h3>
+                <div class="relative w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                    <input type="text" id="buscador-tabla" onkeyup="filtrarTablaAdmin()" placeholder="Buscar empresa, médico..." class="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-purple-400 transition-colors">
+                </div>
+            </div>
+            <div class="overflow-x-auto scroll-custom flex-1">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead class="bg-white text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th class="p-4">Origen / ID</th>
+                            <th class="p-4">Fecha</th>
+                            <th class="p-4">Médico</th>
+                            <th class="p-4">Lugar (Sucursal/Empresa)</th>
+                            <th class="p-4">Detalle / Estudios</th>
+                            <th class="p-4 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-registros" class="divide-y divide-slate-100 text-sm font-medium text-slate-700">
+                        <tr><td colspan="6" class="text-center py-10 text-slate-400 italic">Cargando base de datos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs font-bold text-slate-500">
+                <span id="info-paginacion">Mostrando 0 registros</span>
+                <div class="flex gap-2">
+                    <button onclick="cambiarPagina(-1)" class="px-3 py-1.5 bg-white border border-slate-200 rounded hover:bg-slate-100 transition"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button onclick="cambiarPagina(1)" class="px-3 py-1.5 bg-white border border-slate-200 rounded hover:bg-slate-100 transition"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </main>
 
     <script>
-        // FUNCIONES MODAL PWA
-        function abrirModalPWA() {
-            const modal = document.getElementById('modal-pwa');
-            const card = document.getElementById('modal-pwa-card');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                card.classList.remove('scale-95');
-            }, 10);
-        }
+        let registrosGlobales = [];
+        let paginaActual = 1;
+        const regsPorPagina = 50;
 
-        function cerrarModalPWA() {
-            const modal = document.getElementById('modal-pwa');
-            const card = document.getElementById('modal-pwa-card');
-            modal.classList.add('opacity-0');
-            card.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
+        window.iniciarAdmin = async function() {
+            aplicarFiltroRapido('semana');
+        };
 
-        // --- 1. DATOS CENTRALIZADOS DESDE CONFIG.JS ---
-        const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
-        const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales;
-
-        // --- 2. LLENAR FILTROS DE FORÁNEOS (Con catálogos globales) ---
-        document.getElementById('lista-medicos-admin').innerHTML = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">`).join('');
-        document.getElementById('lista-empresas-admin').innerHTML = window.LAPI_CONFIG.empresas.map(e => `<option value="${e}">`).join('');
-        document.getElementById('lista-estudios-admin').innerHTML = window.LAPI_CONFIG.estudiosForaneos.map(e => `<option value="${e}">`).join('');
-
-        // --- 3. LLENAR FILTROS DE SUCURSALES (Con catálogos globales) ---
-        document.getElementById('lista-s-sucursal').innerHTML = window.LAPI_CONFIG.sucursales.map(x => `<option value="${x}">`).join('');
-        document.getElementById('lista-s-empresa').innerHTML = window.LAPI_CONFIG.empresas.map(x => `<option value="${x}">`).join('');
-        document.getElementById('lista-s-medico').innerHTML = window.LAPI_CONFIG.medicos.map(x => `<option value="${x}">`).join('');
-        document.getElementById('lista-s-estudio').innerHTML = window.LAPI_CONFIG.estudiosSucursales.map(x => `<option value="${x}">`).join('');
-
-        // Variables Globales
-        let rawDataForaneos = [], rawDataSucursales = [];
-        let datosFiltradosF = [], datosFiltradosS = [];
-        let limiteF = 50, limiteS = 50;
-        let graficos = {};
-        let datosProcesadosListos = [];
-        
-        // ==========================================
-        // 🛠️ FUNCIÓN PURIFICADORA PARA DATOS LEGACY
-        // ==========================================
-        function normalizarDato(texto, tipo) {
-            if (!texto) return "Desconocido";
-            let limpio = texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            
-            if (tipo === 'sucursal') {
-                if(limpio.includes("CUAUTITLAN")) return "Cuautitlán";
-                if(limpio.includes("SATELITE")) return "Satélite";
-                if(limpio.includes("MARTIN")) return "Martín Carrera";
-                if(limpio.includes("REVOLUCION")) return "Revolución";
-                if(limpio.includes("SAN JERONIMO")) return "San Jerónimo";
-                if(limpio.includes("HUESO")) return "Calzada del Hueso";
-                if(limpio.includes("LOMAS VERDES")) return "Lomas Verdes";
-                if(limpio.includes("GRAN SUR")) return "Gran Sur";
-                if(limpio.includes("BALBUENA")) return "Balbuena";
-                if(limpio.includes("CONDESA")) return "Condesa";
-                if(limpio.includes("FORTUNA")) return "Encuentro Fortuna";
-                if(limpio.includes("MANCERA")) return "Gabriel Mancera";
-                if(limpio.includes("INTERLOMAS")) return "Interlomas";
-                if(limpio.includes("LINDAVISTA")) return "Lindavista";
-                if(limpio === "MERIDA, CENTRO" || limpio === "MERIDA CENTRO" || limpio === "CENTRO" || limpio === "MERIDA") return "Mérida, Centro";
-                if(limpio.includes("METEPEC")) return "Metepec";
-                if(limpio.includes("MIXCOAC")) return "Mixcoac";
-                if(limpio.includes("PLATEROS")) return "Plateros";
-                if(limpio.includes("PLAZA CENTRAL")) return "Plaza Central";
-                if(limpio.includes("POLANCO")) return "Polanco";
-                if(limpio.includes("SANTA FE")) return "Santa Fe";
-                if(limpio.includes("SANTA MARTHA") || limpio.includes("MARTA")) return "Santa Martha";
-                
-                // Formato Capitalizado (Title Case) por defecto
-                return texto.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-            }
-            
-            if (tipo === 'estudio') {
-                if(limpio === "HC" || limpio.includes("EXAMEN MEDICO") || limpio === "HISTORIA CLINICA") return "Historia Clínica Empresa";
-                if(limpio.includes("LAPIWEB")) return "Historia Clínica LAPIWEB";
-                if(limpio.includes("CONSULTA")) return "Consulta Médica";
-                if(limpio.includes("SEGURO")) return "Seguro";
-                if(limpio.includes("AUDIOMETRIA")) return "Audiometría";
-                if(limpio.includes("ESPIROMETRIA")) return "Espirometría";
-                if(limpio.includes("ELECTROCARDIOGRAMA")) return "Electrocardiograma";
-                if(limpio.includes("AGUDEZA VISUAL") || limpio.includes("VISUAL")) return "Agudeza Visual";
-                if(limpio.includes("LOGOAUDIOMETRIA") || limpio.includes("LOGO")) return "Logoaudiometría";
-                if(limpio.includes("TIMPANOMETRIA")) return "Timpanometría";
-                if(limpio.includes("CERTIFICADO")) return "Certificado";
-                if(limpio.includes("NORDICO")) return "Nórdico";
-                if(limpio.includes("OTRO")) return "Otro";
-                
-                return texto.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-            }
-            return texto;
-        }
-
-        async function initDashboard() {
-            try {
-                // 1. CARGAR REGISTROS HISTÓRICOS Y FORÁNEOS
-                const q = window.query(window.collection(window.db, "registros"), window.orderBy("fecha", "desc"));
-                const qs = await window.getDocs(q);
-                
-                qs.forEach(doc => { 
-                    const data = doc.data();
-                    if(data.tipo === "sucursal") {
-                        // AQUÍ APLICAMOS LA MAGIA PARA LIMPIAR LA BASURA LEGACY
-                        data.sucursal = normalizarDato(data.sucursal, 'sucursal');
-                        data.estudio = normalizarDato(data.estudio, 'estudio');
-                        rawDataSucursales.push(data);
-                    } else {
-                        rawDataForaneos.push(data);
-                    }
-                });
-
-                // 2. CARGAR NUEVOS REGISTROS AGRUPADOS (De sucursal.html) Y APLANARLOS
-                const qSucAgrupadas = window.query(window.collection(window.db, "registros_diarios_sucursales"));
-                const qsSucAgrupadas = await window.getDocs(qSucAgrupadas);
-                
-                qsSucAgrupadas.forEach(doc => {
-                    const data = doc.data();
-                    
-                    // 👉 PARA EL NUEVO FORMATO DIRECTO (Sin Empresas)
-                    if (data.estudios) {
-                        Object.keys(data.estudios).forEach(estudio => {
-                            const cantidad = data.estudios[estudio] || 0;
-                            for (let k = 0; k < cantidad; k++) {
-                                rawDataSucursales.push({
-                                    tipo: "sucursal",
-                                    fecha: data.fecha,
-                                    sucursal: normalizarDato(data.sucursal, 'sucursal'),
-                                    empresa: "SUCURSAL (SIN EMPRESA)", // Relleno automático para no romper la tabla
-                                    estudio: normalizarDato(estudio, 'estudio'),
-                                    medico: data.medico
-                                });
-                            }
-                        });
-                    }
-                    
-                    // 👉 PARA EL FORMATO DE TRANSICIÓN (Si hicieron pruebas ayer agrupando por empresa)
-                    if (data.empresas) {
-                        Object.keys(data.empresas).forEach(empresa => {
-                            Object.keys(data.empresas[empresa]).forEach(estudio => {
-                                const cantidad = data.empresas[empresa][estudio] || 0;
-                                // Expandimos la cantidad para alimentar las gráficas existentes
-                                for (let k = 0; k < cantidad; k++) {
-                                    rawDataSucursales.push({
-                                        tipo: "sucursal",
-                                        fecha: data.fecha,
-                                        sucursal: normalizarDato(data.sucursal, 'sucursal'),
-                                        empresa: empresa,
-                                        estudio: normalizarDato(estudio, 'estudio'),
-                                        medico: data.medico
-                                    });
-                                }
-                            });
-                        });
-                    }
-                });
-
-                // 🛡️ SOLUCIÓN: Ordenar con protección contra registros sin fecha
-                rawDataSucursales.sort((a,b) => {
-                    const fechaA = a.fecha || "1900-01-01"; // Fecha comodín si viene vacío
-                    const fechaB = b.fecha || "1900-01-01";
-                    return fechaB.localeCompare(fechaA);
-                });
-
-                aplicarFiltroRapido('F', 'hoy');
-                aplicarFiltroRapido('S', 'mes_actual');
-            } catch (error) { alert("Error cargando base de datos: " + error); }
-        }
-
-        // ---------- UI Y TABLEROS ----------
-        function cambiarTab(tab) {
-            const hBox = document.getElementById('header-box');
-            if(tab === 'foraneos') {
-                document.getElementById('seccion-foraneos').classList.remove('hidden');
-                document.getElementById('seccion-sucursales').classList.add('hidden');
-                document.getElementById('btn-tab-foraneos').classList.add('active');
-                document.getElementById('btn-tab-sucursales').classList.remove('active');
-                hBox.className = "flex flex-col md:flex-row justify-between items-start md:items-center mb-4 bg-lapi-orange p-6 rounded-3xl shadow-xl text-white gap-4 transition-colors duration-500";
-            } else {
-                document.getElementById('seccion-foraneos').classList.add('hidden');
-                document.getElementById('seccion-sucursales').classList.remove('hidden');
-                document.getElementById('btn-tab-sucursales').classList.add('active');
-                document.getElementById('btn-tab-foraneos').classList.remove('active');
-                hBox.className = "flex flex-col md:flex-row justify-between items-start md:items-center mb-4 bg-lapi-blue p-6 rounded-3xl shadow-xl text-white gap-4 transition-colors duration-500";
-            }
-        }
-
-        function toggleAnalytics() {
-            const containers = document.querySelectorAll('.chart-container-global');
-            const icon = document.getElementById('toggle-icon');
-            const text = document.getElementById('toggle-text');
-            if (containers[0].classList.contains('hidden')) {
-                containers.forEach(el => el.classList.remove('hidden'));
-                icon.className = "fa-solid fa-chart-line";
-                text.innerText = "Ocultar Gráficas";
-            } else {
-                containers.forEach(el => el.classList.add('hidden'));
-                icon.className = "fa-solid fa-eye";
-                text.innerText = "Mostrar Gráficas";
-            }
-        }
-
-        function limpiarBotonActivo(prefijo) {
-            const botones = document.querySelectorAll(`.btn-filtro-${prefijo}`);
-            botones.forEach(btn => {
-                btn.classList.remove('bg-orange-500', 'bg-sky-600', 'hover:bg-orange-600', 'hover:bg-sky-700');
-                btn.classList.add('bg-slate-800', 'hover:bg-slate-700');
-            });
-        }
-
-        function setBotonActivo(prefijo, tipoActivo) {
-            const botones = document.querySelectorAll(`.btn-filtro-${prefijo}`);
-            const colorActivo = prefijo === 'F' ? 'bg-orange-500' : 'bg-sky-600';
-            const colorHover = prefijo === 'F' ? 'hover:bg-orange-600' : 'hover:bg-sky-700';
-            botones.forEach(btn => {
-                btn.classList.remove('bg-orange-500', 'bg-sky-600', 'hover:bg-orange-600', 'hover:bg-sky-700', 'bg-slate-800', 'hover:bg-slate-700');
-                if (btn.id === `btn-${prefijo.toLowerCase()}-${tipoActivo}`) btn.classList.add(colorActivo, colorHover);
-                else btn.classList.add('bg-slate-800', 'hover:bg-slate-700');
-            });
-        }
-
-        function reestablecerTodo() {
-            document.getElementById('f-inicio').value = ''; document.getElementById('f-fin').value = '';
-            document.getElementById('f-empresa').value = ''; document.getElementById('f-medico').value = '';
-            document.getElementById('f-estudio').value = ''; document.getElementById('s-inicio').value = '';
-            document.getElementById('s-fin').value = ''; document.getElementById('s-sucursal').value = '';
-            document.getElementById('s-empresa').value = ''; document.getElementById('s-medico').value = '';
-            document.getElementById('s-estudio').value = '';
-            limpiarBotonActivo('F'); limpiarBotonActivo('S');
-            ejecutarFiltrosForaneos(); ejecutarFiltrosSucursales();
-        }
-
-        function obtenerFechaFormato(dateObj) {
-            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
-        }
-
-        function aplicarFiltroRapido(prefijo, tipo) {
+        window.aplicarFiltroRapido = function(tipo) {
             const hoy = new Date();
-            let iStr = '', fStr = obtenerFechaFormato(hoy);
+            let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
             if (tipo === 'hoy') iStr = fStr; 
-            else if (tipo === 'ayer') { const ayer = new Date(); ayer.setDate(ayer.getDate() - 1); iStr = obtenerFechaFormato(ayer); fStr = iStr; }
-            else if (tipo === 'semana') { const day = hoy.getDay(); const diff = hoy.getDate() - day + (day === 0 ? -6 : 1); iStr = obtenerFechaFormato(new Date(hoy.setDate(diff))); }
-            else if (tipo === 'mes_actual') iStr = obtenerFechaFormato(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
-            else if (tipo === 'ano_actual') iStr = obtenerFechaFormato(new Date(hoy.getFullYear(), 0, 1));
-            else if (tipo === 'acumulado') { iStr = ''; fStr = ''; }
-
-            document.getElementById(`${prefijo.toLowerCase()}-inicio`).value = iStr;
-            document.getElementById(`${prefijo.toLowerCase()}-fin`).value = fStr;
-            setBotonActivo(prefijo, tipo);
-            if(prefijo === 'F') ejecutarFiltrosForaneos(); else ejecutarFiltrosSucursales();
-        }
-
-        // =================== LOGICA FORANEOS ===================
-        function ejecutarFiltrosForaneos() {
-            const fIni = document.getElementById('f-inicio').value;
-            const fFin = document.getElementById('f-fin').value;
-            const emp = document.getElementById('f-empresa').value.trim().toUpperCase();
-            const med = document.getElementById('f-medico').value.trim();
-            const est = document.getElementById('f-estudio').value.trim();
-
-            datosFiltradosF = rawDataForaneos.filter(d => {
-                let pasa = true;
-                if(fIni && fFin) pasa = pasa && (d.fecha >= fIni && d.fecha <= fFin);
-                if(emp && emp !== "TODAS") pasa = pasa && (d.empresa.toUpperCase() === emp);
-                if(med && med !== "Todos") pasa = pasa && d.detalles.some(det => det.medico === med);
-                if(est && est !== "Todos") pasa = pasa && d.detalles.some(det => det.estudio === est);
-                return pasa;
-            });
-            limiteF = 50;
-            renderForaneos();
-        }
-
-        function renderForaneos() {
-            const medFiltro = document.getElementById('f-medico').value.trim() || "Todos";
-            const estFiltro = document.getElementById('f-estudio').value.trim() || "Todos";
-
-            let tEst=0, tHrs=0, tEmp=new Set();
-            let statsFechas={}, statsTipos={}, statsEmpresas={}, horasMed={}, horasPeriodo={}, empPeriodo={}, estudiosMed={};
-            const tbody = document.getElementById('tabla-foraneos'); tbody.innerHTML = '';
-            let filasMostradas = 0;
-
-            datosFiltradosF.forEach((reg) => {
-                let dHtml = ''; let detallesValidos = 0; let medParticipantesValidos = new Set();
-                reg.detalles.forEach(det => {
-                    const pasaMed = (medFiltro === "Todos" || det.medico === medFiltro);
-                    const pasaEst = (estFiltro === "Todos" || det.estudio === estFiltro);
-                    if(pasaMed && pasaEst) {
-                        tEst += det.cant; statsFechas[reg.fecha] = (statsFechas[reg.fecha] || 0) + det.cant;
-                        statsTipos[det.estudio] = (statsTipos[det.estudio] || 0) + det.cant;
-                        statsEmpresas[reg.empresa] = (statsEmpresas[reg.empresa] || 0) + det.cant;
-                        estudiosMed[det.medico] = (estudiosMed[det.medico] || 0) + det.cant;
-                        dHtml += `<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-[10px] mr-1 mb-1 font-bold inline-block uppercase flex items-center justify-between gap-2">${det.medico}: ${det.estudio} (${det.cant}) <button onclick="abrirModalTncDesdeAdmin('Foráneo', '${reg.fecha}', '${reg.empresa}', '${det.medico}', '${det.estudio}')" class="text-red-500 hover:text-red-700 bg-white/50 px-1.5 rounded transition" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button></span>`;
-                        detallesValidos++; medParticipantesValidos.add(det.medico);
-                    }
-                });
-
-                if(detallesValidos > 0) {
-                    tEmp.add(reg.empresa); if(!empPeriodo[reg.fecha]) empPeriodo[reg.fecha] = new Set(); empPeriodo[reg.fecha].add(reg.empresa);
-                    medParticipantesValidos.forEach(m => horasMed[m] = (horasMed[m] || 0) + (reg.horasLaboradas || 0));
-                    tHrs += reg.horasLaboradas || 0; horasPeriodo[reg.fecha] = (horasPeriodo[reg.fecha] || 0) + (reg.horasLaboradas || 0);
-
-                    if(filasMostradas < limiteF) {
-                        tbody.innerHTML += `
-                            <tr class="hover:bg-slate-50 border-b transition">
-                                <td class="py-4 px-4 font-bold text-slate-700">${reg.fecha}<br><span class="text-[10px] text-slate-400 uppercase">${reg.turno}</span></td>
-                                <td class="py-4 px-4"><span class="text-[10px] text-slate-400 font-bold block mb-1">${reg.folio || 'N/A'}</span><b class="text-orange-600">${reg.empresa}</b></td>
-                                <td class="py-4 px-4 text-center"><span class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded-md text-slate-600">${reg.horaInicio} - ${reg.horaFin}</span><br><span class="text-xs text-sky-600 font-black mt-2 inline-block">${reg.horasLaboradas} HRS</span></td>
-                                <td class="py-4 px-4 min-w-[250px]">${dHtml}</td>
-                                <td class="py-4 px-4 text-sm text-slate-500 max-w-[200px]">${reg.observaciones || '---'}</td>
-                            </tr>
-                        `;
-                    }
-                    filasMostradas++;
-                }
-            });
-
-            document.getElementById('kpi-f-estudios').innerText = tEst; document.getElementById('kpi-f-horas').innerText = tHrs.toFixed(1);
-            document.getElementById('kpi-f-empresas').innerText = tEmp.size; document.getElementById('kpi-f-total-regs').innerText = filasMostradas + " Registros Filtrados";
-
-            let fOrd = Object.keys(statsFechas).sort();
-            dibujarGrafico('cF1', 'line', fOrd, fOrd.map(f=>statsFechas[f]), 'Estudios por Periodo', '#ff8c00');
-            dibujarGrafico('cF2', 'bar', Object.keys(statsTipos), Object.values(statsTipos), 'Cantidad por Tipo', '#3b82f6');
-            let topEmpForaneas = Object.entries(statsEmpresas).sort((a,b)=>b[1]-a[1]).slice(0,10);
-            dibujarGrafico('cF3', 'bar', topEmpForaneas.map(x=>x[0]), topEmpForaneas.map(x=>x[1]), 'Productividad Empresa', '#ff8c00');
-            let topMedsEstudios = Object.entries(estudiosMed).sort((a,b)=>b[1]-a[1]).slice(0,10);
-            dibujarGrafico('cF7', 'bar', topMedsEstudios.map(x=>x[0]), topMedsEstudios.map(x=>x[1]), 'Estudios Realizados', '#10b981');
-            dibujarGrafico('cF4', 'line', fOrd, fOrd.map(f=>horasPeriodo[f]), 'Horas Laboradas Totales', '#0ea5e9');
-            let topMedForaneos = Object.entries(horasMed).sort((a,b)=>b[1]-a[1]).slice(0,10);
-            dibujarGrafico('cF5', 'bar', topMedForaneos.map(x=>x[0]), topMedForaneos.map(x=>x[1]), 'Horas Acumuladas', '#3b82f6');
-            dibujarGrafico('cF6', 'bar', fOrd, fOrd.map(f=>empPeriodo[f].size), 'Empresas Atendidas', '#8b5cf6');
-        }
-
-        function cargarMasForaneos() { limiteF += 50; renderForaneos(); }
-
-        // =================== LOGICA SUCURSALES ===================
-        function ejecutarFiltrosSucursales() {
-            const fIni = document.getElementById('s-inicio').value;
-            const fFin = document.getElementById('s-fin').value;
-            const suc = document.getElementById('s-sucursal').value.trim().toUpperCase();
-            const emp = document.getElementById('s-empresa').value.trim().toUpperCase();
-            const med = document.getElementById('s-medico').value.trim().toUpperCase();
-            const est = document.getElementById('s-estudio').value.trim().toUpperCase();
-
-            datosFiltradosS = rawDataSucursales.filter(d => {
-                let pasa = true;
-                if(fIni && fFin) pasa = pasa && (d.fecha >= fIni && d.fecha <= fFin);
-                if(suc && suc !== "TODAS") pasa = pasa && (d.sucursal.toUpperCase() === suc);
-                if(emp && emp !== "TODAS") pasa = pasa && (d.empresa.toUpperCase() === emp);
-                if(med && med !== "TODOS") pasa = pasa && (d.medico.toUpperCase() === med);
-                if(est && est !== "TODOS") pasa = pasa && (d.estudio.toUpperCase() === est);
-                return pasa;
-            });
-            limiteS = 50;
-            renderSucursales();
-        }
-
-        function renderSucursales() {
-            let tEst = datosFiltradosS.length; let tMed = new Set();
-            let fechas = {}, diasSemana = { "Lunes":0, "Martes":0, "Miércoles":0, "Jueves":0, "Viernes":0, "Sábado":0, "Domingo":0 };
-            let sucursales = {}, tiposEstudio = {}, medicosTop = {};
-            const tbody = document.getElementById('tabla-sucursales'); tbody.innerHTML = '';
-
-            // 1. OBJETO MAGICO PARA AGRUPAR LOS REGISTROS DE LA TABLA
-            let agrupadosTabla = {};
-
-            // 2. RECORRIDO PARA ALIMENTAR GRÁFICAS Y AGRUPAR
-            datosFiltradosS.forEach((reg) => {
-                tMed.add(reg.medico);
-                fechas[reg.fecha] = (fechas[reg.fecha] || 0) + 1;
-
-                let fechaObj = new Date(reg.fecha.replace(/-/g, '/'));
-                let nombreDia = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][fechaObj.getDay()];
-                if(nombreDia) diasSemana[nombreDia]++;
-
-                sucursales[reg.sucursal] = (sucursales[reg.sucursal] || 0) + 1;
-                tiposEstudio[reg.estudio] = (tiposEstudio[reg.estudio] || 0) + 1;
-                medicosTop[reg.medico] = (medicosTop[reg.medico] || 0) + 1;
-
-                // AGRUPACIÓN: Creamos una "llave" combinando los datos
-                let key = `${reg.fecha}|${reg.sucursal}|${reg.empresa}|${reg.medico}`;
-                if (!agrupadosTabla[key]) {
-                    agrupadosTabla[key] = {
-                        fecha: reg.fecha,
-                        sucursal: reg.sucursal,
-                        empresa: reg.empresa,
-                        medico: reg.medico,
-                        estudios: {}
-                    };
-                }
-                // Sumamos el contador de ese estudio en específico
-                agrupadosTabla[key].estudios[reg.estudio] = (agrupadosTabla[key].estudios[reg.estudio] || 0) + 1;
-            });
-
-            // 3. CONVERTIR LOS DATOS AGRUPADOS A UNA LISTA Y MOSTRARLOS
-            let arrayTabla = Object.values(agrupadosTabla);
-            let filasMostradas = 0;
-
-            arrayTabla.forEach(reg => {
-                if(filasMostradas < limiteS) {
-                    let dHtml = '';
-                    // Generar las "etiquetas" azules por cada estudio con su total
-                    for (const [estudio, cant] of Object.entries(reg.estudios)) {
-                        dHtml += `<span class="bg-sky-100 text-sky-800 px-2 py-1 rounded text-[10px] mr-1 mb-1 font-bold inline-block uppercase flex items-center justify-between gap-2">${estudio} (${cant}) <button onclick="abrirModalTncDesdeAdmin('Sucursal', '${reg.fecha}', '${reg.sucursal}', '${reg.medico}', '${estudio}')" class="text-red-500 hover:text-red-700 bg-white/50 px-1.5 rounded transition" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button></span>`;
-                    }
-
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 border-b transition">
-                            <td class="py-4 px-4 font-bold text-slate-700 text-xs">${reg.fecha}</td>
-                            <td class="py-4 px-4"><b class="text-sky-700 text-sm">${reg.sucursal}</b><br><span class="text-[10px] text-slate-400 font-bold uppercase">${reg.empresa}</span></td>
-                            <td class="py-4 px-4 min-w-[250px] leading-tight">${dHtml}</td>
-                            <td class="py-4 px-4 text-slate-600 text-xs font-bold uppercase">Dr(a). ${reg.medico}</td>
-                        </tr>
-                    `;
-                    filasMostradas++;
-                }
-            });
-
-            document.getElementById('kpi-s-estudios').innerText = tEst;
-            document.getElementById('kpi-s-personal').innerText = tMed.size;
-            // Mostramos el total de bloques agrupados en lugar de la inmensidad de renglones
-            document.getElementById('kpi-s-total-regs').innerText = arrayTabla.length + " Eventos Agrupados";
-
-            let fOrd = Object.keys(fechas).sort();
-            dibujarGrafico('cS1', 'line', fOrd, fOrd.map(f=>fechas[f]), 'Tendencia Diaria', '#0ea5e9');
-            let diasOrdenados = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-            dibujarGrafico('cS2', 'bar', diasOrdenados, diasOrdenados.map(d => diasSemana[d]), 'Estudios por Día', '#ed8936');
-            let topSucs = Object.entries(sucursales).sort((a,b)=>b[1]-a[1]).slice(0,10);
-            dibujarGrafico('cS3', 'bar', topSucs.map(x=>x[0]), topSucs.map(x=>x[1]), 'Estudios por Sucursal', '#3182ce');
-            let coloresPastel = ['#f687b3', '#667eea', '#4fd1c5', '#f6e05e', '#ed8936', '#9f7aea', '#48bb78'];
-            dibujarGrafico('cS4', 'pie', Object.keys(tiposEstudio), Object.values(tiposEstudio), 'Distribución', coloresPastel);
-            let topMeds = Object.entries(medicosTop).sort((a,b)=>b[1]-a[1]).slice(0,10);
-            dibujarGrafico('cS5', 'bar', topMeds.map(x=>x[0]), topMeds.map(x=>x[1]), 'Estudios por Médico', '#48bb78');
-        }
-
-        function cargarMasSucursales() { limiteS += 50; renderSucursales(); }
-
-        // =================== PROCESAMIENTO INTELIGENTE DE EXCELS LEGACY ===================
-        function limpiarSucursal(nombre) {
-            if (!nombre) return "Desconocida";
-            let n = String(nombre).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            if(n.includes("CUAUTITLAN")) return "Cuautitlán"; if(n.includes("SATELITE")) return "Satélite";
-            if(n.includes("MARTIN CABRERA")) return "Martín Carrera"; if(n.includes("REVOLUCION")) return "Revolución";
-            if(n.includes("SAN JERONIMO")) return "San Jerónimo"; if(n.includes("HUESO")) return "Calzada del Hueso";
-            if(n.includes("LOMAS VERDES")) return "Lomas Verdes";
-            return n.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-        }
-
-        async function procesarExcelsSucursales() {
-            const input = document.getElementById('archivoExcelSucursales');
-            const logDiv = document.getElementById('logProcesamiento');
-            const btnProcesar = document.getElementById('btnProcesarExcels');
-            const btnSubir = document.getElementById('btnSubirExcels');
-            const contProgreso = document.getElementById('contenedor-progreso');
-            const barraProgreso = document.getElementById('barra-progreso');
-            const textoProgreso = document.getElementById('texto-progreso');
-
-            if(input.files.length === 0) return alert("Selecciona al menos un archivo Excel primero.");
-
-            btnProcesar.disabled = true;
-            btnProcesar.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Procesando...';
+            else if (tipo === 'ayer') { const ayer = new Date(); ayer.setDate(ayer.getDate() - 1); iStr = `${ayer.getFullYear()}-${String(ayer.getMonth() + 1).padStart(2, '0')}-${String(ayer.getDate()).padStart(2, '0')}`; fStr = iStr; }
+            else if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
+            else if (tipo === 'todo') { iStr = ''; fStr = ''; }
             
-            contProgreso.classList.remove('hidden');
-            barraProgreso.style.width = '0%';
-            textoProgreso.innerText = 'Iniciando análisis... 0%';
-            
-            logDiv.classList.remove('hidden');
-            logDiv.innerHTML = "Iniciando análisis (por favor espera)...<br>";
-            datosProcesadosListos = [];
-
-            let totalExtraidos = 0; let totalDuplicados = 0;
-            const hashActuales = new Set(rawDataSucursales.map(d => `${d.fecha}|${d.sucursal}|${d.empresa}|${d.estudio}`.toUpperCase()));
-
-            for(let i=0; i<input.files.length; i++){
-                try {
-                    let data = await input.files[i].arrayBuffer();
-                    let wb = XLSX.read(data, {type:'array'});
-                    for(let sn of wb.SheetNames){
-                        let sheet = wb.Sheets[sn];
-                        let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
-                        let fEx = "2026-01-01", mN = 0, sEx = "Desconocida", iEnc = -1, mapa = {};
-
-                        for(let r=0; r<Math.min(20, filas.length); r++){
-                            if(!filas[r]) continue;
-                            let cL = filas[r].map(v => String(v).trim().toUpperCase());
-                            
-                            if(cL.join(" ").includes("FECHA")){
-                                let stringFechaTotal = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim();
-                                let partes = stringFechaTotal.replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
-                                if(partes.length>=3){
-                                    let d=partes[0].padStart(2,'0'), mR=partes[1], a=partes[2];
-                                    mN = isNaN(mR) ? (mesesTexto[mR.substring(0,3)] || 0) : parseInt(mR,10)-1;
-                                    if(a.length===2) a="20"+a; else if(a.length!==4) a="2026";
-                                    fEx = `${a}-${String(mN+1).padStart(2,'0')}-${d}`; 
-                                }
-                            }
-                            
-                            let cS = cL.findIndex(v=>v.includes("SUCURSAL"));
-                            if(cS!==-1) sEx = limpiarSucursal(cL[cS+1] || cL[cS+2]);
-
-                            let filaTexto = cL.join(" ");
-                            if(filaTexto.includes("NOMBRE") && filaTexto.includes("EMPRESA")){
-                                iEnc=r;
-                                filas[r].forEach((valor, colIdx)=>{
-                                    if(valor) {
-                                        let nombreColLimpio = String(valor).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-                                        mapa[nombreColLimpio] = colIdx;
-                                    }
-                                });
-                            }
-                        }
-
-                        if(iEnc!==-1){
-                            let totalFilasAnalizar = filas.length - (iEnc + 1);
-                            
-                            for(let r=iEnc+1; r<filas.length; r++){
-                                if (r % 100 === 0) {
-                                    let currentProg = Math.round(((r - iEnc) / totalFilasAnalizar) * 100);
-                                    barraProgreso.style.width = currentProg + '%';
-                                    textoProgreso.innerText = `Analizando Excel: ${currentProg}%`;
-                                    await new Promise(resolve => setTimeout(resolve, 5));
-                                }
-
-                                let f = filas[r]; if(!f || !f[mapa["NOMBRE"]]) continue;
-                                if(f.join(" ").toUpperCase().includes("PENDIENTES")) break;
-
-                                Object.keys(estudiosMapeo).forEach(key => {
-                                    let cIdx = mapa[key];
-                                    if(cIdx!==undefined && f[cIdx] && !String(f[cIdx]).toUpperCase().includes("PEND")){
-                                        const empresaRaw = String(f[mapa["EMPRESA"]]||"S/E").trim().toUpperCase();
-                                        const estudioFinal = estudiosMapeo[key];
-                                        const medicoRaw = String(f[cIdx]).trim().toUpperCase();
-                                        const hashRegistro = `${fEx}|${sEx}|${empresaRaw}|${estudioFinal}`.toUpperCase();
-
-                                        if(hashActuales.has(hashRegistro)) {
-                                            totalDuplicados++;
-                                        } else {
-                                            datosProcesadosListos.push({
-                                                tipo: "sucursal", fecha: fEx, mes: String(mN+1).padStart(2,'0'), sucursal: sEx,
-                                                empresa: empresaRaw, estudio: estudioFinal, medico: medicoRaw, timestamp: new Date()
-                                            });
-                                            hashActuales.add(hashRegistro); 
-                                            totalExtraidos++;
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    }
-                } catch(e) { logDiv.innerHTML += `<span class="text-red-400">Error leyendo ${input.files[i].name}: ${e.message}</span><br>`; }
-            }
-
-            barraProgreso.style.width = '100%';
-            textoProgreso.innerText = 'Análisis Completado al 100%';
-            
-            logDiv.innerHTML += `<br><span class="text-emerald-600 font-bold">✓ Análisis completado.</span><br>`;
-            logDiv.innerHTML += `► Estudios NUEVOS listos para subir: <b class="text-sky-600">${totalExtraidos}</b><br>`;
-            if (totalDuplicados > 0) logDiv.innerHTML += `► Registros OMITIDOS (Ya existían en LAPI): <b class="text-orange-500">${totalDuplicados}</b><br>`;
-
-            btnProcesar.disabled = false;
-            btnProcesar.innerHTML = '<i class="fa-solid fa-cogs mr-2"></i> 1. Analizar Archivos';
-
-            if(totalExtraidos > 0) btnSubir.classList.remove('hidden');
-            else { btnSubir.classList.add('hidden'); if (totalDuplicados > 0) alert(`Todos los registros detectados (${totalDuplicados}) ya existen en la base de datos central.`); }
-        }
-
-        async function subirExcelsProcesados() {
-            const btnSubir = document.getElementById('btnSubirExcels');
-            const logDiv = document.getElementById('logProcesamiento');
-            const barraProgreso = document.getElementById('barra-progreso');
-            const textoProgreso = document.getElementById('texto-progreso');
-
-            btnSubir.disabled = true;
-            btnSubir.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Subiendo a Firebase...';
-
-            barraProgreso.style.width = '0%';
-            textoProgreso.innerText = 'Iniciando subida... 0%';
-
-            let exitosos = 0; let promesasBatch = []; let totalSubir = datosProcesadosListos.length;
-
-            for(let reg of datosProcesadosListos) {
-                promesasBatch.push(window.addDoc(window.collection(window.db, "registros"), reg));
-                
-                if (promesasBatch.length >= 50) {
-                    await Promise.all(promesasBatch);
-                    exitosos += promesasBatch.length; promesasBatch = [];
-                    
-                    let currentProg = Math.round((exitosos / totalSubir) * 100);
-                    barraProgreso.style.width = currentProg + '%';
-                    textoProgreso.innerText = `Subiendo a la nube: ${currentProg}% (${exitosos}/${totalSubir})`;
-                    
-                    logDiv.innerHTML += `Sincronizando con la nube... ${exitosos}/${totalSubir}<br>`;
-                    logDiv.scrollTop = logDiv.scrollHeight;
-                }
-            }
-            
-            if (promesasBatch.length > 0) {
-                await Promise.all(promesasBatch); exitosos += promesasBatch.length;
-                barraProgreso.style.width = '100%';
-                textoProgreso.innerText = `Subida exitosa: 100% (${exitosos}/${totalSubir})`;
-            }
-
-            alert(`¡Subida Completada! ${exitosos} estudios integrados a LAPI Central.`);
-            location.reload();
-        }
-
-        // =================== UTILIDADES Y GRÁFICAS ===================
-        function dibujarGrafico(canvasId, tipo, labels, data, labelTitulo, color) {
-            if(graficos[canvasId]) graficos[canvasId].destroy();
-            let mostrarLeyenda = (tipo === 'pie');
-            let colorFondo = (tipo === 'line' && typeof color === 'string') ? color + '20' : color;
-            let colorBorde = (tipo === 'pie') ? '#ffffff' : color;
-
-            let conf = {
-                type: tipo, data: { labels: labels, datasets: [{ label: labelTitulo, data: data, backgroundColor: colorFondo, borderColor: colorBorde, borderWidth: 2, fill: tipo === 'line', tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: mostrarLeyenda } } }
-            };
-
-            if (tipo !== 'pie') {
-                conf.options.scales = { 
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { weight: 'bold' } } },
-                    x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
-                };
-            }
-            graficos[canvasId] = new Chart(document.getElementById(canvasId), conf);
-        }
-
-        function exportarExcel(origen) {
-            let aplanada = [];
-            if(origen === 'Foraneos') {
-                if(datosFiltradosF.length === 0) return alert("No hay datos para exportar.");
-                const medFiltro = document.getElementById('f-medico').value.trim() || "Todos";
-                const estFiltro = document.getElementById('f-estudio').value.trim() || "Todos";
-                datosFiltradosF.forEach(r => { r.detalles.forEach(d => {
-                    if((medFiltro === "Todos" || d.medico === medFiltro) && (estFiltro === "Todos" || d.estudio === estFiltro)) {
-                        aplanada.push({ FOLIO: r.folio, FECHA: r.fecha, TURNO: r.turno, EMPRESA: r.empresa, INICIO: r.horaInicio, FIN: r.horaFin, HRS_VIAJE: r.horasLaboradas, MEDICO: d.medico, ESTUDIO: d.estudio, CANTIDAD: d.cant, NOTAS: r.observaciones || '' });
-                    }
-                });});
-            } else {
-                if(datosFiltradosS.length === 0) return alert("No hay datos para exportar.");
-                aplanada = datosFiltradosS.map(d => ({ FECHA: d.fecha, SUCURSAL: d.sucursal, EMPRESA: d.empresa, ESTUDIO: d.estudio, MEDICO: d.medico }));
-            }
-            if(aplanada.length === 0) return alert("No hay detalles que coincidan con tus filtros específicos.");
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(aplanada), origen);
-            XLSX.writeFile(wb, `LAPI_${origen}_${new Date().toISOString().split('T')[0]}.xlsx`);
-        }
-
-        // =========================================================================
-        // NUEVO BLOQUE: LÓGICA DEL MODAL TNC (JAVASCRIPT)
-        // =========================================================================
-        const TNC_CATALOGO_ADMIN = {
-            "Sucursal": {
-                "Espirometría": ["CONSENTIMIENTO INFORMADO", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "SIGNOS VITALES Y SOMATOMETRÍA", "INTERROGATORIO Y/O ANTECEDENTES", "DISPONIBILIDAD DE MANIOBRA", "CALIDAD DE MANIOBRA", "REGISTRO EN SISTEMA WEB"],
-                "Agudeza Visual": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "REGISTRO DE AGUDEZA VISUAL", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB"],
-                "Electrocardiograma": ["DISPONIBILIDAD DE TRAZO", "FICHA DE IDENTIFICACIÓN", "CALIDAD DEL TRAZO"],
-                "Historia Clínica Empresa": ["EXPLORACIÓN FÍSICA", "AUDIOGRAMA", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB", "FICHA DE IDENTIFICACIÓN"], 
-                "Genérico": ["FICHA DE IDENTIFICACIÓN", "REGISTRO EN SISTEMA WEB", "LETRA LEGIBLE", "CONTROL DOCUMENTAL"]
-            },
-            "Foráneo": {
-                "Historia Clínica": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA"],
-                "Audiometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA", "CALIDAD DEL AUDIOGRAMA"],
-                "Espirometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "SIGNOS VITALES Y SOMATOMETRÍA", "CALIDAD DE MANIOBRA"],
-                "Genérico": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "FICHA DE IDENTIFICACIÓN", "ERROR DE CAPTURA"]
-            },
-            "Global": ["ESTUDIO FALTANTE (OMISIÓN APP)", "ESTUDIO SOBRANTE (DUPLICADO APP)", "OTRO / COMENTARIO"]
+            document.getElementById('filtro-fecha-inicio').value = iStr; 
+            document.getElementById('filtro-fecha-fin').value = fStr;
+            cargarDatosAdmin();
         };
 
-        window.abrirModalTncDesdeAdmin = function(origen, fecha, lugar, medico, estudio) {
-            document.getElementById('tnc-admin-origen').value = origen;
-            document.getElementById('tnc-admin-fecha').value = fecha;
-            document.getElementById('tnc-admin-lugar').value = lugar;
-            document.getElementById('tnc-admin-medico').value = medico;
-            document.getElementById('tnc-admin-estudio').value = estudio;
-
-            document.getElementById('tnc-admin-servicio').innerHTML = `
-                <div>
-                    <span class="text-[10px] text-purple-500 uppercase tracking-widest block mb-1">Servicio Afectado</span>
-                    <span class="text-sm font-black text-slate-800">${medico}</span><br>
-                    <span class="font-bold text-slate-500">${estudio} <span class="font-normal mx-1">|</span> ${fecha} <span class="font-normal mx-1">|</span> ${lugar} (${origen})</span>
-                </div>
-            `;
-
-            const sel = document.getElementById('tnc-admin-clasificacion');
-            sel.innerHTML = '';
-            TNC_CATALOGO_ADMIN.Global.forEach(t => sel.innerHTML += `<option value="${t}" class="font-bold text-red-700">${t}</option>`);
-            const opciones = (TNC_CATALOGO_ADMIN[origen] || {})[estudio] || (TNC_CATALOGO_ADMIN[origen] || {})["Genérico"] || [];
-            if(opciones.length > 0) sel.innerHTML += `<option disabled>--- TNCs de ${estudio || 'este tipo'} ---</option>`;
-            opciones.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
-
-            document.getElementById('tnc-admin-notas').value = '';
-
-            const modal = document.getElementById('modal-tnc-admin');
-            const card = document.getElementById('modal-tnc-admin-card');
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
-        };
-
-        window.cerrarModalTncAdmin = function() {
-            const modal = document.getElementById('modal-tnc-admin');
-            const card = document.getElementById('modal-tnc-admin-card');
-            modal.classList.add('opacity-0'); card.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        };
-
-        window.guardarTncAdmin = async function() {
-            const origen = document.getElementById('tnc-admin-origen').value;
-            const fecha = document.getElementById('tnc-admin-fecha').value;
-            const lugar = document.getElementById('tnc-admin-lugar').value;
-            const medico = document.getElementById('tnc-admin-medico').value;
-            const estudio = document.getElementById('tnc-admin-estudio').value;
-            const clasif = document.getElementById('tnc-admin-clasificacion').value;
-            const notas = document.getElementById('tnc-admin-notas').value;
-
-            const btn = document.getElementById('btn-guardar-tnc-admin');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
-            btn.disabled = true;
-
+        window.cargarDatosAdmin = async function() {
+            const fIni = document.getElementById('filtro-fecha-inicio').value;
+            const fFin = document.getElementById('filtro-fecha-fin').value;
+            const tbody = document.getElementById('tabla-registros');
+            
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Sincronizando con Firebase...</td></tr>';
+            registrosGlobales = [];
+            
             try {
-                await window.addDoc(window.collection(window.db, "tickets_auditoria"), {
-                    origen: origen,
-                    fechaOperativa: fecha,
-                    sucursal: lugar,
-                    medico: medico,
-                    estudio: estudio,
-                    clasificacion: clasif,
-                    comentarios: notas,
-                    estado: 'Abierto',
-                    timestamp: new Date()
+                let t_Global = 0, t_Suc = 0, t_For = 0;
+                let empresas = new Set();
+
+                // 1. FORÁNEOS Y LEGACY
+                const q1 = window.query(window.collection(window.db, "registros"), window.orderBy("fecha", "desc"));
+                const qs1 = await window.getDocs(q1);
+                
+                qs1.forEach(doc => {
+                    const data = doc.data();
+                    if((fIni && data.fecha < fIni) || (fFin && data.fecha > fFin)) return;
+
+                    data.id = doc.id;
+                    if(data.tipo === "sucursal") {
+                        t_Global++; t_Suc++;
+                        registrosGlobales.push({ ...data, dbSource: "registros" });
+                    } else if(data.detalles) {
+                        empresas.add(data.empresa);
+                        let subTotal = 0;
+                        data.detalles.forEach(d => subTotal += (parseInt(d.cant) || 1));
+                        t_Global += subTotal; t_For += subTotal;
+                        registrosGlobales.push({ ...data, dbSource: "registros", subTotal });
+                    }
                 });
-                alert("✅ TNC Registrado Oficialmente. Podrás darle seguimiento en el Módulo de Auditoría.");
-                cerrarModalTncAdmin();
-            } catch(e) { 
-                console.error(e);
-                alert("❌ Error guardando TNC. Verifica tu conexión a internet."); 
+
+                // 2. SUCURSALES NUEVAS (PWA)
+                const q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.orderBy("fecha", "desc"));
+                const qs2 = await window.getDocs(q2);
+                
+                qs2.forEach(doc => {
+                    const data = doc.data();
+                    if((fIni && data.fecha < fIni) || (fFin && data.fecha > fFin)) return;
+                    
+                    data.id = doc.id;
+                    if(data.estudios) {
+                        let subTotal = 0;
+                        Object.values(data.estudios).forEach(cant => subTotal += (parseInt(cant) || 0));
+                        if(subTotal > 0) {
+                            t_Global += subTotal; t_Suc += subTotal;
+                            registrosGlobales.push({ ...data, dbSource: "registros_diarios_sucursales", subTotal });
+                        }
+                    }
+                });
+
+                document.getElementById('kpi-total').innerText = t_Global.toLocaleString();
+                document.getElementById('kpi-sucursal').innerText = t_Suc.toLocaleString();
+                document.getElementById('kpi-foraneo').innerText = t_For.toLocaleString();
+                document.getElementById('kpi-empresas').innerText = empresas.size;
+
+                // Ordenar globalmente por fecha descendente
+                registrosGlobales.sort((a,b) => b.fecha.localeCompare(a.fecha));
+                paginaActual = 1;
+                renderizarTablaAdmin();
+
+            } catch(e) {
+                console.error("Error BD:", e);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Error conectando a la base de datos.</td></tr>';
             }
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
         };
 
-        // =========================================================================
-        // SERVICE WORKER (PWA) Y CONTROL DE VERSIONES SILENCIOSO
-        // =========================================================================
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('PWA: Actualización silenciosa lista'))
-                    .catch(err => console.log('Error PWA: ', err));
-            });
-        }
-
-        // =========================================================================
-        // INYECCIÓN VISUAL DE LA VERSIÓN (FLOTANTE)
-        // =========================================================================
-        document.addEventListener("DOMContentLoaded", () => {
-            const versionDiv = document.createElement('div');
-            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
-            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
-            document.body.appendChild(versionDiv);
-        });
-    </script>
-
-    <div id="modal-tnc-admin" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-tnc-admin-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300">
-            <h3 class="text-xl font-black mb-4 text-purple-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
+        window.renderizarTablaAdmin = function() {
+            const tbody = document.getElementById('tabla-registros');
+            const filtroTxt = document.getElementById('buscador-tabla').value.toLowerCase();
             
-            <div class="bg-purple-50 border border-purple-200 p-3 rounded-xl mb-4 flex justify-between items-center shadow-sm">
-                <div id="tnc-admin-servicio" class="text-xs text-purple-900 font-bold leading-tight"></div>
-            </div>
+            let filtrados = registrosGlobales;
+            if(filtroTxt) {
+                filtrados = filtrados.filter(r => 
+                    (r.medico || '').toLowerCase().includes(filtroTxt) || 
+                    (r.sucursal || r.empresa || '').toLowerCase().includes(filtroTxt) ||
+                    (r.id || '').toLowerCase().includes(filtroTxt)
+                );
+            }
 
-            <input type="hidden" id="tnc-admin-origen">
-            <input type="hidden" id="tnc-admin-fecha">
-            <input type="hidden" id="tnc-admin-lugar">
-            <input type="hidden" id="tnc-admin-medico">
-            <input type="hidden" id="tnc-admin-estudio">
+            const totalPaginas = Math.ceil(filtrados.length / regsPorPagina);
+            if(paginaActual > totalPaginas && totalPaginas > 0) paginaActual = totalPaginas;
+            if(paginaActual < 1) paginaActual = 1;
 
-            <label class="block text-[11px] font-bold text-red-600 uppercase mb-2">Clasificación (Potencial TNC)</label>
-            <select id="tnc-admin-clasificacion" class="w-full p-3 bg-red-50 text-red-700 rounded-xl outline-none mb-4 border border-red-200 text-sm font-bold shadow-sm"></select>
+            const inicio = (paginaActual - 1) * regsPorPagina;
+            const fin = inicio + regsPorPagina;
+            const vista = filtrados.slice(inicio, fin);
 
-            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Observaciones / Evidencia</label>
-            <textarea id="tnc-admin-notas" rows="2" class="w-full p-3 bg-slate-50 text-slate-700 rounded-xl outline-none mb-6 border border-slate-200 text-sm placeholder-slate-400" placeholder="Añade detalles sobre el error..."></textarea>
+            tbody.innerHTML = '';
+            
+            if(vista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">No hay registros para mostrar.</td></tr>`;
+                document.getElementById('info-paginacion').innerText = '0 registros';
+                return;
+            }
 
-            <div class="flex gap-3">
-                <button onclick="cerrarModalTncAdmin()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar</button>
-                <button id="btn-guardar-tnc-admin" onclick="guardarTncAdmin()" class="w-2/3 bg-purple-600 hover:bg-purple-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2"><i class="fa-solid fa-save"></i> Guardar TNC</button>
-            </div>
-        </div>
-    </div>
+            vista.forEach(r => {
+                let badge = '', lugar = '', detalle = '';
+                
+                if (r.dbSource === "registros_diarios_sucursales") {
+                    badge = '<span class="bg-sky-100 text-sky-700 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border border-sky-200">Sucursal</span>';
+                    lugar = `<span class="font-bold text-sky-800">${r.sucursal}</span>`;
+                    let desc = Object.entries(r.estudios).map(([k,v]) => `${v} ${k}`).join(', ');
+                    detalle = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-1 rounded-lg">${r.subTotal} Total</span> <span class="text-[10px] text-slate-500 ml-1 truncate max-w-[200px] inline-block align-bottom" title="${desc}">${desc}</span>`;
+                } else if (r.tipo === "sucursal") {
+                    badge = '<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border border-slate-200">Legado</span>';
+                    lugar = `<span class="font-bold text-slate-600">${r.sucursal}</span>`;
+                    detalle = `<span class="font-bold text-slate-500">${r.estudio}</span>`;
+                } else {
+                    badge = '<span class="bg-orange-100 text-orange-700 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border border-orange-200">Foráneo</span>';
+                    lugar = `<span class="font-bold text-orange-800">${r.empresa}</span><br><span class="text-[9px] text-slate-400">Suc: ${r.sucursal || 'N/A'}</span>`;
+                    let desc = r.detalles.map(d => `${d.cant || 1} ${d.estudio}`).join(', ');
+                    detalle = `<span class="font-black text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">${r.subTotal} Total</span> <span class="text-[10px] text-slate-500 ml-1 truncate max-w-[200px] inline-block align-bottom" title="${desc}">${desc}</span>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-4"><div class="mb-1">${badge}</div><span class="text-[8px] text-slate-400 font-mono" title="${r.id}">${r.id.substring(0,8)}...</span></td>
+                        <td class="p-4 font-bold text-slate-600 text-xs">${r.fecha}</td>
+                        <td class="p-4 font-bold text-purple-700 text-xs">${r.medico || 'N/A'}</td>
+                        <td class="p-4 text-xs">${lugar}</td>
+                        <td class="p-4 text-xs">${detalle}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="eliminarRegistro('${r.id}', '${r.dbSource}')" class="text-red-400 hover:text-red-600 bg-white hover:bg-red-50 p-2 rounded-lg transition border border-transparent hover:border-red-200 shadow-sm" title="Eliminar Registro"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('info-paginacion').innerText = `Mostrando ${inicio + 1} - ${Math.min(fin, filtrados.length)} de ${filtrados.length} registros`;
+        };
+
+        window.cambiarPagina = function(delta) {
+            paginaActual += delta;
+            renderizarTablaAdmin();
+        };
+
+        window.filtrarTablaAdmin = function() {
+            paginaActual = 1;
+            renderizarTablaAdmin();
+        };
+
+        window.eliminarRegistro = async function(id, sourceCollection) {
+            if(!confirm("¿ESTÁS SEGURO? Esta acción borrará el registro de la base de datos oficial y no se puede deshacer.")) return;
+            try {
+                await window.deleteDoc(window.doc(window.db, sourceCollection, id));
+                alert("Registro eliminado con éxito.");
+                cargarDatosAdmin();
+            } catch(e) {
+                console.error("Error al borrar:", e);
+                alert("No se pudo eliminar el registro. Verifica permisos.");
+            }
+        };
+
+    </script>
 </body>
 </html>
