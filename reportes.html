@@ -36,14 +36,7 @@
         window.where = where;
 
         document.addEventListener("DOMContentLoaded", () => {
-            const hoy = new Date();
-            const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-            const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-            document.getElementById('r-fecha-inicio').value = primerDia.toISOString().split('T')[0];
-            document.getElementById('r-fecha-fin').value = ultimoDia.toISOString().split('T')[0];
-            
-            // Auto-generar al inicio con todo encendido
-            window.generarReporteDinamico();
+            window.aplicarFiltroRapido('mes'); // Inicia cargando el mes actual por default
         });
     </script>
     
@@ -55,11 +48,9 @@
         .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 80px); }
         
-        /* Checkbox Switch Toggle CSS */
         .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
         .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
         
-        /* IMPRESIÓN (PDF) EXACTA */
         @media print {
             @page { margin: 10mm; size: A4 portrait; }
             body { background-color: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -77,7 +68,7 @@
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-4 pt-2 md:pt-8 gap-1 md:gap-6 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:shadow-[4px_0_20px_rgba(0,0,0,0.05)]">
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-4 pt-2 md:pt-8 gap-1 md:gap-6 shadow-sm">
         <div class="hidden md:flex mb-6 text-indigo-600 text-3xl"><i class="fa-solid fa-staff-snake"></i></div>
         
         <a href="admin.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-purple-600 group transition-all">
@@ -103,11 +94,25 @@
                 </h1>
                 <p class="opacity-90 text-[10px] font-medium uppercase tracking-widest text-indigo-200 mb-6">Configura tu Reporte</p>
 
-                <label class="block text-[10px] font-black text-indigo-200 uppercase mb-1">Desde</label>
-                <input type="date" id="r-fecha-inicio" class="w-full mb-3 p-2.5 bg-indigo-900/50 border border-indigo-500/50 rounded-xl text-xs font-bold outline-none text-white focus:border-white transition-colors">
-                
-                <label class="block text-[10px] font-black text-indigo-200 uppercase mb-1">Hasta</label>
-                <input type="date" id="r-fecha-fin" class="w-full mb-6 p-2.5 bg-indigo-900/50 border border-indigo-500/50 rounded-xl text-xs font-bold outline-none text-white focus:border-white transition-colors">
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                    <button onclick="aplicarFiltroRapido('hoy')" class="bg-indigo-900/50 hover:bg-indigo-800 text-white text-[10px] font-bold py-2 rounded-lg transition border border-indigo-500/30">Hoy</button>
+                    <button onclick="aplicarFiltroRapido('ayer')" class="bg-indigo-900/50 hover:bg-indigo-800 text-white text-[10px] font-bold py-2 rounded-lg transition border border-indigo-500/30">Ayer</button>
+                    <button onclick="aplicarFiltroRapido('semana')" class="bg-indigo-900/50 hover:bg-indigo-800 text-white text-[10px] font-bold py-2 rounded-lg transition border border-indigo-500/30">Semana</button>
+                    <button onclick="aplicarFiltroRapido('mes')" class="bg-indigo-500 text-white text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Mes</button>
+                    <button onclick="aplicarFiltroRapido('año')" class="bg-indigo-900/50 hover:bg-indigo-800 text-white text-[10px] font-bold py-2 rounded-lg transition border border-indigo-500/30">Año</button>
+                    <button onclick="aplicarFiltroRapido('todo')" class="bg-indigo-900/50 hover:bg-indigo-800 text-white text-[10px] font-bold py-2 rounded-lg transition border border-indigo-500/30">Todo</button>
+                </div>
+
+                <div class="flex gap-2 w-full mb-6">
+                    <div class="flex-1">
+                        <label class="block text-[9px] font-black text-indigo-200 uppercase mb-1">Desde</label>
+                        <input type="date" id="r-fecha-inicio" class="w-full p-2 bg-indigo-900/50 border border-indigo-500/50 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[9px] font-black text-indigo-200 uppercase mb-1">Hasta</label>
+                        <input type="date" id="r-fecha-fin" class="w-full p-2 bg-indigo-900/50 border border-indigo-500/50 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
+                    </div>
+                </div>
 
                 <button onclick="generarReporteDinamico()" id="btn-generar" class="w-full bg-white text-indigo-700 hover:bg-indigo-50 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-lg mb-3 flex justify-center items-center gap-2"><i class="fa-solid fa-bolt"></i> Cargar Datos</button>
                 
@@ -120,7 +125,7 @@
             <div class="glass p-5 rounded-3xl shadow-sm">
                 <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2 flex justify-between items-center">
                     Módulos Visibles
-                    <button onclick="toggleAllModules()" class="text-[9px] text-indigo-600 bg-indigo-50 px-2 py-1 rounded">ON/OFF</button>
+                    <button onclick="toggleAllModules()" class="text-[9px] text-indigo-600 bg-indigo-50 px-2 py-1 rounded font-bold hover:bg-indigo-100 transition">ON/OFF</button>
                 </h3>
                 
                 <div class="flex flex-col gap-3 max-h-[40vh] overflow-y-auto scroll-custom pr-2" id="checklist-modulos">
@@ -146,6 +151,7 @@
             </div>
 
             <div id="contenedor-modulos" class="flex flex-col gap-6 hidden">
+                
                 <div id="mod-kpis" class="grid grid-cols-2 md:grid-cols-4 gap-4 print-grid">
                     <div class="glass bg-slate-50/50 p-4 rounded-2xl border-l-4 border-indigo-600 text-center">
                         <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Estudios Totales</p>
@@ -293,7 +299,6 @@
 
         window.toggleAllModules = function() {
             const boxes = document.querySelectorAll('.toggle-checkbox');
-            // If all are checked, uncheck all. Else check all.
             let allChecked = Array.from(boxes).every(b => b.checked);
             boxes.forEach(b => b.checked = !allChecked);
             actualizarVistaModulos();
@@ -311,12 +316,34 @@
                 }
             });
             
-            // Lógica de separadores (Ocultarlos si todo lo de abajo está oculto - simplificado)
             const showFor = document.getElementById('chk-mod-tend-for').checked || document.getElementById('chk-mod-emp').checked || document.getElementById('chk-mod-med-for').checked || document.getElementById('chk-mod-tab-for').checked;
             document.getElementById('sep-foraneos').style.display = showFor ? '' : 'none';
 
             const showSuc = document.getElementById('chk-mod-tend-suc').checked || document.getElementById('chk-mod-top-suc').checked || document.getElementById('chk-mod-dias-suc').checked || document.getElementById('chk-mod-tab-suc').checked;
             document.getElementById('sep-sucursales').style.display = showSuc ? '' : 'none';
+        };
+
+        window.aplicarFiltroRapido = function(tipo) {
+            const btns = document.querySelectorAll('.grid.grid-cols-3 button');
+            btns.forEach(b => {
+                b.classList.remove('bg-indigo-500', 'shadow-sm');
+                b.classList.add('bg-indigo-900/50', 'border-indigo-500/30');
+            });
+            event.target.classList.remove('bg-indigo-900/50', 'border-indigo-500/30');
+            event.target.classList.add('bg-indigo-500', 'shadow-sm');
+
+            const hoy = new Date();
+            let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+            if (tipo === 'hoy') iStr = fStr; 
+            else if (tipo === 'ayer') { const ayer = new Date(); ayer.setDate(ayer.getDate() - 1); iStr = `${ayer.getFullYear()}-${String(ayer.getMonth() + 1).padStart(2, '0')}-${String(ayer.getDate()).padStart(2, '0')}`; fStr = iStr; }
+            else if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
+            else if (tipo === 'mes') { iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`; }
+            else if (tipo === 'año') { iStr = `${hoy.getFullYear()}-01-01`; }
+            else if (tipo === 'todo') { iStr = ''; fStr = ''; }
+            
+            document.getElementById('r-fecha-inicio').value = iStr; 
+            document.getElementById('r-fecha-fin').value = fStr;
+            generarReporteDinamico();
         };
 
         // ==========================================
@@ -331,11 +358,11 @@
             if(!est) return "Desconocido";
             let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clínica";
+            if (upper.includes("CONSULTA")) return "Consulta Médica";
             if (upper.includes("ESPIROMETRIA")) return "Espirometría";
             if (upper.includes("AUDIOMETRIA")) return "Audiometría";
             if (upper.includes("ELECTROCARDIOGRAMA")) return "Electrocardiograma";
             if (upper.includes("VISUAL")) return "Examen Capacidad Visual";
-            if (upper.includes("CONSULTA")) return "Consulta Médica";
             return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
@@ -350,10 +377,8 @@
             const fIni = document.getElementById('r-fecha-inicio').value;
             const fFin = document.getElementById('r-fecha-fin').value;
 
-            if(!fIni || !fFin) { alert("Fechas inválidas."); return; }
-
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analizando BD...'; btn.disabled = true;
-            document.getElementById('label-periodo').innerText = `${fIni} AL ${fFin}`;
+            document.getElementById('label-periodo').innerText = (fIni && fFin) ? `${fIni} AL ${fFin}` : 'HISTÓRICO COMPLETO';
             document.getElementById('canvas-vacio').classList.add('hidden');
             document.getElementById('contenedor-modulos').classList.remove('hidden');
 
@@ -369,15 +394,15 @@
 
             try {
                 // 1. EXTRAYENDO FORÁNEOS Y LEGACY SUCURSAL
-                const q1 = window.query(window.collection(window.db, "registros"), window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                let q1 = window.collection(window.db, "registros");
+                if (fIni && fFin) q1 = window.query(q1, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
                 const qs1 = await window.getDocs(q1);
                 
                 qs1.forEach(doc => {
                     const data = doc.data();
                     const diaSemana = obtenerDiaSemana(data.fecha);
 
-                    if(data.tipo === "sucursal") {
-                        // SUCURSAL LEGACY
+                    if(data.tipo === "sucursal" || data.tipo === "Sucursal") {
                         t_Global++; t_Suc++;
                         let est = unificarEstudio(data.estudio); 
                         let suc = normalizarDato(data.sucursal);
@@ -394,7 +419,6 @@
                         datosCrudosExportar.sucursales.push({ FECHA: data.fecha, SUCURSAL: suc, MEDICO: med, ESTUDIO: data.estudio, SISTEMA: "Legacy" });
 
                     } else if(data.detalles) {
-                        // FORÁNEO
                         let emp = normalizarDato(data.empresa);
                         let suc = normalizarDato(data.sucursal || "FORÁNEO");
                         f_Empresas.add(emp);
@@ -424,8 +448,9 @@
                     }
                 });
 
-                // 2. EXTRAYENDO SUCURSALES NATIVAS PWA
-                const q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                // 2. EXTRAYENDO SUCURSALES NUEVAS (PWA)
+                let q2 = window.collection(window.db, "registros_diarios_sucursales");
+                if (fIni && fFin) q2 = window.query(q2, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
                 const qs2 = await window.getDocs(q2);
                 
                 qs2.forEach(doc => {
@@ -435,10 +460,10 @@
                     const diaSemana = obtenerDiaSemana(data.fecha);
 
                     if(data.estudios) {
-                        Object.keys(data.estudios).forEach(rawEst => {
-                            let cant = parseInt(data.estudios[rawEst]) || 0;
+                        Object.entries(data.estudios).forEach(([estRaw, cantVal]) => {
+                            let cant = parseInt(cantVal) || 0;
                             if(cant > 0) {
-                                let est = unificarEstudio(rawEst);
+                                let est = unificarEstudio(estRaw);
                                 t_Global += cant; t_Suc += cant;
                                 
                                 if(!c_Estudios[est]) c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
@@ -449,7 +474,7 @@
                                 s_cDias[diaSemana] += cant;
                                 s_Medicos[med] = (s_Medicos[med] || 0) + cant;
 
-                                datosCrudosExportar.sucursales.push({ FECHA: data.fecha, SUCURSAL: suc, MEDICO: med, ESTUDIO: rawEst, CANTIDAD: cant, SISTEMA: "PWA" });
+                                datosCrudosExportar.sucursales.push({ FECHA: data.fecha, SUCURSAL: suc, MEDICO: med, ESTUDIO: estRaw, CANTIDAD: cant, SISTEMA: "PWA" });
                             }
                         });
                     }
@@ -502,7 +527,6 @@
                 let tbodyMedSuc = document.getElementById('tbody-med-suc'); tbodyMedSuc.innerHTML = '';
                 aMedSuc.forEach(m => { tbodyMedSuc.innerHTML += `<tr class="hover:bg-slate-100"><td class="p-3 uppercase text-sky-700">${m.n}</td><td class="p-3 text-center font-black">${m.v}</td></tr>`; });
 
-                // Refrescar visibilidad base toggles
                 actualizarVistaModulos();
 
             } catch (e) {
@@ -513,7 +537,6 @@
             btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Cargar Datos'; btn.disabled = false;
         };
 
-        // Motor de Gráficas Reutilizable
         function dibujarGrafico(canvasId, tipo, labels, data, colores, indexAxis = 'x') {
             if(graficos[canvasId]) graficos[canvasId].destroy();
             let colorFondo = tipo === 'line' ? colores[0] + '20' : colores[0];
