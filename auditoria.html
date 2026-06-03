@@ -121,6 +121,7 @@
                     
                     <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200">
                         
+                        <!-- HEADER CON BOTONES MASIVOS -->
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
                             
@@ -146,6 +147,9 @@
             </div>
         </div>
 
+        <!-- ========================================== -->
+        <!-- SECCIÓN 2 Y 3: TNC Y PERFIL                -->
+        <!-- ========================================== -->
         <div id="sec-tnc" class="hidden animate-fade-in">
             <div class="glass p-6 rounded-3xl shadow-sm flex flex-col h-[78vh] border border-slate-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-slate-200 pb-4 gap-4">
@@ -207,6 +211,7 @@
 
     </div>
 
+    <!-- MODALES -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-purple-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
@@ -254,6 +259,7 @@
         </div>
     </div>
 
+    <!-- MODAL LUPA -->
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
@@ -434,27 +440,32 @@
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
+        // LA MAGIA ANTI-ACENTOS EN LOS ESTUDIOS
         function agruparEstudio(est, tipoOrigen) {
             if(!est) return "Desconocido";
-            let n = normalizarDato(est);
-            let upper = n.toUpperCase();
-            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") {
-                return "Historia Clínica";
-            }
-            if (upper.includes("CONSULTA")) return "Consulta Médica";
+            let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clinica"; // Guardado sin acento
+            if (upper.includes("CONSULTA")) return "Consulta Medica"; // Guardado sin acento
+            if (upper.includes("ESPIROMETRIA")) return "Espirometria"; // Guardado sin acento
+            if (upper.includes("AUDIOMETRIA")) return "Audiometria"; // Guardado sin acento
+            
+            // Si es cualquier otro estudio, le quitamos los acentos y le damos formato "Normal" (Title Case)
+            let n = upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
             return n;
         }
 
         function unificarEstudio(est) {
             if(!est) return "Desconocido";
             let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clínica";
-            if (upper.includes("ESPIROMETRIA")) return "Espirometría";
-            if (upper.includes("AUDIOMETRIA")) return "Audiometría";
+            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clinica";
+            if (upper.includes("ESPIROMETRIA")) return "Espirometria";
+            if (upper.includes("AUDIOMETRIA")) return "Audiometria";
             if (upper.includes("ELECTROCARDIOGRAMA")) return "Electrocardiograma";
             if (upper.includes("VISUAL")) return "Examen Capacidad Visual";
-            if (upper.includes("CONSULTA")) return "Consulta Médica";
-            return normalizarDato(est);
+            if (upper.includes("CONSULTA")) return "Consulta Medica";
+            
+            let n = upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            return n;
         }
 
         function traducirMedico(rawMed, rawSuc) {
@@ -891,7 +902,7 @@
                     acciones = `<button onclick="cambiarEstadoTNC('${d.id}', 'Cerrado')" class="bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 px-3 rounded-lg shadow text-[10px] font-bold transition">Validar y Cerrar</button>`;
                 } else {
                     badge = '<span class="px-2.5 py-1 rounded bg-emerald-50 text-emerald-600 border border-emerald-200">Cerrado</span>';
-                    acciones = `<span class="text-emerald-500 text-lg"><i class="fa-solid fa-check-double"></i></span>`;
+                    acciones = `<span class="textemerald-500 text-lg"><i class="fa-solid fa-check-double"></i></span>`;
                 }
 
                 tbody.innerHTML += `
