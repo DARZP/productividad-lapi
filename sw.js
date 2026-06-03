@@ -1,7 +1,7 @@
 // sw.js - Service Worker de LAPI (Versión Activa / Network First)
 
 // 🛑 CAMBIA ESTE NÚMERO CADA VEZ QUE SUBAS UNA ACTUALIZACIÓN A NETLIFY
-const CACHE_VERSION = 'lapi-pwa-v1.1.0'; 
+const CACHE_VERSION = 'lapi-pwa-v1.2.0'; 
 
 const ASSETS_TO_CACHE = [
     './',
@@ -9,6 +9,7 @@ const ASSETS_TO_CACHE = [
     './sucursal.html',
     './admin.html',
     './auditoria.html',
+    './reportes.html', // Añadido reportes.html por si acaso
     './config.js'
 ];
 
@@ -43,6 +44,18 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     // Solo interceptar peticiones "GET" (Ignorar POST a Firebase, etc.)
     if (event.request.method !== 'GET') return;
+
+    // 🛡️ CORTAFUEGOS 1: Evitar error de "chrome-extension://"
+    if (!event.request.url.startsWith('http')) {
+        return;
+    }
+
+    // 🛡️ CORTAFUEGOS 2: Ignorar peticiones a la BD de Firebase para que no se congelen
+    if (event.request.url.includes('firestore.googleapis.com') || 
+        event.request.url.includes('identitytoolkit') ||
+        event.request.url.includes('firebase')) {
+        return;
+    }
 
     event.respondWith(
         fetch(event.request)
