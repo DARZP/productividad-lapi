@@ -126,7 +126,7 @@
                         </div>
                         <input type="date" id="a-inicio" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-3 border border-slate-300">
                         <input type="date" id="a-fin" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-4 border border-slate-300">
-                        <button onclick="reRenderAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 rounded-xl transition-all text-xs active:scale-95">Aplicar Vista</button>
+                        <button onclick="initAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 rounded-xl transition-all text-xs active:scale-95">Aplicar Vista</button>
                     </div>
                 </div>
                 
@@ -225,7 +225,6 @@
         </div>
     </main>
 
-    <!-- MODAL DE EXTRACCIÓN ONEDRIVE -->
     <div id="modal-onedrive" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-onedrive-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-blue-200 text-center flex flex-col max-h-[90vh]">
             <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-brands fa-microsoft"></i></div>
@@ -249,7 +248,6 @@
         </div>
     </div>
 
-    <!-- MODAL TNC -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-emerald-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
@@ -286,7 +284,6 @@
         </div>
     </div>
 
-    <!-- MODAL LUPA -->
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
@@ -306,7 +303,6 @@
         </div>
     </div>
 
-    <!-- MODAL CORRECCIÓN INDIVIDUAL -->
     <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-correccion-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-emerald-200 text-center">
             <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
@@ -324,9 +320,6 @@
     <datalist id="lista-medicos-perfil"></datalist>
 
     <script>
-        // ==========================================
-        // 0. GLOBALES, DICCIONARIOS Y CONFIG
-        // ==========================================
         let rawDataGlobal = []; 
         let excelDataGlobal = {}; 
         let appDataGlobal = {};
@@ -348,13 +341,10 @@
 
         window.iniciarAppAuditoria = function() {
             aplicarFiltroRapido('mes'); 
-            initAuditoria();
+            // NOTA: initAuditoria() ahora se llama desde adentro de aplicarFiltroRapido()
             cargarTNCs();
         };
 
-        // ==========================================================
-        // HERRAMIENTAS DE INTERFAZ (MODALES, TOASTS Y TABS)
-        // ==========================================================
         window.mostrarToast = function(mensaje, tipo = 'info') {
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-emerald-600');
@@ -413,9 +403,6 @@
             abrirModal('lupa');
         };
 
-        // ==========================================================
-        // 1. MSAL (ONEDRIVE)
-        // ==========================================================
         const msalConfig = {
             auth: {
                 clientId: "eaaa1a34-63b2-4dc1-bf1e-8a16e820e9c3", 
@@ -525,15 +512,11 @@
             }
         };
 
-        // ==========================================================
-        // 2. MOTOR ESTRICTO CONTEXTUAL Y EXTRACTOR INTELIGENTE
-        // ==========================================================
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
-        // FUNCIÓN ÚNICA Y UNIVERSAL PARA NORMALIZAR ESTUDIOS EN TODO EL SISTEMA
         function unificarEstudio(est) {
             if(!est) return "Desconocido";
             let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -542,13 +525,9 @@
             if (upper.includes("ESPIROMETRIA")) return "Espirometria";
             if (upper.includes("AUDIOMETRIA")) return "Audiometria";
             if (upper.includes("ELECTROCARDIOGRAMA") || upper === "ECG" || upper === "EKG") return "Electrocardiograma";
-            
-            // LA REGLA DE ORO PARA LO VISUAL: Si dice Visual u Optometría, se llama Agudeza Visual.
             if (upper.includes("VISUAL") || upper.includes("OPTOMETRIA")) return "Agudeza Visual";
-            
             if (upper.includes("CONSULTA")) return "Consulta Medica";
 
-            // Si es otro estudio, solo le damos formato presentable
             let n = upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
             return n;
         }
@@ -565,12 +544,10 @@
 
             if (med === 'X' || med === '✔' || med === 'OK') return "X";
 
-            // 1. Búsqueda exacta por iniciales en la sucursal actual
             if (diccIniciales[suc] && diccIniciales[suc][med]) {
                 return normalizarDato(diccIniciales[suc][med]);
             }
 
-            // 2. Búsqueda global de iniciales (Por si cubrió turno en otra sucursal)
             for (const sucursalKey in diccIniciales) {
                 if (diccIniciales[sucursalKey][med]) {
                     return normalizarDato(diccIniciales[sucursalKey][med]);
@@ -580,18 +557,15 @@
             const medNormalizado = normalizarDato(med).toUpperCase();
             const medicos = window.LAPI_CONFIG.medicos || [];
 
-            // 3. Match Exacto en catálogo
             const exactMatch = medicos.find(m => normalizarDato(m).toUpperCase() === medNormalizado);
             if(exactMatch) return exactMatch;
 
-            // 4. Match Parcial Tradicional (Ej. "Perez" dentro de "Juan Perez")
             const partialMatch = medicos.find(m => {
                 const mNorm = normalizarDato(m).toUpperCase();
                 return mNorm.includes(medNormalizado) || medNormalizado.includes(mNorm);
             });
             if(partialMatch) return partialMatch;
 
-            // 5. Búsqueda Inteligente: Nombres Invertidos o Desordenados (Fuzzy Match)
             const palabrasIngresadas = medNormalizado.split(' ').filter(p => p.length > 2);
             if (palabrasIngresadas.length > 1) {
                 for (let m of medicos) {
@@ -657,7 +631,7 @@
                         Object.keys(estudiosMapeo).forEach(key => {
                             if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
                                 let estRaw = estudiosMapeo[key];
-                                let est = unificarEstudio(estRaw); // Se usa la función unificada
+                                let est = unificarEstudio(estRaw);
                                 let med = traducirMedico(f[mapa[key]], sEx);
                                 
                                 let nombrePaciente = f[mapa["NOMBRE"]] ? String(f[mapa["NOMBRE"]]).trim() : "DESCONOCIDO";
@@ -675,14 +649,26 @@
             }
         }
 
-        // ==========================================================
-        // 3. UI, CRUCE MANUAL Y REDERIZADO
-        // ==========================================================
         window.sincronizarAppGlobal = function() {
             appDataGlobal = {};
+            
+            const medicoASucursal = {};
+            for (let suc in diccIniciales) {
+                for (let ini in diccIniciales[suc]) {
+                    medicoASucursal[normalizarDato(diccIniciales[suc][ini])] = normalizarDato(suc);
+                }
+            }
+
             rawDataGlobal.forEach(reg => {
-                // Nuevo Hash Inmune a las ramas (Usa SucursalBase en lugar de la Empresa foránea)
-                const hash = `${reg.fecha}|${reg.sucursalBase}|${reg.medico}|${reg.estudio}`;
+                let sucReal = reg.sucursalBase;
+                
+                if (!sucReal || sucReal.toUpperCase() === "FORÁNEO" || sucReal.toUpperCase() === "DESCONOCIDA") {
+                    if (medicoASucursal[reg.medico]) {
+                        sucReal = medicoASucursal[reg.medico];
+                    }
+                }
+
+                const hash = `${reg.fecha}|${sucReal}|${reg.medico}|${reg.estudio}`;
                 appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
             });
         };
@@ -714,12 +700,25 @@
             }
         }
 
+        // ==========================================
+        // PARCHE DE OPTIMIZACIÓN LECTURA BD
+        // ==========================================
         async function initAuditoria() {
             try {
                 rawDataGlobal = [];
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando BD...';
 
-                const q1 = window.query(window.collection(window.db, "registros"));
+                const fIni = document.getElementById('a-inicio').value; 
+                const fFin = document.getElementById('a-fin').value;
+
+                let q1 = window.collection(window.db, "registros");
+                let q2 = window.collection(window.db, "registros_diarios_sucursales");
+
+                if (fIni && fFin) {
+                    q1 = window.query(q1, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                    q2 = window.query(q2, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                }
+
                 const qs1 = await window.getDocs(q1);
                 
                 qs1.forEach(doc => {
@@ -731,44 +730,22 @@
                             data.detalles.forEach(det => {
                                 let cant = parseInt(det.cant) || 1;
                                 for(let k=0; k<cant; k++) {
-                                    rawDataGlobal.push({ 
-                                        tipo: "Sucursal", 
-                                        fecha: data.fecha, 
-                                        lugar: normalizarDato(data.sucursal), 
-                                        sucursalBase: normalizarDato(data.sucursal),
-                                        estudio: unificarEstudio(det.estudio), 
-                                        medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)) 
-                                    });
+                                    rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: unificarEstudio(det.estudio), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)) });
                                 }
                             });
                         } else if (data.estudio) {
-                            rawDataGlobal.push({ 
-                                tipo: "Sucursal", 
-                                fecha: data.fecha, 
-                                lugar: normalizarDato(data.sucursal), 
-                                sucursalBase: normalizarDato(data.sucursal),
-                                estudio: unificarEstudio(data.estudio), 
-                                medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) 
-                            });
+                            rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: unificarEstudio(data.estudio), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
                         }
                     } else if (data.detalles) {
                         data.detalles.forEach(det => {
                             let cant = parseInt(det.cant) || 1;
                             for(let k=0; k<cant; k++) {
-                                rawDataGlobal.push({ 
-                                    tipo: "Foráneo", 
-                                    fecha: data.fecha, 
-                                    lugar: normalizarDato(data.empresa), 
-                                    sucursalBase: normalizarDato(data.sucursal || "FORÁNEO"),
-                                    estudio: unificarEstudio(det.estudio), 
-                                    medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")) 
-                                });
+                                rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), sucursalBase: normalizarDato(data.sucursal || "FORÁNEO"), estudio: unificarEstudio(det.estudio), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")) });
                             }
                         });
                     }
                 });
 
-                const q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"));
                 const qs2 = await window.getDocs(q2);
                 qs2.forEach(doc => {
                     const data = doc.data();
@@ -776,14 +753,7 @@
                         Object.keys(data.estudios).forEach(est => {
                             let cant = parseInt(data.estudios[est]) || 0;
                             for(let k=0; k<cant; k++){
-                                rawDataGlobal.push({ 
-                                    tipo: "Sucursal", 
-                                    fecha: data.fecha, 
-                                    lugar: normalizarDato(data.sucursal), 
-                                    sucursalBase: normalizarDato(data.sucursal),
-                                    estudio: unificarEstudio(est), 
-                                    medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) 
-                                });
+                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: unificarEstudio(est), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
                             }
                         });
                     }
@@ -796,7 +766,7 @@
                 verificarParametrosURL(); 
             } catch (error) { 
                 console.error(error);
-                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red'; 
+                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Límite de Cuota o Red'; 
             }
         }
 
@@ -807,8 +777,12 @@
             else if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
             else if (tipo === 'mes') { iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`; }
             else if (tipo === 'todo') { iStr = ''; fStr = ''; }
-            document.getElementById('a-inicio').value = iStr; document.getElementById('a-fin').value = fStr;
-            reRenderAuditoria();
+            
+            document.getElementById('a-inicio').value = iStr; 
+            document.getElementById('a-fin').value = fStr;
+            
+            // LA OPTIMIZACIÓN LLAMA DIRECTO AL SERVIDOR CON LAS FECHAS CORRECTAS
+            initAuditoria();
         };
 
         window.reRenderAuditoria = function() {
@@ -821,16 +795,29 @@
             window.discrepanciasTNC = [];
 
             const hashesExcel = new Set(Object.keys(excelDataGlobal));
-            // Limitamos la auditoria solo a las sucursales que vengan en el Excel subido
             const sucursalesAuditadas = new Set([...hashesExcel].map(k => k.split('|')[1])); 
+            const medicosEnExcel = new Set([...hashesExcel].map(k => k.split('|')[2])); 
+
+            const medicoASucursal = {};
+            for (let suc in diccIniciales) {
+                for (let ini in diccIniciales[suc]) {
+                    medicoASucursal[normalizarDato(diccIniciales[suc][ini])] = normalizarDato(suc);
+                }
+            }
 
             const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
 
             todasLasLlaves.forEach(hash => {
                 const [fecha, sucursalBase, medico, estudio] = hash.split('|');
                 
-                // Filtro para ignorar todo el resto de la base de datos de LAPI
-                if(!sucursalesAuditadas.has(sucursalBase)) return; 
+                let sucReal = sucursalBase;
+                if (sucReal === "FORÁNEO" || sucReal === "DESCONOCIDO" || sucReal === "") {
+                    if (medicoASucursal[medico]) {
+                        sucReal = medicoASucursal[medico];
+                    }
+                }
+
+                if(!sucursalesAuditadas.has(sucReal) && !medicosEnExcel.has(medico)) return; 
                 if(fIni && fecha < fIni) return; 
                 if(fFin && fecha > fFin) return;
 
@@ -862,7 +849,7 @@
                 
                 let alertMedico = medico.includes('[') ? `text-red-500 font-black` : `text-slate-700 font-bold`;
 
-                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursalBase}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-emerald-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black"><div class="flex items-center justify-center">${cE} ${btnLupa}</div></td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
+                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucReal}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-emerald-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black"><div class="flex items-center justify-center">${cE} ${btnLupa}</div></td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
             });
 
             tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">Sube Excel de la sucursal que deseas auditar.</td></tr>';
@@ -873,9 +860,6 @@
             document.getElementById('btn-bulk-tnc').style.display = window.discrepanciasTNC.length > 0 ? 'inline-block' : 'none';
         };
 
-        // ==========================================
-        // 4. MÓDULO BUSCADOR TNC 
-        // ==========================================
         window.abrirBuscadorUniversal = function() {
             document.getElementById('tnc-hash').value = "";
             resetBuscadorTNC();
@@ -1051,9 +1035,6 @@
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "TNC_Reporte"); XLSX.writeFile(wb, `LAPI_TNC_Reporte_${new Date().toISOString().split('T')[0]}.xlsx`);
         };
 
-        // ==========================================
-        // 5. PERFIL MÉDICO (EXPEDIENTE)
-        // ==========================================
         window.cargarPerfilMedico = async function() {
             const nom = document.getElementById('input-buscar-medico').value.trim().toUpperCase();
             if(!nom) return;
@@ -1104,9 +1085,6 @@
             });
         }
 
-        // ==========================================
-        // ACCIONES MASIVAS Y CORRECCIÓN INYECCIÓN
-        // ==========================================
         window.prepararCorreccion = function(hash, cantCorrecta) {
             const [fecha, suc, med, est] = hash.split('|');
             document.getElementById('c-hash').value = hash; document.getElementById('c-cant').value = cantCorrecta;
