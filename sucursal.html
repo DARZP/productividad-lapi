@@ -58,7 +58,7 @@
             
             <div class="space-y-4 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Nombre del Médico</label>
+                    <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Nombre del Médico / TÉCNICO </label>
                     <input type="text" id="login-medico" list="lista-medicos" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase font-bold">
                 </div>
                 <div>
@@ -274,7 +274,7 @@
         async function iniciarApp() {
             document.getElementById('pantalla-login').classList.add('hidden');
             document.getElementById('pantalla-app').classList.remove('hidden');
-            document.getElementById('ui-medico').innerText = "Dr(a). " + sesionActual.medico;
+            document.getElementById('ui-medico').innerText = sesionActual.medico;
             document.getElementById('ui-sucursal').innerText = sesionActual.sucursal;
             
             const fechas = obtenerFechaOperativaYFormato();
@@ -292,7 +292,7 @@
                 } else {
                     datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
                 }
-                if(navigator.onLine) mostrarToast(`Turno iniciado con éxito. Todo listo.`, 'exito');
+                if(navigator.onLine) mostrarToast(`Turno Actualizado con éxito. Todo listo.`, 'exito');
             } catch (error) { 
                 // Si la red falla en el inicio, se atrapa aquí pero NO se salta la creación de la tabla.
                 datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
@@ -406,7 +406,7 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finalizando...';
             btn.disabled = true;
 
-            mostrarToast("¡Turno guardado! Saliendo...", "exito", 0);
+            mostrarToast("¡Turno actualizado! Regresando a estudios...", "exito", 0);
             setTimeout(() => { location.reload(); }, 2000);
         }
 
