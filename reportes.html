@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - LAPI Admin</title>
+    
+    <link rel="manifest" href="manifest_admin.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.query = query;
+        window.where = where;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const hoy = new Date();
+            const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+            document.getElementById('r-fecha-inicio').value = primerDia.toISOString().split('T')[0];
+            document.getElementById('r-fecha-fin').value = ultimoDia.toISOString().split('T')[0];
+            
+            // Auto-generar al inicio con todo encendido
+            window.generarReporteDinamico();
+        });
+    </script>
+    
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
+        .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 80px); }
+        
+        /* Checkbox Switch Toggle CSS */
+        .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
+        
+        /* IMPRESIÓN (PDF) EXACTA */
+        @media print {
+            @page { margin: 10mm; size: A4 portrait; }
+            body { background-color: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            nav { display: none !important; }
+            main { padding: 0 !important; margin: 0 !important; }
+            .glass { box-shadow: none !important; border: 1px solid #cbd5e1 !important; break-inside: avoid; margin-bottom: 15px;}
+            .print-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 15px !important; }
+            .print-col-span-2 { grid-column: span 2 / span 2 !important; }
+            canvas { max-height: 220px !important; width: 100% !important; }
+            .page-break { page-break-before: always; display: block; height: 1px; }
+            .header-print { border-bottom: 3px solid #0f172a !important; padding-bottom: 10px !important; margin-bottom: 20px !important; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex h-screen overflow-hidden">
+
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-4 pt-2 md:pt-8 gap-1 md:gap-6 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:shadow-[4px_0_20px_rgba(0,0,0,0.05)]">
+        <div class="hidden md:flex mb-6 text-indigo-600 text-3xl"><i class="fa-solid fa-staff-snake"></i></div>
+        
+        <a href="admin.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-purple-600 group transition-all">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center group-hover:bg-purple-50 transition-all"><i class="fa-solid fa-globe text-xl"></i></div>
+            <span class="text-[10px] font-bold mt-1 tracking-widest uppercase">Global</span>
+        </a>
+        <a href="reportes.html" class="flex flex-col items-center p-2 text-indigo-600 group">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-100 text-indigo-600 transition-all shadow-sm"><i class="fa-solid fa-chart-pie text-xl"></i></div>
+            <span class="text-[10px] font-black mt-1 tracking-widest uppercase">Reportes</span>
+        </a>
+        <a href="auditoria.html" class="flex flex-col items-center p-2 text-slate-400 hover:text-emerald-600 group transition-all">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center group-hover:bg-emerald-50 transition-all"><i class="fa-solid fa-shield-halved text-xl"></i></div>
+            <span class="text-[10px] font-bold mt-1 tracking-widest uppercase">Auditoría</span>
+        </a>
+    </nav>
+
+    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8 flex flex-col xl:flex-row gap-6 items-start">
+        
+        <div class="w-full xl:w-80 shrink-0 no-print flex flex-col gap-4">
+            <div class="bg-gradient-to-br from-indigo-700 to-blue-600 p-6 rounded-3xl shadow-xl text-white">
+                <h1 class="text-xl font-black tracking-tight flex items-center gap-2 mb-1">
+                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-300"></i> Generador Pro
+                </h1>
+                <p class="opacity-90 text-[10px] font-medium uppercase tracking-widest text-indigo-200 mb-6">Configura tu Reporte</p>
+
+                <label class="block text-[10px] font-black text-indigo-200 uppercase mb-1">Desde</label>
+                <input type="date" id="r-fecha-inicio" class="w-full mb-3 p-2.5 bg-indigo-900/50 border border-indigo-500/50 rounded-xl text-xs font-bold outline-none text-white focus:border-white transition-colors">
+                
+                <label class="block text-[10px] font-black text-indigo-200 uppercase mb-1">Hasta</label>
+                <input type="date" id="r-fecha-fin" class="w-full mb-6 p-2.5 bg-indigo-900/50 border border-indigo-500/50 rounded-xl text-xs font-bold outline-none text-white focus:border-white transition-colors">
+
+                <button onclick="generarReporteDinamico()" id="btn-generar" class="w-full bg-white text-indigo-700 hover:bg-indigo-50 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-lg mb-3 flex justify-center items-center gap-2"><i class="fa-solid fa-bolt"></i> Cargar Datos</button>
+                
+                <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-indigo-500/50">
+                    <button onclick="window.print()" class="bg-indigo-900/50 hover:bg-indigo-800 text-white font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider border border-indigo-500/30"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
+                    <button onclick="exportarExcelData()" class="bg-emerald-600/80 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider border border-emerald-500/30"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
+                </div>
+            </div>
+
+            <div class="glass p-5 rounded-3xl shadow-sm">
+                <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2 flex justify-between items-center">
+                    Módulos Visibles
+                    <button onclick="toggleAllModules()" class="text-[9px] text-indigo-600 bg-indigo-50 px-2 py-1 rounded">ON/OFF</button>
+                </h3>
+                
+                <div class="flex flex-col gap-3 max-h-[40vh] overflow-y-auto scroll-custom pr-2" id="checklist-modulos">
+                    </div>
+            </div>
+        </div>
+
+        <div class="w-full flex-1 bg-white p-6 md:p-10 rounded-[2rem] shadow-sm border border-slate-200 mx-auto max-w-5xl" id="hoja-reporte">
+            
+            <div class="header-print flex justify-between items-end pb-4 mb-6">
+                <div>
+                    <h1 class="text-3xl font-black tracking-tight text-slate-900"><i class="fa-solid fa-chart-line text-indigo-600 mr-2"></i> Reporte Operativo LAPI</h1>
+                    <p id="label-periodo" class="text-sm font-black text-slate-400 uppercase tracking-widest mt-1">--/--/---- al --/--/----</p>
+                </div>
+                <div class="text-right hidden print:block">
+                    <p class="text-[10px] font-bold text-slate-400">Generado auto. por LAPI Admin</p>
+                </div>
+            </div>
+
+            <div id="canvas-vacio" class="text-center py-20 text-slate-400 italic">
+                <i class="fa-solid fa-hand-pointer text-4xl mb-3 text-slate-200 block"></i>
+                Haz clic en "Cargar Datos" para iniciar.
+            </div>
+
+            <div id="contenedor-modulos" class="flex flex-col gap-6 hidden">
+                <div id="mod-kpis" class="grid grid-cols-2 md:grid-cols-4 gap-4 print-grid">
+                    <div class="glass bg-slate-50/50 p-4 rounded-2xl border-l-4 border-indigo-600 text-center">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Estudios Totales</p>
+                        <p id="kpi-tot" class="text-3xl font-black text-slate-800 mt-1">0</p>
+                    </div>
+                    <div class="glass bg-slate-50/50 p-4 rounded-2xl border-l-4 border-sky-500 text-center">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Volumen Sucursal</p>
+                        <p id="kpi-suc" class="text-3xl font-black text-sky-600 mt-1">0</p>
+                    </div>
+                    <div class="glass bg-slate-50/50 p-4 rounded-2xl border-l-4 border-orange-500 text-center">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Volumen Foráneos</p>
+                        <p id="kpi-for" class="text-3xl font-black text-orange-600 mt-1">0</p>
+                    </div>
+                    <div class="glass bg-slate-50/50 p-4 rounded-2xl border-l-4 border-emerald-500 text-center">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Empresas Atend.</p>
+                        <p id="kpi-emp" class="text-3xl font-black text-emerald-600 mt-1">0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 print-grid">
+                    <div id="mod-orig" class="glass p-5 rounded-2xl print-col-span-1 shadow-sm">
+                        <h3 class="text-[10px] font-black text-slate-500 uppercase mb-3 tracking-widest text-center">Distribución de Origen</h3>
+                        <div class="relative w-full h-48"><canvas id="chart-origen"></canvas></div>
+                    </div>
+                    <div id="mod-est-glob" class="glass p-5 rounded-2xl md:col-span-2 print-col-span-2 shadow-sm">
+                        <h3 class="text-[10px] font-black text-slate-500 uppercase mb-3 tracking-widest">Volumen por Tipo (Global)</h3>
+                        <div class="relative w-full h-48"><canvas id="chart-estudios-global"></canvas></div>
+                    </div>
+                </div>
+
+                <div id="mod-tab-glob" class="glass rounded-2xl overflow-hidden shadow-sm">
+                    <div class="bg-indigo-900 p-3"><h3 class="text-[10px] font-black text-white uppercase tracking-widest">Desglose Cuantitativo Maestro</h3></div>
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 border-b border-slate-200">
+                            <tr><th class="p-3">Tipo de Estudio</th><th class="p-3 text-center text-sky-600">Sucursales</th><th class="p-3 text-center text-orange-600">Foráneos</th><th class="p-3 text-center text-indigo-700 font-black">Total</th></tr>
+                        </thead>
+                        <tbody id="tbody-desglose" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs"></tbody>
+                    </table>
+                </div>
+
+                <div id="sep-foraneos" class="header-print flex items-center gap-3 pb-2 mt-4 page-break">
+                    <i class="fa-solid fa-truck-medical text-orange-500 text-xl"></i>
+                    <h2 class="text-xl font-black tracking-tight text-slate-800 uppercase">Métricas Foráneos</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 print-grid">
+                    <div id="mod-tend-for" class="glass p-5 rounded-2xl shadow-sm print-col-span-2">
+                        <h3 class="text-[10px] font-black text-slate-500 uppercase mb-3 tracking-widest">Tendencia Diaria (Foráneos)</h3>
+                        <div class="relative w-full h-48"><canvas id="chart-tend-for"></canvas></div>
+                    </div>
+                    <div id="mod-emp" class="glass p-5 rounded-2xl shadow-sm">
+                        <h3 class="text-[10px] font-black text-slate-500 uppercase mb-3 tracking-widest">Top Empresas Atendidas</h3>
+                        <div class="relative w-full h-56"><canvas id="chart-emp"></canvas></div>
+                    </div>
+                    <div id="mod-med-for" class="glass p-5 rounded-2xl shadow-sm">
+                        <h3 class="text-[10px] font-black text-slate-500 uppercase mb-3 tracking-widest">Top Médicos en Campo</h3>
+                        <div class="relative w-full h-56"><canvas id="chart-med-for"></canvas></div>
+                    </div>
+                </div>
+
+                <div id="mod-tab-for" class="glass rounded-2xl overflow-hidden shadow-sm">
+                    <div class="bg-orange-500 p-3"><h3 class="text-[10px] font-black text-white uppercase tracking-widest">Productividad Médicos Foráneos</h3></div>
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 border-b border-slate-200">
+                            <tr><th class="p-3">Médico</th><th class="p-3 text-center">Total Estudios</th><th class="p-3 text-center">Horas Registradas</th></tr>
+                        </thead>
+                        <tbody id="tbody-med-for" class="divide-y divide-slate-100 font-bold text-slate-700 text-xs"></tbody>
+                    </table>
+                </div>
+
+                <div id="sep-sucursales" class="header-print flex items-center gap-3 pb-2 mt-4 page-break">
+                    <i class="fa-solid fa-hospital text-sky-500 text-xl"></i>
+                    <h2 class="text-xl font-black tracking-tight text-slate-800 uppercase">Métricas Sucursales</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 print-grid">
+                    <div id="mod-tend-suc" class="glass p-5 rounded-2xl shadow-sm print-col-span-2 md:col-span-2">
+                        <h3 class="text-[10px] font-black text-slate-500 uppercase mb-3 tracking-widest">Tendencia Diaria (Sucursales)</h3>
+                        <div class="relative w-full h-48"><canvas id="chart-tend-suc"></canvas></div>
+                    </div>
+                    <div id="mod-top-suc" class="glass p-5 rounded-2xl shadow-sm">
+                        <h3 class="text-[10px] font-black text-slate-500 uppercase mb-3 tracking-widest">Volumen por Sucursal</h3>
+                        <div class="relative w-full h-56"><canvas id="chart-top-suc"></canvas></div>
+                    </div>
+                    <div id="mod-dias-suc" class="glass p-5 rounded-2xl shadow-sm">
+                        <h3 class="text-[10px] font-black text-slate-500 uppercase mb-3 tracking-widest">Estudios por Día Semana</h3>
+                        <div class="relative w-full h-56"><canvas id="chart-dias-suc"></canvas></div>
+                    </div>
+                </div>
+
+                <div id="mod-tab-suc" class="glass rounded-2xl overflow-hidden shadow-sm">
+                    <div class="bg-sky-600 p-3"><h3 class="text-[10px] font-black text-white uppercase tracking-widest">Productividad Médicos Fijos</h3></div>
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 border-b border-slate-200">
+                            <tr><th class="p-3">Médico en Plantilla</th><th class="p-3 text-center">Total Estudios Realizados</th></tr>
+                        </thead>
+                        <tbody id="tbody-med-suc" class="divide-y divide-slate-100 font-bold text-slate-700 text-xs"></tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ESTADO GLOBAL DE DATOS (Para Excel)
+        let datosCrudosExportar = { foraneos: [], sucursales: [] };
+        let graficos = {};
+
+        // CONFIGURACIÓN DE MÓDULOS (Checklist)
+        const CATALOGO_MODULOS = [
+            { id: "mod-kpis", label: "KPIs Globales Resumen", checked: true },
+            { id: "mod-orig", label: "Gráfica: Origen (Pastel)", checked: true },
+            { id: "mod-est-glob", label: "Gráfica: Top Estudios (Barras)", checked: true },
+            { id: "mod-tab-glob", label: "Tabla: Desglose Maestro", checked: true },
+            { id: "sep-foraneos", label: "--- SEPARADOR FORÁNEOS ---", checked: true, isSep: true },
+            { id: "mod-tend-for", label: "Gráfica: Tendencia Foráneos", checked: true },
+            { id: "mod-emp", label: "Gráfica: Top Empresas", checked: true },
+            { id: "mod-med-for", label: "Gráfica: Top Médicos Foráneos", checked: true },
+            { id: "mod-tab-for", label: "Tabla: Médicos Foráneos", checked: true },
+            { id: "sep-sucursales", label: "--- SEPARADOR SUCURSALES ---", checked: true, isSep: true },
+            { id: "mod-tend-suc", label: "Gráfica: Tendencia Sucursales", checked: true },
+            { id: "mod-top-suc", label: "Gráfica: Top Sucursales", checked: true },
+            { id: "mod-dias-suc", label: "Gráfica: Días de Semana", checked: true },
+            { id: "mod-tab-suc", label: "Tabla: Médicos Sucursales", checked: true }
+        ];
+
+        // INYECTAR CHECKLIST
+        const clContainer = document.getElementById('checklist-modulos');
+        CATALOGO_MODULOS.forEach(mod => {
+            if(mod.isSep) {
+                clContainer.innerHTML += `<div class="text-[9px] font-bold text-slate-300 mt-2 uppercase tracking-widest">${mod.label}</div>`;
+            } else {
+                clContainer.innerHTML += `
+                    <div class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 transition border border-transparent hover:border-slate-200">
+                        <span class="text-xs font-bold text-slate-600">${mod.label}</span>
+                        <div class="relative inline-block w-8 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" id="chk-${mod.id}" ${mod.checked ? 'checked' : ''} onchange="actualizarVistaModulos()" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300 transition-all duration-200 z-10"/>
+                            <label for="chk-${mod.id}" class="toggle-label block overflow-hidden h-4 rounded-full bg-slate-300 cursor-pointer transition-colors duration-200"></label>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        window.toggleAllModules = function() {
+            const boxes = document.querySelectorAll('.toggle-checkbox');
+            // If all are checked, uncheck all. Else check all.
+            let allChecked = Array.from(boxes).every(b => b.checked);
+            boxes.forEach(b => b.checked = !allChecked);
+            actualizarVistaModulos();
+        };
+
+        window.actualizarVistaModulos = function() {
+            CATALOGO_MODULOS.forEach(mod => {
+                if(!mod.isSep) {
+                    const isChecked = document.getElementById(`chk-${mod.id}`).checked;
+                    const el = document.getElementById(mod.id);
+                    if(el) {
+                        if(isChecked) el.style.display = ''; 
+                        else el.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Lógica de separadores (Ocultarlos si todo lo de abajo está oculto - simplificado)
+            const showFor = document.getElementById('chk-mod-tend-for').checked || document.getElementById('chk-mod-emp').checked || document.getElementById('chk-mod-med-for').checked || document.getElementById('chk-mod-tab-for').checked;
+            document.getElementById('sep-foraneos').style.display = showFor ? '' : 'none';
+
+            const showSuc = document.getElementById('chk-mod-tend-suc').checked || document.getElementById('chk-mod-top-suc').checked || document.getElementById('chk-mod-dias-suc').checked || document.getElementById('chk-mod-tab-suc').checked;
+            document.getElementById('sep-sucursales').style.display = showSuc ? '' : 'none';
+        };
+
+        // ==========================================
+        // MOTOR EXTRACTOR DE DATOS
+        // ==========================================
+        function normalizarDato(texto) {
+            if (!texto) return "Desconocido";
+            return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        }
+
+        function unificarEstudio(est) {
+            if(!est) return "Desconocido";
+            let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clínica";
+            if (upper.includes("ESPIROMETRIA")) return "Espirometría";
+            if (upper.includes("AUDIOMETRIA")) return "Audiometría";
+            if (upper.includes("ELECTROCARDIOGRAMA")) return "Electrocardiograma";
+            if (upper.includes("VISUAL")) return "Examen Capacidad Visual";
+            if (upper.includes("CONSULTA")) return "Consulta Médica";
+            return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        }
+
+        function obtenerDiaSemana(fechaStr) {
+            const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const d = new Date(fechaStr + "T12:00:00");
+            return dias[d.getDay()];
+        }
+
+        window.generarReporteDinamico = async function() {
+            const btn = document.getElementById('btn-generar');
+            const fIni = document.getElementById('r-fecha-inicio').value;
+            const fFin = document.getElementById('r-fecha-fin').value;
+
+            if(!fIni || !fFin) { alert("Fechas inválidas."); return; }
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analizando BD...'; btn.disabled = true;
+            document.getElementById('label-periodo').innerText = `${fIni} AL ${fFin}`;
+            document.getElementById('canvas-vacio').classList.add('hidden');
+            document.getElementById('contenedor-modulos').classList.remove('hidden');
+
+            // Variables Acumuladoras
+            let t_Global = 0, t_Suc = 0, t_For = 0;
+            let c_Estudios = {}; 
+            
+            let f_Empresas = new Set(); let f_cEmpresas = {}; let f_Tendencia = {}; let f_Medicos = {};
+            let s_Tendencia = {}; let s_cSucursales = {}; let s_Medicos = {};
+            let s_cDias = { 'Lunes':0, 'Martes':0, 'Miércoles':0, 'Jueves':0, 'Viernes':0, 'Sábado':0, 'Domingo':0 };
+
+            datosCrudosExportar = { foraneos: [], sucursales: [] };
+
+            try {
+                // 1. EXTRAYENDO FORÁNEOS Y LEGACY SUCURSAL
+                const q1 = window.query(window.collection(window.db, "registros"), window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                const qs1 = await window.getDocs(q1);
+                
+                qs1.forEach(doc => {
+                    const data = doc.data();
+                    const diaSemana = obtenerDiaSemana(data.fecha);
+
+                    if(data.tipo === "sucursal") {
+                        // SUCURSAL LEGACY
+                        t_Global++; t_Suc++;
+                        let est = unificarEstudio(data.estudio); 
+                        let suc = normalizarDato(data.sucursal);
+                        let med = normalizarDato(data.medico); 
+                        
+                        if(!c_Estudios[est]) c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
+                        c_Estudios[est].suc++; c_Estudios[est].tot++;
+                        
+                        s_Tendencia[data.fecha] = (s_Tendencia[data.fecha] || 0) + 1;
+                        s_cSucursales[suc] = (s_cSucursales[suc] || 0) + 1;
+                        s_cDias[diaSemana] += 1;
+                        s_Medicos[med] = (s_Medicos[med] || 0) + 1;
+
+                        datosCrudosExportar.sucursales.push({ FECHA: data.fecha, SUCURSAL: suc, MEDICO: med, ESTUDIO: data.estudio, SISTEMA: "Legacy" });
+
+                    } else if(data.detalles) {
+                        // FORÁNEO
+                        let emp = normalizarDato(data.empresa);
+                        let suc = normalizarDato(data.sucursal || "FORÁNEO");
+                        f_Empresas.add(emp);
+                        let horas = parseFloat(data.horasLaboradas) || 0;
+                        let medicosUnicos = new Set();
+
+                        data.detalles.forEach(det => {
+                            let cant = parseInt(det.cant) || 1;
+                            let est = unificarEstudio(det.estudio); 
+                            let med = normalizarDato(det.medico || data.medico);
+                            medicosUnicos.add(med);
+
+                            t_Global += cant; t_For += cant;
+                            if(!c_Estudios[est]) c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
+                            c_Estudios[est].for += cant; c_Estudios[est].tot += cant;
+
+                            f_cEmpresas[emp] = (f_cEmpresas[emp] || 0) + cant;
+                            f_Tendencia[data.fecha] = (f_Tendencia[data.fecha] || 0) + cant;
+                            
+                            if(!f_Medicos[med]) f_Medicos[med] = { estudios: 0, horas: 0 };
+                            f_Medicos[med].estudios += cant;
+
+                            datosCrudosExportar.foraneos.push({ FECHA: data.fecha, EMPRESA: emp, SUCURSAL_BASE: suc, MEDICO: med, ESTUDIO: det.estudio, CANTIDAD: cant });
+                        });
+
+                        medicosUnicos.forEach(m => { if(f_Medicos[m]) f_Medicos[m].horas += horas; });
+                    }
+                });
+
+                // 2. EXTRAYENDO SUCURSALES NATIVAS PWA
+                const q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                const qs2 = await window.getDocs(q2);
+                
+                qs2.forEach(doc => {
+                    const data = doc.data();
+                    let suc = normalizarDato(data.sucursal);
+                    let med = normalizarDato(data.medico);
+                    const diaSemana = obtenerDiaSemana(data.fecha);
+
+                    if(data.estudios) {
+                        Object.keys(data.estudios).forEach(rawEst => {
+                            let cant = parseInt(data.estudios[rawEst]) || 0;
+                            if(cant > 0) {
+                                let est = unificarEstudio(rawEst);
+                                t_Global += cant; t_Suc += cant;
+                                
+                                if(!c_Estudios[est]) c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
+                                c_Estudios[est].suc += cant; c_Estudios[est].tot += cant;
+
+                                s_Tendencia[data.fecha] = (s_Tendencia[data.fecha] || 0) + cant;
+                                s_cSucursales[suc] = (s_cSucursales[suc] || 0) + cant;
+                                s_cDias[diaSemana] += cant;
+                                s_Medicos[med] = (s_Medicos[med] || 0) + cant;
+
+                                datosCrudosExportar.sucursales.push({ FECHA: data.fecha, SUCURSAL: suc, MEDICO: med, ESTUDIO: rawEst, CANTIDAD: cant, SISTEMA: "PWA" });
+                            }
+                        });
+                    }
+                });
+
+                // ==========================================
+                // DIBUJADO DE DOM Y GRÁFICAS
+                // ==========================================
+                
+                document.getElementById('kpi-tot').innerText = t_Global.toLocaleString();
+                document.getElementById('kpi-suc').innerText = t_Suc.toLocaleString();
+                document.getElementById('kpi-for').innerText = t_For.toLocaleString();
+                document.getElementById('kpi-emp').innerText = f_Empresas.size;
+
+                dibujarGrafico('chart-origen', 'doughnut', ['Sucursal', 'Foráneos'], [t_Suc, t_For], ['#0ea5e9', '#f97316']);
+
+                let aEstGlobal = Object.keys(c_Estudios).map(k => ({ n: k, v: c_Estudios[k].tot })).sort((a,b) => b.v - a.v);
+                dibujarGrafico('chart-estudios-global', 'bar', aEstGlobal.map(e=>e.n), aEstGlobal.map(e=>e.v), ['#6366f1'], 'x');
+
+                let tbodyDesglose = document.getElementById('tbody-desglose'); tbodyDesglose.innerHTML = '';
+                aEstGlobal.forEach(e => {
+                    let d = c_Estudios[e.n];
+                    tbodyDesglose.innerHTML += `<tr class="hover:bg-slate-100"><td class="p-3 font-bold uppercase">${e.n}</td><td class="p-3 text-center text-sky-600 font-bold">${d.suc}</td><td class="p-3 text-center text-orange-600 font-bold">${d.for}</td><td class="p-3 text-center text-indigo-700 font-black">${d.tot}</td></tr>`;
+                });
+
+                // --- FORÁNEOS ---
+                let fechasForSort = Object.keys(f_Tendencia).sort();
+                dibujarGrafico('chart-tend-for', 'line', fechasForSort, fechasForSort.map(f => f_Tendencia[f]), ['#f97316']);
+
+                let aEmpresas = Object.keys(f_cEmpresas).map(k => ({ n: k, v: f_cEmpresas[k] })).sort((a,b) => b.v - a.v).slice(0,10);
+                dibujarGrafico('chart-emp', 'bar', aEmpresas.map(e=>e.n), aEmpresas.map(e=>e.v), ['#f97316'], 'x');
+
+                let aMedFor = Object.keys(f_Medicos).map(k => ({ n: k, est: f_Medicos[k].estudios, hrs: f_Medicos[k].horas })).sort((a,b) => b.est - a.est);
+                dibujarGrafico('chart-med-for', 'bar', aMedFor.map(m=>m.n), aMedFor.map(m=>m.est), ['#3b82f6'], 'x');
+                
+                let tbodyMedFor = document.getElementById('tbody-med-for'); tbodyMedFor.innerHTML = '';
+                aMedFor.forEach(m => { tbodyMedFor.innerHTML += `<tr class="hover:bg-slate-100"><td class="p-3 uppercase text-orange-700">${m.n}</td><td class="p-3 text-center font-black">${m.est}</td><td class="p-3 text-center text-slate-500">${m.hrs.toFixed(1)} hrs</td></tr>`; });
+
+                // --- SUCURSALES ---
+                let fechasSucSort = Object.keys(s_Tendencia).sort();
+                dibujarGrafico('chart-tend-suc', 'line', fechasSucSort, fechasSucSort.map(f => s_Tendencia[f]), ['#0ea5e9']);
+
+                let aSucursales = Object.keys(s_cSucursales).map(k => ({ n: k, v: s_cSucursales[k] })).sort((a,b) => b.v - a.v).slice(0,10);
+                dibujarGrafico('chart-top-suc', 'bar', aSucursales.map(s=>s.n), aSucursales.map(s=>s.v), ['#0ea5e9'], 'x');
+
+                const ordenDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+                dibujarGrafico('chart-dias-suc', 'bar', ordenDias, ordenDias.map(d => s_cDias[d]), ['#f59e0b'], 'x');
+
+                let aMedSuc = Object.keys(s_Medicos).map(k => ({ n: k, v: s_Medicos[k] })).sort((a,b) => b.v - a.v);
+                let tbodyMedSuc = document.getElementById('tbody-med-suc'); tbodyMedSuc.innerHTML = '';
+                aMedSuc.forEach(m => { tbodyMedSuc.innerHTML += `<tr class="hover:bg-slate-100"><td class="p-3 uppercase text-sky-700">${m.n}</td><td class="p-3 text-center font-black">${m.v}</td></tr>`; });
+
+                // Refrescar visibilidad base toggles
+                actualizarVistaModulos();
+
+            } catch (e) {
+                console.error("Error generando reporte:", e);
+                alert("Error extrayendo los datos de Firebase.");
+            }
+
+            btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Cargar Datos'; btn.disabled = false;
+        };
+
+        // Motor de Gráficas Reutilizable
+        function dibujarGrafico(canvasId, tipo, labels, data, colores, indexAxis = 'x') {
+            if(graficos[canvasId]) graficos[canvasId].destroy();
+            let colorFondo = tipo === 'line' ? colores[0] + '20' : colores[0];
+            
+            let conf = {
+                type: tipo,
+                data: { labels: labels, datasets: [{ data: data, backgroundColor: colorFondo, borderColor: colores[0], borderWidth: 2, borderRadius: tipo==='bar'?4:0, fill: tipo === 'line', tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: tipo === 'doughnut', position: 'bottom' } } }
+            };
+
+            if (tipo === 'doughnut') {
+                conf.data.datasets[0].backgroundColor = colores; conf.data.datasets[0].borderWidth = 0; conf.options.cutout = '70%';
+            } else if (tipo === 'bar') {
+                conf.options.indexAxis = indexAxis; 
+                conf.options.scales = {
+                    y: { beginAtZero: true, grid: { display: indexAxis === 'x', color: '#f1f5f9' }, ticks: { font: { size: 9, weight: 'bold' } } },
+                    x: { beginAtZero: true, grid: { display: indexAxis === 'y', color: '#f1f5f9' }, ticks: { font: { size: 9, weight: 'bold' } } }
+                };
+            } else if (tipo === 'line') {
+                conf.options.scales = { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false }, ticks: { font: { size: 9 }, maxTicksLimit: 12 } } };
+            }
+
+            graficos[canvasId] = new Chart(document.getElementById(canvasId), conf);
+        }
+
+        window.exportarExcelData = function() {
+            if(datosCrudosExportar.foraneos.length === 0 && datosCrudosExportar.sucursales.length === 0) {
+                alert("No hay datos cargados para exportar."); return;
+            }
+            const wb = XLSX.utils.book_new(); 
+            
+            if(datosCrudosExportar.foraneos.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosCrudosExportar.foraneos), "Foraneos"); 
+            if(datosCrudosExportar.sucursales.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosCrudosExportar.sucursales), "Sucursales"); 
+            
+            XLSX.writeFile(wb, `Reporte_Inteligente_LAPI_${new Date().toISOString().split('T')[0]}.xlsx`);
+        };
+
+    </script>
+</body>
+</html>
