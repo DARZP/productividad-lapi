@@ -1024,4 +1024,195 @@
                         const icon = d.estado === 'Abierto' ? '<i class="fa-solid fa-circle text-red-500 text-[10px]"></i>' : '<i class="fa-solid fa-circle text-emerald-500 text-[10px]"></i>';
                         html += `
                             <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col gap-1 shadow-sm">
-                                <div class="flex justify-between items-center"><span class="text-[11px] text-slate-500 font-bold">${d
+                                <div class="flex justify-between items-center"><span class="text-[11px] text-slate-500 font-bold">${d.fechaOperativa} | ${d.origen}</span> ${icon}</div>
+                                <p class="text-xs font-black text-red-600 uppercase">${d.clasificacion}</p>
+                                <p class="text-[11px] font-bold text-slate-700">${d.estudio}</p>
+                            </div>
+                        `;
+                    });
+                }
+                
+                document.getElementById('perf-total-tnc').innerText = total;
+                document.getElementById('perf-historial').innerHTML = html;
+                dibujarGraficaPerfil(fallas);
+            } catch (e) { mostrarToast("Error buscando perfil", "error"); console.log(e); }
+        };
+
+        function dibujarGraficaPerfil(dataObj) {
+            if(chartMedico) chartMedico.destroy();
+            const labels = Object.keys(dataObj); const data = Object.values(dataObj);
+            if(labels.length === 0) {
+                document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<p class="text-center text-slate-400 text-xs mt-16 font-medium">Sin datos para graficar</p><canvas id="chart-tnc-medico" class="hidden"></canvas>';
+                return;
+            } else { document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<canvas id="chart-tnc-medico"></canvas>'; }
+
+            chartMedico = new Chart(document.getElementById('chart-tnc-medico').getContext('2d'), {
+                type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#ef4444', '#f59e0b', '#8b5cf6', '#3b82f6', '#10b981'], borderWidth: 0, hoverOffset: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
+            });
+        }
+
+        // ==========================================
+        // ACCIONES MASIVAS Y CORRECCIÓN INYECCIÓN
+        // ==========================================
+        window.prepararCorreccion = function(hash, cantCorrecta) {
+            const [fecha, suc, med, est] = hash.split('|');
+            document.getElementById('c-hash').value = hash; document.getElementById('c-cant').value = cantCorrecta;
+            document.getElementById('c-info').innerHTML = `El sistema ajustará el perfil de <b>${med}</b> para que tenga exactamente <b>${cantCorrecta}</b> estudios de <b>${est}</b>.`;
+            abrirModal('correccion');
+        };
+
+        window.ejecutarCorreccion = async function() {
+            const btn = document.getElementById('btn-ejecutar-corr');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
+
+            const hash = document.getElementById('c-hash').value; const cantCorrecta = parseInt(document.getElementById('c-cant').value);
+            const [fecha, sucursal, medico, estudio] = hash.split('|');
+            const docId = `SUC_${fecha}_${sucursal.replace(/\s+/g,'')}_${medico.replace(/\s+/g,'')}`;
+
+            try {
+                const docRef = window.doc(window.db, "registros_diarios_sucursales", docId);
+                const docSnap = await window.getDoc(docRef);
+
+                if(docSnap.exists()) {
+                    let datos = docSnap.data(); if(!datos.estudios) datos.estudios = {};
+                    datos.estudios[estudio] = cantCorrecta; datos.ultimaActualizacion = new Date();
+                    await window.setDoc(docRef, datos);
+                } else {
+                    await window.setDoc(docRef, { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: cantCorrecta }, observaciones: "Generado auto por Auditoría", ultimaActualizacion: new Date() });
+                }
+                mostrarToast("Base de datos sincronizada", "exito");
+                cerrarModal('correccion');
+                await initAuditoria(); 
+            } catch (e) { mostrarToast("Fallo (Verifica Reglas de Firebase)", "error"); }
+            btn.innerHTML = 'Sincronizar'; btn.disabled = false;
+        };
+
+        window.inyectarFaltantesMasivo = async function() {
+            if(!confirm(`¿Estás seguro de inyectar de un golpe los ${window.discrepanciasInyectar.length} registros que faltan en la base de datos?`)) return;
+            
+            const btn = document.getElementById('btn-bulk-inyectar');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Inyectando...';
+            btn.disabled = true;
+
+            try {
+                for(let item of window.discrepanciasInyectar) {
+                    const hash = item.hash;
+                    const cantCorrecta = item.cant;
+                    const [fecha, sucursal, medico, estudio] = hash.split('|');
+                    const docId = `SUC_${fecha}_${sucursal.replace(/\s+/g,'')}_${medico.replace(/\s+/g,'')}`;
+                    
+                    const docRef = window.doc(window.db, "registros_diarios_sucursales", docId);
+                    const docSnap = await window.getDoc(docRef);
+                    if(docSnap.exists()) {
+                        let datos = docSnap.data(); if(!datos.estudios) datos.estudios = {};
+                        datos.estudios[estudio] = cantCorrecta; datos.ultimaActualizacion = new Date();
+                        await window.setDoc(docRef, datos);
+                    } else {
+                        await window.setDoc(docRef, { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: cantCorrecta }, observaciones: "Generado por Auditoría Masiva", ultimaActualizacion: new Date() });
+                    }
+                }
+                mostrarToast("Inyección masiva completada", "exito");
+                await initAuditoria(); 
+            } catch(e) { 
+                console.error("Error en inyección masiva:", e); 
+                mostrarToast("Ocurrió un error en la inyección masiva", "error");
+            }
+            
+            btn.innerHTML = txtOriginal;
+            btn.disabled = false;
+        };
+
+        window.eliminarSobrantesMasivo = async function() {
+            if(!confirm(`¿Estás seguro de eliminar/ajustar los ${window.discrepanciasEliminar.length} registros que sobran en la base de datos?`)) return;
+
+            const btn = document.getElementById('btn-bulk-eliminar');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Ajustando...';
+            btn.disabled = true;
+
+            try {
+                for(let item of window.discrepanciasEliminar) {
+                    const hash = item.hash;
+                    const cantCorrecta = item.cant;
+                    const [fecha, sucursal, medico, estudio] = hash.split('|');
+                    const docId = `SUC_${fecha}_${sucursal.replace(/\s+/g,'')}_${medico.replace(/\s+/g,'')}`;
+
+                    const docRef = window.doc(window.db, "registros_diarios_sucursales", docId);
+                    const docSnap = await window.getDoc(docRef);
+
+                    if(docSnap.exists()) {
+                        let datos = docSnap.data(); 
+                        if(!datos.estudios) datos.estudios = {};
+                        datos.estudios[estudio] = cantCorrecta; 
+                        datos.ultimaActualizacion = new Date();
+                        await window.setDoc(docRef, datos);
+                    } else {
+                        await window.setDoc(docRef, { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: cantCorrecta }, observaciones: "Ajustado por Auditoría Masiva", ultimaActualizacion: new Date() });
+                    }
+                }
+                mostrarToast("Ajuste masivo completado", "exito");
+                await initAuditoria();
+            } catch(e) {
+                console.error("Error en ajuste masivo:", e);
+                mostrarToast("Ocurrió un error en el ajuste masivo", "error");
+            }
+
+            btn.innerHTML = txtOriginal;
+            btn.disabled = false;
+        };
+
+        window.generarTncMasivo = async function() {
+            if(!confirm(`¿Deseas levantar automáticamente ${window.discrepanciasTNC.length} TNCs por estas diferencias?`)) return;
+            
+            const btn = document.getElementById('btn-bulk-tnc');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generando TNCs...';
+            btn.disabled = true;
+
+            try {
+                for(let item of window.discrepanciasTNC) {
+                    const hash = item.hash;
+                    const [fecha, lugar, medico, estudio] = hash.split('|');
+                    const dif = item.cE - item.cA;
+                    const clasif = dif > 0 ? "ESTUDIO FALTANTE (OMISIÓN APP)" : "ESTUDIO SOBRANTE (DUPLICADO APP)";
+                    const notas = `Detectado en Auditoría Ciega Masiva (Diferencia: ${dif > 0 ? '+' + dif : dif})`;
+
+                    await window.addDoc(window.collection(window.db, "tickets_auditoria"), {
+                        origen: "Sucursal", 
+                        fechaOperativa: fecha, sucursal: lugar, medico: medico, estudio: estudio,
+                        clasificacion: clasif, comentarios: notas, estado: 'Abierto', timestamp: new Date()
+                    });
+                }
+                mostrarToast("TNCs masivos generados con éxito", "exito");
+                cargarTNCs(); 
+            } catch(e) { 
+                console.error("Error generando TNCs masivos:", e); 
+                mostrarToast("Error generando los TNCs", "error"); 
+            }
+            
+            btn.innerHTML = txtOriginal;
+            btn.disabled = false;
+        };
+
+        // =========================================================================
+        // SERVICE WORKER Y VERSIÓN FLOTANTE
+        // =========================================================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('PWA: Actualización silenciosa lista'))
+                    .catch(err => console.log('Error PWA: ', err));
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const versionDiv = document.createElement('div');
+            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
+            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
+            document.body.appendChild(versionDiv);
+        });
+    </script>
+</body>
+</html>
