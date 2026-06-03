@@ -343,8 +343,9 @@
         const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 
         window.iniciarAppAuditoria = function() {
-            aplicarFiltroRapido('mes'); // Inicia cargando el mes actual por default
-            cargarTNCs();
+            aplicarFiltroRapido('mes'); 
+            initAuditoria();            
+            cargarTNCs();              
         };
 
         // ==========================================================
