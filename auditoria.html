@@ -58,7 +58,6 @@
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <!-- NAVEGACIÓN GLOBAL TIPO APP -->
     <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200 z-[100] md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-4 pt-2 md:pt-8 gap-1 md:gap-6 shadow-sm">
         <div class="hidden md:flex mb-6 text-emerald-600 text-3xl"><i class="fa-solid fa-staff-snake"></i></div>
         
@@ -78,10 +77,8 @@
 
     <div id="toast-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- CONTENIDO PRINCIPAL -->
     <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8 flex flex-col">
         
-        <!-- HEADER INTERNO CON SUB-NAVEGACIÓN -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-gradient-to-r from-emerald-600 to-teal-500 p-6 rounded-3xl shadow-xl text-white gap-4">
             <div>
                 <h1 class="text-2xl font-black tracking-tight flex items-center gap-3">
@@ -142,7 +139,6 @@
                     
                     <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200">
                         
-                        <!-- HEADER CON BOTONES MASIVOS -->
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest">Auditoría en Tiempo Real</h3>
                             
@@ -169,9 +165,6 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN 2 Y 3: TNC Y PERFIL                -->
-        <!-- ========================================== -->
         <div id="sec-tnc" class="hidden animate-fade-in flex-1">
             <div class="glass p-6 rounded-3xl shadow-sm flex flex-col min-h-full border border-slate-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-slate-200 pb-4 gap-4">
@@ -404,11 +397,11 @@
 
         window.verLupa = function(hash) {
             const lista = excelDataGlobal[hash] || [];
-            const [fecha, sucursal, medico, estudio] = hash.split('|');
+            const [fecha, sucursalBase, medico, estudio] = hash.split('|');
             
             document.getElementById('lupa-info').innerHTML = `
                 <span class="font-black text-slate-700">${medico}</span><br>
-                ${estudio} <span class="mx-1">|</span> ${fecha} <span class="mx-1">|</span> ${sucursal}
+                ${estudio} <span class="mx-1">|</span> ${fecha}
             `;
 
             let tbody = document.getElementById('lupa-tbody');
@@ -421,7 +414,7 @@
         };
 
         // ==========================================================
-        // 1. MSAL (ONEDRIVE) - BÚSQUEDA AVANZADA POR CARPETAS
+        // 1. MSAL (ONEDRIVE)
         // ==========================================================
         const msalConfig = {
             auth: {
@@ -599,17 +592,13 @@
             if(partialMatch) return partialMatch;
 
             // 5. Búsqueda Inteligente: Nombres Invertidos o Desordenados (Fuzzy Match)
-            // Partimos el nombre ingresado en palabras, ignorando conectores cortos ("de", "la")
             const palabrasIngresadas = medNormalizado.split(' ').filter(p => p.length > 2);
             if (palabrasIngresadas.length > 1) {
                 for (let m of medicos) {
                     const mNorm = normalizarDato(m).toUpperCase();
-                    
-                    // Checar si TODAS las palabras ingresadas existen en el nombre oficial del catálogo
                     const coincidenciaTotal = palabrasIngresadas.every(palabra => mNorm.includes(palabra));
                     if (coincidenciaTotal) return m;
 
-                    // Checar a la inversa (por si escribieron el nombre oficial al revés pero incompleto)
                     const palabrasCatalogo = mNorm.split(' ').filter(p => p.length > 2);
                     const coincidenciaInversa = palabrasCatalogo.every(palabra => medNormalizado.includes(palabra));
                     if (coincidenciaInversa) return m;
@@ -660,7 +649,8 @@
                         if(!f) continue;
                         let fStr = f.join(" ").toUpperCase();
                         
-                        if(fStr.includes("PENDIENTES") || fStr.includes("ESTUDIOS PENDIENTES")) break;
+                        let primeraCelda = String(f[0] || "").toUpperCase();
+                        if(fStr.includes("ESTUDIOS PENDIENTES") || primeraCelda.includes("PENDIENTES")) break;
                         
                         if(mapa["NOMBRE"] === undefined || !f[mapa["NOMBRE"]] || String(f[mapa["NOMBRE"]]).trim() === "") continue;
 
@@ -690,8 +680,9 @@
         // ==========================================================
         window.sincronizarAppGlobal = function() {
             appDataGlobal = {};
-            rawDataGlobal.filter(r => r.tipo === "Sucursal").forEach(reg => {
-                const hash = `${reg.fecha}|${reg.lugar}|${reg.medico}|${reg.estudio}`;
+            rawDataGlobal.forEach(reg => {
+                // Nuevo Hash Inmune a las ramas (Usa SucursalBase en lugar de la Empresa foránea)
+                const hash = `${reg.fecha}|${reg.sucursalBase}|${reg.medico}|${reg.estudio}`;
                 appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
             });
         };
@@ -740,17 +731,38 @@
                             data.detalles.forEach(det => {
                                 let cant = parseInt(det.cant) || 1;
                                 for(let k=0; k<cant; k++) {
-                                    rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: unificarEstudio(det.estudio), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)) });
+                                    rawDataGlobal.push({ 
+                                        tipo: "Sucursal", 
+                                        fecha: data.fecha, 
+                                        lugar: normalizarDato(data.sucursal), 
+                                        sucursalBase: normalizarDato(data.sucursal),
+                                        estudio: unificarEstudio(det.estudio), 
+                                        medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)) 
+                                    });
                                 }
                             });
                         } else if (data.estudio) {
-                            rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: unificarEstudio(data.estudio), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
+                            rawDataGlobal.push({ 
+                                tipo: "Sucursal", 
+                                fecha: data.fecha, 
+                                lugar: normalizarDato(data.sucursal), 
+                                sucursalBase: normalizarDato(data.sucursal),
+                                estudio: unificarEstudio(data.estudio), 
+                                medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) 
+                            });
                         }
                     } else if (data.detalles) {
                         data.detalles.forEach(det => {
                             let cant = parseInt(det.cant) || 1;
                             for(let k=0; k<cant; k++) {
-                                rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), estudio: unificarEstudio(det.estudio), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")) });
+                                rawDataGlobal.push({ 
+                                    tipo: "Foráneo", 
+                                    fecha: data.fecha, 
+                                    lugar: normalizarDato(data.empresa), 
+                                    sucursalBase: normalizarDato(data.sucursal || "FORÁNEO"),
+                                    estudio: unificarEstudio(det.estudio), 
+                                    medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")) 
+                                });
                             }
                         });
                     }
@@ -764,7 +776,14 @@
                         Object.keys(data.estudios).forEach(est => {
                             let cant = parseInt(data.estudios[est]) || 0;
                             for(let k=0; k<cant; k++){
-                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: unificarEstudio(est), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
+                                rawDataGlobal.push({ 
+                                    tipo: "Sucursal", 
+                                    fecha: data.fecha, 
+                                    lugar: normalizarDato(data.sucursal), 
+                                    sucursalBase: normalizarDato(data.sucursal),
+                                    estudio: unificarEstudio(est), 
+                                    medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) 
+                                });
                             }
                         });
                     }
@@ -802,13 +821,18 @@
             window.discrepanciasTNC = [];
 
             const hashesExcel = new Set(Object.keys(excelDataGlobal));
-            const combinacionesExcel = new Set([...hashesExcel].map(k => { const p = k.split('|'); return `${p[0]}|${p[1]}`; }));
+            // Limitamos la auditoria solo a las sucursales que vengan en el Excel subido
+            const sucursalesAuditadas = new Set([...hashesExcel].map(k => k.split('|')[1])); 
+
             const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
 
             todasLasLlaves.forEach(hash => {
-                const [fecha, sucursal, medico, estudio] = hash.split('|');
-                if(!combinacionesExcel.has(`${fecha}|${sucursal}`)) return; 
-                if(fIni && fecha < fIni) return; if(fFin && fecha > fFin) return;
+                const [fecha, sucursalBase, medico, estudio] = hash.split('|');
+                
+                // Filtro para ignorar todo el resto de la base de datos de LAPI
+                if(!sucursalesAuditadas.has(sucursalBase)) return; 
+                if(fIni && fecha < fIni) return; 
+                if(fFin && fecha > fFin) return;
 
                 const listaExcel = excelDataGlobal[hash] || [];
                 const cE = listaExcel.length; 
@@ -838,7 +862,7 @@
                 
                 let alertMedico = medico.includes('[') ? `text-red-500 font-black` : `text-slate-700 font-bold`;
 
-                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursal}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-emerald-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black"><div class="flex items-center justify-center">${cE} ${btnLupa}</div></td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
+                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursalBase}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-emerald-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black"><div class="flex items-center justify-center">${cE} ${btnLupa}</div></td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
             });
 
             tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">Sube Excel de la sucursal que deseas auditar.</td></tr>';
@@ -925,9 +949,9 @@
         };
 
         window.abrirModalTncAutomatica = function(hash, cantExcel, cantApp) {
-            const [fecha, suc, med, est] = hash.split('|');
+            const [fecha, sucBase, med, est] = hash.split('|');
             document.getElementById('tnc-hash').value = hash;
-            seleccionarRegistroTNC("Sucursal", fecha, suc, med, est);
+            seleccionarRegistroTNC("Sucursal", fecha, sucBase, med, est);
             const dif = cantExcel - cantApp;
             document.getElementById('tnc-clasificacion').value = dif > 0 ? TNC_CATALOGO.Global[0] : TNC_CATALOGO.Global[1];
             document.getElementById('tnc-notas').value = `Detectado en Auditoría Ciega (Diferencia: ${dif>0?'+'+dif:dif})`;
@@ -1224,9 +1248,6 @@
             btn.disabled = false;
         };
 
-        // =========================================================================
-        // SERVICE WORKER Y VERSIÓN FLOTANTE
-        // =========================================================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
