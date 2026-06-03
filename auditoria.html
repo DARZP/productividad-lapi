@@ -256,7 +256,6 @@
         </div>
     </div>
 
-    <!-- OTROS MODALES (TNC, Lupa, Correccion) -->
     <!-- MODAL TNC -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
@@ -341,7 +340,6 @@
         let chartMedico = null;
         let ticketsGlobal = [];
 
-        // ALMACEN DE BOTONES MASIVOS
         window.discrepanciasInyectar = [];
         window.discrepanciasEliminar = [];
         window.discrepanciasTNC = [];
@@ -356,7 +354,7 @@
         const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 
         window.iniciarAppAuditoria = function() {
-            aplicarFiltroRapido('mes');
+            aplicarFiltroRapido('mes'); 
             initAuditoria();
             cargarTNCs();
         };
@@ -449,7 +447,6 @@
             
             const [año, mesNum] = valMes.split('-');
             const mesLetra = mesesNombres[parseInt(mesNum) - 1];
-            // Construimos la ruta de búsqueda estilo: "2026 5. MAYO"
             const queryBusqueda = `"${año}" AND "${mesNum}. ${mesLetra}"`;
 
             document.getElementById('od-config').classList.add('hidden');
@@ -462,7 +459,6 @@
             statusTxt.innerText = "Iniciando sesión en Microsoft...";
 
             try {
-                // 1. Iniciar sesión y obtener Token
                 let tokenResponse;
                 try {
                     const activeAccount = msalInstance.getAllAccounts()[0];
@@ -479,16 +475,13 @@
                 statusTxt.innerText = `Buscando carpetas de ${mesLetra} ${año}...`;
                 const headers = new Headers(); headers.append("Authorization", `Bearer ${tokenResponse.accessToken}`);
                 
-                // 2. Ejecutar búsqueda en Microsoft Graph
                 const searchRes = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root/search(q='${queryBusqueda}')?$top=50&$select=id,name,parentReference,@microsoft.graph.downloadUrl`, { headers });
                 const data = await searchRes.json();
                 
-                // 3. Filtrar archivos válidos
                 let archivosAProcesar = [];
                 if(data.value && data.value.length > 0) {
                     data.value.forEach(item => {
                         if(item.name.toLowerCase().endsWith('.xlsx') || item.name.toLowerCase().endsWith('.xls') || item.name.toLowerCase().endsWith('.csv')) {
-                            // Validar que el archivo esté dentro de una ruta de "Salud Ocupacional" para evitar procesar Excels personales
                             if(item.parentReference && item.parentReference.path && item.parentReference.path.toLowerCase().includes('salud ocupacional')) {
                                 archivosAProcesar.push(item);
                             }
@@ -507,7 +500,6 @@
                 excelDataGlobal = {}; 
                 let exitos = 0;
 
-                // 4. Descargar y procesar cada Excel encontrado
                 for(let file of archivosAProcesar) {
                     const dlUrl = file["@microsoft.graph.downloadUrl"]; 
                     if(!dlUrl) continue;
@@ -518,7 +510,6 @@
                         const arrayBuffer = await fileRes.arrayBuffer();
                         await procesarArrayBufferExcel(arrayBuffer); 
                         exitos++;
-                        // Actualizar UI
                         listaArchivos.children[0].innerHTML = `<i class="fa-solid fa-check text-emerald-500 mr-1"></i> Listo: ${file.name}`;
                     } catch(e) {
                         console.error("Error al leer archivo:", file.name, e);
@@ -549,28 +540,22 @@
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
-        function agruparEstudio(est, tipoOrigen) {
-            if(!est) return "Desconocido";
-            let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clinica";
-            if (upper.includes("CONSULTA")) return "Consulta Medica";
-            if (upper.includes("ESPIROMETRIA")) return "Espirometria";
-            if (upper.includes("AUDIOMETRIA")) return "Audiometria";
-            
-            let n = upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-            return n;
-        }
-
+        // FUNCIÓN ÚNICA Y UNIVERSAL PARA NORMALIZAR ESTUDIOS EN TODO EL SISTEMA
         function unificarEstudio(est) {
             if(!est) return "Desconocido";
             let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            
             if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clinica";
             if (upper.includes("ESPIROMETRIA")) return "Espirometria";
             if (upper.includes("AUDIOMETRIA")) return "Audiometria";
-            if (upper.includes("ELECTROCARDIOGRAMA")) return "Electrocardiograma";
-            if (upper.includes("VISUAL")) return "Examen Capacidad Visual";
-            if (upper.includes("CONSULTA")) return "Consulta Medica";
+            if (upper.includes("ELECTROCARDIOGRAMA") || upper === "ECG" || upper === "EKG") return "Electrocardiograma";
             
+            // LA REGLA DE ORO PARA LO VISUAL: Si dice Visual u Optometría, se llama Agudeza Visual.
+            if (upper.includes("VISUAL") || upper.includes("OPTOMETRIA")) return "Agudeza Visual";
+            
+            if (upper.includes("CONSULTA")) return "Consulta Medica";
+
+            // Si es otro estudio, solo le damos formato presentable
             let n = upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
             return n;
         }
@@ -675,16 +660,14 @@
                         if(!f) continue;
                         let fStr = f.join(" ").toUpperCase();
                         
-                        // Cortafuegos de pendientes
                         if(fStr.includes("PENDIENTES") || fStr.includes("ESTUDIOS PENDIENTES")) break;
                         
-                        // Saltarse filas en blanco
                         if(mapa["NOMBRE"] === undefined || !f[mapa["NOMBRE"]] || String(f[mapa["NOMBRE"]]).trim() === "") continue;
 
                         Object.keys(estudiosMapeo).forEach(key => {
                             if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
                                 let estRaw = estudiosMapeo[key];
-                                let est = unificarEstudio(estRaw);
+                                let est = unificarEstudio(estRaw); // Se usa la función unificada
                                 let med = traducirMedico(f[mapa[key]], sEx);
                                 
                                 let nombrePaciente = f[mapa["NOMBRE"]] ? String(f[mapa["NOMBRE"]]).trim() : "DESCONOCIDO";
@@ -757,17 +740,17 @@
                             data.detalles.forEach(det => {
                                 let cant = parseInt(det.cant) || 1;
                                 for(let k=0; k<cant; k++) {
-                                    rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: agruparEstudio(det.estudio, "Sucursal"), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)) });
+                                    rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: unificarEstudio(det.estudio), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)) });
                                 }
                             });
                         } else if (data.estudio) {
-                            rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: agruparEstudio(data.estudio, "Sucursal"), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
+                            rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: unificarEstudio(data.estudio), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
                         }
                     } else if (data.detalles) {
                         data.detalles.forEach(det => {
                             let cant = parseInt(det.cant) || 1;
                             for(let k=0; k<cant; k++) {
-                                rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), estudio: agruparEstudio(det.estudio, "Foráneo"), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")) });
+                                rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), estudio: unificarEstudio(det.estudio), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")) });
                             }
                         });
                     }
@@ -781,7 +764,7 @@
                         Object.keys(data.estudios).forEach(est => {
                             let cant = parseInt(data.estudios[est]) || 0;
                             for(let k=0; k<cant; k++){
-                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: agruparEstudio(est, "Sucursal"), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
+                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), estudio: unificarEstudio(est), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
                             }
                         });
                     }
