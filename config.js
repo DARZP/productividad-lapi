@@ -85,6 +85,7 @@ window.LAPI_CONFIG = {
         "Toriz Segura Jessica Noemi",
         "Vazquez Euan Daniela de los Angeles",
         "Velasco Duran Araceli",
+        "Xally Flores Rosas",
         "Yasmin Cruz",
         "Yirelka Yeraldine",
         "Zarate Flores Myriam Alejandra"
@@ -485,7 +486,8 @@ window.LAPI_CONFIG = {
             "MS": "Saavedra Olvera Miriam Elizabeth",
             "VR": "Reyes Perez Victor",
             "CS": "Sanchez Sanchez Claudia Ivonne",
-            "DO": "Olvera Aguilar Diana Karen"
+            "DO": "Olvera Aguilar Diana Karen",
+            "XF": "Xally Flores Rosas"
         }
     }
 };
