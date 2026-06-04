@@ -400,7 +400,8 @@ window.LAPI_CONFIG = {
         "BALBUENA": {
             "JM": "Muñoz Perez Jazmin Nayeli",
             "MZ": "Zarate Flores Myriam Alejandra",
-            "EP": "Perez Bautista Esther"
+            "EP": "Perez Bautista Esther",
+            "MG": "Mariana Gaviño"
         },
         "CUAUTITLAN": {
             "JA": "Angeles Velazquez Jennifer Tabata",
