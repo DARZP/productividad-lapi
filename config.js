@@ -17,7 +17,7 @@ window.LAPI_CONFIG = {
         "Cabrera Hernandez Ana Beatriz",
         "Cabrera Velazquez Miguel Ramon",
         "Camacho Ortiz Barbara Alejandra",
-        "Carlos Zumbardo"
+        "Carlos Zumbardo",
         "Cervantes Erendira Montserrat",
         "Chavez Muñoz Brizeth Alondra",
         "Contreras Herrera Maribel del Carmen",
