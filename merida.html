@@ -14,7 +14,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -34,6 +34,7 @@
         window.doc = doc;
         window.setDoc = setDoc;
         window.deleteDoc = deleteDoc;
+        window.updateDoc = updateDoc;
     </script>
     <style>
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
@@ -55,9 +56,9 @@
         <div class="bg-red-50 border border-red-200 p-6 rounded-2xl mb-6 relative overflow-hidden">
             <div class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-lg">PASO 1</div>
             <h3 class="font-black text-red-800 mb-2"><i class="fa-solid fa-trash-can mr-2"></i>Purgar Base de Datos</h3>
-            <p class="text-xs text-red-600 font-medium mb-4">Eliminará TODOS los registros de <b class="font-black">MÉRIDA</b> (Sucursal y Foráneos) creados entre el <b class="font-black">01/05/2026 y el 31/05/2026</b>.</p>
+            <p class="text-xs text-red-600 font-medium mb-4">Eliminará TODOS los registros de Mérida de <b>Mayo</b>. Además, eliminará los registros basura de "FOLIO" y "OTRO" de <b>Enero a Abril</b>.</p>
             <button id="btn-purgar" onclick="ejecutarPurga()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
-                <i class="fa-solid fa-fire"></i> Iniciar Purga de Mayo 2026
+                <i class="fa-solid fa-fire"></i> Iniciar Súper Purga 2026
             </button>
             <p id="log-purga" class="text-xs text-red-700 mt-3 font-mono font-bold text-center"></p>
         </div>
@@ -163,51 +164,117 @@
         }
 
         // =====================================
-        // PASO 1: LA PURGA
+        // PASO 1: LA SÚPER PURGA
         // =====================================
         window.ejecutarPurga = async function() {
-            if(!confirm("⚠️ ESTO ES IRREVERSIBLE. ¿Estás absolutamente seguro de querer borrar todos los registros de Mérida de Mayo 2026?")) return;
+            if(!confirm("⚠️ ESTO ES IRREVERSIBLE. Se borrarán todos los datos de Mérida de Mayo, y toda la basura (FOLIO/OTRO) de Enero a Abril. ¿Continuar?")) return;
             
             const btn = document.getElementById('btn-purgar');
             const log = document.getElementById('log-purga');
             btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Purgando Base de Datos...';
             
             let borrados = 0;
-            const fIni = "2026-05-01";
-            const fFin = "2026-05-31";
+            let editados = 0;
+            const fIni = "2026-01-01"; // Desde principio de año
+            const fFin = "2026-05-31"; // Hasta fin de mayo
 
             try {
-                // 1. Borrar de registros_diarios_sucursales
+                // 1. Limpiar registros_diarios_sucursales (Nueva BD)
                 const q1 = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
                 const qs1 = await window.getDocs(q1);
                 
                 for(let d of qs1.docs) {
-                    let suc = normalizarDato(d.data().sucursal).toUpperCase();
+                    let data = d.data();
+                    let suc = normalizarDato(data.sucursal).toUpperCase();
+                    let med = normalizarDato(data.medico).toUpperCase();
+                    
                     if(suc.includes("MERIDA")) {
-                        await window.deleteDoc(d.ref);
-                        borrados++;
+                        if (data.fecha >= "2026-05-01") {
+                            // Es de mayo: borrar parejo para reinyectar el Excel
+                            await window.deleteDoc(d.ref);
+                            borrados++;
+                        } else {
+                            // Es de Ene-Abr: borrar solo si es basura
+                            if (med.includes("FOLIO")) {
+                                await window.deleteDoc(d.ref); // Borrar documento completo
+                                borrados++;
+                            } else if (data.estudios) {
+                                let modificado = false;
+                                // Buscar llaves que sean "Otro"
+                                Object.keys(data.estudios).forEach(estKey => {
+                                    if (estKey.toUpperCase() === "OTRO") {
+                                        delete data.estudios[estKey];
+                                        modificado = true;
+                                    }
+                                });
+                                
+                                if (modificado) {
+                                    if (Object.keys(data.estudios).length === 0) {
+                                        await window.deleteDoc(d.ref); // Si se quedó vacío, borrar documento
+                                        borrados++;
+                                    } else {
+                                        await window.updateDoc(d.ref, { estudios: data.estudios }); // Solo actualizar
+                                        editados++;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
-                // 2. Borrar de registros (Legacy/Foráneos)
+                // 2. Limpiar registros (BD Vieja/Foráneos)
                 const q2 = window.query(window.collection(window.db, "registros"), window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
                 const qs2 = await window.getDocs(q2);
 
                 for(let d of qs2.docs) {
                     let data = d.data();
                     let suc = normalizarDato(data.sucursal || data.empresa || "").toUpperCase();
+                    
                     if(suc.includes("MERIDA")) {
-                        await window.deleteDoc(d.ref);
-                        borrados++;
+                        if (data.fecha >= "2026-05-01") {
+                            // Es de mayo: borrar parejo
+                            await window.deleteDoc(d.ref);
+                            borrados++;
+                        } else {
+                            // Es de Ene-Abr: borrar solo basura
+                            let medTop = normalizarDato(data.medico || "").toUpperCase();
+                            
+                            if (data.detalles && data.detalles.length > 0) {
+                                let lenAntes = data.detalles.length;
+                                // Filtrar y quedarse solo con lo que NO sea basura
+                                let filtrados = data.detalles.filter(det => {
+                                    let estD = normalizarDato(det.estudio).toUpperCase();
+                                    let medD = normalizarDato(det.medico || data.medico || "").toUpperCase();
+                                    let esBasura = (estD === "OTRO" || medD.includes("FOLIO"));
+                                    return !esBasura; 
+                                });
+                                
+                                if (filtrados.length < lenAntes) {
+                                    if (filtrados.length === 0 && !data.estudio) {
+                                        await window.deleteDoc(d.ref);
+                                        borrados++;
+                                    } else {
+                                        await window.updateDoc(d.ref, { detalles: filtrados });
+                                        editados++;
+                                    }
+                                }
+                            } else if (data.estudio) { // Registro unitario sin detalles
+                                let estTop = normalizarDato(data.estudio).toUpperCase();
+                                if (estTop === "OTRO" || medTop.includes("FOLIO")) {
+                                    await window.deleteDoc(d.ref);
+                                    borrados++;
+                                }
+                            }
+                        }
                     }
                 }
 
-                log.innerHTML = `<span class="text-emerald-600"><i class="fa-solid fa-check"></i> Purga completada: ${borrados} documentos eliminados.</span>`;
+                log.innerHTML = `<span class="text-emerald-600"><i class="fa-solid fa-check"></i> Purga completada: ${borrados} eliminados, ${editados} corregidos.</span>`;
             } catch(e) {
                 console.error(e);
                 log.innerHTML = `Error: Verifica tu consola y permisos.`;
             }
-            btn.innerHTML = '<i class="fa-solid fa-fire"></i> Iniciar Purga de Mayo 2026';
+            btn.innerHTML = '<i class="fa-solid fa-fire"></i> Iniciar Súper Purga 2026';
             btn.disabled = false;
         };
 
@@ -222,7 +289,7 @@
             const log = document.getElementById('log-inyectar');
             btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Leyendo y Analizando...';
             
-            let dataAInyectar = {}; // Formato: {"2026-05-15|MERIDA, CENTRO|MEDICO": {"Estudio1": 2, "Estudio2": 1}}
+            let dataAInyectar = {}; 
 
             try {
                 for(let i=0; i<input.files.length; i++){
@@ -232,7 +299,7 @@
                     for(let sn of wb.SheetNames){
                         let sheet = wb.Sheets[sn];
                         let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
-                        let fEx = "1900-01-01", sEx = "MERIDA, CENTRO", iEnc = -1, mapa = {}; // Forzamos "MERIDA, CENTRO" por defecto
+                        let fEx = "1900-01-01", sEx = "MERIDA, CENTRO", iEnc = -1, mapa = {}; 
 
                         for(let r=0; r<Math.min(20, filas.length); r++){
                             if(!filas[r]) continue;
@@ -298,13 +365,18 @@
                     }
                 }
 
-                // INYECCIÓN BATCH
+                // INYECCIÓN BATCH A FIREBASE
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a Firebase...';
                 let creados = 0;
 
                 for (const [hash, estudios] of Object.entries(dataAInyectar)) {
                     const [fecha, sucursal, medico] = hash.split('|');
-                    const docId = `SUC_${fecha}_${sucursal.replace(/\s+/g,'')}_${medico.replace(/\s+/g,'')}`;
+                    
+                    // LIMPIEZA DE ID (Quitamos caracteres raros como diagonales y corchetes)
+                    let safeSucursal = sucursal.replace(/[^a-zA-Z0-9]/ig, '');
+                    let safeMedico = medico.replace(/[^a-zA-Z0-9]/ig, '');
+                    
+                    const docId = `SUC_${fecha}_${safeSucursal}_${safeMedico}`;
                     
                     await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), {
                         tipo: "sucursal_agrupada",
@@ -318,7 +390,7 @@
                     creados++;
                 }
 
-                log.innerHTML = `<span class="text-sky-600"><i class="fa-solid fa-check"></i> Inyección Exitosa: ${creados} grupos creados. ¡Auditoría cuadrada!</span>`;
+                log.innerHTML = `<span class="text-sky-600"><i class="fa-solid fa-check"></i> Inyección Exitosa: ${creados} grupos creados limpios en Firebase.</span>`;
                 
             } catch(e) {
                 console.error(e);
