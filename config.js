@@ -438,7 +438,7 @@ window.LAPI_CONFIG = {
             "DL": "Lino Reynoso Deany Alondra"
         },
         "LOMAS VERDES": {
-            "MIR": "Martha Izaguirre Rojas",
+            "MIR": "Izaguirre Rojas Martha",
             "BD": "Dulce Maria Buenrostro Perez",
             "LC": "Cruz Zavala Lucero",
             "JT": "Toriz Segura Jessica Noemi"
