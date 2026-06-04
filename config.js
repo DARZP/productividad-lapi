@@ -487,7 +487,8 @@ window.LAPI_CONFIG = {
         "SATELITE": {
             "MASR": "Salinas Rojas Miguel Angel",
             "MGZH": "Maria Guadalupe Zapata Hernandez",
-            "LLGM": "Lopez Lopez Guadalupe Mireya"
+            "LLGM": "Lopez Lopez Guadalupe Mireya",
+            "MLL": "Lopez Lopez Guadalupe Mireya"
         },
         "REVOLUCION": {
             "MS": "Saavedra Olvera Miriam Elizabeth",
