@@ -47,7 +47,7 @@
         .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 80px); }
         .grupo-1 { background-color: #ffffff; }
-        .grupo-2 { background-color: #f8fafc; } /* Gris muy clarito para alternar grupos */
+        .grupo-2 { background-color: #f8fafc; } 
     </style>
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
@@ -74,9 +74,9 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-gradient-to-r from-purple-700 to-indigo-600 p-6 rounded-3xl shadow-xl text-white gap-4">
             <div>
                 <h1 class="text-3xl font-black tracking-tight flex items-center gap-3">
-                    <i class="fa-solid fa-server text-purple-300"></i> MONITOR DE ADMINISTRADOR
+                    <i class="fa-solid fa-server text-purple-300"></i> MONITOR GLOBAL
                 </h1>
-                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest text-purple-200">BASE DE DATOS GLOBAL</p>
+                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest text-purple-200">Base de Datos Operativa</p>
             </div>
             <div class="flex gap-2 bg-black/20 p-1.5 rounded-xl text-sm font-bold items-center px-4">
                 <i class="fa-solid fa-circle-nodes text-emerald-400 animate-pulse"></i> Sync Activo
@@ -105,12 +105,12 @@
         <div class="glass p-5 rounded-3xl shadow-sm mb-6 flex flex-col gap-4 border-l-4 border-purple-500">
             <div class="flex flex-col md:flex-row justify-between gap-4 w-full">
                 <div class="grid grid-cols-3 md:flex gap-2 w-full md:w-auto">
-                    <button onclick="aplicarFiltroRapido('hoy')" class="bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Hoy</button>
-                    <button onclick="aplicarFiltroRapido('ayer')" class="bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Ayer</button>
-                    <button onclick="aplicarFiltroRapido('semana')" class="bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Semana</button>
-                    <button onclick="aplicarFiltroRapido('mes')" class="bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Mes</button>
-                    <button onclick="aplicarFiltroRapido('año')" class="bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Año</button>
-                    <button onclick="aplicarFiltroRapido('todo')" class="bg-purple-100 text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Todo</button>
+                    <button id="btn-hoy" onclick="aplicarFiltroRapido('hoy')" class="btn-filtro-rapido bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Hoy</button>
+                    <button id="btn-ayer" onclick="aplicarFiltroRapido('ayer')" class="btn-filtro-rapido bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Ayer</button>
+                    <button id="btn-semana" onclick="aplicarFiltroRapido('semana')" class="btn-filtro-rapido bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Semana</button>
+                    <button id="btn-mes" onclick="aplicarFiltroRapido('mes')" class="btn-filtro-rapido bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Mes</button>
+                    <button id="btn-año" onclick="aplicarFiltroRapido('año')" class="btn-filtro-rapido bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Año</button>
+                    <button id="btn-todo" onclick="aplicarFiltroRapido('todo')" class="btn-filtro-rapido bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Todo</button>
                 </div>
                 <div class="flex gap-2 w-full md:w-auto">
                     <input type="date" id="filtro-fecha-inicio" onchange="cargarDatosAdmin()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:border-purple-400 flex-1">
@@ -190,10 +190,22 @@
         }
 
         window.iniciarAdmin = async function() {
-            aplicarFiltroRapido('semana');
+            // AHORA POR DEFECTO CARGA SOLO LO DE HOY
+            aplicarFiltroRapido('hoy');
         };
 
         window.aplicarFiltroRapido = function(tipo) {
+            // Actualización visual de los botones (Efecto prendido/apagado)
+            document.querySelectorAll('.btn-filtro-rapido').forEach(btn => {
+                btn.classList.remove('bg-purple-100', 'text-purple-700');
+                btn.classList.add('bg-slate-100', 'text-slate-600');
+            });
+            const btnActivo = document.getElementById(`btn-${tipo}`);
+            if(btnActivo) {
+                btnActivo.classList.remove('bg-slate-100', 'text-slate-600');
+                btnActivo.classList.add('bg-purple-100', 'text-purple-700');
+            }
+
             const hoy = new Date();
             let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
             if (tipo === 'hoy') iStr = fStr; 
@@ -221,12 +233,14 @@
                 let empresas = new Set();
 
                 // 1. FORÁNEOS Y LEGACY SUCURSAL
-                const q1 = window.query(window.collection(window.db, "registros"), window.orderBy("fecha", "desc"));
+                let q1 = window.collection(window.db, "registros");
+                if (fIni && fFin) {
+                    q1 = window.query(q1, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                }
                 const qs1 = await window.getDocs(q1);
                 
                 qs1.forEach(doc => {
                     const data = doc.data();
-                    if((fIni && data.fecha < fIni) || (fFin && data.fecha > fFin)) return;
 
                     if(data.tipo === "sucursal" || data.tipo === "Sucursal") {
                         t_Global++; t_Suc++;
@@ -261,12 +275,14 @@
                 });
 
                 // 2. SUCURSALES NUEVAS (PWA)
-                const q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.orderBy("fecha", "desc"));
+                let q2 = window.collection(window.db, "registros_diarios_sucursales");
+                if (fIni && fFin) {
+                    q2 = window.query(q2, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                }
                 const qs2 = await window.getDocs(q2);
                 
                 qs2.forEach(doc => {
                     const data = doc.data();
-                    if((fIni && data.fecha < fIni) || (fFin && data.fecha > fFin)) return;
                     
                     if(data.estudios) {
                         Object.entries(data.estudios).forEach(([estRaw, cantVal]) => {
