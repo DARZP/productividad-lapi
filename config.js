@@ -17,6 +17,7 @@ window.LAPI_CONFIG = {
         "Cabrera Hernandez Ana Beatriz",
         "Cabrera Velazquez Miguel Ramon",
         "Camacho Ortiz Barbara Alejandra",
+        "Carlos Zumbardo"
         "Cervantes Erendira Montserrat",
         "Chavez Muñoz Brizeth Alondra",
         "Contreras Herrera Maribel del Carmen",
@@ -46,6 +47,7 @@ window.LAPI_CONFIG = {
         "Isabel Palma",
         "Islas Veivar Patricia Guadalupe",
         "Izaguirre Rojas Martha",
+        "Jacqueline Ruiz",
         "Jannet Alejandra",
         "Jazmin Morales",
         "Jose Alejandro",
@@ -449,6 +451,9 @@ window.LAPI_CONFIG = {
             "RML": "Montoya Linares Rebeca",
             "SSR": "Rueda Pedraza Sabine Shecid",
             "MRC": "Cabrera Velazquez Miguel Ramon"
+        },
+        "MERIDA": {
+            "RML": "Jacqueline Ruiz"
         },
         "MIXCOAC": {
             "PP": "Paula Pichardo",
