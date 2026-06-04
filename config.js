@@ -58,7 +58,7 @@ window.LAPI_CONFIG = {
         "Lopez Lopez Guadalupe Mireya",
         "Lucero Cruz",
         "Luevano Sanchez Sara Maria",
-        "Macedo Licona Sandra Lilian",
+        "Sandra Lilian Maceda Licona",
         "Maria Guadalupe Zapata Hernandez",
         "Mariana Gaviño",
         "Mauricio Ruiz",
@@ -407,7 +407,8 @@ window.LAPI_CONFIG = {
             "CBG": "Bustos Gonzalez Claudia Montserrat",
             "MCG": "Cervantes Erendira Montserrat",
             "AV": "Velasco Duran Araceli",
-            "MSH": "Leilany Montserrat Sanchez"
+            "MSH": "Leilany Montserrat Sanchez",
+            "LM": "Sandra Lilian Maceda Licona"
         },
         "CONDESA": {
             "UA": "Alanis Aparicio Ulises Jasiel",
