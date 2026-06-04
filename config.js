@@ -462,7 +462,8 @@ window.LAPI_CONFIG = {
         "PLATEROS": {
             "PA": "Paulina Alba",
             "AM": "Garcia Morado Ana Lourdes",
-            "JG": "Juan Manuel"
+            "JG": "Juan Manuel",
+            "GV": "Giselle Vizuet"
         },
         "PLAZA CENTRAL": {
             "IA": "Arizcorreta Colchado Ivonne Guadalupe",
