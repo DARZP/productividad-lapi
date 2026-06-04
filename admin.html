@@ -15,7 +15,8 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        // AQUÍ ESTABA EL ERROR: Agregué 'where' a la importación
+        import { getFirestore, collection, getDocs, query, where, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -31,6 +32,7 @@
         window.getDocs = getDocs;
         window.collection = collection;
         window.query = query;
+        window.where = where; // Y AQUÍ la vinculo a window
         window.orderBy = orderBy;
         window.doc = doc;
         window.deleteDoc = deleteDoc;
@@ -190,12 +192,10 @@
         }
 
         window.iniciarAdmin = async function() {
-            // AHORA POR DEFECTO CARGA SOLO LO DE HOY
             aplicarFiltroRapido('hoy');
         };
 
         window.aplicarFiltroRapido = function(tipo) {
-            // Actualización visual de los botones (Efecto prendido/apagado)
             document.querySelectorAll('.btn-filtro-rapido').forEach(btn => {
                 btn.classList.remove('bg-purple-100', 'text-purple-700');
                 btn.classList.add('bg-slate-100', 'text-slate-600');
@@ -232,7 +232,6 @@
                 let t_Global = 0, t_Suc = 0, t_For = 0;
                 let empresas = new Set();
 
-                // 1. FORÁNEOS Y LEGACY SUCURSAL
                 let q1 = window.collection(window.db, "registros");
                 if (fIni && fFin) {
                     q1 = window.query(q1, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
@@ -256,7 +255,6 @@
                         });
                     } else if(data.detalles) {
                         empresas.add(normalizarDato(data.empresa));
-                        // Desglosamos cada estudio del Foráneo en una fila
                         data.detalles.forEach(det => {
                             let c = parseInt(det.cant) || 1;
                             t_Global += c; t_For += c;
@@ -274,7 +272,6 @@
                     }
                 });
 
-                // 2. SUCURSALES NUEVAS (PWA)
                 let q2 = window.collection(window.db, "registros_diarios_sucursales");
                 if (fIni && fFin) {
                     q2 = window.query(q2, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
@@ -309,7 +306,6 @@
                 document.getElementById('kpi-foraneo').innerText = t_For.toLocaleString();
                 document.getElementById('kpi-empresas').innerText = empresas.size;
 
-                // Ordenar: Primero fecha DESC, luego por GrupoID para que el "sombreo" quede perfecto
                 registrosGlobales.sort((a,b) => {
                     if (a.fecha !== b.fecha) return b.fecha.localeCompare(a.fecha);
                     return (b.groupId || "").localeCompare(a.groupId || "");
@@ -327,7 +323,6 @@
         window.renderizarTablaAdmin = function() {
             const tbody = document.getElementById('tabla-registros');
             
-            // Obtener Filtros
             const fGen = document.getElementById('buscador-tabla').value.toLowerCase();
             const fOri = document.getElementById('filtro-origen').value;
             const fMed = document.getElementById('filtro-medico').value.toLowerCase();
@@ -363,10 +358,9 @@
             }
 
             let lastGroup = null;
-            let bgClass = "grupo-1"; // Alternador de colores para el sombreado visual
+            let bgClass = "grupo-1"; 
 
             vista.forEach((r, index) => {
-                // Alternar color si cambia el grupo de captura (Mismo ID)
                 if(r.groupId !== lastGroup) {
                     bgClass = bgClass === "grupo-1" ? "grupo-2" : "grupo-1";
                     lastGroup = r.groupId;
@@ -380,7 +374,6 @@
                 
                 let trClass = `${bgClass} border-b border-slate-100 border-l-4 ${borderColor} transition hover:brightness-95`;
 
-                // Solo mostramos el botón de borrar 1 vez por grupo para evitar borrar lo mismo varias veces
                 let esPrimeroDelGrupo = (index === 0 || vista[index - 1].groupId !== r.groupId);
                 let btnBorrar = esPrimeroDelGrupo 
                     ? `<button onclick="eliminarRegistro('${r.groupId}', '${r.dbSource}')" class="text-red-400 hover:text-red-600 bg-white hover:bg-red-50 p-2 rounded-lg transition border border-slate-200 hover:border-red-200 shadow-sm" title="Eliminar este bloque completo"><i class="fa-solid fa-trash-can"></i></button>` 
