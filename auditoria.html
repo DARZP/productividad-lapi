@@ -323,15 +323,12 @@
     <datalist id="lista-medicos-perfil"></datalist>
 
     <script>
-        // ==========================================
-        // 0. GLOBALES, DICCIONARIOS Y CONFIG
-        // ==========================================
         let rawDataGlobal = []; 
         let excelDataGlobal = {}; 
         let appDataGlobal = {};
         let chartMedico = null;
         let ticketsGlobal = [];
-        window.medicoASucursalGlobal = {}; // Mapa global para uso de la IA limpiadora
+        window.medicoASucursalGlobal = {}; 
 
         window.discrepanciasInyectar = [];
         window.discrepanciasEliminar = [];
@@ -408,9 +405,6 @@
             abrirModal('lupa');
         };
 
-        // ==========================================================
-        // 1. MSAL (ONEDRIVE)
-        // ==========================================================
         const msalConfig = {
             auth: {
                 clientId: "eaaa1a34-63b2-4dc1-bf1e-8a16e820e9c3", 
@@ -520,9 +514,6 @@
             }
         };
 
-        // ==========================================================
-        // 2. MOTOR ESTRICTO CONTEXTUAL Y EXTRACTOR INTELIGENTE
-        // ==========================================================
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
@@ -543,7 +534,7 @@
             return n;
         }
 
-        function traducirMedico(rawMed, rawSuc) {
+        function traducirMedico(rawMed, rawSuc, obsText = "") {
             if (!rawMed) return "Desconocido";
 
             let med = String(rawMed).toUpperCase().trim();
@@ -552,6 +543,15 @@
             med = med.replace(/\[INICIAL NO REGISTRADA:\s*/g, '').replace(/\]/g, '').trim();
 
             let suc = normalizarDato(rawSuc).toUpperCase();
+
+            // 🚨 PARCHE EXCLUSIVO MÉRIDA 🚨
+            if (med === 'X' && suc.includes('MERIDA') && obsText) {
+                let cleanObs = normalizarDato(obsText).toUpperCase();
+                // Borrar a Jacqueline y conectores
+                cleanObs = cleanObs.replace(/JACQUELINE/g, '').replace(/RUIZ/g, '').replace(/XJ/g, '');
+                cleanObs = cleanObs.replace(/\b(Y|DR|DRA|CON|EL|LA)\b/g, '').replace(/,/g, '').trim();
+                if (cleanObs.length > 3) med = cleanObs;
+            }
 
             if (med === 'X' || med === '✔' || med === 'OK') return "X";
 
@@ -620,6 +620,7 @@
                                 let colTxt = String(val).toUpperCase().trim();
                                 mapa[colTxt] = idx; 
                                 if(colTxt.includes("ORDEN")) mapa["_ORDEN_DINAMICO_"] = idx;
+                                if(colTxt.includes("OBSERVA")) mapa["_OBS_DINAMICO_"] = idx;
                             }
                         }); 
                     }
@@ -636,12 +637,17 @@
                         if(fStr.includes("ESTUDIOS PENDIENTES") || primeraCelda.includes("PENDIENTES")) break;
                         
                         if(mapa["NOMBRE"] === undefined || !f[mapa["NOMBRE"]] || String(f[mapa["NOMBRE"]]).trim() === "") continue;
+                        
+                        let obsText = (mapa["_OBS_DINAMICO_"] !== undefined && f[mapa["_OBS_DINAMICO_"]]) ? String(f[mapa["_OBS_DINAMICO_"]]).trim() : "";
 
                         Object.keys(estudiosMapeo).forEach(key => {
+                            // HACK MÉRIDA: Ignorar la columna "OTRO" porque meten el folio
+                            if (key.toUpperCase().includes("OTRO") && sEx.includes("MERIDA")) return;
+
                             if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
                                 let estRaw = estudiosMapeo[key];
                                 let est = unificarEstudio(estRaw);
-                                let med = traducirMedico(f[mapa[key]], sEx);
+                                let med = traducirMedico(f[mapa[key]], sEx, obsText);
                                 
                                 let nombrePaciente = f[mapa["NOMBRE"]] ? String(f[mapa["NOMBRE"]]).trim() : "DESCONOCIDO";
                                 let idxOrden = mapa["_ORDEN_DINAMICO_"];
@@ -661,7 +667,6 @@
         window.sincronizarAppGlobal = function() {
             appDataGlobal = {};
             
-            // Reconstruimos mapa de médicos global
             for (let suc in diccIniciales) {
                 for (let ini in diccIniciales[suc]) {
                     window.medicoASucursalGlobal[normalizarDato(diccIniciales[suc][ini])] = normalizarDato(suc);
@@ -699,19 +704,6 @@
             document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-upload mr-1"></i> Procesar Archivos Locales';
         };
 
-        function verificarParametrosURL() {
-            const params = new URLSearchParams(window.location.search);
-            if(params.has('medico')) {
-                cambiarSeccion('tnc');
-                window.seleccionarRegistroTNC(params.get('origen') || 'Sucursal', params.get('fecha') || '', params.get('lugar') || '', params.get('medico') || '', params.get('estudio') || '');
-                abrirModal('tnc');
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        }
-
-        // ==========================================
-        // PARCHE DE OPTIMIZACIÓN LECTURA BD
-        // ==========================================
         window.initAuditoria = async function() {
             try {
                 rawDataGlobal = [];
@@ -772,7 +764,6 @@
                 sincronizarAppGlobal();
                 
                 if(Object.keys(excelDataGlobal).length > 0) window.reRenderAuditoria();
-                verificarParametrosURL(); 
             } catch (error) { 
                 console.error(error);
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red o Cuota'; 
@@ -884,10 +875,6 @@
             document.getElementById('btn-bulk-tnc').style.display = window.discrepanciasTNC.length > 0 ? 'inline-block' : 'none';
         };
 
-        // ==========================================
-        // ACCIONES MASIVAS Y CORRECCIÓN (NUEVA ARQUITECTURA)
-        // ==========================================
-        
         window.aplicarAjuste = async function(fecha, sucursal, medico, estudio, cantApp, cantExcel) {
             if (cantExcel === cantApp) return;
 
@@ -1155,7 +1142,6 @@
                 <span class="font-bold text-slate-500">${estudio} <span class="font-normal mx-1">|</span> ${fecha} <span class="font-normal mx-1">|</span> ${lugar} (${origen})</span>
             `;
 
-            // Catálogo TNC
             const TNC_CATALOGO = {
                 "Sucursal": { "Espirometría": ["CONSENTIMIENTO INFORMADO", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "SIGNOS VITALES Y SOMATOMETRÍA", "INTERROGATORIO Y/O ANTECEDENTES", "DISPONIBILIDAD DE MANIOBRA", "CALIDAD DE MANIOBRA", "REGISTRO EN SISTEMA WEB"], "Agudeza Visual": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "REGISTRO DE AGUDEZA VISUAL", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB"], "Electrocardiograma": ["DISPONIBILIDAD DE TRAZO", "FICHA DE IDENTIFICACIÓN", "CALIDAD DEL TRAZO"], "Historia Clínica": ["EXPLORACIÓN FÍSICA", "AUDIOGRAMA", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB", "FICHA DE IDENTIFICACIÓN"], "Genérico": ["FICHA DE IDENTIFICACIÓN", "REGISTRO EN SISTEMA WEB", "LETRA LEGIBLE", "CONTROL DOCUMENTAL"] },
                 "Foráneo": { "Historia Clínica": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA"], "Audiometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA", "CALIDAD DEL AUDIOGRAMA"], "Espirometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "SIGNOS VITALES Y SOMATOMETRÍA", "CALIDAD DE MANIOBRA"], "Genérico": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "FICHA DE IDENTIFICACIÓN", "ERROR DE CAPTURA"] },
