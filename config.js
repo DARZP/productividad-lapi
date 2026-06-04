@@ -8,7 +8,7 @@ window.LAPI_CONFIG = {
     medicos: [
         "Alanis Aparicio Ulises Jasiel",
         "Alberto Gomez",
-        "Angeles Valenzuela",
+        "Angeles Del Carmen Valenzuela Morales",
         "Angeles Velazquez Jennifer Tabata",
         "Angelica Itzel",
         "Angello",
