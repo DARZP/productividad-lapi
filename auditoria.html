@@ -59,7 +59,6 @@
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <!-- NAVEGACIÓN GLOBAL TIPO APP -->
     <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200 z-[100] md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-6 shadow-sm">
         <div class="hidden md:flex mb-6 text-emerald-600 text-3xl"><i class="fa-solid fa-staff-snake"></i></div>
         
@@ -98,7 +97,6 @@
 
         <div id="sec-cruce" class="block animate-fade-in flex-1">
             
-            <!-- KPIS -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div class="glass p-4 rounded-2xl text-center border-b-4 border-emerald-500 shadow-sm"><p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Match Ocultos (OK)</p><p id="kpi-aud-match" class="text-3xl font-black text-emerald-600 mt-1">0</p></div>
                 <div class="glass p-4 rounded-2xl text-center border-b-4 border-red-500 shadow-sm"><p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Faltan en App</p><p id="kpi-aud-rojo" class="text-3xl font-black text-red-600 mt-1">0</p></div>
@@ -112,7 +110,6 @@
 
             <div class="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-6">
                 
-                <!-- COLUMNA IZQUIERDA: CONTROLES Y BANDEJA -->
                 <div class="xl:col-span-1 space-y-6">
                     
                     <div class="glass p-5 rounded-2xl shadow-sm border-l-4 border-sky-500 relative overflow-hidden">
@@ -143,7 +140,6 @@
                         <button onclick="window.initAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 rounded-xl transition-all text-xs active:scale-95">Aplicar Vista</button>
                     </div>
 
-                    <!-- NUEVA BANDEJA LATERAL -->
                     <div class="glass p-4 rounded-2xl shadow-sm border-l-4 border-indigo-500">
                         <h3 class="font-black text-xs uppercase tracking-wider mb-3 text-slate-500"><i class="fa-solid fa-list-ul mr-1"></i> Sucursales con Tareas</h3>
                         <div id="menu-sucursales" class="space-y-1.5 max-h-48 overflow-y-auto scroll-custom pr-2">
@@ -152,14 +148,15 @@
                     </div>
                 </div>
                 
-                <!-- COLUMNA DERECHA: TABLA DE ACCIÓN -->
                 <div class="xl:col-span-3 flex flex-col">
                     <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200 min-h-[500px]">
                         
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest"><span id="lbl-sucursal-activa" class="text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded mr-2">TODAS</span> Discrepancias Pendientes</h3>
                             
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button id="btn-bulk-enriquecer" onclick="enriquecerMatchesMasivo()" style="display:none;" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-brain mr-1"></i> Enriquecer Matches</button>
+                                
                                 <button id="btn-bulk-inyectar" onclick="inyectarFaltantesMasivo()" style="display:none;" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Inyectar Visibles</button>
                                 <button id="btn-bulk-eliminar" onclick="eliminarSobrantesMasivo()" style="display:none;" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-eraser mr-1"></i> Eliminar Visibles</button>
                                 <button id="btn-bulk-tnc" onclick="generarTncMasivo()" style="display:none;" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-triangle-exclamation mr-1"></i> TNCs Masivos</button>
@@ -189,9 +186,6 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN TNC Y PERFIL                       -->
-        <!-- ========================================== -->
         <div id="sec-tnc" class="hidden animate-fade-in flex-1">
             <div class="glass p-6 rounded-3xl shadow-sm flex flex-col min-h-full border border-slate-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-slate-200 pb-4 gap-4">
@@ -252,7 +246,6 @@
         </div>
     </main>
 
-    <!-- MODAL DE EXTRACCIÓN ONEDRIVE -->
     <div id="modal-onedrive" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-onedrive-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-blue-200 text-center flex flex-col max-h-[90vh]">
             <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-brands fa-microsoft"></i></div>
@@ -276,7 +269,6 @@
         </div>
     </div>
 
-    <!-- MODAL TNC -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-emerald-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
@@ -313,27 +305,25 @@
         </div>
     </div>
 
-    <!-- MODAL LUPA -->
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
+        <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-2xl w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
-                <h3 class="text-lg font-black text-emerald-700 flex items-center gap-2"><i class="fa-solid fa-magnifying-glass"></i> Desglose del Excel</h3>
+                <h3 class="text-lg font-black text-emerald-700 flex items-center gap-2"><i class="fa-solid fa-microscope"></i> Visor de Metadatos (Excel)</h3>
                 <button onclick="cerrarModal('lupa')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <div id="lupa-info" class="text-xs text-slate-500 mb-3 bg-slate-50 p-3 rounded-xl border border-slate-200"></div>
             <div class="overflow-y-auto scroll-custom flex-1 border border-slate-200 rounded-xl">
                 <table class="w-full text-left border-collapse">
                     <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm text-[10px] uppercase text-slate-500">
-                        <tr><th class="p-3 border-b">N° Orden</th><th class="p-3 border-b">Paciente</th></tr>
+                        <tr><th class="p-3 border-b">N° Orden</th><th class="p-3 border-b">Paciente</th><th class="p-3 border-b">Empresa</th><th class="p-3 border-b text-center">Folio HC</th></tr>
                     </thead>
                     <tbody id="lupa-tbody" class="divide-y divide-slate-100 text-xs font-medium text-slate-700"></tbody>
                 </table>
             </div>
-            <div class="mt-4 flex gap-3"><button onclick="cerrarModal('lupa')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cerrar Lupa</button></div>
+            <div class="mt-4 flex gap-3"><button onclick="cerrarModal('lupa')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cerrar Visor</button></div>
         </div>
     </div>
 
-    <!-- MODAL CORRECCIÓN INDIVIDUAL -->
     <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-correccion-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-emerald-200 text-center">
             <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
@@ -360,13 +350,13 @@
         let ticketsGlobal = [];
         window.medicoASucursalGlobal = {}; 
         
-        // El Cerebro de la Bandeja
         window.sucursalActiva = "Todas";
-        window.ignoredHashes = new Set(); // Discrepancias descartadas
+        window.ignoredHashes = new Set(); 
         
         window.discrepanciasInyectar = [];
         window.discrepanciasEliminar = [];
         window.discrepanciasTNC = [];
+        window.matchesParaEnriquecer = []; // ¡Nuevo arreglo para los matches!
 
         const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales || {};
@@ -380,7 +370,6 @@
             await window.cargarIgnorados();
         };
 
-        // CARGA Y GUARDA DE DESCARTADOS (En LocalStorage para persistencia rápida, se puede migrar a Firebase)
         window.cargarIgnorados = async function() {
             try {
                 let saved = localStorage.getItem("lapi_auditoria_ignorados");
@@ -396,7 +385,7 @@
             window.ignoredHashes.add(hash);
             window.guardarIgnorados();
             mostrarToast("Descartado de la bandeja", "exito");
-            window.reRenderAuditoria(); // Refrescar vista
+            window.reRenderAuditoria(); 
         };
 
         window.limpiarIgnorados = function() {
@@ -453,21 +442,27 @@
             
             document.getElementById('lupa-info').innerHTML = `
                 <span class="font-black text-slate-700">${medico}</span><br>
-                ${estudio} <span class="mx-1">|</span> ${fecha}
+                ${estudio} <span class="mx-1">|</span> ${fecha} <span class="mx-1">|</span> ${sucursalBase}
             `;
 
             let tbody = document.getElementById('lupa-tbody');
             tbody.innerHTML = '';
             lista.forEach(item => {
-                tbody.innerHTML += `<tr class="hover:bg-purple-50 transition"><td class="p-3 font-bold text-slate-500">${item.orden}</td><td class="p-3 text-slate-800">${item.paciente}</td></tr>`;
+                let badgeFolio = item.folio !== 'N/A' && item.folio !== 'S/F' 
+                    ? `<span class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">${item.folio}</span>` 
+                    : `<span class="text-slate-300">--</span>`;
+
+                tbody.innerHTML += `<tr class="hover:bg-indigo-50 transition">
+                    <td class="p-3 font-bold text-slate-500 text-[10px]">${item.orden}</td>
+                    <td class="p-3 text-slate-800 text-[11px] font-bold">${item.paciente}</td>
+                    <td class="p-3 text-slate-600 text-[10px]">${item.empresa}</td>
+                    <td class="p-3 text-center">${badgeFolio}</td>
+                </tr>`;
             });
 
             abrirModal('lupa');
         };
 
-        // ==========================================================
-        // 1. MSAL (ONEDRIVE)
-        // ==========================================================
         const msalConfig = {
             auth: {
                 clientId: "eaaa1a34-63b2-4dc1-bf1e-8a16e820e9c3", 
@@ -577,13 +572,34 @@
             }
         };
 
-        // ==========================================================
-        // 2. MOTOR ESTRICTO CONTEXTUAL Y EXTRACTOR INTELIGENTE
-        // ==========================================================
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
+
+        window.normalizarEmpresa = function(rawEmpresa) {
+            if(!rawEmpresa) return "PARTICULAR";
+            let norm = normalizarDato(rawEmpresa).toUpperCase();
+            const empresas = window.LAPI_CONFIG.empresas || [];
+            
+            let exact = empresas.find(e => normalizarDato(e).toUpperCase() === norm);
+            if(exact) return exact;
+
+            let partial = empresas.find(e => {
+                let eNorm = normalizarDato(e).toUpperCase();
+                return eNorm.includes(norm) || norm.includes(eNorm);
+            });
+            if(partial) return partial;
+
+            let words = norm.split(' ').filter(w => w.length > 3); 
+            if(words.length > 0) {
+                for(let e of empresas) {
+                    let eNorm = normalizarDato(e).toUpperCase();
+                    if(words.some(w => eNorm.includes(w))) return e;
+                }
+            }
+            return rawEmpresa.toUpperCase(); 
+        };
 
         function unificarEstudio(est) {
             if(!est) return "Desconocido";
@@ -596,8 +612,7 @@
             if (upper.includes("VISUAL") || upper.includes("OPTOMETRIA")) return "Agudeza Visual";
             if (upper.includes("CONSULTA")) return "Consulta Medica";
 
-            let n = upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-            return n;
+            return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
         function traducirMedico(rawMed, rawSuc) {
@@ -613,7 +628,6 @@
             if (med === 'X' || med === '✔' || med === 'OK') return "X";
 
             if (diccIniciales[suc] && diccIniciales[suc][med]) return normalizarDato(diccIniciales[suc][med]);
-            
             for (const sucursalKey in diccIniciales) {
                 if (diccIniciales[sucursalKey][med]) return normalizarDato(diccIniciales[sucursalKey][med]);
             }
@@ -677,6 +691,8 @@
                                 let colTxt = String(val).toUpperCase().trim();
                                 mapa[colTxt] = idx; 
                                 if(colTxt.includes("ORDEN")) mapa["_ORDEN_DINAMICO_"] = idx;
+                                if(colTxt.includes("OBSERVA")) mapa["_OBS_DINAMICO_"] = idx;
+                                if(colTxt.includes("EMPRESA")) mapa["_EMPRESA_DINAMICO_"] = idx;
                             }
                         }); 
                     }
@@ -691,8 +707,19 @@
                         
                         let primeraCelda = String(f[0] || "").toUpperCase();
                         if(fStr.includes("ESTUDIOS PENDIENTES") || primeraCelda.includes("PENDIENTES")) break;
-                        
                         if(mapa["NOMBRE"] === undefined || !f[mapa["NOMBRE"]] || String(f[mapa["NOMBRE"]]).trim() === "") continue;
+
+                        let nombrePaciente = f[mapa["NOMBRE"]] ? String(f[mapa["NOMBRE"]]).trim() : "DESCONOCIDO";
+                        let idxOrden = mapa["_ORDEN_DINAMICO_"];
+                        let numeroOrden = (idxOrden !== undefined && f[idxOrden]) ? String(f[idxOrden]).trim() : "S/N";
+                        
+                        let idxEmpresa = mapa["_EMPRESA_DINAMICO_"] !== undefined ? mapa["_EMPRESA_DINAMICO_"] : mapa["EMPRESA"];
+                        let empresaRaw = (idxEmpresa !== undefined && f[idxEmpresa]) ? String(f[idxEmpresa]).trim() : "PARTICULAR";
+                        let empresaLimpia = window.normalizarEmpresa(empresaRaw);
+
+                        let obsText = (mapa["_OBS_DINAMICO_"] !== undefined && f[mapa["_OBS_DINAMICO_"]]) ? String(f[mapa["_OBS_DINAMICO_"]]).trim() : "";
+                        let matchFolio = obsText.match(/\b\d{5}\b/); 
+                        let folioEncontrado = matchFolio ? matchFolio[0] : "S/F";
 
                         Object.keys(estudiosMapeo).forEach(key => {
                             if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
@@ -700,14 +727,17 @@
                                 let est = unificarEstudio(estRaw);
                                 let med = traducirMedico(f[mapa[key]], sEx);
                                 
-                                let nombrePaciente = f[mapa["NOMBRE"]] ? String(f[mapa["NOMBRE"]]).trim() : "DESCONOCIDO";
-                                let idxOrden = mapa["_ORDEN_DINAMICO_"];
-                                let numeroOrden = (idxOrden !== undefined && f[idxOrden]) ? String(f[idxOrden]).trim() : "S/N";
+                                let folioAsignado = (est === "Historia Clinica" || est === "Historia Clínica") ? folioEncontrado : "N/A";
 
                                 const hash = `${fEx}|${sEx}|${normalizarDato(med)}|${est}`;
                                 
                                 if(!excelDataGlobal[hash]) excelDataGlobal[hash] = [];
-                                excelDataGlobal[hash].push({ orden: numeroOrden, paciente: nombrePaciente });
+                                excelDataGlobal[hash].push({ 
+                                    orden: numeroOrden, 
+                                    paciente: nombrePaciente,
+                                    empresa: empresaLimpia,
+                                    folio: folioAsignado
+                                });
                             }
                         });
                     }
@@ -718,7 +748,6 @@
         window.sincronizarAppGlobal = function() {
             appDataGlobal = {};
             
-            // Reconstruimos mapa de médicos global
             for (let suc in diccIniciales) {
                 for (let ini in diccIniciales[suc]) {
                     window.medicoASucursalGlobal[normalizarDato(diccIniciales[suc][ini])] = normalizarDato(suc);
@@ -766,9 +795,6 @@
             }
         }
 
-        // ==========================================
-        // PARCHE DE OPTIMIZACIÓN LECTURA BD
-        // ==========================================
         window.initAuditoria = async function() {
             try {
                 rawDataGlobal = [];
@@ -832,7 +858,7 @@
                 verificarParametrosURL(); 
             } catch (error) { 
                 console.error(error);
-                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red o Cuota'; 
+                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Límite de Cuota o Red'; 
             }
         };
 
@@ -880,9 +906,6 @@
             window.initAuditoria();
         };
 
-        // ==========================================
-        // LA NUEVA BANDEJA DE AUDITORÍA (INBOX)
-        // ==========================================
         window.reRenderAuditoria = function() {
             const tbody = document.getElementById('tabla-auditoria'); 
             const fIni = document.getElementById('a-inicio').value; 
@@ -894,7 +917,8 @@
             window.discrepanciasInyectar = [];
             window.discrepanciasEliminar = [];
             window.discrepanciasTNC = [];
-            
+            window.matchesParaEnriquecer = []; // Reset para botón azul
+
             let discrepanciasPorSucursal = {};
 
             const hashesExcel = new Set(Object.keys(excelDataGlobal));
@@ -914,11 +938,11 @@
                 const cA = appDataGlobal[hash] || 0;
 
                 if (cE === cA) {
-                    match++; // Se cuadra perfecto. Es invisible en la tabla.
+                    match++; 
+                    if(cE > 0) window.matchesParaEnriquecer.push(hash); // Si fue un match que tiene datos en Excel, lo preparamos para enriquecer
                 } else if (window.ignoredHashes.has(hash)) {
-                    ignoradosEnKpi++; // Se ignora por decisión del usuario
+                    ignoradosEnKpi++; 
                 } else {
-                    // Es un error vivo
                     if (cE > cA) faltaEnApp++; else extraEnApp++;
                     
                     if (!discrepanciasPorSucursal[sucursalBase]) discrepanciasPorSucursal[sucursalBase] = 0;
@@ -928,10 +952,8 @@
                 }
             });
 
-            // 1. Renderizar Menú Lateral (Bandeja)
             renderizarMenuSucursales(discrepanciasPorSucursal);
 
-            // 2. Filtrar por sucursal seleccionada
             let filtrados = listaPendientes;
             if (window.sucursalActiva !== "Todas") {
                 filtrados = filtrados.filter(item => item.sucursalBase === window.sucursalActiva);
@@ -940,12 +962,11 @@
                 document.getElementById('lbl-sucursal-activa').innerText = "TODAS";
             }
 
-            // 3. Renderizar Tabla Principal (Solo muestra errores)
             filtrados.forEach(item => {
                 const { hash, fecha, sucursalBase, medico, estudio, cE, cA } = item;
                 
                 let cHTML='', aHTML='';
-                let btnLupa = cE > 0 ? `<button onclick="verLupa('${hash}')" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-2 py-1 rounded ml-2 transition shadow-sm" title="Ver Excel"><i class="fa-solid fa-magnifying-glass"></i></button>` : '';
+                let btnLupa = cE > 0 ? `<button onclick="verLupa('${hash}')" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-2 py-1 rounded ml-2 transition shadow-sm" title="Ver Metadatos Extraídos del Excel"><i class="fa-solid fa-magnifying-glass"></i></button>` : '';
 
                 if (cE > cA) { 
                     cHTML = 'bg-red-50 hover:bg-red-100 border-l-4 border-red-400'; 
@@ -978,12 +999,13 @@
             document.getElementById('btn-bulk-inyectar').style.display = window.discrepanciasInyectar.length > 0 ? 'inline-block' : 'none';
             document.getElementById('btn-bulk-eliminar').style.display = window.discrepanciasEliminar.length > 0 ? 'inline-block' : 'none';
             document.getElementById('btn-bulk-tnc').style.display = window.discrepanciasTNC.length > 0 ? 'inline-block' : 'none';
+            // Mostrar botón de Enriquecer si hubo matches
+            document.getElementById('btn-bulk-enriquecer').style.display = window.matchesParaEnriquecer.length > 0 ? 'inline-block' : 'none';
         };
 
         function renderizarMenuSucursales(conteos) {
             const menu = document.getElementById('menu-sucursales');
             let html = '';
-            
             let totalErr = Object.values(conteos).reduce((a,b) => a+b, 0);
             
             let actTodas = window.sucursalActiva === "Todas" ? "bg-indigo-600 text-white shadow-md" : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100";
@@ -993,10 +1015,8 @@
                 let errs = conteos[suc];
                 let act = window.sucursalActiva === suc ? "bg-indigo-600 text-white shadow-md" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50";
                 let badge = errs > 0 ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-600";
-                
                 html += `<button onclick="cambiarFiltroSucursal('${suc}')" class="w-full text-left p-2.5 rounded-xl font-bold text-xs flex justify-between items-center transition-all mt-1 ${act}">${suc} <span class="${badge} px-2 py-0.5 rounded-lg text-[10px]">${errs}</span></button>`;
             }
-            
             menu.innerHTML = html;
         }
 
@@ -1006,11 +1026,76 @@
         }
 
         // ==========================================
-        // ACCIONES MASIVAS Y CORRECCIÓN 
+        // BOTÓN: ENRIQUECER MATCHES A VOLUNTAD
         // ==========================================
-        
+        window.enriquecerMatchesMasivo = async function() {
+            if(!confirm(`¿Deseas inyectar los metadatos de Excel (Pacientes, Órdenes, Folios) a los ${window.matchesParaEnriquecer.length} grupos que hicieron Match perfecto?\n\n(Esto consumirá operaciones de escritura en Firebase)`)) return;
+            const btn = document.getElementById('btn-bulk-enriquecer');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Enriqueciendo BD...'; btn.disabled = true;
+
+            try {
+                let actualizados = 0;
+                for(let hash of window.matchesParaEnriquecer) {
+                    const [fecha, sucursal, medico, estudio] = hash.split('|');
+                    let metadatosRicos = excelDataGlobal[hash] || [];
+                    if(metadatosRicos.length === 0) continue;
+
+                    const qDocs = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
+                        window.where("fecha", "==", fecha), window.where("medico", "==", medico)
+                    );
+                    const querySnapshot = await window.getDocs(qDocs);
+                    let docRefToUpdate = null;
+
+                    for(let d of querySnapshot.docs) {
+                        let sucDoc = normalizarDato(d.data().sucursal);
+                        if (sucDoc === sucursal || (window.medicoASucursalGlobal && window.medicoASucursalGlobal[medico] === sucursal)) {
+                            docRefToUpdate = d.ref;
+                            break;
+                        }
+                    }
+
+                    if (docRefToUpdate) {
+                        let updatePayload = {};
+                        let key = `metadata_${estudio.replace(/\s+/g,'_')}`;
+                        updatePayload[key] = metadatosRicos;
+                        await window.updateDoc(docRefToUpdate, updatePayload);
+                        actualizados++;
+                    } else {
+                        // Respaldo para BD Legacy (Enero a Abril)
+                        const qL = window.query(window.collection(window.db, "registros"), window.where("fecha", "==", fecha));
+                        const qsL = await window.getDocs(qL);
+                        for(let d of qsL.docs) {
+                            let data = d.data();
+                            let sucReal = normalizarDato(data.sucursal || data.empresa || "FORÁNEO");
+                            if (sucReal === "FORÁNEO" && window.medicoASucursalGlobal && window.medicoASucursalGlobal[medico]) sucReal = window.medicoASucursalGlobal[medico];
+                            
+                            if (sucReal === sucursal) {
+                                let key = `metadata_${estudio.replace(/\s+/g,'_')}`;
+                                await window.updateDoc(d.ref, { [key]: metadatosRicos });
+                                actualizados++;
+                                break; // Con 1 que anclemos es suficiente
+                            }
+                        }
+                    }
+                }
+                mostrarToast(`Enriquecimiento exitoso: ${actualizados} registros actualizados con IA`, "exito");
+            } catch(e) { 
+                console.error(e); 
+                mostrarToast("Error enriqueciendo datos", "error"); 
+            }
+            
+            btn.innerHTML = txtOriginal; btn.disabled = false;
+        };
+
+        // ==========================================
+        // ACCIONES MASIVAS Y CORRECCIÓN EN BD
+        // ==========================================
         window.aplicarAjuste = async function(fecha, sucursal, medico, estudio, cantApp, cantExcel) {
             if (cantExcel === cantApp) return;
+
+            let hashParaMetadatos = `${fecha}|${sucursal}|${medico}|${estudio}`;
+            let metadatosRicos = excelDataGlobal[hashParaMetadatos] || [];
 
             if (cantExcel > cantApp) {
                 let aInyectar = cantExcel - cantApp;
@@ -1033,17 +1118,26 @@
                 if (docRefToUpdate) {
                     if(!datos.estudios) datos.estudios = {};
                     datos.estudios[estudio] = (parseInt(datos.estudios[estudio]) || 0) + aInyectar; 
-                    await window.updateDoc(docRefToUpdate, { estudios: datos.estudios, ultimaActualizacion: new Date() });
+                    
+                    let updatePayload = { 
+                        estudios: datos.estudios, 
+                        ultimaActualizacion: new Date() 
+                    };
+                    if(metadatosRicos.length > 0) updatePayload[`metadata_${estudio.replace(/\s+/g,'_')}`] = metadatosRicos;
+
+                    await window.updateDoc(docRefToUpdate, updatePayload);
                 } else {
-                    // ID SANITIZADO PARA FIREBASE (Peligro de Diagonales Eliminado)
                     let safeSucursal = sucursal.replace(/[^a-zA-Z0-9]/g, '');
                     let safeMedico = medico.replace(/[^a-zA-Z0-9]/g, '');
                     const newDocId = `SUC_${fecha}_${safeSucursal}_${safeMedico}`;
                     
-                    await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", newDocId), { 
+                    let setPayload = { 
                         tipo: "sucursal_agrupada", fecha, sucursal, medico, 
                         estudios: { [estudio]: aInyectar }, observaciones: "Ajustado por Auditoría", ultimaActualizacion: new Date() 
-                    });
+                    };
+                    if(metadatosRicos.length > 0) setPayload[`metadata_${estudio.replace(/\s+/g,'_')}`] = metadatosRicos;
+
+                    await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", newDocId), setPayload);
                 }
             } else {
                 let aReducir = cantApp - cantExcel;
@@ -1069,7 +1163,14 @@
                             datos.estudios[estudio] = actual - quitar;
                             aReducir -= quitar;
                             if(datos.estudios[estudio] <= 0) delete datos.estudios[estudio];
-                            await window.updateDoc(d.ref, { estudios: datos.estudios, ultimaActualizacion: new Date() });
+                            
+                            let updatePayload = { 
+                                estudios: datos.estudios, 
+                                ultimaActualizacion: new Date() 
+                            };
+                            if(metadatosRicos.length > 0) updatePayload[`metadata_${estudio.replace(/\s+/g,'_')}`] = metadatosRicos;
+
+                            await window.updateDoc(d.ref, updatePayload);
                         }
                     }
                 }
