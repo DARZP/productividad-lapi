@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saneamiento Mérida - LAPI Admin</title>
+    
+    <link rel="manifest" href="manifest_admin.json">
+    <meta name="theme-color" content="#ef4444">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.query = query;
+        window.where = where;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.deleteDoc = deleteDoc;
+    </script>
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
+    </style>
+</head>
+<body class="text-slate-800 flex h-screen overflow-hidden items-center justify-center p-4">
+
+    <div class="glass p-8 rounded-3xl shadow-2xl max-w-2xl w-full border-t-8 border-red-500">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-sm">
+                <i class="fa-solid fa-biohazard"></i>
+            </div>
+            <h1 class="text-3xl font-black tracking-tight text-slate-800">Saneamiento MÉRIDA</h1>
+            <p class="text-slate-500 font-medium mt-2">Herramienta de uso único para purgar basura y re-inyectar datos limpios.</p>
+        </div>
+
+        <!-- PASO 1: ELIMINAR -->
+        <div class="bg-red-50 border border-red-200 p-6 rounded-2xl mb-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-lg">PASO 1</div>
+            <h3 class="font-black text-red-800 mb-2"><i class="fa-solid fa-trash-can mr-2"></i>Purgar Base de Datos</h3>
+            <p class="text-xs text-red-600 font-medium mb-4">Eliminará TODOS los registros de <b class="font-black">MÉRIDA</b> (Sucursal y Foráneos) creados entre el <b class="font-black">01/05/2026 y el 31/05/2026</b>.</p>
+            <button id="btn-purgar" onclick="ejecutarPurga()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
+                <i class="fa-solid fa-fire"></i> Iniciar Purga de Mayo 2026
+            </button>
+            <p id="log-purga" class="text-xs text-red-700 mt-3 font-mono font-bold text-center"></p>
+        </div>
+
+        <!-- PASO 2: INYECTAR -->
+        <div class="bg-sky-50 border border-sky-200 p-6 rounded-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-sky-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-lg">PASO 2</div>
+            <h3 class="font-black text-sky-800 mb-2"><i class="fa-solid fa-syringe mr-2"></i>Inyectar Excel Limpio</h3>
+            <p class="text-xs text-sky-600 font-medium mb-4">Sube el Excel de Mérida de Mayo. El sistema ignorará "OTRO" y sacará los médicos de "OBSERVACIONES".</p>
+            
+            <input type="file" id="archivoMerida" accept=".csv, .xlsx, .xls" class="w-full mb-4 text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[11px] file:font-black file:bg-white file:text-sky-700 hover:file:bg-sky-100 cursor-pointer bg-sky-100/50 border border-sky-200 p-2 rounded-xl">
+            
+            <button id="btn-inyectar" onclick="procesarEInyectar()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
+                <i class="fa-solid fa-upload"></i> Procesar e Inyectar a Firebase
+            </button>
+            <p id="log-inyectar" class="text-xs text-sky-700 mt-3 font-mono font-bold text-center"></p>
+        </div>
+        
+        <div class="mt-6 text-center">
+            <a href="admin.html" class="text-slate-400 hover:text-slate-600 text-xs font-bold underline">Volver al Monitor Global</a>
+        </div>
+    </div>
+
+    <script>
+        // Diccionarios y Config
+        const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
+        const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales || {};
+        estudiosMapeo["CONSULTA MEDICA"] = "Consulta Médica";
+        estudiosMapeo["CONSULTA MÉDICA"] = "Consulta Médica";
+        const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
+
+        // Normalizadores
+        function normalizarDato(texto) {
+            if (!texto) return "Desconocido";
+            return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        }
+
+        function unificarEstudio(est) {
+            if(!est) return "Desconocido";
+            let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clinica";
+            if (upper.includes("ESPIROMETRIA")) return "Espirometria";
+            if (upper.includes("AUDIOMETRIA")) return "Audiometria";
+            if (upper.includes("ELECTROCARDIOGRAMA") || upper === "ECG" || upper === "EKG") return "Electrocardiograma";
+            if (upper.includes("VISUAL") || upper.includes("OPTOMETRIA")) return "Agudeza Visual";
+            if (upper.includes("CONSULTA")) return "Consulta Medica";
+            return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        }
+
+        function traducirMedico(rawMed, rawSuc, obsText = "") {
+            if (!rawMed) return "Desconocido";
+
+            let med = String(rawMed).toUpperCase().trim();
+            med = med.replace(/^DR\(A\)\.?\s*/, '').replace(/^DRA\.?\s*/, '').replace(/^DR\.?\s*/, '');
+            med = med.replace(/\./g, '');
+            med = med.replace(/\[INICIAL NO REGISTRADA:\s*/g, '').replace(/\]/g, '').trim();
+
+            let suc = normalizarDato(rawSuc).toUpperCase();
+
+            // EL FILTRO NINJA PARA MÉRIDA
+            if (med === 'X' && suc.includes('MERIDA') && obsText) {
+                let cleanObs = normalizarDato(obsText).toUpperCase();
+                // Limpieza de nombres secundarios y conectores
+                cleanObs = cleanObs.replace(/JACQUELINE/g, '').replace(/RUIZ/g, '').replace(/XJ/g, '');
+                cleanObs = cleanObs.replace(/\b(Y|DR|DRA|CON|EL|LA)\b/g, '').replace(/,/g, '').trim();
+                
+                // Si sobró un nombre válido en observaciones, lo usamos
+                if (cleanObs.length > 3) {
+                    med = cleanObs;
+                }
+            }
+
+            if (med === 'X' || med === '✔' || med === 'OK') return "X";
+
+            if (diccIniciales[suc] && diccIniciales[suc][med]) return normalizarDato(diccIniciales[suc][med]);
+            for (const sucursalKey in diccIniciales) {
+                if (diccIniciales[sucursalKey][med]) return normalizarDato(diccIniciales[sucursalKey][med]);
+            }
+
+            const medNormalizado = normalizarDato(med).toUpperCase();
+            const medicos = window.LAPI_CONFIG.medicos || [];
+            const exactMatch = medicos.find(m => normalizarDato(m).toUpperCase() === medNormalizado);
+            if(exactMatch) return exactMatch;
+
+            const partialMatch = medicos.find(m => {
+                const mNorm = normalizarDato(m).toUpperCase();
+                return mNorm.includes(medNormalizado) || medNormalizado.includes(mNorm);
+            });
+            if(partialMatch) return partialMatch;
+
+            const palabrasIngresadas = medNormalizado.split(' ').filter(p => p.length > 2);
+            if (palabrasIngresadas.length > 1) {
+                for (let m of medicos) {
+                    const mNorm = normalizarDato(m).toUpperCase();
+                    const coincidenciaTotal = palabrasIngresadas.every(palabra => mNorm.includes(palabra));
+                    if (coincidenciaTotal) return m;
+                    const palabrasCatalogo = mNorm.split(' ').filter(p => p.length > 2);
+                    const coincidenciaInversa = palabrasCatalogo.every(palabra => medNormalizado.includes(palabra));
+                    if (coincidenciaInversa) return m;
+                }
+            }
+            return `[INICIAL NO REGISTRADA: ${med}]`;
+        }
+
+        // =====================================
+        // PASO 1: LA PURGA
+        // =====================================
+        window.ejecutarPurga = async function() {
+            if(!confirm("⚠️ ESTO ES IRREVERSIBLE. ¿Estás absolutamente seguro de querer borrar todos los registros de Mérida de Mayo 2026?")) return;
+            
+            const btn = document.getElementById('btn-purgar');
+            const log = document.getElementById('log-purga');
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Purgando Base de Datos...';
+            
+            let borrados = 0;
+            const fIni = "2026-05-01";
+            const fFin = "2026-05-31";
+
+            try {
+                // 1. Borrar de registros_diarios_sucursales
+                const q1 = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                const qs1 = await window.getDocs(q1);
+                
+                for(let d of qs1.docs) {
+                    let suc = normalizarDato(d.data().sucursal).toUpperCase();
+                    if(suc.includes("MERIDA")) {
+                        await window.deleteDoc(d.ref);
+                        borrados++;
+                    }
+                }
+
+                // 2. Borrar de registros (Legacy/Foráneos)
+                const q2 = window.query(window.collection(window.db, "registros"), window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                const qs2 = await window.getDocs(q2);
+
+                for(let d of qs2.docs) {
+                    let data = d.data();
+                    let suc = normalizarDato(data.sucursal || data.empresa || "").toUpperCase();
+                    if(suc.includes("MERIDA")) {
+                        await window.deleteDoc(d.ref);
+                        borrados++;
+                    }
+                }
+
+                log.innerHTML = `<span class="text-emerald-600"><i class="fa-solid fa-check"></i> Purga completada: ${borrados} documentos eliminados.</span>`;
+            } catch(e) {
+                console.error(e);
+                log.innerHTML = `Error: Verifica tu consola y permisos.`;
+            }
+            btn.innerHTML = '<i class="fa-solid fa-fire"></i> Iniciar Purga de Mayo 2026';
+            btn.disabled = false;
+        };
+
+        // =====================================
+        // PASO 2: LECTURA E INYECCIÓN
+        // =====================================
+        window.procesarEInyectar = async function() {
+            const input = document.getElementById('archivoMerida');
+            if(input.files.length === 0) return alert("Sube el archivo Excel de Mérida.");
+            
+            const btn = document.getElementById('btn-inyectar');
+            const log = document.getElementById('log-inyectar');
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Leyendo y Analizando...';
+            
+            let dataAInyectar = {}; // Formato: {"2026-05-15|MERIDA, CENTRO|MEDICO": {"Estudio1": 2, "Estudio2": 1}}
+
+            try {
+                for(let i=0; i<input.files.length; i++){
+                    let arrayBuffer = await input.files[i].arrayBuffer();
+                    let wb = XLSX.read(arrayBuffer, {type:'array'});
+                    
+                    for(let sn of wb.SheetNames){
+                        let sheet = wb.Sheets[sn];
+                        let filas = XLSX.utils.sheet_to_json(sheet, {header:1, defval:"", blankrows: false});
+                        let fEx = "1900-01-01", sEx = "MERIDA, CENTRO", iEnc = -1, mapa = {}; // Forzamos "MERIDA, CENTRO" por defecto
+
+                        for(let r=0; r<Math.min(20, filas.length); r++){
+                            if(!filas[r]) continue;
+                            let cL = filas[r].map(v => String(v).trim().toUpperCase());
+                            
+                            if(cL.join(" ").includes("FECHA")){
+                                let p = cL.slice(cL.findIndex(v=>v.includes("FECHA"))).join(" ").replace("FECHA", "").replace(":", "").trim().replace(/[\/\-]/g, " ").split(/\s+/).filter(v=>v!=="");
+                                if(p.length>=3){
+                                    let mN = isNaN(p[1]) ? (mesesTexto[p[1].substring(0,3)] || 0) : parseInt(p[1],10)-1;
+                                    fEx = `${p[2].length===2?'20'+p[2]:p[2]}-${String(mN+1).padStart(2,'0')}-${p[0].padStart(2,'0')}`; 
+                                }
+                            }
+                            
+                            let cS = cL.findIndex(v=>v.includes("SUCURSAL")); 
+                            if(cS!==-1) {
+                                let valSuc = cL[cS+1] || cL[cS+2];
+                                if(valSuc) sEx = normalizarDato(valSuc);
+                            }
+                            
+                            if(cL.join(" ").includes("NOMBRE") && cL.join(" ").includes("EMPRESA")){ 
+                                iEnc=r; 
+                                filas[r].forEach((val, idx)=>{ 
+                                    if(val) {
+                                        let colTxt = String(val).toUpperCase().trim();
+                                        mapa[colTxt] = idx; 
+                                        if(colTxt.includes("OBSERVA")) mapa["_OBS_DINAMICO_"] = idx;
+                                    }
+                                }); 
+                            }
+                        }
+
+                        if(iEnc!==-1){
+                            for(let r=iEnc+1; r<filas.length; r++){
+                                let f = filas[r]; 
+                                if(!f) continue;
+                                let fStr = f.join(" ").toUpperCase();
+                                
+                                let primeraCelda = String(f[0] || "").toUpperCase();
+                                if(fStr.includes("ESTUDIOS PENDIENTES") || primeraCelda.includes("PENDIENTES")) break;
+                                
+                                if(mapa["NOMBRE"] === undefined || !f[mapa["NOMBRE"]] || String(f[mapa["NOMBRE"]]).trim() === "") continue;
+                                
+                                let obsText = (mapa["_OBS_DINAMICO_"] !== undefined && f[mapa["_OBS_DINAMICO_"]]) ? String(f[mapa["_OBS_DINAMICO_"]]).trim() : "";
+
+                                Object.keys(estudiosMapeo).forEach(key => {
+                                    // IGNORAR OTROS
+                                    if (key.toUpperCase().includes("OTRO")) return;
+
+                                    if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
+                                        let estRaw = estudiosMapeo[key];
+                                        let est = unificarEstudio(estRaw);
+                                        let med = traducirMedico(f[mapa[key]], sEx, obsText);
+                                        
+                                        let llaveHash = `${fEx}|${sEx}|${normalizarDato(med)}`;
+                                        
+                                        if(!dataAInyectar[llaveHash]) dataAInyectar[llaveHash] = {};
+                                        if(!dataAInyectar[llaveHash][est]) dataAInyectar[llaveHash][est] = 0;
+                                        dataAInyectar[llaveHash][est]++;
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // INYECCIÓN BATCH
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo a Firebase...';
+                let creados = 0;
+
+                for (const [hash, estudios] of Object.entries(dataAInyectar)) {
+                    const [fecha, sucursal, medico] = hash.split('|');
+                    const docId = `SUC_${fecha}_${sucursal.replace(/\s+/g,'')}_${medico.replace(/\s+/g,'')}`;
+                    
+                    await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), {
+                        tipo: "sucursal_agrupada",
+                        fecha: fecha,
+                        sucursal: sucursal,
+                        medico: medico,
+                        estudios: estudios,
+                        observaciones: "Saneamiento Data Merida",
+                        ultimaActualizacion: new Date()
+                    });
+                    creados++;
+                }
+
+                log.innerHTML = `<span class="text-sky-600"><i class="fa-solid fa-check"></i> Inyección Exitosa: ${creados} grupos creados. ¡Auditoría cuadrada!</span>`;
+                
+            } catch(e) {
+                console.error(e);
+                log.innerHTML = `Error al procesar. Revisa el archivo Excel y la consola.`;
+            }
+            
+            btn.innerHTML = '<i class="fa-solid fa-upload"></i> Procesar e Inyectar a Firebase';
+            btn.disabled = false;
+        };
+    </script>
+</body>
+</html>
