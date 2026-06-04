@@ -126,6 +126,7 @@
                         </div>
                         <input type="date" id="a-inicio" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-3 border border-slate-300">
                         <input type="date" id="a-fin" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-4 border border-slate-300">
+                        <!-- Botón AHORA LLAMA A initAuditoria() PARA APLICAR OPTIMIZACIÓN -->
                         <button onclick="initAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 rounded-xl transition-all text-xs active:scale-95">Aplicar Vista</button>
                     </div>
                 </div>
@@ -225,6 +226,7 @@
         </div>
     </main>
 
+    <!-- MODAL DE EXTRACCIÓN ONEDRIVE -->
     <div id="modal-onedrive" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-onedrive-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-blue-200 text-center flex flex-col max-h-[90vh]">
             <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-brands fa-microsoft"></i></div>
@@ -248,6 +250,7 @@
         </div>
     </div>
 
+    <!-- MODAL TNC -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-emerald-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
@@ -284,6 +287,7 @@
         </div>
     </div>
 
+    <!-- MODAL LUPA -->
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
@@ -303,6 +307,7 @@
         </div>
     </div>
 
+    <!-- MODAL CORRECCIÓN INDIVIDUAL -->
     <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-correccion-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-emerald-200 text-center">
             <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
@@ -341,7 +346,6 @@
 
         window.iniciarAppAuditoria = function() {
             aplicarFiltroRapido('mes'); 
-            // NOTA: initAuditoria() ahora se llama desde adentro de aplicarFiltroRapido()
             cargarTNCs();
         };
 
@@ -700,9 +704,6 @@
             }
         }
 
-        // ==========================================
-        // PARCHE DE OPTIMIZACIÓN LECTURA BD
-        // ==========================================
         async function initAuditoria() {
             try {
                 rawDataGlobal = [];
@@ -766,7 +767,7 @@
                 verificarParametrosURL(); 
             } catch (error) { 
                 console.error(error);
-                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Límite de Cuota o Red'; 
+                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error de Red o Cuota'; 
             }
         }
 
@@ -781,7 +782,6 @@
             document.getElementById('a-inicio').value = iStr; 
             document.getElementById('a-fin').value = fStr;
             
-            // LA OPTIMIZACIÓN LLAMA DIRECTO AL SERVIDOR CON LAS FECHAS CORRECTAS
             initAuditoria();
         };
 
@@ -795,29 +795,17 @@
             window.discrepanciasTNC = [];
 
             const hashesExcel = new Set(Object.keys(excelDataGlobal));
+            // Limitamos la auditoria estrictamente a las sucursales que vengan en el Excel subido
             const sucursalesAuditadas = new Set([...hashesExcel].map(k => k.split('|')[1])); 
-            const medicosEnExcel = new Set([...hashesExcel].map(k => k.split('|')[2])); 
-
-            const medicoASucursal = {};
-            for (let suc in diccIniciales) {
-                for (let ini in diccIniciales[suc]) {
-                    medicoASucursal[normalizarDato(diccIniciales[suc][ini])] = normalizarDato(suc);
-                }
-            }
 
             const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
 
             todasLasLlaves.forEach(hash => {
                 const [fecha, sucursalBase, medico, estudio] = hash.split('|');
                 
-                let sucReal = sucursalBase;
-                if (sucReal === "FORÁNEO" || sucReal === "DESCONOCIDO" || sucReal === "") {
-                    if (medicoASucursal[medico]) {
-                        sucReal = medicoASucursal[medico];
-                    }
-                }
-
-                if(!sucursalesAuditadas.has(sucReal) && !medicosEnExcel.has(medico)) return; 
+                // FILTRO MAESTRO DE HIERRO: Si la sucursal de este registro NO está en el Excel, lo ignoramos.
+                if(!sucursalesAuditadas.has(sucursalBase)) return; 
+                
                 if(fIni && fecha < fIni) return; 
                 if(fFin && fecha > fFin) return;
 
@@ -849,7 +837,7 @@
                 
                 let alertMedico = medico.includes('[') ? `text-red-500 font-black` : `text-slate-700 font-bold`;
 
-                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucReal}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-emerald-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black"><div class="flex items-center justify-center">${cE} ${btnLupa}</div></td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
+                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursalBase}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-emerald-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black"><div class="flex items-center justify-center">${cE} ${btnLupa}</div></td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
             });
 
             tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-10 text-slate-400 italic">Sube Excel de la sucursal que deseas auditar.</td></tr>';
