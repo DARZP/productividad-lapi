@@ -766,7 +766,6 @@
                 const hash = `${reg.fecha}|${sucReal}|${reg.medico}|${reg.estudio}`;
                 appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
                 
-                // TRACK ENRICHED DATA
                 if(reg.hasMeta) window.enrichedHashes.add(hash);
             });
         };
@@ -1045,7 +1044,7 @@
         }
 
         // ==========================================
-        // BOTÓN: ENRIQUECER MATCHES A VOLUNTAD
+        // BOTÓN: ENRIQUECER MATCHES A VOLUNTAD (IA)
         // ==========================================
         window.enriquecerMatchesMasivo = async function() {
             if(!confirm(`¿Deseas inyectar los metadatos de Excel (Pacientes, Órdenes, Folios) a los ${window.matchesParaEnriquecer.length} grupos que hicieron Match perfecto?\n\n(Esto consumirá operaciones de escritura en Firebase)`)) return;
@@ -1076,10 +1075,12 @@
 
                         let docRefToUpdate = null;
 
+                        // BUSQUEDA EN PWA (NUEVA BD)
                         for(let d of qsDocs.docs) {
                             let data = d.data();
-                            let dbMed = normalizarDato(data.medico);
                             let dbSuc = normalizarDato(data.sucursal);
+                            let dbMed = normalizarDato(traducirMedico(data.medico, dbSuc)); // <--- TRADUCCIÓN VITAL
+                            
                             if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
                                 if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed];
                             }
@@ -1089,21 +1090,23 @@
                             }
                         }
 
+                        // BUSQUEDA EN LEGACY (VIEJA BD)
                         if (!docRefToUpdate) {
                             for(let d of qsLeg.docs) {
                                 let data = d.data();
-                                let dbMedTop = normalizarDato(data.medico);
                                 let dbSuc = normalizarDato(data.sucursal || data.empresa || "FORÁNEO");
+                                let dbMedTop = normalizarDato(traducirMedico(data.medico, dbSuc)); // <--- TRADUCCIÓN VITAL
+
                                 if (dbSuc === "FORÁNEO" && window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop];
                                 
                                 let docHasMedico = (dbMedTop === item.medico);
                                 if(!docHasMedico && data.detalles) {
-                                    docHasMedico = data.detalles.some(det => normalizarDato(det.medico || data.medico) === item.medico);
+                                    docHasMedico = data.detalles.some(det => normalizarDato(traducirMedico(det.medico || data.medico, dbSuc)) === item.medico);
                                 }
 
                                 if (dbSuc === item.sucursal && docHasMedico) {
                                     docRefToUpdate = d.ref;
-                                    break;
+                                    break; 
                                 }
                             }
                         }
@@ -1145,8 +1148,10 @@
 
                 for(let d of querySnapshot.docs) {
                     let dData = d.data();
-                    let dbMed = normalizarDato(dData.medico);
-                    let dbSuc = normalizarDato(dData.sucursal);
+                    let rawSuc = dData.sucursal || "FORÁNEO";
+                    let dbSuc = normalizarDato(rawSuc);
+                    let dbMed = normalizarDato(traducirMedico(dData.medico, rawSuc)); // <--- TRADUCCIÓN VITAL
+                    
                     if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
                         if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed];
                     }
@@ -1191,14 +1196,15 @@
                 for(let d of qs2.docs) {
                     if (aReducir <= 0) break;
                     let datos = d.data();
-                    let dbMed = normalizarDato(datos.medico);
-                    let sucReal = normalizarDato(datos.sucursal);
+                    let rawSuc = datos.sucursal || "FORÁNEO";
+                    let dbSuc = normalizarDato(rawSuc);
+                    let dbMed = normalizarDato(traducirMedico(datos.medico, rawSuc)); // <--- TRADUCCIÓN VITAL
                     
-                    if (!sucReal || sucReal === "FORÁNEO" || sucReal === "DESCONOCIDO") {
-                        if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) sucReal = window.medicoASucursalGlobal[dbMed];
+                    if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
+                        if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed];
                     }
 
-                    if (dbMed === medico && sucReal === sucursal && datos.estudios && datos.estudios[estudio]) {
+                    if (dbMed === medico && dbSuc === sucursal && datos.estudios && datos.estudios[estudio]) {
                         let actual = parseInt(datos.estudios[estudio]) || 0;
                         if(actual > 0) {
                             let quitar = Math.min(actual, aReducir);
@@ -1225,20 +1231,22 @@
                         if (aReducir <= 0) break;
                         let data = d.data();
                         
-                        let sucReal = normalizarDato(data.sucursal || data.empresa || "FORÁNEO");
-                        let medTop = normalizarDato(data.medico);
-                        if (!sucReal || sucReal === "FORÁNEO" || sucReal === "DESCONOCIDO") {
-                            if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[medTop]) sucReal = window.medicoASucursalGlobal[medTop];
+                        let rawSuc = data.sucursal || data.empresa || "FORÁNEO";
+                        let dbSuc = normalizarDato(rawSuc);
+                        let dbMedTop = normalizarDato(traducirMedico(data.medico, rawSuc)); // <--- TRADUCCIÓN VITAL
+
+                        if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
+                            if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop];
                         }
                         
-                        if(sucReal !== sucursal) continue;
+                        if(dbSuc !== sucursal) continue;
 
                         let modificado = false;
                         
                         if (data.detalles && data.detalles.length > 0) {
                             for (let det of data.detalles) {
                                 if (aReducir <= 0) break;
-                                let dMed = normalizarDato(det.medico || data.medico);
+                                let dMed = normalizarDato(traducirMedico(det.medico || data.medico, rawSuc));
                                 let dEst = unificarEstudio(det.estudio);
                                 if (dMed === medico && dEst === estudio) {
                                     let c = parseInt(det.cant) || 1;
@@ -1257,7 +1265,7 @@
                                 }
                             }
                         } else if (data.estudio) {
-                            let dMed = normalizarDato(data.medico);
+                            let dMed = normalizarDato(traducirMedico(data.medico, rawSuc));
                             let dEst = unificarEstudio(data.estudio);
                             if (dMed === medico && dEst === estudio) {
                                 await window.deleteDoc(d.ref);
