@@ -156,7 +156,6 @@
                             
                             <div class="flex flex-wrap items-center gap-2">
                                 <button id="btn-bulk-enriquecer" onclick="enriquecerMatchesMasivo()" style="display:none;" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-brain mr-1"></i> Enriquecer Matches</button>
-                                
                                 <button id="btn-bulk-inyectar" onclick="inyectarFaltantesMasivo()" style="display:none;" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Inyectar Visibles</button>
                                 <button id="btn-bulk-eliminar" onclick="eliminarSobrantesMasivo()" style="display:none;" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-eraser mr-1"></i> Eliminar Visibles</button>
                                 <button id="btn-bulk-tnc" onclick="generarTncMasivo()" style="display:none;" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-triangle-exclamation mr-1"></i> TNCs Masivos</button>
@@ -251,7 +250,6 @@
             <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-brands fa-microsoft"></i></div>
             <h3 class="text-xl font-black mb-2 text-slate-800">Extracción de Nube</h3>
             <p class="text-sm text-slate-500 mb-5">El sistema buscará los archivos Excel basándose en el mes seleccionado.</p>
-            
             <div id="od-config">
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2 text-left">Periodo a buscar (Mes/Año)</label>
                 <input type="month" id="od-mes-buscar" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 font-bold text-slate-700 outline-none focus:border-blue-400">
@@ -260,7 +258,6 @@
                     <button onclick="ejecutarExtraccionOneDrive()" class="w-1/2 bg-[#0078d4] hover:bg-[#005a9e] text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Buscar y Extraer</button>
                 </div>
             </div>
-
             <div id="od-status" class="hidden flex-col items-center">
                 <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
                 <p id="od-status-text" class="text-sm font-bold text-slate-600 mb-4">Conectando con Microsoft Graph...</p>
@@ -273,21 +270,17 @@
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-emerald-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
             <input type="hidden" id="tnc-hash"><input type="hidden" id="tnc-origen"><input type="hidden" id="tnc-fecha"><input type="hidden" id="tnc-medico"><input type="hidden" id="tnc-lugar"><input type="hidden" id="tnc-estudio">
-            
             <div id="tnc-paso-1" class="block overflow-y-auto pr-2 scroll-custom flex-1">
                 <p class="text-xs text-slate-500 mb-2 font-bold">1. Busca el servicio exacto en la base de datos:</p>
                 <div class="flex gap-2 mb-3">
                     <select id="tnc-filtro-origen" onchange="ejecutarBuscadorTNC()" class="w-1/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600">
-                        <option value="Todos">Todos</option>
-                        <option value="Sucursal">Sucursal</option>
-                        <option value="Foráneo">Foráneo</option>
+                        <option value="Todos">Todos</option><option value="Sucursal">Sucursal</option><option value="Foráneo">Foráneo</option>
                     </select>
                     <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Ej. Lomas Verdes, Juan, HC..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
                 </div>
                 <div id="tnc-resultados-busqueda" class="space-y-1 mb-4 border border-slate-200 rounded-lg p-1 bg-slate-50"><p class="text-center text-xs text-slate-400 py-4">Teclea para buscar...</p></div>
                 <button onclick="cerrarModal('tnc')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all mt-auto">Cancelar y Cerrar</button>
             </div>
-
             <div id="tnc-paso-2" class="hidden flex-col flex-1">
                 <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl mb-4 flex justify-between items-center shadow-sm">
                     <div id="tnc-servicio-seleccionado" class="text-xs text-emerald-900 font-bold leading-tight"></div>
@@ -352,11 +345,12 @@
         
         window.sucursalActiva = "Todas";
         window.ignoredHashes = new Set(); 
+        window.enrichedHashes = new Set(); // <--- Mapea qué datos ya tienen metadatos en Firebase
         
         window.discrepanciasInyectar = [];
         window.discrepanciasEliminar = [];
         window.discrepanciasTNC = [];
-        window.matchesParaEnriquecer = []; // ¡Nuevo arreglo para los matches!
+        window.matchesParaEnriquecer = []; 
 
         const diccIniciales = window.LAPI_CONFIG.diccionarioIniciales || {};
         const estudiosMapeo = window.LAPI_CONFIG.mapeoExcelsSucursales || {};
@@ -463,6 +457,9 @@
             abrirModal('lupa');
         };
 
+        // ==========================================================
+        // 1. MSAL (ONEDRIVE)
+        // ==========================================================
         const msalConfig = {
             auth: {
                 clientId: "eaaa1a34-63b2-4dc1-bf1e-8a16e820e9c3", 
@@ -644,19 +641,6 @@
             });
             if(partialMatch) return partialMatch;
 
-            const palabrasIngresadas = medNormalizado.split(' ').filter(p => p.length > 2);
-            if (palabrasIngresadas.length > 1) {
-                for (let m of medicos) {
-                    const mNorm = normalizarDato(m).toUpperCase();
-                    const coincidenciaTotal = palabrasIngresadas.every(palabra => mNorm.includes(palabra));
-                    if (coincidenciaTotal) return m;
-
-                    const palabrasCatalogo = mNorm.split(' ').filter(p => p.length > 2);
-                    const coincidenciaInversa = palabrasCatalogo.every(palabra => medNormalizado.includes(palabra));
-                    if (coincidenciaInversa) return m;
-                }
-            }
-
             return `[INICIAL NO REGISTRADA: ${med}]`;
         }
 
@@ -765,6 +749,9 @@
 
                 const hash = `${reg.fecha}|${sucReal}|${reg.medico}|${reg.estudio}`;
                 appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
+                
+                // TRACK ENRICHED DATA
+                if(reg.hasMeta) window.enrichedHashes.add(hash);
             });
         };
 
@@ -798,6 +785,7 @@
         window.initAuditoria = async function() {
             try {
                 rawDataGlobal = [];
+                window.enrichedHashes.clear();
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando BD...';
 
                 const fIni = document.getElementById('a-inicio').value; 
@@ -821,18 +809,29 @@
                         if (data.detalles && data.detalles.length > 0) {
                             data.detalles.forEach(det => {
                                 let cant = parseInt(det.cant) || 1;
+                                let estLimpio = unificarEstudio(det.estudio);
+                                let metaKey = `metadata_${estLimpio.replace(/\s+/g,'_')}`;
+                                let hasMeta = data[metaKey] && data[metaKey].length > 0;
+                                
                                 for(let k=0; k<cant; k++) {
-                                    rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: unificarEstudio(det.estudio), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)) });
+                                    rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: estLimpio, medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)), hasMeta });
                                 }
                             });
                         } else if (data.estudio) {
-                            rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: unificarEstudio(data.estudio), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
+                            let estLimpio = unificarEstudio(data.estudio);
+                            let metaKey = `metadata_${estLimpio.replace(/\s+/g,'_')}`;
+                            let hasMeta = data[metaKey] && data[metaKey].length > 0;
+                            rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: estLimpio, medico: normalizarDato(traducirMedico(data.medico, data.sucursal)), hasMeta });
                         }
                     } else if (data.detalles) {
                         data.detalles.forEach(det => {
                             let cant = parseInt(det.cant) || 1;
+                            let estLimpio = unificarEstudio(det.estudio);
+                            let metaKey = `metadata_${estLimpio.replace(/\s+/g,'_')}`;
+                            let hasMeta = data[metaKey] && data[metaKey].length > 0;
+                            
                             for(let k=0; k<cant; k++) {
-                                rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), sucursalBase: normalizarDato(data.sucursal || "FORÁNEO"), estudio: unificarEstudio(det.estudio), medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")) });
+                                rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), sucursalBase: normalizarDato(data.sucursal || "FORÁNEO"), estudio: estLimpio, medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")), hasMeta });
                             }
                         });
                     }
@@ -844,8 +843,12 @@
                     if(data.estudios) {
                         Object.keys(data.estudios).forEach(est => {
                             let cant = parseInt(data.estudios[est]) || 0;
+                            let estLimpio = unificarEstudio(est);
+                            let metaKey = `metadata_${estLimpio.replace(/\s+/g,'_')}`;
+                            let hasMeta = data[metaKey] && data[metaKey].length > 0;
+                            
                             for(let k=0; k<cant; k++){
-                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: unificarEstudio(est), medico: normalizarDato(traducirMedico(data.medico, data.sucursal)) });
+                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: estLimpio, medico: normalizarDato(traducirMedico(data.medico, data.sucursal)), hasMeta });
                             }
                         });
                     }
@@ -917,7 +920,7 @@
             window.discrepanciasInyectar = [];
             window.discrepanciasEliminar = [];
             window.discrepanciasTNC = [];
-            window.matchesParaEnriquecer = []; // Reset para botón azul
+            window.matchesParaEnriquecer = []; 
 
             let discrepanciasPorSucursal = {};
 
@@ -939,7 +942,8 @@
 
                 if (cE === cA) {
                     match++; 
-                    if(cE > 0) window.matchesParaEnriquecer.push(hash); // Si fue un match que tiene datos en Excel, lo preparamos para enriquecer
+                    // SOLO MOSTRAR BOTON DE ENRIQUECER SI EL MATCH NO TIENE METADATA Y TIENE DATOS EN EXCEL
+                    if(cE > 0 && !window.enrichedHashes.has(hash)) window.matchesParaEnriquecer.push(hash); 
                 } else if (window.ignoredHashes.has(hash)) {
                     ignoradosEnKpi++; 
                 } else {
@@ -999,7 +1003,8 @@
             document.getElementById('btn-bulk-inyectar').style.display = window.discrepanciasInyectar.length > 0 ? 'inline-block' : 'none';
             document.getElementById('btn-bulk-eliminar').style.display = window.discrepanciasEliminar.length > 0 ? 'inline-block' : 'none';
             document.getElementById('btn-bulk-tnc').style.display = window.discrepanciasTNC.length > 0 ? 'inline-block' : 'none';
-            // Mostrar botón de Enriquecer si hubo matches
+            
+            // Aparece SOLO si hay matches que NO tengan metadatos aún
             document.getElementById('btn-bulk-enriquecer').style.display = window.matchesParaEnriquecer.length > 0 ? 'inline-block' : 'none';
         };
 
@@ -1062,7 +1067,6 @@
                         await window.updateDoc(docRefToUpdate, updatePayload);
                         actualizados++;
                     } else {
-                        // Respaldo para BD Legacy (Enero a Abril)
                         const qL = window.query(window.collection(window.db, "registros"), window.where("fecha", "==", fecha));
                         const qsL = await window.getDocs(qL);
                         for(let d of qsL.docs) {
@@ -1074,12 +1078,13 @@
                                 let key = `metadata_${estudio.replace(/\s+/g,'_')}`;
                                 await window.updateDoc(d.ref, { [key]: metadatosRicos });
                                 actualizados++;
-                                break; // Con 1 que anclemos es suficiente
+                                break; 
                             }
                         }
                     }
                 }
                 mostrarToast(`Enriquecimiento exitoso: ${actualizados} registros actualizados con IA`, "exito");
+                await window.initAuditoria(); // Recargar para que desaparezca el botón
             } catch(e) { 
                 console.error(e); 
                 mostrarToast("Error enriqueciendo datos", "error"); 
@@ -1088,9 +1093,6 @@
             btn.innerHTML = txtOriginal; btn.disabled = false;
         };
 
-        // ==========================================
-        // ACCIONES MASIVAS Y CORRECCIÓN EN BD
-        // ==========================================
         window.aplicarAjuste = async function(fecha, sucursal, medico, estudio, cantApp, cantExcel) {
             if (cantExcel === cantApp) return;
 
