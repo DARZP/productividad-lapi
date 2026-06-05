@@ -36,7 +36,7 @@
         window.where = where;
 
         document.addEventListener("DOMContentLoaded", () => {
-            window.aplicarFiltroRapido('mes'); // Inicia cargando el mes actual por default
+            window.aplicarFiltroRapido('mes'); 
         });
     </script>
     
@@ -118,7 +118,7 @@
                 
                 <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-indigo-500/50">
                     <button onclick="window.print()" class="bg-indigo-900/50 hover:bg-indigo-800 text-white font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider border border-indigo-500/30"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
-                    <button onclick="exportarExcelData()" class="bg-emerald-600/80 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider border border-emerald-500/30"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
+                    <button onclick="exportarExcelData()" class="bg-emerald-600/80 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider border border-emerald-500/30"><i class="fa-solid fa-file-excel mr-1"></i> Analítico</button>
                 </div>
             </div>
 
@@ -129,7 +129,7 @@
                 </h3>
                 
                 <div class="flex flex-col gap-3 max-h-[40vh] overflow-y-auto scroll-custom pr-2" id="checklist-modulos">
-                    </div>
+                </div>
             </div>
         </div>
 
@@ -279,7 +279,6 @@
             { id: "mod-tab-suc", label: "Tabla: Médicos Sucursales", checked: true }
         ];
 
-        // INYECTAR CHECKLIST
         const clContainer = document.getElementById('checklist-modulos');
         CATALOGO_MODULOS.forEach(mod => {
             if(mod.isSep) {
@@ -347,7 +346,7 @@
         };
 
         // ==========================================
-        // MOTOR EXTRACTOR DE DATOS
+        // MOTOR EXTRACTOR Y ENRIQUECEDOR DE DATOS
         // ==========================================
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
@@ -382,7 +381,6 @@
             document.getElementById('canvas-vacio').classList.add('hidden');
             document.getElementById('contenedor-modulos').classList.remove('hidden');
 
-            // Variables Acumuladoras
             let t_Global = 0, t_Suc = 0, t_For = 0;
             let c_Estudios = {}; 
             
@@ -416,7 +414,24 @@
                         s_cDias[diaSemana] += 1;
                         s_Medicos[med] = (s_Medicos[med] || 0) + 1;
 
-                        datosCrudosExportar.sucursales.push({ FECHA: data.fecha, SUCURSAL: suc, MEDICO: med, ESTUDIO: data.estudio, SISTEMA: "Legacy" });
+                        // EXTRACCIÓN DE METADATA RICA PARA EL SÚPER EXCEL
+                        let metaKey = `metadata_${est.replace(/\s+/g,'_')}`;
+                        let metadatos = data[metaKey] || [];
+                        let procesados = 0;
+
+                        metadatos.forEach(m => {
+                            datosCrudosExportar.sucursales.push({ 
+                                FECHA: data.fecha, SUCURSAL: suc, MEDICO: med, ESTUDIO: est, CANTIDAD: 1, SISTEMA: "Legacy",
+                                PACIENTE: m.paciente || "S/D", ORDEN: m.orden || "S/N", EMPRESA: m.empresa || "PARTICULAR", FOLIO_HC: m.folio || "N/A"
+                            });
+                            procesados++;
+                        });
+                        if (1 > procesados) {
+                            datosCrudosExportar.sucursales.push({ 
+                                FECHA: data.fecha, SUCURSAL: suc, MEDICO: med, ESTUDIO: est, CANTIDAD: 1 - procesados, SISTEMA: "Legacy",
+                                PACIENTE: "NO ENRIQUECIDO", ORDEN: "--", EMPRESA: "--", FOLIO_HC: "--"
+                            });
+                        }
 
                     } else if(data.detalles) {
                         let emp = normalizarDato(data.empresa);
@@ -441,7 +456,24 @@
                             if(!f_Medicos[med]) f_Medicos[med] = { estudios: 0, horas: 0 };
                             f_Medicos[med].estudios += cant;
 
-                            datosCrudosExportar.foraneos.push({ FECHA: data.fecha, EMPRESA: emp, SUCURSAL_BASE: suc, MEDICO: med, ESTUDIO: det.estudio, CANTIDAD: cant });
+                            // EXTRACCIÓN DE METADATA RICA PARA EL SÚPER EXCEL
+                            let metaKey = `metadata_${est.replace(/\s+/g,'_')}`;
+                            let metadatos = data[metaKey] || [];
+                            let procesados = 0;
+
+                            metadatos.forEach(m => {
+                                datosCrudosExportar.foraneos.push({ 
+                                    FECHA: data.fecha, SUCURSAL_BASE: suc, EMPRESA_SERVICIO: emp, MEDICO: med, ESTUDIO: est, CANTIDAD: 1, 
+                                    PACIENTE: m.paciente || "S/D", ORDEN: m.orden || "S/N", EMPRESA_ASOCIADA: m.empresa || "S/D", FOLIO_HC: m.folio || "N/A"
+                                });
+                                procesados++;
+                            });
+                            if (cant > procesados) {
+                                datosCrudosExportar.foraneos.push({ 
+                                    FECHA: data.fecha, SUCURSAL_BASE: suc, EMPRESA_SERVICIO: emp, MEDICO: med, ESTUDIO: est, CANTIDAD: cant - procesados,
+                                    PACIENTE: "NO ENRIQUECIDO", ORDEN: "--", EMPRESA_ASOCIADA: "--", FOLIO_HC: "--"
+                                });
+                            }
                         });
 
                         medicosUnicos.forEach(m => { if(f_Medicos[m]) f_Medicos[m].horas += horas; });
@@ -474,7 +506,24 @@
                                 s_cDias[diaSemana] += cant;
                                 s_Medicos[med] = (s_Medicos[med] || 0) + cant;
 
-                                datosCrudosExportar.sucursales.push({ FECHA: data.fecha, SUCURSAL: suc, MEDICO: med, ESTUDIO: estRaw, CANTIDAD: cant, SISTEMA: "PWA" });
+                                // EXTRACCIÓN DE METADATA RICA PARA EL SÚPER EXCEL
+                                let metaKey = `metadata_${est.replace(/\s+/g,'_')}`;
+                                let metadatos = data[metaKey] || [];
+                                let procesados = 0;
+
+                                metadatos.forEach(m => {
+                                    datosCrudosExportar.sucursales.push({ 
+                                        FECHA: data.fecha, SUCURSAL: suc, MEDICO: med, ESTUDIO: est, CANTIDAD: 1, SISTEMA: "PWA",
+                                        PACIENTE: m.paciente || "S/D", ORDEN: m.orden || "S/N", EMPRESA: m.empresa || "PARTICULAR", FOLIO_HC: m.folio || "N/A"
+                                    });
+                                    procesados++;
+                                });
+                                if (cant > procesados) {
+                                    datosCrudosExportar.sucursales.push({ 
+                                        FECHA: data.fecha, SUCURSAL: suc, MEDICO: med, ESTUDIO: est, CANTIDAD: cant - procesados, SISTEMA: "PWA",
+                                        PACIENTE: "NO ENRIQUECIDO", ORDEN: "--", EMPRESA: "--", FOLIO_HC: "--"
+                                    });
+                                }
                             }
                         });
                     }
@@ -571,7 +620,7 @@
             if(datosCrudosExportar.foraneos.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosCrudosExportar.foraneos), "Foraneos"); 
             if(datosCrudosExportar.sucursales.length > 0) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosCrudosExportar.sucursales), "Sucursales"); 
             
-            XLSX.writeFile(wb, `Reporte_Inteligente_LAPI_${new Date().toISOString().split('T')[0]}.xlsx`);
+            XLSX.writeFile(wb, `Reporte_Analitico_LAPI_${new Date().toISOString().split('T')[0]}.xlsx`);
         };
 
     </script>
