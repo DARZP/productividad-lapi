@@ -185,6 +185,9 @@
             </div>
         </div>
 
+        <!-- ========================================== -->
+        <!-- SECCIÓN TNC Y PERFIL                       -->
+        <!-- ========================================== -->
         <div id="sec-tnc" class="hidden animate-fade-in flex-1">
             <div class="glass p-6 rounded-3xl shadow-sm flex flex-col min-h-full border border-slate-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-slate-200 pb-4 gap-4">
@@ -245,6 +248,7 @@
         </div>
     </main>
 
+    <!-- MODAL DE EXTRACCIÓN ONEDRIVE -->
     <div id="modal-onedrive" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-onedrive-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-blue-200 text-center flex flex-col max-h-[90vh]">
             <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-brands fa-microsoft"></i></div>
@@ -268,6 +272,7 @@
         </div>
     </div>
 
+    <!-- MODAL TNC -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-emerald-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
@@ -304,6 +309,7 @@
         </div>
     </div>
 
+    <!-- SÚPER LUPA (AMPLIADA PARA METADATOS) -->
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-2xl w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
@@ -323,6 +329,7 @@
         </div>
     </div>
 
+    <!-- MODAL CORRECCIÓN INDIVIDUAL -->
     <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-correccion-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-emerald-200 text-center">
             <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
@@ -572,6 +579,9 @@
             }
         };
 
+        // ==========================================================
+        // 2. MOTOR ESTRICTO CONTEXTUAL Y EXTRACTOR INTELIGENTE
+        // ==========================================================
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
@@ -605,14 +615,20 @@
             if(!est) return "Desconocido";
             let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             
-            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clinica";
-            if (upper.includes("ESPIROMETRIA")) return "Espirometria";
-            if (upper.includes("AUDIOMETRIA")) return "Audiometria";
+            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clínica";
+            if (upper.includes("ESPIROMETRIA")) return "Espirometría";
+            if (upper.includes("AUDIOMETRIA")) return "Audiometría";
             if (upper.includes("ELECTROCARDIOGRAMA") || upper === "ECG" || upper === "EKG") return "Electrocardiograma";
-            if (upper.includes("VISUAL") || upper.includes("OPTOMETRIA")) return "Agudeza Visual";
-            if (upper.includes("CONSULTA")) return "Consulta Medica";
+            if (upper.includes("VISUAL") || upper.includes("OPTOMETRIA")) return "Examen Capacidad Visual";
+            if (upper.includes("CONSULTA")) return "Consulta Médica";
 
             return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        }
+
+        function getMetaKey(estudioStr) {
+            if(!estudioStr) return "metadata_DESCONOCIDO";
+            let safeName = estudioStr.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
+            return `metadata_${safeName}`;
         }
 
         function traducirMedico(rawMed, rawSuc) {
@@ -727,7 +743,7 @@
                                 let est = unificarEstudio(estRaw);
                                 let med = traducirMedico(f[mapa[key]], sEx);
                                 
-                                let folioAsignado = (est === "Historia Clinica" || est === "Historia Clínica") ? folioEncontrado : "N/A";
+                                let folioAsignado = (est === "Historia Clínica" || est === "Historia Clinica") ? folioEncontrado : "N/A";
 
                                 const hash = `${fEx}|${sEx}|${normalizarDato(med)}|${est}`;
                                 
@@ -825,7 +841,7 @@
                             data.detalles.forEach(det => {
                                 let cant = parseInt(det.cant) || 1;
                                 let estLimpio = unificarEstudio(det.estudio);
-                                let metaKey = `metadata_${estLimpio.replace(/\s+/g,'_')}`;
+                                let metaKey = getMetaKey(estLimpio);
                                 let hasMeta = data[metaKey] && data[metaKey].length > 0;
                                 
                                 for(let k=0; k<cant; k++) {
@@ -834,7 +850,7 @@
                             });
                         } else if (data.estudio) {
                             let estLimpio = unificarEstudio(data.estudio);
-                            let metaKey = `metadata_${estLimpio.replace(/\s+/g,'_')}`;
+                            let metaKey = getMetaKey(estLimpio);
                             let hasMeta = data[metaKey] && data[metaKey].length > 0;
                             rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: estLimpio, medico: normalizarDato(traducirMedico(data.medico, data.sucursal)), hasMeta });
                         }
@@ -842,7 +858,7 @@
                         data.detalles.forEach(det => {
                             let cant = parseInt(det.cant) || 1;
                             let estLimpio = unificarEstudio(det.estudio);
-                            let metaKey = `metadata_${estLimpio.replace(/\s+/g,'_')}`;
+                            let metaKey = getMetaKey(estLimpio);
                             let hasMeta = data[metaKey] && data[metaKey].length > 0;
                             
                             for(let k=0; k<cant; k++) {
@@ -859,7 +875,7 @@
                         Object.keys(data.estudios).forEach(est => {
                             let cant = parseInt(data.estudios[est]) || 0;
                             let estLimpio = unificarEstudio(est);
-                            let metaKey = `metadata_${estLimpio.replace(/\s+/g,'_')}`;
+                            let metaKey = getMetaKey(estLimpio);
                             let hasMeta = data[metaKey] && data[metaKey].length > 0;
                             
                             for(let k=0; k<cant; k++){
@@ -1044,7 +1060,7 @@
         }
 
         // ==========================================
-        // BOTÓN: ENRIQUECER MATCHES A VOLUNTAD (IA)
+        // BOTÓN: ENRIQUECER MATCHES A VOLUNTAD
         // ==========================================
         window.enriquecerMatchesMasivo = async function() {
             if(!confirm(`¿Deseas inyectar los metadatos de Excel (Pacientes, Órdenes, Folios) a los ${window.matchesParaEnriquecer.length} grupos que hicieron Match perfecto?\n\n(Esto consumirá operaciones de escritura en Firebase)`)) return;
@@ -1079,14 +1095,23 @@
                         for(let d of qsDocs.docs) {
                             let data = d.data();
                             let dbSuc = normalizarDato(data.sucursal);
-                            let dbMed = normalizarDato(traducirMedico(data.medico, dbSuc)); // <--- TRADUCCIÓN VITAL
+                            let dbMed = normalizarDato(traducirMedico(data.medico, dbSuc));
                             
                             if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
                                 if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed];
                             }
                             if (dbMed === item.medico && dbSuc === item.sucursal) {
-                                docRefToUpdate = d.ref;
-                                break;
+                                // Confirmar que el documento realmente tiene el estudio
+                                let hasStudy = false;
+                                if (data.estudios) {
+                                    for(let k in data.estudios) {
+                                        if (unificarEstudio(k) === item.estudio) hasStudy = true;
+                                    }
+                                }
+                                if (hasStudy) {
+                                    docRefToUpdate = d.ref;
+                                    break;
+                                }
                             }
                         }
 
@@ -1095,16 +1120,21 @@
                             for(let d of qsLeg.docs) {
                                 let data = d.data();
                                 let dbSuc = normalizarDato(data.sucursal || data.empresa || "FORÁNEO");
-                                let dbMedTop = normalizarDato(traducirMedico(data.medico, dbSuc)); // <--- TRADUCCIÓN VITAL
+                                let dbMedTop = normalizarDato(traducirMedico(data.medico, dbSuc)); 
 
                                 if (dbSuc === "FORÁNEO" && window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop];
                                 
-                                let docHasMedico = (dbMedTop === item.medico);
-                                if(!docHasMedico && data.detalles) {
-                                    docHasMedico = data.detalles.some(det => normalizarDato(traducirMedico(det.medico || data.medico, dbSuc)) === item.medico);
+                                let docHasMedicoAndStudy = false;
+                                if (data.detalles && data.detalles.length > 0) {
+                                    docHasMedicoAndStudy = data.detalles.some(det => 
+                                        normalizarDato(traducirMedico(det.medico || data.medico, dbSuc)) === item.medico &&
+                                        unificarEstudio(det.estudio) === item.estudio
+                                    );
+                                } else if (data.estudio) {
+                                    docHasMedicoAndStudy = (normalizarDato(traducirMedico(data.medico, dbSuc)) === item.medico && unificarEstudio(data.estudio) === item.estudio);
                                 }
 
-                                if (dbSuc === item.sucursal && docHasMedico) {
+                                if (dbSuc === item.sucursal && docHasMedicoAndStudy) {
                                     docRefToUpdate = d.ref;
                                     break; 
                                 }
@@ -1112,7 +1142,7 @@
                         }
 
                         if (docRefToUpdate) {
-                            let key = `metadata_${item.estudio.replace(/\s+/g,'_')}`;
+                            let key = getMetaKey(item.estudio);
                             await window.updateDoc(docRefToUpdate, { [key]: metadatosRicos });
                             actualizados++;
                         }
@@ -1150,7 +1180,7 @@
                     let dData = d.data();
                     let rawSuc = dData.sucursal || "FORÁNEO";
                     let dbSuc = normalizarDato(rawSuc);
-                    let dbMed = normalizarDato(traducirMedico(dData.medico, rawSuc)); // <--- TRADUCCIÓN VITAL
+                    let dbMed = normalizarDato(traducirMedico(dData.medico, rawSuc)); 
                     
                     if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
                         if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed];
@@ -1171,7 +1201,7 @@
                         estudios: datos.estudios, 
                         ultimaActualizacion: new Date() 
                     };
-                    if(metadatosRicos.length > 0) updatePayload[`metadata_${estudio.replace(/\s+/g,'_')}`] = metadatosRicos;
+                    if(metadatosRicos.length > 0) updatePayload[getMetaKey(estudio)] = metadatosRicos;
 
                     await window.updateDoc(docRefToUpdate, updatePayload);
                 } else {
@@ -1183,7 +1213,7 @@
                         tipo: "sucursal_agrupada", fecha, sucursal, medico, 
                         estudios: { [estudio]: aInyectar }, observaciones: "Ajustado por Auditoría", ultimaActualizacion: new Date() 
                     };
-                    if(metadatosRicos.length > 0) setPayload[`metadata_${estudio.replace(/\s+/g,'_')}`] = metadatosRicos;
+                    if(metadatosRicos.length > 0) setPayload[getMetaKey(estudio)] = metadatosRicos;
 
                     await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", newDocId), setPayload);
                 }
@@ -1198,7 +1228,7 @@
                     let datos = d.data();
                     let rawSuc = datos.sucursal || "FORÁNEO";
                     let dbSuc = normalizarDato(rawSuc);
-                    let dbMed = normalizarDato(traducirMedico(datos.medico, rawSuc)); // <--- TRADUCCIÓN VITAL
+                    let dbMed = normalizarDato(traducirMedico(datos.medico, rawSuc)); 
                     
                     if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
                         if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed];
@@ -1216,7 +1246,7 @@
                                 estudios: datos.estudios, 
                                 ultimaActualizacion: new Date() 
                             };
-                            if(metadatosRicos.length > 0) updatePayload[`metadata_${estudio.replace(/\s+/g,'_')}`] = metadatosRicos;
+                            if(metadatosRicos.length > 0) updatePayload[getMetaKey(estudio)] = metadatosRicos;
 
                             await window.updateDoc(d.ref, updatePayload);
                         }
@@ -1233,7 +1263,7 @@
                         
                         let rawSuc = data.sucursal || data.empresa || "FORÁNEO";
                         let dbSuc = normalizarDato(rawSuc);
-                        let dbMedTop = normalizarDato(traducirMedico(data.medico, rawSuc)); // <--- TRADUCCIÓN VITAL
+                        let dbMedTop = normalizarDato(traducirMedico(data.medico, rawSuc)); 
 
                         if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
                             if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop];
