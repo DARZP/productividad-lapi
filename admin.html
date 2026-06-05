@@ -122,7 +122,7 @@
             <div class="grid grid-cols-1 md:grid-cols-5 gap-3 pt-3 border-t border-slate-100">
                 <div class="md:col-span-2 relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                    <input type="text" id="buscador-tabla" onkeyup="filtrarTablaAdmin()" placeholder="Búsqueda Universal (Incluye N° Orden y Pacientes)..." class="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-purple-400 transition-colors">
+                    <input type="text" id="buscador-tabla" onkeyup="filtrarTablaAdmin()" placeholder="Búsqueda Universal..." class="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-purple-400 transition-colors">
                 </div>
                 <select id="filtro-origen" onchange="filtrarTablaAdmin()" class="py-2 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600 focus:border-purple-400">
                     <option value="">Cualquier Origen</option>
@@ -356,8 +356,11 @@
                 document.getElementById('kpi-foraneo').innerText = t_For.toLocaleString();
                 document.getElementById('kpi-empresas').innerText = empresas.size;
 
+                // EL PARCHE DEL ERROR: Validar fechas para evitar undefined.localeCompare
                 registrosGlobales.sort((a,b) => {
-                    if (a.fecha !== b.fecha) return b.fecha.localeCompare(a.fecha);
+                    let fA = a.fecha || "1900-01-01";
+                    let fB = b.fecha || "1900-01-01";
+                    if (fA !== fB) return fB.localeCompare(fA);
                     return (b.groupId || "").localeCompare(a.groupId || "");
                 });
 
