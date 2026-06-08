@@ -51,18 +51,43 @@
         .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
         .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
         
+        /* ==========================================
+           REGLAS DE IMPRESIÓN (PDF) CORREGIDAS
+           ========================================== */
         @media print {
-            @page { margin: 10mm; size: A4 portrait; }
-            body { background-color: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            @page { margin: 15mm; size: A4 portrait; }
+            
+            /* 1. Forzamos al navegador a liberar las alturas fijas y mostrar todo el contenido (Múltiples hojas) */
+            body, html { height: auto !important; overflow: visible !important; background-color: white !important; display: block !important; }
+            main { padding: 0 !important; margin: 0 !important; height: auto !important; overflow: visible !important; display: block !important; }
+            #hoja-reporte { max-width: 100% !important; border: none !important; box-shadow: none !important; overflow: visible !important; padding: 0 !important; margin: 0 !important; height: auto !important; }
+            
+            /* Ocultamos lo que no es reporte */
             .no-print { display: none !important; }
             nav { display: none !important; }
-            main { padding: 0 !important; margin: 0 !important; }
-            .glass { box-shadow: none !important; border: 1px solid #cbd5e1 !important; break-inside: avoid; margin-bottom: 15px;}
-            .print-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 15px !important; }
+
+            /* 2. Blindaje Anti-Cortes: Las tarjetas, gráficas y tablas NO se parten a la mitad */
+            .glass { 
+                box-shadow: none !important; 
+                border: 1px solid #cbd5e1 !important; 
+                break-inside: avoid !important; 
+                page-break-inside: avoid !important; 
+                margin-bottom: 20px !important; 
+                overflow: visible !important; 
+            }
+            
+            /* 3. Excepción: Permitimos que la tabla larguísima sí salte de página de manera natural */
+            #mod-tab-suc { break-inside: auto !important; page-break-inside: auto !important; }
+            tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+
+            /* Ajustes de Grilla y Gráficas */
+            .print-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 15px !important; align-items: start !important; }
             .print-col-span-2 { grid-column: span 2 / span 2 !important; }
-            canvas { max-height: 220px !important; width: 100% !important; }
-            .page-break { page-break-before: always; display: block; height: 1px; }
-            .header-print { border-bottom: 3px solid #0f172a !important; padding-bottom: 10px !important; margin-bottom: 20px !important; }
+            canvas { max-height: 250px !important; width: 100% !important; }
+            
+            /* Separadores explícitos */
+            .page-break { break-before: page !important; page-break-before: always !important; display: block; height: 1px; margin: 15px 0 !important; }
+            .header-print { border-bottom: 3px solid #0f172a !important; padding-bottom: 10px !important; margin-bottom: 20px !important; break-inside: avoid !important; }
         }
     </style>
 </head>
