@@ -11,11 +11,11 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        // 👇 Importamos enableIndexedDbPersistence aquí también
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -105,7 +105,9 @@
             </div>
 
             <div id="paso-4" class="paso hidden">
-                <h2 class="font-bold mb-4 text-center">Resumen Final</h2>
+                <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Resumen Final
+                </h2>
                 <div id="resumen-contenido" class="text-sm bg-black/20 p-4 rounded-xl mb-4 space-y-2"></div>
                 
                 <label class="block mb-2 font-medium text-sm">Observaciones (Pendientes, Inconvenientes o Info Relevante)</label>
@@ -115,6 +117,27 @@
                     <button onclick="location.reload()" class="w-1/3 bg-red-500 hover:bg-red-600 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95">Reiniciar</button>
                     <button id="btn-confirmar" onclick="finalizar()" class="w-2/3 bg-emerald-500 hover:bg-emerald-600 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-cloud-arrow-up"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+
+            <div id="paso-post-confirmacion" class="paso hidden text-center">
+                <div class="glass p-6 rounded-2xl mb-6 border-l-4 border-emerald-500">
+                    <i class="fa-solid fa-circle-check text-5xl text-emerald-300 mb-4 block"></i>
+                    <h2 class="text-xl font-bold mb-2 text-white">¡Registro Guardado con Éxito!</h2>
+                    <p class="text-sm text-white/80 mb-4">Tus datos han sido sincronizados.</p>
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10">
+                        <p class="text-xs uppercase tracking-widest opacity-70 text-white">Folio de Rastreo</p>
+                        <p id="post-folio-text" class="text-4xl font-black text-orange-200">----</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button onclick="generarImagenCompartir()" id="btn-compartir-final" class="w-full bg-white text-orange-600 font-bold py-3.5 rounded-xl shadow-lg flex justify-center items-center gap-2 active:scale-95 transition-all">
+                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Compartir Resumen (Imagen)
+                    </button>
+                    <button onclick="location.reload()" class="w-full bg-emerald-500 hover:bg-emerald-600 font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all">
+                        Finalizar y Volver al Inicio
                     </button>
                 </div>
             </div>
@@ -170,16 +193,16 @@
 
         <div id="seccion-botones-extra" class="space-y-4 transition-all duration-500">
             <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 text-center">
-                <p class="text-xs font-bold uppercase mb-2 opacity-80">Editar registro previo</p>
+                <p class="text-xs font-bold uppercase mb-2 opacity-80 text-white">Editar registro previo</p>
                 <div class="flex gap-2">
-                    <input id="input-edit-id" placeholder="Folio (Ej: 4812M)" class="w-full p-2.5 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50 uppercase font-bold text-center">
-                    <button id="btn-buscar-folio" onclick="buscarRegistro()" class="bg-white/20 hover:bg-white/30 transition-all px-4 py-2.5 rounded-lg text-sm font-bold active:scale-95">Buscar</button>
+                    <input id="input-edit-id" placeholder="Folio (Ej: 4812M)" class="w-full p-2.5 rounded-lg bg-black/10 outline-none text-sm placeholder-white/50 uppercase font-bold text-center text-white">
+                    <button id="btn-buscar-folio" onclick="buscarRegistro()" class="bg-white/20 hover:bg-white/30 text-white transition-all px-4 py-2.5 rounded-lg text-sm font-bold active:scale-95">Buscar</button>
                 </div>
             </div>
 
             <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 text-center">
-                <p class="text-xs font-bold uppercase mb-2 opacity-80">¿Estás en una Sucursal?</p>
-                <button onclick="window.location.href='sucursal.html'" class="w-full bg-white/20 hover:bg-white/30 py-3.5 rounded-lg text-sm font-bold transition-all active:scale-95">
+                <p class="text-xs font-bold uppercase mb-2 opacity-80 text-white">¿Estás en una Sucursal?</p>
+                <button onclick="window.location.href='sucursal.html'" class="w-full bg-white/20 hover:bg-white/30 text-white py-3.5 rounded-lg text-sm font-bold transition-all active:scale-95">
                     <i class="fa-solid fa-building mr-2"></i> Ir a registro de Sucursales
                 </button>
             </div>
@@ -218,6 +241,35 @@
         </div>
     </div>
 
+    <div id="captura-temp" class="fixed -top-[3000px] -left-[3000px] w-full max-w-md p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
+        <div class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-6 rounded-[2rem]">
+            <div class="glass p-6 rounded-3xl text-white mb-6">
+                <h1 class="text-2xl font-black mb-1"><i class="fa-solid fa-map-location-dot mr-2"></i> REGISTRO DIARIO</h1>
+                <p class="text-sm opacity-80 font-medium">Productividad Foráneos</p>
+            </div>
+            
+            <div class="glass p-6 rounded-3xl text-white">
+                <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-xl">
+                    <i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Resumen Final
+                </h2>
+
+                <div class="bg-black/20 p-4 rounded-xl mb-4 text-center border border-white/10">
+                    <p class="text-[10px] uppercase tracking-widest opacity-70">Folio Validado</p>
+                    <p id="cap-folio" class="text-4xl font-black text-orange-200">----</p>
+                </div>
+
+                <div id="cap-resumen-contenido" class="text-sm bg-black/20 p-4 rounded-xl mb-4 space-y-2 border border-white/10"></div>
+                
+                <p class="text-xs font-bold uppercase mb-1 opacity-80 mt-4">Observaciones</p>
+                <div id="cap-observaciones" class="text-sm bg-black/20 p-4 rounded-xl min-h-[60px] border border-white/10 italic text-white/90">Sin observaciones.</div>
+                
+                <div class="text-center w-full pt-6 mt-6 border-t border-white/10 text-white/50 text-[10px] font-bold tracking-widest">
+                    GENERADO POR PWA LAPI PRODUCTIVIDAD
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const empresas = window.LAPI_CONFIG.empresas;
         const medicos = window.LAPI_CONFIG.medicos;
@@ -240,7 +292,7 @@
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'info' ? 'bg-sky-500' : 'bg-red-500');
             const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'info' ? 'fa-info-circle' : 'fa-triangle-exclamation');
-            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
+            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs z-[300]`;
             toast.innerHTML = `<i class="fa-solid ${icono} text-lg"></i> <span class="leading-tight">${mensaje}</span>`;
             document.getElementById('toast-container').appendChild(toast);
             
@@ -267,7 +319,7 @@
 
         document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join('');
         document.getElementById('lista-medicos').innerHTML = medicos.map(m => `<option value="${m}">`).join('');
-        document.getElementById('lista-checkbox-estudios').innerHTML = estudios.map(e => `<label class="flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 transition rounded-xl cursor-pointer"><input type="checkbox" value="${e}" class="w-5 h-5 accent-orange-500 cursor-pointer"> ${e}</label>`).join('');
+        document.getElementById('lista-checkbox-estudios').innerHTML = estudios.map(e => `<label class="flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 transition rounded-xl cursor-pointer text-white"><input type="checkbox" value="${e}" class="w-5 h-5 accent-orange-500 cursor-pointer"> ${e}</label>`).join('');
 
         function calcularHoras(inicio, fin) {
             if(!inicio || !fin) return 0;
@@ -313,12 +365,12 @@
             document.getElementById('paso-3').classList.remove('hidden');
             const est = seleccionados[indiceActual];
             document.getElementById('detalle-estudio-actual').innerHTML = `
-                <div class="bg-black/20 p-4 rounded-2xl text-center mb-4 border border-white/10">
+                <div class="bg-black/20 p-4 rounded-2xl text-center mb-4 border border-white/10 text-white">
                     <p class="text-xs uppercase tracking-widest opacity-80 mb-1">Estudio Actual</p>
                     <h3 class="font-black text-xl text-orange-200">${est}</h3>
                 </div>
                 <div id="lista-medicos-detalle" class="space-y-3 mb-4"></div>
-                <button onclick="agregarFilaMedico()" class="w-full bg-white/20 hover:bg-white/30 transition py-2.5 rounded-xl text-sm font-bold active:scale-95 mb-6"><i class="fa-solid fa-plus mr-1"></i> Añadir personal a este estudio</button>
+                <button onclick="agregarFilaMedico()" class="w-full bg-white/20 hover:bg-white/30 text-white transition py-2.5 rounded-xl text-sm font-bold active:scale-95 mb-6"><i class="fa-solid fa-plus mr-1"></i> Añadir personal a este estudio</button>
                 <button onclick="guardarDetalle('${est}')" class="w-full bg-white text-orange-600 font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all">${indiceActual < seleccionados.length - 1 ? 'Siguiente Estudio <i class="fa-solid fa-arrow-right ml-1"></i>' : 'Ir al Resumen Final <i class="fa-solid fa-check ml-1"></i>'}</button>
             `;
             agregarFilaMedico();
@@ -326,25 +378,31 @@
 
         function agregarFilaMedico() {
             const div = document.createElement('div');
-            div.className = "flex gap-2";
-            div.innerHTML = `<input list="lista-medicos" placeholder="Personal Asignado" class="med-name w-full p-3 rounded-xl bg-white/20 outline-none placeholder-white/50 text-sm font-bold">
-                             <input type="number" min="1" placeholder="Cant." class="med-cant w-1/3 p-3 rounded-xl bg-white/20 outline-none placeholder-white/50 text-center font-bold">`;
+            div.className = "flex gap-2 med-fila";
+            div.innerHTML = `<input list="lista-medicos" placeholder="Personal Asignado" class="med-name w-full p-3 rounded-xl bg-white/20 outline-none placeholder-white/50 text-sm font-bold text-white">
+                             <input type="number" min="1" placeholder="Cant." class="med-cant w-1/3 p-3 rounded-xl bg-white/20 outline-none placeholder-white/50 text-center font-bold text-white">`;
             document.getElementById('lista-medicos-detalle').appendChild(div);
         }
 
         function guardarDetalle(estudio) {
             let errorValidacion = false;
-            let hayDatos = false;
+            let hayDatosValidos = false;
 
-            document.querySelectorAll('#lista-medicos-detalle > div').forEach(fila => {
+            document.querySelectorAll('.med-fila').forEach(fila => {
                 const medico = fila.querySelector('.med-name').value;
                 const cant = parseInt(fila.querySelector('.med-cant').value);
-                if(medico || !isNaN(cant)) hayDatos = true;
-                if(hayDatos && (!medico || isNaN(cant) || cant < 1)) errorValidacion = true;
-                else if (medico && cant > 0) registroFinal.push({ estudio, medico, cant });
+                
+                if (medico && !isNaN(cant) && cant > 0) {
+                    registroFinal.push({ estudio, medico, cant });
+                    hayDatosValidos = true;
+                } else if (medico || !isNaN(cant)) {
+                    // Si un campo está lleno pero el otro no, o cant es inválida
+                    errorValidacion = true;
+                }
             });
 
-            if(errorValidacion || !hayDatos) return mostrarToast("Por favor asigna personal válidos y cantidades mayores a 0.", "error");
+            if(!hayDatosValidos) return mostrarToast("Debes añadir al menos un personal con cantidad válida.", "error");
+            if(errorValidacion) return mostrarToast("Por favor completa nombre y cantidad (>0) para todo el personal.", "error");
             
             if(indiceActual < seleccionados.length - 1) { 
                 indiceActual++; 
@@ -357,12 +415,12 @@
         function mostrarResumen() {
             document.getElementById('paso-3').classList.add('hidden');
             document.getElementById('paso-4').classList.remove('hidden');
-            let html = `<p class="mb-1"><b class="opacity-70">Fecha:</b> ${document.getElementById('input-fecha').value}</p>
-                        <p class="mb-1"><b class="opacity-70">Jornada:</b> ${horasCalculadas} hrs</p>
-                        <p class="mb-3"><b class="opacity-70">Empresa:</b> ${document.getElementById('input-empresa').value.toUpperCase()}</p>`;
+            let html = `<p class="mb-1"><b class="opacity-70 text-white">Fecha:</b> ${document.getElementById('input-fecha').value}</p>
+                        <p class="mb-1"><b class="opacity-70 text-white">Jornada:</b> ${horasCalculadas} hrs</p>
+                        <p class="mb-3"><b class="opacity-70 text-white">Empresa:</b> ${document.getElementById('input-empresa').value.toUpperCase()}</p>`;
             
             registroFinal.forEach(item => {
-                html += `<div class="border-t border-white/20 pt-2 mt-2 flex justify-between items-center">
+                html += `<div class="border-t border-white/20 pt-2 mt-2 flex justify-between items-center text-white">
                             <span><b class="text-orange-200">${item.estudio}</b><br><span class="text-xs opacity-80">${item.medico}</span></span>
                             <span class="bg-white/20 px-3 py-1 rounded-lg font-black text-lg">${item.cant}</span>
                          </div>`;
@@ -372,21 +430,30 @@
 
         async function finalizar() {
             const btn = document.getElementById('btn-confirmar');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo...';
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Subiendo...';
             btn.disabled = true;
 
+            const hIni = document.getElementById('input-hora-inicio').value;
+            const hFin = document.getElementById('input-hora-fin').value;
             const numAleatorio = Math.floor(1000 + Math.random() * 9000); 
             const folio = numAleatorio + document.getElementById('input-turno').value[0].toUpperCase();
-            
             const empresaF = document.getElementById('input-empresa').value.toUpperCase();
             const observaciones = document.getElementById('input-observaciones').value;
+
+            // Datos para la captura posterior
+            window.datosParaCaptura = {
+                folio,
+                empresaF,
+                observaciones
+            };
 
             try {
                 await window.addDoc(window.collection(window.db, "registros"), {
                     folio, 
                     fecha: document.getElementById('input-fecha').value, 
-                    horaInicio: document.getElementById('input-hora-inicio').value,
-                    horaFin: document.getElementById('input-hora-fin').value,
+                    horaInicio: hIni,
+                    horaFin: hFin,
                     horasLaboradas: horasCalculadas,
                     turno: document.getElementById('input-turno').value,
                     empresa: empresaF, 
@@ -395,13 +462,104 @@
                     timestamp: new Date()
                 });
                 
-                mostrarToast(`¡Guardado! Tu FOLIO de rastreo es: ${folio}`, "exito", 0);
-                setTimeout(() => location.reload(), 3500);
+                // === CAMBIO CLAVE AQUÍ ===
+                // 1. Ocultar paso de resumen y confirmación
+                document.getElementById('paso-4').classList.add('hidden');
+                
+                // 2. Mostrar pantalla de éxito post-confirmación
+                const pasoExito = document.getElementById('paso-post-confirmacion');
+                pasoExito.classList.remove('hidden');
+                document.getElementById('post-folio-text').innerText = folio;
+                
+                mostrarToast(`¡Guardado exitosamente!`, "exito");
+                // Ya no recargamos aquí, dejamos que el usuario elija
             } catch(e) { 
                 mostrarToast("Hubo un problema al subir el registro. Se guardará localmente.", "info"); 
-                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar';
-                btn.disabled = false;
+                console.error(e);
             }
+            // Restauramos el botón por si acaso hay error
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }
+
+        // 👇 NUEVA FUNCIÓN: GENERAR IMAGEN PWA Y COMPARTIR NATIVO 👇
+        window.generarImagenCompartir = async function() {
+            const btn = document.getElementById('btn-compartir-final');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generando imagen...';
+            btn.disabled = true;
+
+            const datos = window.datosParaCaptura;
+            if (!datos) {
+                mostrarToast("Error: Faltan datos de captura.", "error");
+                btn.innerHTML = originalHTML; btn.disabled = false; return;
+            }
+
+            // 1. Llenar el contenedor temporal oculto con el diseño perfecto
+            document.getElementById('cap-folio').innerText = datos.folio;
+            document.getElementById('cap-resumen-contenido').innerHTML = document.getElementById('resumen-contenido').innerHTML;
+            document.getElementById('cap-observaciones').innerText = datos.observaciones || 'Sin observaciones relevantes.';
+            
+            // 2. Esperar un microsegundo para asegurar el render
+            await new Promise(r => setTimeout(r, 100));
+
+            const target = document.getElementById('captura-temp');
+            
+            try {
+                // 3. Crear Canvas ( scale: 2 asegura alta definición )
+                const canvas = await html2canvas(target, {
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    backgroundColor: null, // Mantiene el gradiente del fondo
+                    windowWidth: 380, // Forzamos un ancho tipo móvil para la captura
+                    onclone: (clonedDoc) => {
+                        // Aseguramos que el clon esté visible para la captura
+                        clonedDoc.getElementById('captura-temp').style.position = 'static';
+                        clonedDoc.getElementById('captura-temp').style.display = 'block';
+                    }
+                });
+
+                // 4. Intentar compartir usando la API nativa (Web Share API)
+                if (navigator.share && navigator.canShare) {
+                    canvas.toBlob(async (blob) => {
+                        const file = new File([blob], `LAPI_Resumen_${datos.folio}.png`, { type: 'image/png' });
+                        if (navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({
+                                    files: [file],
+                                    title: `LAPI - Resumen Folio ${datos.folio}`,
+                                    text: `Resumen de jornada LAPI (${datos.empresaF})`
+                                });
+                                mostrarToast("¡Imagen compartida!", "exito");
+                            } catch (err) {
+                                // Usuario canceló o error de plataforma
+                                console.log("Compartir cancelado o fallido:", err);
+                                if(err.name !== 'AbortError') forzarDescarga(canvas, datos.folio);
+                            }
+                        } else {
+                            forzarDescarga(canvas, datos.folio);
+                        }
+                    });
+                } else {
+                    // Fallback para navegadores que no soportan Web Share API de archivos
+                    forzarDescarga(canvas, datos.folio);
+                }
+            } catch(e) {
+                console.error("Error captura:", e);
+                mostrarToast("Falló la generación de imagen.", "error");
+            }
+
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        };
+
+        function forzarDescarga(canvas, folio) {
+            const link = document.createElement('a');
+            link.download = `LAPI_Resumen_${folio}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+            mostrarToast("Descarga iniciada (El navegador no soporta compartir nativo).", "info");
         }
 
         async function buscarRegistro() { 
@@ -462,7 +620,7 @@
 
         function agregarFilaEdicion(estudio = '', medico = '', cant = '') {
             const div = document.createElement('div');
-            div.className = "flex gap-2 items-center bg-black/20 p-2 rounded-lg edit-fila";
+            div.className = "flex gap-2 items-center bg-black/20 p-2 rounded-lg edit-fila text-white";
             
             const opcionesEstudios = estudios.map(e => `<option value="${e}" class="text-black" ${e === estudio ? 'selected' : ''}>${e}</option>`).join('');
             
@@ -471,8 +629,8 @@
                     <option value="" disabled ${!estudio ? 'selected' : ''} class="text-gray-400">Estudio...</option>
                     ${opcionesEstudios}
                 </select>
-                <input list="lista-medicos" placeholder="Médico" value="${medico}" class="edit-med w-1/3 p-2 rounded-md bg-white/20 outline-none placeholder-white/50">
-                <input type="number" min="1" placeholder="Cant." value="${cant}" class="edit-cant w-1/4 p-2 rounded-md bg-white/20 outline-none placeholder-white/50 text-center">
+                <input list="lista-medicos" placeholder="Médico" value="${medico}" class="edit-med w-1/3 p-2 rounded-md bg-white/20 outline-none placeholder-white/50 text-white">
+                <input type="number" min="1" placeholder="Cant." value="${cant}" class="edit-cant w-1/4 p-2 rounded-md bg-white/20 outline-none placeholder-white/50 text-center text-white">
                 <button onclick="this.parentElement.remove()" class="text-red-300 font-black px-2 hover:text-red-500 transition active:scale-90"><i class="fa-solid fa-trash"></i></button>
             `;
             document.getElementById('edit-detalles-container').appendChild(div);
@@ -505,7 +663,7 @@
             }
 
             const btn = document.getElementById('btn-guardar-cambios');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Actualizando...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Actualizando...';
             btn.disabled = true;
 
             const horasCalculadasNuevas = calcularHoras(horaInicio, horaFin);
@@ -549,7 +707,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             const versionDiv = document.createElement('div');
             // Nota: Cambia 'text-slate-400' a 'text-white/30' si tu index.html tiene un fondo muy oscuro
-            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
+            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-white/40 font-bold tracking-widest pointer-events-none opacity-60';
             versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
             document.body.appendChild(versionDiv);
         });
