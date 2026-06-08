@@ -1,7 +1,7 @@
 // sw.js - Service Worker de LAPI (Versión Activa / Network First)
 
 // 🛑 CAMBIA ESTE NÚMERO CADA VEZ QUE SUBAS UNA ACTUALIZACIÓN A NETLIFY
-const CACHE_VERSION = 'lapi-pwa-v1.2.0'; 
+const CACHE_VERSION = 'lapi-pwa-v1.3.0'; 
 
 const ASSETS_TO_CACHE = [
     './',
