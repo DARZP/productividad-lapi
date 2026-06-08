@@ -122,7 +122,7 @@
             <div class="grid grid-cols-1 md:grid-cols-5 gap-3 pt-3 border-t border-slate-100">
                 <div class="md:col-span-2 relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                    <input type="text" id="buscador-tabla" onkeyup="filtrarTablaAdmin()" placeholder="Búsqueda Universal..." class="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-purple-400 transition-colors">
+                    <input type="text" id="buscador-tabla" onkeyup="filtrarTablaAdmin()" placeholder="Búsqueda Universal (Incluye N° Orden y Pacientes)..." class="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-purple-400 transition-colors">
                 </div>
                 <select id="filtro-origen" onchange="filtrarTablaAdmin()" class="py-2 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600 focus:border-purple-400">
                     <option value="">Cualquier Origen</option>
@@ -168,6 +168,7 @@
 
     </main>
 
+    <!-- SÚPER LUPA DE ADMIN -->
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-2xl w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
@@ -227,6 +228,12 @@
             return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
+        function getMetaKey(estudioStr) {
+            if(!estudioStr) return "metadata_DESCONOCIDO";
+            let safeName = estudioStr.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
+            return `metadata_${safeName}`;
+        }
+
         window.iniciarAdmin = async function() {
             aplicarFiltroRapido('hoy');
         };
@@ -281,7 +288,7 @@
                     if(data.tipo === "sucursal" || data.tipo === "Sucursal") {
                         t_Global++; t_Suc++;
                         let estLimpio = unificarEstudio(data.estudio);
-                        let metaKey = `metadata_${estLimpio.replace(/\s+/g,'_')}`;
+                        let metaKey = getMetaKey(estLimpio);
 
                         registrosGlobales.push({ 
                             groupId: doc.id,
@@ -299,7 +306,7 @@
                         data.detalles.forEach(det => {
                             let c = parseInt(det.cant) || 1;
                             let estLimpio = unificarEstudio(det.estudio);
-                            let metaKey = `metadata_${estLimpio.replace(/\s+/g,'_')}`;
+                            let metaKey = getMetaKey(estLimpio);
 
                             t_Global += c; t_For += c;
                             registrosGlobales.push({ 
@@ -333,7 +340,7 @@
                             if(c > 0) {
                                 t_Global += c; t_Suc += c;
                                 let estLimpio = unificarEstudio(estRaw);
-                                let metaKey = `metadata_${estLimpio.replace(/\s+/g,'_')}`;
+                                let metaKey = getMetaKey(estLimpio);
 
                                 registrosGlobales.push({ 
                                     groupId: doc.id,
@@ -356,12 +363,15 @@
                 document.getElementById('kpi-foraneo').innerText = t_For.toLocaleString();
                 document.getElementById('kpi-empresas').innerText = empresas.size;
 
-                // EL PARCHE DEL ERROR: Validar fechas para evitar undefined.localeCompare
+                // EL PARCHE DEL ERROR: Convertir siempre a String para evitar colapsos
                 registrosGlobales.sort((a,b) => {
-                    let fA = a.fecha || "1900-01-01";
-                    let fB = b.fecha || "1900-01-01";
+                    let fA = a.fecha ? String(a.fecha) : "1900-01-01";
+                    let fB = b.fecha ? String(b.fecha) : "1900-01-01";
                     if (fA !== fB) return fB.localeCompare(fA);
-                    return (b.groupId || "").localeCompare(a.groupId || "");
+                    
+                    let gA = a.groupId ? String(a.groupId) : "";
+                    let gB = b.groupId ? String(b.groupId) : "";
+                    return gB.localeCompare(gA);
                 });
 
                 paginaActual = 1;
@@ -386,7 +396,6 @@
                 if(fMed && !r.medico.toLowerCase().includes(fMed)) return false;
                 if(fLug && !r.lugar.toLowerCase().includes(fLug)) return false;
                 
-                // SÚPER BUSCADOR: Busca en texto general Y en metadatos ocultos
                 if(fGen) {
                     let textToSearch = `${r.medico} ${r.lugar} ${r.estudio} ${r.groupId}`.toLowerCase();
                     let metaText = r.metadatos ? r.metadatos.map(m => `${m.paciente} ${m.orden} ${m.empresa} ${m.folio}`).join(" ").toLowerCase() : "";
@@ -434,7 +443,6 @@
                     ? `<button onclick="eliminarRegistro('${r.groupId}', '${r.dbSource}')" class="text-red-400 hover:text-red-600 bg-white hover:bg-red-50 p-2 rounded-lg transition border border-slate-200 hover:border-red-200 shadow-sm" title="Eliminar este bloque completo"><i class="fa-solid fa-trash-can"></i></button>` 
                     : '';
 
-                // LUPA DE METADATOS EN EL ADMIN
                 let btnLupa = r.metadatos && r.metadatos.length > 0 ? `<button onclick="verLupaAdmin('${r.groupId}', '${r.estudio}')" class="ml-2 text-indigo-500 hover:text-indigo-700 hover:bg-indigo-100 p-1 rounded transition"><i class="fa-solid fa-users"></i></button>` : '';
 
                 tbody.innerHTML += `
