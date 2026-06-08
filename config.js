@@ -199,7 +199,7 @@ window.LAPI_CONFIG = {
         "COMSA INFRAESTRUCTURAS",
         "CONCRETOS FORTALEZA (TPM)",
         "CONDUMEX",
-        "CONSORCIO DIPCEN"
+        "CONSORCIO DIPCEN",
         "CONSULMED",
         "CONSULMED ELEVADORES SCHINDLER",
         "CONSULMED MSD",
@@ -460,7 +460,7 @@ window.LAPI_CONFIG = {
             "MRC": "Cabrera Velazquez Miguel Ramon"
         },
         "MERIDA": {
-            "RML": "Jacqueline Ruiz"
+            "XJ": "Jacqueline Ruiz"
         },
         "MIXCOAC": {
             "PP": "Paula Pichardo",
