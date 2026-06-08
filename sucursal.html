@@ -12,6 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="config.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -122,10 +123,16 @@
             </div>
 
             <div id="vista-resumen-final" class="hidden glass p-6 rounded-3xl shadow-xl border border-white/20">
-                <h2 class="font-black text-xl mb-4 text-center text-white"><i class="fa-solid fa-clipboard-check mr-2"></i> Resumen de Turno</h2>
+                <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
+                    <h2 class="font-black text-xl text-white"><i class="fa-solid fa-clipboard-check mr-2"></i> Resumen de Turno</h2>
+                    <button onclick="generarImagenCompartir()" id="btn-compartir-sucursal" class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl transition flex items-center gap-2 text-sm font-bold active:scale-95" title="Compartir Resumen">
+                        <i class="fa-solid fa-camera-viewfinder text-orange-300"></i>
+                        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    </button>
+                </div>
                 
                 <div id="resumen-contenido" class="bg-black/20 p-4 rounded-2xl mb-6 space-y-2 border border-white/10 text-white/90 text-sm">
-                    </div>
+                </div>
 
                 <div class="mb-6">
                     <label class="block mb-2 font-bold text-sm text-white/90">Observaciones Del Turno:</label>
@@ -168,6 +175,32 @@
             </div>
 
             <button onclick="cerrarModalPWA()" class="w-full bg-white text-orange-600 font-black py-3 rounded-xl transition-all active:scale-95 shadow-lg">Entendido</button>
+        </div>
+    </div>
+
+    <div id="captura-temp-sucursal" class="fixed -top-[3000px] -left-[3000px] w-full max-w-xl p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
+        <div class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-8 rounded-[2rem]">
+            <div class="glass p-6 rounded-3xl text-white mb-6">
+                <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-building mr-2"></i> REGISTRO SUCURSAL</h1>
+                <p id="cap-sucursal-nombre" class="text-base font-medium opacity-90"></p>
+            </div>
+            
+            <div class="glass p-6 rounded-3xl text-white">
+                <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-2xl">
+                    <i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Resumen de Turno
+                </h2>
+
+                <div id="cap-resumen-info" class="text-base bg-black/20 p-5 rounded-xl mb-4 border border-white/10 text-white opacity-90"></div>
+
+                <div id="cap-resumen-lista" class="text-base bg-black/20 p-5 rounded-xl mb-4 space-y-2 border border-white/10"></div>
+                
+                <p class="text-sm font-bold uppercase mb-1 opacity-80 mt-4">Observaciones</p>
+                <div id="cap-observaciones" class="text-base bg-black/20 p-5 rounded-xl min-h-[60px] border border-white/10 italic text-white/90">Sin observaciones.</div>
+                
+                <div class="text-center w-full pt-6 mt-6 border-t border-white/10 text-white/50 text-xs font-bold tracking-widest">
+                    GENERADO POR PWA LAPI PRODUCTIVIDAD
+                </div>
+            </div>
         </div>
     </div>
 
@@ -216,7 +249,7 @@
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'info' ? 'bg-sky-500' : 'bg-red-500');
             const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'info' ? 'fa-info-circle' : 'fa-triangle-exclamation');
-            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
+            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs z-[300]`;
             toast.innerHTML = `<i class="fa-solid ${icono} text-lg"></i> <span class="leading-tight">${mensaje}</span>`;
             document.getElementById('toast-container').appendChild(toast);
             
@@ -294,7 +327,6 @@
                 }
                 if(navigator.onLine) mostrarToast(`Turno Actualizado con éxito. Todo listo.`, 'exito');
             } catch (error) { 
-                // Si la red falla en el inicio, se atrapa aquí pero NO se salta la creación de la tabla.
                 datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
                 if(!navigator.onLine) {
                     mostrarToast("Iniciando en Modo Offline. Tus datos se guardarán en el teléfono.", "info", 4500);
@@ -302,7 +334,6 @@
                     mostrarToast("Iniciando turno con red intermitente.", "info");
                 }
             } finally {
-                // 👇 MAGIA ANTI-BUG: PASE LO QUE PASE, SE CREA LA LISTA DE ESTUDIOS
                 document.getElementById('obs-principal').value = datosDelDia.observaciones || '';
                 renderizarTablero();
             }
@@ -366,9 +397,6 @@
             document.getElementById('vista-captura-principal').classList.add('hidden');
             document.getElementById('vista-resumen-final').classList.remove('hidden');
             
-            let html = `<p class="mb-1"><b class="opacity-70">Fecha:</b> ${document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '')}</p>
-                        <p class="mb-4"><b class="opacity-70">Sucursal:</b> ${sesionActual.sucursal.toUpperCase()}</p>`;
-            
             let totalEstudios = 0;
             let listHtml = '';
             
@@ -391,7 +419,7 @@
                              </div>`;
             }
             
-            document.getElementById('resumen-contenido').innerHTML = html + listHtml;
+            document.getElementById('resumen-contenido').innerHTML = listHtml;
             document.getElementById('obs-resumen').value = datosDelDia.observaciones || '';
         }
 
@@ -407,7 +435,11 @@
             btn.disabled = true;
 
             mostrarToast("¡Turno actualizado! Regresando a estudios...", "exito", 0);
-            setTimeout(() => { location.reload(); }, 2000);
+            setTimeout(() => { 
+                btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Actualizar';
+                btn.disabled = false;
+                ocultarResumen();
+            }, 1500);
         }
 
         function sincronizarConNube() {
@@ -416,13 +448,97 @@
                 try {
                     datosDelDia.ultimaActualizacion = new Date();
                     await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia);
+                    
                     const indicador = document.getElementById('indicador-guardado');
-                    indicador.classList.remove('opacity-0');
-                    // Actualiza el texto si está sin conexión
-                    indicador.innerHTML = navigator.onLine ? '<i class="fa-solid fa-cloud-check"></i> Sincronizado' : '<i class="fa-solid fa-hard-drive"></i> Guardado Local';
-                    setTimeout(() => indicador.classList.add('opacity-0'), 2000);
+                    if (indicador) {
+                        indicador.classList.remove('opacity-0');
+                        indicador.innerHTML = navigator.onLine ? '<i class="fa-solid fa-cloud-check"></i> Sincronizado' : '<i class="fa-solid fa-hard-drive"></i> Guardado Local';
+                        setTimeout(() => indicador.classList.add('opacity-0'), 2000);
+                    }
                 } catch (error) { console.error("Error guardando silencio:", error); }
             }, 800);
+        }
+
+        // 👇 NUEVA FUNCIÓN: GENERAR IMAGEN PWA Y COMPARTIR NATIVO 👇
+        window.generarImagenCompartir = async function() {
+            const btn = document.getElementById('btn-compartir-sucursal');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            const sucursal = sesionActual.sucursal.toUpperCase();
+            const medico = sesionActual.medico.toUpperCase();
+            const observaciones = datosDelDia.observaciones;
+            const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
+
+            // 1. Llenar el contenedor temporal oculto
+            document.getElementById('cap-sucursal-nombre').innerText = `Sucursal: ${sucursal}`;
+            
+            document.getElementById('cap-resumen-info').innerHTML = `
+                <p><b>Fecha:</b> ${fechaUI}</p>
+                <p><b>Personal:</b> <span class="text-orange-200">${medico}</span></p>
+            `;
+
+            // Copiamos el contenido HTML (estudios sumados) al molde de captura
+            document.getElementById('cap-resumen-lista').innerHTML = document.getElementById('resumen-contenido').innerHTML;
+            document.getElementById('cap-observaciones').innerText = observaciones || 'Sin observaciones relevantes.';
+            
+            // 2. Esperar renderizado (micro-pausa)
+            await new Promise(r => setTimeout(r, 100));
+
+            const target = document.getElementById('captura-temp-sucursal');
+            
+            try {
+                // 3. Crear Canvas (Alta calidad)
+                const canvas = await html2canvas(target, {
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    backgroundColor: null, 
+                    onclone: (clonedDoc) => {
+                        clonedDoc.getElementById('captura-temp-sucursal').style.position = 'static';
+                        clonedDoc.getElementById('captura-temp-sucursal').style.display = 'block';
+                    }
+                });
+
+                // 4. Compartir o Descargar
+                if (navigator.share && navigator.canShare) {
+                    canvas.toBlob(async (blob) => {
+                        const file = new File([blob], `LAPI_Sucursal_${sucursal}_${fechaOperativa}.png`, { type: 'image/png' });
+                        if (navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({
+                                    files: [file],
+                                    title: `LAPI - Resumen Sucursal ${sucursal}`,
+                                    text: `Resumen de jornada LAPI - ${sucursal} (${fechaUI})`
+                                });
+                                mostrarToast("¡Imagen compartida!", "exito");
+                            } catch (err) {
+                                console.log("Compartir cancelado o fallido:", err);
+                                if(err.name !== 'AbortError') forzarDescarga(canvas, `${sucursal}_${fechaOperativa}`);
+                            }
+                        } else {
+                            forzarDescarga(canvas, `${sucursal}_${fechaOperativa}`);
+                        }
+                    });
+                } else {
+                    forzarDescarga(canvas, `${sucursal}_${fechaOperativa}`);
+                }
+            } catch(e) {
+                console.error("Error captura:", e);
+                mostrarToast("Falló la generación de imagen.", "error");
+            }
+
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        };
+
+        function forzarDescarga(canvas, idExtra) {
+            const link = document.createElement('a');
+            link.download = `LAPI_Sucursal_${idExtra}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+            mostrarToast("Descarga iniciada (Sin soporte nativo).", "info");
         }
 
         // =========================================================================
@@ -441,7 +557,6 @@
         // =========================================================================
         document.addEventListener("DOMContentLoaded", () => {
             const versionDiv = document.createElement('div');
-            // Nota: Cambia 'text-slate-400' a 'text-white/30' si tu sucursal.html tiene un fondo muy oscuro
             versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
             versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
             document.body.appendChild(versionDiv);
