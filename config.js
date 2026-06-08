@@ -493,7 +493,7 @@ window.LAPI_CONFIG = {
             "MLL": "Lopez Lopez Guadalupe Mireya"
         },
         "REVOLUCION": {
-            "MS": "Saavedra Olvera Miriam Elizabeth",
+            "MS": "Miriam Elizabeth Saavedra Olvera",
             "VR": "Reyes Perez Victor",
             "CS": "Sanchez Sanchez Claudia Ivonne",
             "DO": "Olvera Aguilar Diana Karen",
