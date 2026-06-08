@@ -159,6 +159,7 @@ window.LAPI_CONFIG = {
         "BARCEL TOLUCA",
         "BASF COATINGS MEXICANA",
         "BAXTER HEALTHCARE",
+        "BAYERN",
         "BBVA MEXICO",
         "BECTON DICKINSON",
         "BERRY BPREX PLASTIC - AMCOR",
