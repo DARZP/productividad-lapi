@@ -618,7 +618,7 @@
             let conf = {
                 type: tipo,
                 data: { labels: labels, datasets: [{ data: data, backgroundColor: colorFondo, borderColor: colores[0], borderWidth: 2, borderRadius: tipo==='bar'?4:0, fill: tipo === 'line', tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: tipo === 'doughnut', position: 'bottom' } } }
+                options: { devicePixelRatio: 3, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: tipo === 'doughnut', position: 'bottom' } } }
             };
 
             if (tipo === 'doughnut') {
