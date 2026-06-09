@@ -280,7 +280,6 @@
         let horasCalculadas = 0;
         let editDocId = null; 
 
-        // DETECTORES DE SEÑAL DE INTERNET
         window.addEventListener('offline', () => {
             mostrarToast("Sin conexión a Internet. Modo Offline activado. Puedes seguir trabajando.", "info", 5000);
         });
@@ -303,7 +302,6 @@
             }
         }
 
-        // FUNCIONES MODAL PWA
         function abrirModalPWA() {
             const modal = document.getElementById('modal-pwa');
             const card = document.getElementById('modal-pwa-card');
@@ -441,7 +439,6 @@
             const empresaF = document.getElementById('input-empresa').value.toUpperCase();
             const observaciones = document.getElementById('input-observaciones').value;
 
-            // Datos para la captura posterior
             window.datosParaCaptura = {
                 folio,
                 empresaF,
@@ -477,7 +474,6 @@
             btn.disabled = false;
         }
 
-        // 👇 NUEVA FUNCIÓN: GENERAR IMAGEN PWA Y COMPARTIR NATIVO 👇
         window.generarImagenCompartir = async function() {
             const btn = document.getElementById('btn-compartir-final');
             const originalHTML = btn.innerHTML;
@@ -685,29 +681,25 @@
             });
         }
 
-        // =========================================================================
-        // INYECCIÓN VISUAL Y AUTO-RELLENO DE FECHA/HORA
-        // =========================================================================
+        // 👇 AUTO-RELLENO DE FECHA Y HORA FIN 👇
         document.addEventListener("DOMContentLoaded", () => {
-            // Version Flotante
             const versionDiv = document.createElement('div');
             versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-white/40 font-bold tracking-widest pointer-events-none opacity-60';
             versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
             document.body.appendChild(versionDiv);
 
-            // Auto-rellenar Fecha Hoy y Hora Actual
             const now = new Date();
-            
-            // YYYY-MM-DD
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
-            document.getElementById('input-fecha').value = `${year}-${month}-${day}`;
+            
+            const dateInput = document.getElementById('input-fecha');
+            if(dateInput) dateInput.value = `${year}-${month}-${day}`;
 
-            // HH:MM
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('input-hora-fin').value = `${hours}:${minutes}`;
+            const horaFinInput = document.getElementById('input-hora-fin');
+            if(horaFinInput) horaFinInput.value = `${hours}:${minutes}`;
         });
     </script>
 </body>
