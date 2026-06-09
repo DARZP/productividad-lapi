@@ -35,7 +35,7 @@
             messagingSenderId: "1077149571149",
             appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
         };
-        
+
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
         enableIndexedDbPersistence(window.db).catch((err) => console.error(err));
@@ -203,7 +203,7 @@
         </div>
     </div>
 
-    <div id="captura-temp-sucursal" class="fixed -top-[3000px] -left-[3000px] w-full max-w-xl p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
+    <div id="captura-temp-sucursal" class="fixed -top-[3000px] -left-[3000px] w-[550px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
         <div class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-8 rounded-[2rem]">
             <div class="glass p-6 rounded-3xl text-white mb-6">
                 <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-building mr-2"></i> REGISTRO SUCURSAL</h1>
@@ -224,27 +224,27 @@
         </div>
     </div>
 
-    <div id="captura-temp-global" class="fixed -top-[3000px] -left-[3000px] w-full max-w-xl p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
-        <div class="bg-gradient-to-br from-indigo-500 to-blue-700 min-h-screen p-8 rounded-[2rem]">
+    <div id="captura-temp-global" class="fixed -top-[3000px] -left-[3000px] w-[550px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
+        <div class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-8 rounded-[2rem]">
             <div class="glass p-6 rounded-3xl text-white mb-6">
                 <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-globe mr-2"></i> REPORTE GLOBAL</h1>
                 <p id="cap-glob-sucursal" class="text-base font-medium opacity-90 uppercase"></p>
             </div>
             <div class="glass p-6 rounded-3xl text-white">
                 <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-2xl">
-                    <i class="fa-solid fa-camera-viewfinder text-blue-300"></i> Acumulado del Día
+                    <i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Acumulado del Día
                 </h2>
                 
                 <div id="cap-glob-info" class="text-base bg-black/20 p-5 rounded-xl mb-4 border border-white/10 text-white opacity-90"></div>
                 
-                <h3 class="font-bold text-blue-200 mt-4 border-b border-white/20 pb-1 mb-2">Cantidades Totales</h3>
+                <h3 class="font-bold text-orange-200 mt-4 border-b border-white/20 pb-1 mb-2">Cantidades Totales</h3>
                 <div id="cap-glob-lista" class="text-base bg-black/20 p-5 rounded-xl mb-4 space-y-2 border border-white/10"></div>
                 
-                <h3 class="font-bold text-blue-200 mt-4 border-b border-white/20 pb-1 mb-2">Observaciones Combinadas</h3>
+                <h3 class="font-bold text-orange-200 mt-4 border-b border-white/20 pb-1 mb-2">Observaciones Combinadas</h3>
                 <div id="cap-glob-obs" class="text-base bg-black/20 p-5 rounded-xl min-h-[60px] border border-white/10 italic text-white/90"></div>
                 
                 <div class="text-center w-full pt-6 mt-6 border-t border-white/10 text-white/50 text-xs font-bold tracking-widest">
-                     GENERADO POR PWA LAPI PRODUCTIVIDAD
+                    SISTEMA CENTRAL LAPI PRODUCTIVIDAD
                 </div>
             </div>
         </div>
@@ -574,15 +574,15 @@
             const d = window.datosGlobalesTemp;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
             
-            let texto = `*REPORTE SUCURSAL*\n`;
-            texto += `Sucursal: ${d.sucursal}\n`;
-            texto += `Fecha: ${fechaUI}\n`;
-            texto += `Personal: ${d.personal.join(', ')}\n\n`;
-            texto += `ACUMULADO GLOBAL (Total: ${d.totalG})\n`;
+            let texto = `*REPORTE SUCURSAL LAPI*\n`;
+            texto += `🏥 Sucursal: ${d.sucursal}\n`;
+            texto += `📅 Fecha: ${fechaUI}\n`;
+            texto += `👥 Personal: ${d.personal.join(', ')}\n\n`;
+            texto += `📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
             
             for(let est in d.acumulado) { texto += `- ${est}: ${d.acumulado[est]}\n`; }
             
-            texto += `\n OBSERVACIONES\n`;
+            texto += `\n📝 *OBSERVACIONES*\n`;
             let hayObs = false;
             d.desgloseIndividual.forEach(ind => {
                 if(ind.observaciones) { texto += `[${ind.medico}]: ${ind.observaciones}\n`; hayObs = true; }
@@ -628,18 +628,18 @@
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
             document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal}`;
-            document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Participante:</b> <span class="text-blue-200 font-bold">${d.personal.join(', ')}</span></p>`;
+            document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Participante:</b> <span class="text-orange-200 font-bold">${d.personal.join(', ')}</span></p>`;
             
             let listHtml = '';
             for(let est in d.acumulado) {
-                listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-blue-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`;
+                listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-orange-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`;
             }
             listHtml += `<div class="border-t-2 border-dashed border-white/20 pt-3 mt-4 flex justify-between items-center text-lg"><span class="font-black text-white/90">SUMA SUCURSAL:</span><span class="font-black text-emerald-400">${d.totalG}</span></div>`;
             document.getElementById('cap-glob-lista').innerHTML = listHtml || '<p class="opacity-60 italic text-center">Sin estudios en la sucursal.</p>';
 
             let obsHtml = '';
             d.desgloseIndividual.forEach(ind => {
-                if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-blue-400 pl-3"><p class="text-xs text-blue-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`;
+                if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-orange-400 pl-3"><p class="text-xs text-orange-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`;
             });
             document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones de ningún compañero.';
 
