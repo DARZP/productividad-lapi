@@ -187,6 +187,7 @@ window.LAPI_CONFIG = {
         "CEMEX VALLEJO",
         "CENTRO DE DISTRIBUCION OXXO",
         "CFE",
+        "CHEMETALL MEXICANA", 
         "CLOROX DE MEXICO",
         "COCA COLA",
         "COCA COLA EXPORT",
