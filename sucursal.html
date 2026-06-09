@@ -11,19 +11,21 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="config.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .study-row { transition: background-color 0.2s; }
         .study-row:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .scroll-custom::-webkit-scrollbar { width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
     </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        // 👇 Importamos enableIndexedDbPersistence para la magia Offline
-        import { getFirestore, doc, setDoc, getDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -36,15 +38,15 @@
 
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
-
-        // 👇 Activamos el almacenamiento Offline de Firebase
-        enableIndexedDbPersistence(window.db).catch((err) => {
-            console.error("El modo offline falló:", err.code);
-        });
+        enableIndexedDbPersistence(window.db).catch((err) => console.error(err));
 
         window.doc = doc;
         window.setDoc = setDoc;
         window.getDoc = getDoc;
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.query = query;
+        window.where = where;
     </script>
 </head>
 <body class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen text-white pb-20 flex flex-col justify-between">
@@ -117,25 +119,29 @@
                     <textarea id="obs-principal" oninput="actualizarObservaciones(this.value)" class="w-full p-3 rounded-xl bg-black/20 border border-white/10 outline-none placeholder-white/50 text-white font-medium" rows="3" placeholder="Ej. Equipo de audiometría falló, paciente pendiente..."></textarea>
                 </div>
 
-                <button onclick="mostrarResumen()" class="w-full bg-white text-orange-600 font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2 mb-6">
-                    Ver Resumen De Turno <i class="fa-solid fa-arrow-right"></i>
-                </button>
+                <div class="flex flex-col gap-3 mb-6">
+                    <button onclick="mostrarResumen()" class="w-full bg-white text-orange-600 font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                        Ver Resumen De Turno <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                    <button id="btn-ver-global" onclick="mostrarResumenSucursal()" class="w-full bg-transparent border-2 border-white/30 hover:bg-white/10 text-white font-bold py-3.5 rounded-xl transition-all active:scale-95 flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-globe"></i> Ver Resumen de Sucursal
+                    </button>
+                </div>
             </div>
 
-            <div id="vista-resumen-final" class="hidden glass p-6 rounded-3xl shadow-xl border border-white/20">
+            <div id="vista-resumen-final" class="hidden glass p-6 rounded-3xl shadow-xl border border-white/20 animate-fade-in">
                 <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
-                    <h2 class="font-black text-xl text-white"><i class="fa-solid fa-clipboard-check mr-2"></i> Resumen de Turno</h2>
+                    <h2 class="font-black text-xl text-white"><i class="fa-solid fa-clipboard-check mr-2"></i> Mi Turno</h2>
                     <button onclick="generarImagenCompartir()" id="btn-compartir-sucursal" class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl transition flex items-center gap-2 text-sm font-bold active:scale-95" title="Compartir Resumen">
                         <i class="fa-solid fa-camera-viewfinder text-orange-300"></i>
                         <i class="fa-solid fa-arrow-up-from-bracket"></i>
                     </button>
                 </div>
                 
-                <div id="resumen-contenido" class="bg-black/20 p-4 rounded-2xl mb-6 space-y-2 border border-white/10 text-white/90 text-sm">
-                </div>
+                <div id="resumen-contenido" class="bg-black/20 p-4 rounded-2xl mb-6 space-y-2 border border-white/10 text-white/90 text-sm"></div>
 
                 <div class="mb-6">
-                    <label class="block mb-2 font-bold text-sm text-white/90">Observaciones Del Turno:</label>
+                    <label class="block mb-2 font-bold text-sm text-white/90">Mis Observaciones:</label>
                     <textarea id="obs-resumen" oninput="actualizarObservaciones(this.value)" class="w-full p-3 rounded-xl bg-black/20 border border-white/10 outline-none placeholder-white/50 text-white font-medium" rows="3"></textarea>
                 </div>
 
@@ -149,13 +155,34 @@
                 </div>
             </div>
 
+            <div id="vista-resumen-sucursal" class="hidden glass p-6 rounded-3xl shadow-xl border border-white/20 animate-fade-in">
+                <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
+                    <h2 class="font-black text-xl text-white leading-tight"><i class="fa-solid fa-globe mr-1"></i> Global<br><span class="text-xs text-orange-200 uppercase font-medium">Sucursal del Día</span></h2>
+                    <div class="flex gap-2">
+                        <button onclick="copiarResumenTexto()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl transition active:scale-95 flex items-center gap-2" title="Copiar Texto">
+                            <i class="fa-solid fa-copy"></i>
+                        </button>
+                        <button onclick="generarImagenGlobal()" id="btn-compartir-global" class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl transition flex items-center gap-2 text-sm font-bold active:scale-95" title="Compartir Imagen Global">
+                            <i class="fa-solid fa-camera-viewfinder text-orange-300"></i>
+                            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="resumen-global-contenido" class="space-y-4 mb-6 max-h-[55vh] overflow-y-auto pr-2 scroll-custom">
+                    </div>
+
+                <button onclick="ocultarResumenSucursal()" class="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a mi Turno
+                </button>
+            </div>
+
         </div>
     </div>
 
     <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-pwa-card" class="glass bg-orange-600/90 p-6 rounded-3xl shadow-2xl max-w-sm w-full text-white transform scale-95 transition-transform duration-300">
             <h3 class="text-xl font-black mb-5 text-center"><i class="fa-solid fa-download mr-2"></i> Instalar Aplicación</h3>
-            
             <div class="mb-5 bg-black/10 p-4 rounded-2xl border border-white/10">
                 <h4 class="font-bold border-b border-white/20 pb-2 mb-3 text-orange-200"><i class="fa-brands fa-apple mr-1 text-lg"></i> iOS (iPhone/iPad)</h4>
                 <ol class="text-sm space-y-2 list-decimal list-inside opacity-90 font-medium">
@@ -164,7 +191,6 @@
                     <li>Selecciona <b>Agregar a inicio</b> <i class="fa-solid fa-square-plus mx-1"></i>.</li>
                 </ol>
             </div>
-
             <div class="mb-6 bg-black/10 p-4 rounded-2xl border border-white/10">
                 <h4 class="font-bold border-b border-white/20 pb-2 mb-3 text-orange-200"><i class="fa-brands fa-android mr-1 text-lg"></i> Android</h4>
                 <ol class="text-sm space-y-2 list-decimal list-inside opacity-90 font-medium">
@@ -173,7 +199,6 @@
                     <li>Selecciona <b>Instalar aplicación</b>.</li>
                 </ol>
             </div>
-
             <button onclick="cerrarModalPWA()" class="w-full bg-white text-orange-600 font-black py-3 rounded-xl transition-all active:scale-95 shadow-lg">Entendido</button>
         </div>
     </div>
@@ -184,21 +209,42 @@
                 <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-building mr-2"></i> REGISTRO SUCURSAL</h1>
                 <p id="cap-sucursal-nombre" class="text-base font-medium opacity-90"></p>
             </div>
-            
             <div class="glass p-6 rounded-3xl text-white">
                 <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-2xl">
                     <i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Resumen de Turno
                 </h2>
-
                 <div id="cap-resumen-info" class="text-base bg-black/20 p-5 rounded-xl mb-4 border border-white/10 text-white opacity-90"></div>
-
                 <div id="cap-resumen-lista" class="text-base bg-black/20 p-5 rounded-xl mb-4 space-y-2 border border-white/10"></div>
-                
                 <p class="text-sm font-bold uppercase mb-1 opacity-80 mt-4">Observaciones</p>
                 <div id="cap-observaciones" class="text-base bg-black/20 p-5 rounded-xl min-h-[60px] border border-white/10 italic text-white/90">Sin observaciones.</div>
-                
                 <div class="text-center w-full pt-6 mt-6 border-t border-white/10 text-white/50 text-xs font-bold tracking-widest">
                     GENERADO POR PWA LAPI PRODUCTIVIDAD
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="captura-temp-global" class="fixed -top-[3000px] -left-[3000px] w-full max-w-xl p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
+        <div class="bg-gradient-to-br from-indigo-500 to-blue-700 min-h-screen p-8 rounded-[2rem]">
+            <div class="glass p-6 rounded-3xl text-white mb-6">
+                <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-globe mr-2"></i> REPORTE GLOBAL</h1>
+                <p id="cap-glob-sucursal" class="text-base font-medium opacity-90 uppercase"></p>
+            </div>
+            <div class="glass p-6 rounded-3xl text-white">
+                <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-2xl">
+                    <i class="fa-solid fa-camera-viewfinder text-blue-300"></i> Acumulado del Día
+                </h2>
+                
+                <div id="cap-glob-info" class="text-base bg-black/20 p-5 rounded-xl mb-4 border border-white/10 text-white opacity-90"></div>
+                
+                <h3 class="font-bold text-blue-200 mt-4 border-b border-white/20 pb-1 mb-2">Cantidades Totales</h3>
+                <div id="cap-glob-lista" class="text-base bg-black/20 p-5 rounded-xl mb-4 space-y-2 border border-white/10"></div>
+                
+                <h3 class="font-bold text-blue-200 mt-4 border-b border-white/20 pb-1 mb-2">Observaciones Combinadas</h3>
+                <div id="cap-glob-obs" class="text-base bg-black/20 p-5 rounded-xl min-h-[60px] border border-white/10 italic text-white/90"></div>
+                
+                <div class="text-center w-full pt-6 mt-6 border-t border-white/10 text-white/50 text-xs font-bold tracking-widest">
+                    SISTEMA CENTRAL LAPI PRODUCTIVIDAD
                 </div>
             </div>
         </div>
@@ -220,30 +266,10 @@
         let fechaOperativa = "";
         let docId = "";
         let timerGuardado = null;
+        window.datosGlobalesTemp = null; // Almacena datos para el copiado e imagen global
 
-        // DETECTORES DE SEÑAL DE INTERNET
-        window.addEventListener('offline', () => {
-            mostrarToast("Sin conexión a Internet. Modo Offline activado. Puedes seguir trabajando.", "info", 5000);
-        });
-
-        window.addEventListener('online', () => {
-            mostrarToast("Conexión restaurada. Sincronizando datos a la nube...", "exito", 4000);
-        });
-
-        // FUNCIONES MODAL PWA
-        function abrirModalPWA() {
-            const modal = document.getElementById('modal-pwa');
-            const card = document.getElementById('modal-pwa-card');
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
-        }
-
-        function cerrarModalPWA() {
-            const modal = document.getElementById('modal-pwa');
-            const card = document.getElementById('modal-pwa-card');
-            modal.classList.add('opacity-0'); card.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
+        window.addEventListener('offline', () => { mostrarToast("Sin conexión a Internet. Guardado Local.", "info", 4000); });
+        window.addEventListener('online', () => { mostrarToast("Conexión restaurada. Sincronizando...", "exito", 3000); });
 
         function mostrarToast(mensaje, tipo = 'error', duracion = 3500) {
             const toast = document.createElement('div');
@@ -254,20 +280,28 @@
             document.getElementById('toast-container').appendChild(toast);
             
             setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
-            if (duracion > 0) {
-                setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, duracion);
-            }
+            if (duracion > 0) { setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, duracion); }
+        }
+
+        function abrirModalPWA() {
+            const modal = document.getElementById('modal-pwa'); const card = document.getElementById('modal-pwa-card');
+            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
+        }
+        function cerrarModalPWA() {
+            const modal = document.getElementById('modal-pwa'); const card = document.getElementById('modal-pwa-card');
+            modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
         window.onload = function() {
             const guardado = localStorage.getItem('lapi_sesion_sucursal');
-            if(guardado) { sesionActual = JSON.parse(guardado); iniciarApp(); }
+            if(guardado) {
+                sesionActual = JSON.parse(guardado);
+                document.getElementById('login-medico').value = sesionActual.medico;
+                document.getElementById('login-sucursal').value = sesionActual.sucursal;
+            }
         };
 
-        function normalizarTexto(texto) {
-            if (!texto) return "";
-            return texto.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        }
+        function normalizarTexto(texto) { return texto ? texto.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; }
 
         function obtenerFechaOperativaYFormato() {
             const ahora = new Date();
@@ -275,16 +309,14 @@
             const yyyy = ahora.getFullYear();
             const mm = String(ahora.getMonth() + 1).padStart(2, '0');
             const dd = String(ahora.getDate()).padStart(2, '0');
-            const opciones = { weekday: 'long', day: 'numeric', month: 'long' };
-            const textoAmigable = ahora.toLocaleDateString('es-ES', opciones);
+            const textoAmigable = ahora.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
             return { idFormat: `${yyyy}-${mm}-${dd}`, uiFormat: textoAmigable.charAt(0).toUpperCase() + textoAmigable.slice(1) };
         }
 
-        function iniciarSesion() {
+        window.iniciarSesion = function() {
             const med = normalizarTexto(document.getElementById('login-medico').value);
             const suc = normalizarTexto(document.getElementById('login-sucursal').value);
-            
-            if(!med || !suc) return mostrarToast("Por favor selecciona tu nombre y la sucursal antes de ingresar.", "error");
+            if(!med || !suc) return mostrarToast("Selecciona tu nombre y sucursal.", "error");
             
             const btn = document.getElementById('btn-login');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando...';
@@ -294,11 +326,11 @@
                 sesionActual = { medico: med, sucursal: suc };
                 localStorage.setItem('lapi_sesion_sucursal', JSON.stringify(sesionActual));
                 iniciarApp();
-            }, 600);
+            }, 500);
         }
 
-        function cerrarSesion() {
-            if(confirm("¿Estás seguro de que quieres salir del turno actual?")) {
+        window.cerrarSesion = function() {
+            if(confirm("¿Seguro que quieres salir de la sesión guardada?")) {
                 localStorage.removeItem('lapi_sesion_sucursal');
                 location.reload();
             }
@@ -325,21 +357,17 @@
                 } else {
                     datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
                 }
-                if(navigator.onLine) mostrarToast(`Turno Actualizado con éxito. Todo listo.`, 'exito');
+                if(navigator.onLine) mostrarToast(`Turno de ${sesionActual.medico} Listo.`, 'exito');
             } catch (error) { 
                 datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
-                if(!navigator.onLine) {
-                    mostrarToast("Iniciando en Modo Offline. Tus datos se guardarán en el teléfono.", "info", 4500);
-                } else {
-                    mostrarToast("Iniciando turno con red intermitente.", "info");
-                }
+                mostrarToast(navigator.onLine ? "Error conectando. Empezando local." : "Modo Offline Activo", "info");
             } finally {
                 document.getElementById('obs-principal').value = datosDelDia.observaciones || '';
                 renderizarTablero();
             }
         }
 
-        function cambiarContador(estudio, cantidad) {
+        window.cambiarContador = function(estudio, cantidad) {
             if(!datosDelDia.estudios[estudio]) datosDelDia.estudios[estudio] = 0;
             datosDelDia.estudios[estudio] += cantidad;
             if(datosDelDia.estudios[estudio] < 0) datosDelDia.estudios[estudio] = 0;
@@ -354,7 +382,7 @@
             sincronizarConNube();
         }
 
-        function actualizarObservaciones(texto) {
+        window.actualizarObservaciones = function(texto) {
             datosDelDia.observaciones = texto;
             document.getElementById('obs-principal').value = texto;
             document.getElementById('obs-resumen').value = texto;
@@ -364,11 +392,9 @@
         function renderizarTablero() {
             const contenedor = document.getElementById('contenedor-estudios');
             let htmlEstudios = "";
-            
             listaEstudiosOficial.forEach(estudio => {
                 const cantidadAct = datosDelDia.estudios[estudio] || 0;
                 const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
-                
                 htmlEstudios += `
                     <div class="study-row flex items-center justify-between py-3 border-b border-white/10 last:border-0 px-3 rounded-lg">
                         <span class="text-sm font-bold text-white/90 leading-tight w-1/2">${estudio}</span>
@@ -380,26 +406,21 @@
                     </div>
                 `;
             });
-
             contenedor.innerHTML = `
                 <div class="glass rounded-2xl shadow-sm overflow-hidden">
                     <div class="bg-black/20 text-white px-4 py-3 border-b border-white/10 flex justify-between items-center">
                         <h3 class="font-black text-xs tracking-widest uppercase opacity-80"><i class="fa-solid fa-list-check mr-2"></i> Conteo de Estudios</h3>
                     </div>
-                    <div class="p-2 bg-black/10">
-                        ${htmlEstudios}
-                    </div>
+                    <div class="p-2 bg-black/10">${htmlEstudios}</div>
                 </div>
             `;
         }
 
-        function mostrarResumen() {
+        window.mostrarResumen = function() {
             document.getElementById('vista-captura-principal').classList.add('hidden');
             document.getElementById('vista-resumen-final').classList.remove('hidden');
             
-            let totalEstudios = 0;
-            let listHtml = '';
-            
+            let totalEstudios = 0; let listHtml = '';
             for (const [estudio, cant] of Object.entries(datosDelDia.estudios)) {
                 if (cant > 0) {
                     listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center">
@@ -409,46 +430,35 @@
                     totalEstudios += cant;
                 }
             }
-            
-            if (totalEstudios === 0) {
-                listHtml += `<p class="text-center italic opacity-60 mt-4 py-4 border-t border-white/10">El día está en blanco, no has sumado ningún estudio.</p>`;
-            } else {
-                listHtml += `<div class="border-t-2 border-dashed border-white/20 pt-3 mt-4 flex justify-between items-center text-lg">
-                                <span class="font-black text-white/90">TOTAL ESTUDIOS:</span>
+            if (totalEstudios === 0) listHtml += `<p class="text-center italic opacity-60 mt-4 py-4 border-t border-white/10">El día está en blanco.</p>`;
+            else listHtml += `<div class="border-t-2 border-dashed border-white/20 pt-3 mt-4 flex justify-between items-center text-lg">
+                                <span class="font-black text-white/90">TOTAL MÍO:</span>
                                 <span class="font-black text-emerald-400">${totalEstudios}</span>
                              </div>`;
-            }
-            
             document.getElementById('resumen-contenido').innerHTML = listHtml;
             document.getElementById('obs-resumen').value = datosDelDia.observaciones || '';
         }
 
-        function ocultarResumen() {
+        window.ocultarResumen = function() {
             document.getElementById('vista-resumen-final').classList.add('hidden');
             document.getElementById('vista-captura-principal').classList.remove('hidden');
         }
 
-        function confirmarTurno() {
+        window.confirmarTurno = function() {
             sincronizarConNube();
             const btn = document.getElementById('btn-confirmar-final');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finalizando...';
             btn.disabled = true;
-
-            mostrarToast("¡Turno actualizado! Regresando a estudios...", "exito", 0);
-            setTimeout(() => { 
-                btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Actualizar';
-                btn.disabled = false;
-                ocultarResumen();
-            }, 1500);
+            mostrarToast("¡Turno actualizado! Regresando...", "exito", 0);
+            setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Actualizar'; btn.disabled = false; ocultarResumen(); }, 1500);
         }
 
-        function sincronizarConNube() {
+        async function sincronizarConNube() {
             clearTimeout(timerGuardado);
             timerGuardado = setTimeout(async () => {
                 try {
                     datosDelDia.ultimaActualizacion = new Date();
                     await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia);
-                    
                     const indicador = document.getElementById('indicador-guardado');
                     if (indicador) {
                         indicador.classList.remove('opacity-0');
@@ -459,8 +469,134 @@
             }, 800);
         }
 
-        // 👇 NUEVA FUNCIÓN: GENERAR IMAGEN PWA Y COMPARTIR NATIVO 👇
+        // =========================================================================
+        // 👇 NUEVA SECCIÓN: RESUMEN GLOBAL SUCURSAL Y GENERACIÓN DE IMAGEN/TEXTO 👇
+        // =========================================================================
+        window.mostrarResumenSucursal = async function() {
+            const btn = document.getElementById('btn-ver-global');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Consultando Red...';
+            btn.disabled = true;
+
+            if(!navigator.onLine) {
+                mostrarToast("Necesitas internet para ver el acumulado de tus compañeros.", "error");
+                btn.innerHTML = originalHTML; btn.disabled = false; return;
+            }
+
+            try {
+                // Aseguramos que los datos propios estén arriba antes de consultar
+                datosDelDia.ultimaActualizacion = new Date();
+                await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia);
+
+                const q = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
+                    window.where("fecha", "==", fechaOperativa), 
+                    window.where("sucursal", "==", sesionActual.sucursal));
+                const qs = await window.getDocs(q);
+
+                let acumulado = {};
+                let personal = [];
+                let totalG = 0;
+                let desgloseIndividual = [];
+
+                qs.forEach(doc => {
+                    const data = doc.data();
+                    personal.push(data.medico);
+                    let obs = data.observaciones ? data.observaciones.trim() : "";
+                    let tieneEstudiosOpc = false;
+                    let estInd = "";
+
+                    if(data.estudios) {
+                        for(let est in data.estudios) {
+                            let cant = data.estudios[est];
+                            if(cant > 0) {
+                                tieneEstudiosOpc = true;
+                                acumulado[est] = (acumulado[est] || 0) + cant;
+                                totalG += cant;
+                                estInd += `<div class="flex justify-between text-xs text-white/80"><span>${est}</span><b>${cant}</b></div>`;
+                            }
+                        }
+                    }
+
+                    if(tieneEstudiosOpc || obs !== "") {
+                        desgloseIndividual.push({ medico: data.medico, htmlEstudios: estInd, observaciones: obs });
+                    }
+                });
+
+                window.datosGlobalesTemp = { acumulado, personal, totalG, desgloseIndividual, fechaOperativa, sucursal: sesionActual.sucursal };
+                
+                // --- RENDER HTML DEL MODAL GLOBAL ---
+                let htmlAcumulado = '';
+                for(let est in acumulado) {
+                    htmlAcumulado += `<div class="flex justify-between items-center border-b border-white/10 pb-1 mb-1">
+                                        <span class="text-sm font-medium text-orange-200">${est}</span>
+                                        <span class="font-black bg-white/20 px-2 py-0.5 rounded text-sm">${acumulado[est]}</span>
+                                      </div>`;
+                }
+                
+                let htmlIndividual = '';
+                desgloseIndividual.forEach(ind => {
+                    htmlIndividual += `<div class="bg-black/20 p-3 rounded-lg border border-white/5 mb-3">
+                                          <h4 class="font-bold text-sm text-emerald-300 border-b border-white/10 pb-1 mb-2"><i class="fa-solid fa-user-md mr-1"></i> ${ind.medico}</h4>
+                                          ${ind.htmlEstudios || '<p class="text-xs opacity-50 italic">Sin estudios registrados.</p>'}
+                                          ${ind.observaciones ? `<div class="mt-2 text-xs italic bg-white/10 p-2 rounded text-white/90 border border-white/10">"${ind.observaciones}"</div>` : ''}
+                                       </div>`;
+                });
+
+                document.getElementById('resumen-global-contenido').innerHTML = `
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/20">
+                        <h3 class="font-black text-white mb-3 text-center border-b border-white/20 pb-2">SUMA TOTAL: <span class="text-emerald-400 ml-2 text-xl">${totalG}</span></h3>
+                        ${htmlAcumulado || '<p class="text-center text-sm opacity-60 italic">Nadie ha registrado estudios aún.</p>'}
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="font-bold text-sm uppercase tracking-widest opacity-80 mb-2">Desglose por Compañero</h3>
+                        ${htmlIndividual || '<p class="text-center text-sm opacity-60 italic">Sin datos individuales.</p>'}
+                    </div>
+                `;
+
+                document.getElementById('vista-captura-principal').classList.add('hidden');
+                document.getElementById('vista-resumen-sucursal').classList.remove('hidden');
+
+            } catch(e) {
+                console.error(e);
+                mostrarToast("Hubo un error cargando el global. Intenta de nuevo.", "error");
+            }
+            btn.innerHTML = originalHTML; btn.disabled = false;
+        };
+
+        window.ocultarResumenSucursal = function() {
+            document.getElementById('vista-resumen-sucursal').classList.add('hidden');
+            document.getElementById('vista-captura-principal').classList.remove('hidden');
+        };
+
+        // COPIAR TEXTO GLOBAL
+        window.copiarResumenTexto = function() {
+            if(!window.datosGlobalesTemp) return;
+            const d = window.datosGlobalesTemp;
+            const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
+            
+            let texto = `*REPORTE SUCURSAL LAPI*\n`;
+            texto += `🏥 Sucursal: ${d.sucursal}\n`;
+            texto += `📅 Fecha: ${fechaUI}\n`;
+            texto += `👥 Personal: ${d.personal.join(', ')}\n\n`;
+            texto += `📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
+            
+            for(let est in d.acumulado) { texto += `- ${est}: ${d.acumulado[est]}\n`; }
+            
+            texto += `\n📝 *OBSERVACIONES*\n`;
+            let hayObs = false;
+            d.desgloseIndividual.forEach(ind => {
+                if(ind.observaciones) { texto += `[${ind.medico}]: ${ind.observaciones}\n`; hayObs = true; }
+            });
+            if(!hayObs) texto += `Sin observaciones relevantes.\n`;
+
+            navigator.clipboard.writeText(texto).then(() => {
+                mostrarToast("¡Resumen de Sucursal copiado al portapapeles!", "exito");
+            }).catch(err => { mostrarToast("Error al copiar texto.", "error"); });
+        };
+
+        // CAPTURA DE IMAGEN GLOBAL INDIVIDUAL / SUCURSAL
         window.generarImagenCompartir = async function() {
+            // IMAGEN INDIVIDUAL (Mi Turno)
             const btn = document.getElementById('btn-compartir-sucursal');
             const originalHTML = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
@@ -468,93 +604,86 @@
 
             const sucursal = sesionActual.sucursal.toUpperCase();
             const medico = sesionActual.medico.toUpperCase();
-            const observaciones = datosDelDia.observaciones;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
-            // 1. Llenar el contenedor temporal oculto
             document.getElementById('cap-sucursal-nombre').innerText = `Sucursal: ${sucursal}`;
-            
-            document.getElementById('cap-resumen-info').innerHTML = `
-                <p><b>Fecha:</b> ${fechaUI}</p>
-                <p><b>Personal:</b> <span class="text-orange-200">${medico}</span></p>
-            `;
-
-            // Copiamos el contenido HTML (estudios sumados) al molde de captura
+            document.getElementById('cap-resumen-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal:</b> <span class="text-orange-200">${medico}</span></p>`;
             document.getElementById('cap-resumen-lista').innerHTML = document.getElementById('resumen-contenido').innerHTML;
-            document.getElementById('cap-observaciones').innerText = observaciones || 'Sin observaciones relevantes.';
+            document.getElementById('cap-observaciones').innerText = datosDelDia.observaciones || 'Sin observaciones relevantes.';
             
-            // 2. Esperar renderizado (micro-pausa)
             await new Promise(r => setTimeout(r, 100));
+            await procesarHtml2Canvas(document.getElementById('captura-temp-sucursal'), `LAPI_MiTurno_${sucursal}_${fechaOperativa}`, `Mi Resumen - ${medico}`);
+            btn.innerHTML = originalHTML; btn.disabled = false;
+        };
 
-            const target = document.getElementById('captura-temp-sucursal');
+        window.generarImagenGlobal = async function() {
+            // IMAGEN GLOBAL SUCURSAL
+            const d = window.datosGlobalesTemp;
+            if(!d) return;
+            const btn = document.getElementById('btn-compartir-global');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
+
+            document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal}`;
+            document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Participante:</b> <span class="text-blue-200 font-bold">${d.personal.join(', ')}</span></p>`;
             
+            let listHtml = '';
+            for(let est in d.acumulado) {
+                listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-blue-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`;
+            }
+            listHtml += `<div class="border-t-2 border-dashed border-white/20 pt-3 mt-4 flex justify-between items-center text-lg"><span class="font-black text-white/90">SUMA SUCURSAL:</span><span class="font-black text-emerald-400">${d.totalG}</span></div>`;
+            document.getElementById('cap-glob-lista').innerHTML = listHtml || '<p class="opacity-60 italic text-center">Sin estudios en la sucursal.</p>';
+
+            let obsHtml = '';
+            d.desgloseIndividual.forEach(ind => {
+                if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-blue-400 pl-3"><p class="text-xs text-blue-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`;
+            });
+            document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones de ningún compañero.';
+
+            await new Promise(r => setTimeout(r, 100));
+            await procesarHtml2Canvas(document.getElementById('captura-temp-global'), `LAPI_Global_${d.sucursal}_${fechaOperativa}`, `Cierre Sucursal - ${d.sucursal}`);
+            btn.innerHTML = originalHTML; btn.disabled = false;
+        };
+
+        async function procesarHtml2Canvas(target, nombreArchivo, tituloShare) {
             try {
-                // 3. Crear Canvas (Alta calidad)
                 const canvas = await html2canvas(target, {
-                    scale: 2, 
-                    useCORS: true, 
-                    logging: false,
-                    backgroundColor: null, 
+                    scale: 2, useCORS: true, logging: false, backgroundColor: null, 
                     onclone: (clonedDoc) => {
-                        clonedDoc.getElementById('captura-temp-sucursal').style.position = 'static';
-                        clonedDoc.getElementById('captura-temp-sucursal').style.display = 'block';
+                        const el = clonedDoc.getElementById(target.id);
+                        el.style.position = 'static'; el.style.display = 'block';
                     }
                 });
 
-                // 4. Compartir o Descargar
                 if (navigator.share && navigator.canShare) {
                     canvas.toBlob(async (blob) => {
-                        const file = new File([blob], `LAPI_Sucursal_${sucursal}_${fechaOperativa}.png`, { type: 'image/png' });
+                        const file = new File([blob], `${nombreArchivo}.png`, { type: 'image/png' });
                         if (navigator.canShare({ files: [file] })) {
                             try {
-                                await navigator.share({
-                                    files: [file],
-                                    title: `LAPI - Resumen Sucursal ${sucursal}`,
-                                    text: `Resumen de jornada LAPI - ${sucursal} (${fechaUI})`
-                                });
+                                await navigator.share({ files: [file], title: tituloShare, text: tituloShare });
                                 mostrarToast("¡Imagen compartida!", "exito");
-                            } catch (err) {
-                                console.log("Compartir cancelado o fallido:", err);
-                                if(err.name !== 'AbortError') forzarDescarga(canvas, `${sucursal}_${fechaOperativa}`);
-                            }
-                        } else {
-                            forzarDescarga(canvas, `${sucursal}_${fechaOperativa}`);
-                        }
+                            } catch (err) { if(err.name !== 'AbortError') forzarDescarga(canvas, nombreArchivo); }
+                        } else { forzarDescarga(canvas, nombreArchivo); }
                     });
-                } else {
-                    forzarDescarga(canvas, `${sucursal}_${fechaOperativa}`);
-                }
-            } catch(e) {
-                console.error("Error captura:", e);
-                mostrarToast("Falló la generación de imagen.", "error");
-            }
+                } else { forzarDescarga(canvas, nombreArchivo); }
+            } catch(e) { console.error("Error captura:", e); mostrarToast("Falló la generación de imagen.", "error"); }
+        }
 
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-        };
-
-        function forzarDescarga(canvas, idExtra) {
-            const link = document.createElement('a');
-            link.download = `LAPI_Sucursal_${idExtra}.png`;
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-            mostrarToast("Descarga iniciada (Sin soporte nativo).", "info");
+        function forzarDescarga(canvas, nombre) {
+            const link = document.createElement('a'); link.download = `${nombre}.png`;
+            link.href = canvas.toDataURL("image/png"); link.click();
+            mostrarToast("Descarga iniciada.", "info");
         }
 
         // =========================================================================
-        // SERVICE WORKER (PWA) Y CONTROL DE VERSIONES SILENCIOSO
+        // SERVICE WORKER & VERSION INJECTION
         // =========================================================================
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('PWA: Actualización silenciosa lista'))
-                    .catch(err => console.log('Error PWA: ', err));
-            });
+            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
         }
-
-        // =========================================================================
-        // INYECCIÓN VISUAL DE LA VERSIÓN (FLOTANTE)
-        // =========================================================================
         document.addEventListener("DOMContentLoaded", () => {
             const versionDiv = document.createElement('div');
             versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
