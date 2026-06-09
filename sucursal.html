@@ -387,6 +387,9 @@
                 sesionActual = JSON.parse(guardado);
                 document.getElementById('login-medico').value = sesionActual.medico;
                 document.getElementById('login-sucursal').value = sesionActual.sucursal;
+                
+                // 👇 ESTA ES LA LÍNEA QUE HACE LA MAGIA DEL SALTO AUTOMÁTICO 👇
+                iniciarApp(); 
             }
         };
 
