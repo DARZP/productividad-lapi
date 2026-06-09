@@ -35,7 +35,7 @@
             messagingSenderId: "1077149571149",
             appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
         };
-
+        
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
         enableIndexedDbPersistence(window.db).catch((err) => console.error(err));
@@ -574,15 +574,15 @@
             const d = window.datosGlobalesTemp;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
             
-            let texto = `*REPORTE SUCURSAL LAPI*\n`;
-            texto += `🏥 Sucursal: ${d.sucursal}\n`;
-            texto += `📅 Fecha: ${fechaUI}\n`;
-            texto += `👥 Personal: ${d.personal.join(', ')}\n\n`;
-            texto += `📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
+            let texto = `*REPORTE SUCURSAL*\n`;
+            texto += `Sucursal: ${d.sucursal}\n`;
+            texto += `Fecha: ${fechaUI}\n`;
+            texto += `Personal: ${d.personal.join(', ')}\n\n`;
+            texto += `ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
             
             for(let est in d.acumulado) { texto += `- ${est}: ${d.acumulado[est]}\n`; }
             
-            texto += `\n📝 *OBSERVACIONES*\n`;
+            texto += `\n OBSERVACIONES\n`;
             let hayObs = false;
             d.desgloseIndividual.forEach(ind => {
                 if(ind.observaciones) { texto += `[${ind.medico}]: ${ind.observaciones}\n`; hayObs = true; }
