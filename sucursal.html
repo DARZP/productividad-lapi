@@ -193,6 +193,17 @@
                         <button id="btn-filtro-semana" onclick="filtrarHistorial('semana')" class="btn-filtro bg-white/20 hover:bg-white/30 text-white py-2.5 rounded-xl transition">Semana</button>
                         <button id="btn-filtro-mes" onclick="filtrarHistorial('mes')" class="btn-filtro bg-white/20 hover:bg-white/30 text-white py-2.5 rounded-xl transition">Mes</button>
                     </div>
+                    
+                    <div class="flex gap-2 mt-3 pt-3 border-t border-white/20">
+                        <div class="flex-1">
+                            <label class="block text-[9px] font-black text-white/70 uppercase tracking-widest mb-1">Desde</label>
+                            <input type="date" id="historial-fecha-inicio" onchange="filtrarHistorial('custom')" class="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white/50 transition-colors">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-[9px] font-black text-white/70 uppercase tracking-widest mb-1">Hasta</label>
+                            <input type="date" id="historial-fecha-fin" onchange="filtrarHistorial('custom')" class="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white/50 transition-colors">
+                        </div>
+                    </div>
                 </div>
 
                 <div id="loader-historial" class="hidden text-center py-10">
@@ -292,7 +303,9 @@
                 <p id="cap-sucursal-nombre" class="text-base font-medium opacity-90"></p>
             </div>
             <div class="glass p-6 rounded-3xl text-white">
-                <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-2xl"><i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Resumen de Turno</h2>
+                <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-2xl">
+                    <i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Resumen de Turno
+                </h2>
                 <div id="cap-resumen-info" class="text-base bg-black/20 p-5 rounded-xl mb-4 border border-white/10 text-white opacity-90"></div>
                 <div id="cap-resumen-lista" class="text-base bg-black/20 p-5 rounded-xl mb-4 space-y-2 border border-white/10"></div>
                 <p class="text-sm font-bold uppercase mb-1 opacity-80 mt-4">Observaciones</p>
@@ -309,12 +322,18 @@
                 <p id="cap-glob-sucursal" class="text-base font-medium opacity-90 uppercase"></p>
             </div>
             <div class="glass p-6 rounded-3xl text-white">
-                <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-2xl"><i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Acumulado del Día</h2>
+                <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-2xl">
+                    <i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Acumulado del Día
+                </h2>
+                
                 <div id="cap-glob-info" class="text-base bg-black/20 p-5 rounded-xl mb-4 border border-white/10 text-white opacity-90"></div>
+                
                 <h3 class="font-bold text-orange-200 mt-4 border-b border-white/20 pb-1 mb-2">Cantidades Totales</h3>
                 <div id="cap-glob-lista" class="text-base bg-black/20 p-5 rounded-xl mb-4 space-y-2 border border-white/10"></div>
+                
                 <h3 class="font-bold text-orange-200 mt-4 border-b border-white/20 pb-1 mb-2">Observaciones Combinadas</h3>
                 <div id="cap-glob-obs" class="text-base bg-black/20 p-5 rounded-xl min-h-[60px] border border-white/10 italic text-white/90"></div>
+                
                 <div class="text-center w-full pt-6 mt-6 border-t border-white/10 text-white/50 text-xs font-bold tracking-widest">SISTEMA CENTRAL LAPI PRODUCTIVIDAD</div>
             </div>
         </div>
@@ -439,7 +458,6 @@
 
         // 👇 MODIFICACIÓN HAPTICS 👇
         window.cambiarContador = function(estudio, cantidad) {
-            // Activamos la vibración táctil sutil en móviles si está soportada (15ms)
             if (navigator.vibrate) navigator.vibrate(15);
 
             if(!datosDelDia.estudios[estudio]) datosDelDia.estudios[estudio] = 0;
@@ -561,10 +579,15 @@
                 datosDelDia.ultimaActualizacion = new Date();
                 await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia);
 
-                const q = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", "==", fechaOperativa), window.where("sucursal", "==", sesionActual.sucursal));
+                const q = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
+                    window.where("fecha", "==", fechaOperativa), 
+                    window.where("sucursal", "==", sesionActual.sucursal));
                 const qs = await window.getDocs(q);
 
-                let acumulado = {}; let personal = []; let totalG = 0; let desgloseIndividual = [];
+                let acumulado = {};
+                let personal = [];
+                let totalG = 0;
+                let desgloseIndividual = [];
 
                 qs.forEach(doc => {
                     const data = doc.data();
@@ -623,7 +646,10 @@
                 document.getElementById('vista-captura-principal').classList.add('hidden');
                 document.getElementById('vista-resumen-sucursal').classList.remove('hidden');
 
-            } catch(e) { console.error(e); mostrarToast("Hubo un error cargando el global. Intenta de nuevo.", "error"); }
+            } catch(e) {
+                console.error(e);
+                mostrarToast("Hubo un error cargando el global. Intenta de nuevo.", "error");
+            }
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
@@ -637,8 +663,14 @@
             const d = window.datosGlobalesTemp;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
             
-            let texto = `*REPORTE SUCURSAL LAPI*\n🏥 Sucursal: ${d.sucursal}\n📅 Fecha: ${fechaUI}\n👥 Personal: ${d.personal.join(', ')}\n\n📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
+            let texto = `*REPORTE SUCURSAL LAPI*\n`;
+            texto += `🏥 Sucursal: ${d.sucursal}\n`;
+            texto += `📅 Fecha: ${fechaUI}\n`;
+            texto += `👥 Personal: ${d.personal.join(', ')}\n\n`;
+            texto += `📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
+            
             for(let est in d.acumulado) { texto += `- ${est}: ${d.acumulado[est]}\n`; }
+            
             texto += `\n📝 *OBSERVACIONES*\n`;
             let hayObs = false;
             d.desgloseIndividual.forEach(ind => {
@@ -646,14 +678,19 @@
             });
             if(!hayObs) texto += `Sin observaciones relevantes.\n`;
 
-            navigator.clipboard.writeText(texto).then(() => { mostrarToast("¡Resumen copiado al portapapeles!", "exito"); })
-            .catch(err => { mostrarToast("Error al copiar texto.", "error"); });
+            navigator.clipboard.writeText(texto).then(() => {
+                mostrarToast("¡Resumen de Sucursal copiado al portapapeles!", "exito");
+            }).catch(err => { mostrarToast("Error al copiar texto.", "error"); });
         };
 
         window.generarImagenCompartir = async function() {
-            const btn = document.getElementById('btn-compartir-sucursal'); const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
-            const sucursal = sesionActual.sucursal.toUpperCase(); const medico = sesionActual.medico.toUpperCase();
+            const btn = document.getElementById('btn-compartir-sucursal');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            const sucursal = sesionActual.sucursal.toUpperCase();
+            const medico = sesionActual.medico.toUpperCase();
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
             document.getElementById('cap-sucursal-nombre').innerText = `Sucursal: ${sucursal}`;
@@ -667,21 +704,29 @@
         };
 
         window.generarImagenGlobal = async function() {
-            const d = window.datosGlobalesTemp; if(!d) return;
-            const btn = document.getElementById('btn-compartir-global'); const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
+            const d = window.datosGlobalesTemp;
+            if(!d) return;
+            const btn = document.getElementById('btn-compartir-global');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
             document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal}`;
             document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Participante:</b> <span class="text-orange-200 font-bold">${d.personal.join(', ')}</span></p>`;
             
             let listHtml = '';
-            for(let est in d.acumulado) { listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-orange-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`; }
+            for(let est in d.acumulado) {
+                listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-orange-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`;
+            }
             listHtml += `<div class="border-t-2 border-dashed border-white/20 pt-3 mt-4 flex justify-between items-center text-lg"><span class="font-black text-white/90">SUMA SUCURSAL:</span><span class="font-black text-emerald-400">${d.totalG}</span></div>`;
             document.getElementById('cap-glob-lista').innerHTML = listHtml || '<p class="opacity-60 italic text-center">Sin estudios en la sucursal.</p>';
 
             let obsHtml = '';
-            d.desgloseIndividual.forEach(ind => { if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-orange-400 pl-3"><p class="text-xs text-orange-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`; });
+            d.desgloseIndividual.forEach(ind => {
+                if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-orange-400 pl-3"><p class="text-xs text-orange-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`;
+            });
             document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones de ningún compañero.';
 
             await new Promise(r => setTimeout(r, 100));
@@ -691,13 +736,22 @@
 
         async function procesarHtml2Canvas(target, nombreArchivo, tituloShare) {
             try {
-                const canvas = await html2canvas(target, { scale: 2, useCORS: true, logging: false, backgroundColor: null, onclone: (clonedDoc) => { const el = clonedDoc.getElementById(target.id); el.style.position = 'static'; el.style.display = 'block'; } });
+                const canvas = await html2canvas(target, {
+                    scale: 2, useCORS: true, logging: false, backgroundColor: null, 
+                    onclone: (clonedDoc) => {
+                        const el = clonedDoc.getElementById(target.id);
+                        el.style.position = 'static'; el.style.display = 'block';
+                    }
+                });
+
                 if (navigator.share && navigator.canShare) {
                     canvas.toBlob(async (blob) => {
                         const file = new File([blob], `${nombreArchivo}.png`, { type: 'image/png' });
                         if (navigator.canShare({ files: [file] })) {
-                            try { await navigator.share({ files: [file], title: tituloShare, text: tituloShare }); mostrarToast("¡Imagen compartida!", "exito"); } 
-                            catch (err) { if(err.name !== 'AbortError') forzarDescarga(canvas, nombreArchivo); }
+                            try {
+                                await navigator.share({ files: [file], title: tituloShare, text: tituloShare });
+                                mostrarToast("¡Imagen compartida!", "exito");
+                            } catch (err) { if(err.name !== 'AbortError') forzarDescarga(canvas, nombreArchivo); }
                         } else { forzarDescarga(canvas, nombreArchivo); }
                     });
                 } else { forzarDescarga(canvas, nombreArchivo); }
@@ -706,11 +760,12 @@
 
         function forzarDescarga(canvas, nombre) {
             const link = document.createElement('a'); link.download = `${nombre}.png`;
-            link.href = canvas.toDataURL("image/png"); link.click(); mostrarToast("Descarga iniciada.", "info");
+            link.href = canvas.toDataURL("image/png"); link.click();
+            mostrarToast("Descarga iniciada.", "info");
         }
 
         // =========================================================================
-        // 👇 NUEVA SECCIÓN: LÓGICA DE "MI HISTORIAL" 👇
+        // 👇 LÓGICA DE "MI HISTORIAL" CON FILTRO PERSONALIZADO 👇
         // =========================================================================
         let misGraficos = {};
 
@@ -745,15 +800,28 @@
             else if (periodo === 'mes') {
                 iStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-01`;
             }
+            else if (periodo === 'custom') {
+                iStr = document.getElementById('historial-fecha-inicio').value;
+                fStr = document.getElementById('historial-fecha-fin').value;
+                if(!iStr || !fStr) return; // Si falta alguna fecha, no buscar aún
+            }
 
             // UI de Botones
             document.querySelectorAll('.btn-filtro').forEach(b => {
                 b.classList.remove('bg-white', 'text-orange-600', 'shadow-sm');
                 b.classList.add('bg-white/20', 'text-white');
             });
-            const btnFiltro = document.getElementById(`btn-filtro-${periodo}`);
-            btnFiltro.classList.remove('bg-white/20', 'text-white');
-            btnFiltro.classList.add('bg-white', 'text-orange-600', 'shadow-sm');
+
+            if (periodo !== 'custom') {
+                const btnFiltro = document.getElementById(`btn-filtro-${periodo}`);
+                if(btnFiltro) {
+                    btnFiltro.classList.remove('bg-white/20', 'text-white');
+                    btnFiltro.classList.add('bg-white', 'text-orange-600', 'shadow-sm');
+                }
+                // Actualizar los inputs para reflejar el rango seleccionado
+                document.getElementById('historial-fecha-inicio').value = iStr;
+                document.getElementById('historial-fecha-fin').value = fStr;
+            }
 
             document.getElementById('contenido-historial').classList.add('hidden');
             document.getElementById('loader-historial').classList.remove('hidden');
