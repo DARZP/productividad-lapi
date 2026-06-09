@@ -578,7 +578,7 @@
             texto += `Sucursal: ${d.sucursal}\n`;
             texto += `Fecha: ${fechaUI}\n`;
             texto += `Personal: ${d.personal.join(', ')}\n\n`;
-            texto += `ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
+            texto += `ACUMULADO GLOBAL (Total: ${d.totalG})\n`;
             
             for(let est in d.acumulado) { texto += `- ${est}: ${d.acumulado[est]}\n`; }
             
