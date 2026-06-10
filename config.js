@@ -1,7 +1,7 @@
 // config.js - Base de datos estática centralizada de LAPI
 
 window.LAPI_CONFIG = {
-    APP_VERSION: "v2.0.2 (Mayo 2026)",
+    APP_VERSION: "v2.0.3 (Mayo 2026)",
     // ==========================================
     // 1. CATÁLOGO COMPARTIDO DE MÉDICOS
     // ==========================================
