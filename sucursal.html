@@ -161,8 +161,17 @@
                 </div>
             </div>
 
-            <div id="vista-resumen-sucursal" class="hidden glass p-6 rounded-3xl shadow-xl border border-white/20 animate-fade-in">
-                <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
+            <div id="vista-resumen-sucursal" class="hidden glass p-6 rounded-3xl shadow-xl border border-white/20 animate-fade-in relative overflow-hidden">
+                
+                <div id="tutorial-global" class="absolute inset-x-6 top-24 bottom-6 z-[60] glass rounded-3xl p-6 text-center flex flex-col items-center justify-center border-2 border-dashed border-white animate-fade-in hidden">
+                    <i class="fa-solid fa-hand-pointer text-7xl text-orange-200 mb-6 animate-bounce"></i>
+                    <p class="text-xs font-bold uppercase tracking-widest text-orange-200 opacity-80 mb-2">Paso Importante:</p>
+                    <h3 class="font-black text-2xl text-white mb-6 leading-tight">🛑 ¡ESTO NO ES EL REPORTE! <br> No tomes captura aquí.</h3>
+                    <p class="text-sm font-medium text-white/90 mb-8 max-w-xs">Esta pantalla es solo para verificar. Para reportar al grupo, usa el botón de la cámara arriba a la derecha. 👉 📷</p>
+                    <button onclick="ocultarTutorialGlobal()" class="bg-white text-orange-600 font-bold px-8 py-3 rounded-xl shadow-lg active:scale-95 transition-all">Entendido</button>
+                </div>
+
+                <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4 relative z-10">
                     <h2 class="font-black text-xl text-white leading-tight"><i class="fa-solid fa-globe mr-1"></i> Global<br><span class="text-xs text-orange-200 uppercase font-medium">Sucursal del Día</span></h2>
                     <div class="flex gap-2">
                         <button onclick="copiarResumenTexto()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl transition active:scale-95 flex items-center gap-2" title="Copiar Texto">
@@ -174,8 +183,8 @@
                         </button>
                     </div>
                 </div>
-                <div id="resumen-global-contenido" class="space-y-4 mb-6 max-h-[55vh] overflow-y-auto pr-2 scroll-custom"></div>
-                <button onclick="ocultarResumenSucursal()" class="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                <div id="resumen-global-contenido" class="space-y-4 mb-6 max-h-[55vh] overflow-y-auto pr-2 scroll-custom relative z-10"></div>
+                <button onclick="ocultarResumenSucursal()" class="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2 relative z-10">
                     <i class="fa-solid fa-arrow-left"></i> Volver a mi Turno
                 </button>
             </div>
@@ -381,15 +390,14 @@
             modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
+        // 👇 AUTO-LOGIN ACTIVADO 👇
         window.onload = function() {
             const guardado = localStorage.getItem('lapi_sesion_sucursal');
             if(guardado) {
                 sesionActual = JSON.parse(guardado);
                 document.getElementById('login-medico').value = sesionActual.medico;
                 document.getElementById('login-sucursal').value = sesionActual.sucursal;
-                
-                // 👇 ESTA ES LA LÍNEA QUE HACE LA MAGIA DEL SALTO AUTOMÁTICO 👇
-                iniciarApp(); 
+                iniciarApp(); // ¡Pasa directo a la app!
             }
         };
 
@@ -459,7 +467,6 @@
             }
         }
 
-        // 👇 MODIFICACIÓN HAPTICS 👇
         window.cambiarContador = function(estudio, cantidad) {
             if (navigator.vibrate) navigator.vibrate(15);
 
@@ -587,17 +594,13 @@
                     window.where("sucursal", "==", sesionActual.sucursal));
                 const qs = await window.getDocs(q);
 
-                let acumulado = {};
-                let personal = [];
-                let totalG = 0;
-                let desgloseIndividual = [];
+                let acumulado = {}; let personal = []; let totalG = 0; let desgloseIndividual = [];
 
                 qs.forEach(doc => {
                     const data = doc.data();
                     personal.push(data.medico);
                     let obs = data.observaciones ? data.observaciones.trim() : "";
-                    let tieneEstudiosOpc = false;
-                    let estInd = "";
+                    let tieneEstudiosOpc = false; let estInd = "";
 
                     if(data.estudios) {
                         for(let est in data.estudios) {
@@ -640,7 +643,7 @@
                         <h3 class="font-black text-white mb-3 text-center border-b border-white/20 pb-2">SUMA TOTAL: <span class="text-emerald-400 ml-2 text-xl">${totalG}</span></h3>
                         ${htmlAcumulado || '<p class="text-center text-sm opacity-60 italic">Nadie ha registrado estudios aún.</p>'}
                     </div>
-                    <div class="mt-4">
+                    <div class="mt-4 relative">
                         <h3 class="font-bold text-sm uppercase tracking-widest opacity-80 mb-2">Desglose por Compañero</h3>
                         ${htmlIndividual || '<p class="text-center text-sm opacity-60 italic">Sin datos individuales.</p>'}
                     </div>
@@ -649,11 +652,16 @@
                 document.getElementById('vista-captura-principal').classList.add('hidden');
                 document.getElementById('vista-resumen-sucursal').classList.remove('hidden');
 
-            } catch(e) {
-                console.error(e);
-                mostrarToast("Hubo un error cargando el global. Intenta de nuevo.", "error");
-            }
+                // 👇 MOSTRAR TUTORIAL FORZOSO 👇
+                document.getElementById('tutorial-global').classList.remove('hidden');
+
+            } catch(e) { console.error(e); mostrarToast("Hubo un error cargando el global. Intenta de nuevo.", "error"); }
             btn.innerHTML = originalHTML; btn.disabled = false;
+        };
+
+        // 👇 OCULTAR TUTORIAL 👇
+        window.ocultarTutorialGlobal = function() {
+            document.getElementById('tutorial-global').classList.add('hidden');
         };
 
         window.ocultarResumenSucursal = function() {
@@ -666,14 +674,8 @@
             const d = window.datosGlobalesTemp;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
             
-            let texto = `*REPORTE SUCURSAL LAPI*\n`;
-            texto += `🏥 Sucursal: ${d.sucursal}\n`;
-            texto += `📅 Fecha: ${fechaUI}\n`;
-            texto += `👥 Personal: ${d.personal.join(', ')}\n\n`;
-            texto += `📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
-            
+            let texto = `*REPORTE SUCURSAL LAPI*\n🏥 Sucursal: ${d.sucursal}\n📅 Fecha: ${fechaUI}\n👥 Personal: ${d.personal.join(', ')}\n\n📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
             for(let est in d.acumulado) { texto += `- ${est}: ${d.acumulado[est]}\n`; }
-            
             texto += `\n📝 *OBSERVACIONES*\n`;
             let hayObs = false;
             d.desgloseIndividual.forEach(ind => {
@@ -681,19 +683,14 @@
             });
             if(!hayObs) texto += `Sin observaciones relevantes.\n`;
 
-            navigator.clipboard.writeText(texto).then(() => {
-                mostrarToast("¡Resumen de Sucursal copiado al portapapeles!", "exito");
-            }).catch(err => { mostrarToast("Error al copiar texto.", "error"); });
+            navigator.clipboard.writeText(texto).then(() => { mostrarToast("¡Resumen copiado al portapapeles!", "exito"); })
+            .catch(err => { mostrarToast("Error al copiar texto.", "error"); });
         };
 
         window.generarImagenCompartir = async function() {
-            const btn = document.getElementById('btn-compartir-sucursal');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            btn.disabled = true;
-
-            const sucursal = sesionActual.sucursal.toUpperCase();
-            const medico = sesionActual.medico.toUpperCase();
+            const btn = document.getElementById('btn-compartir-sucursal'); const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
+            const sucursal = sesionActual.sucursal.toUpperCase(); const medico = sesionActual.medico.toUpperCase();
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
             document.getElementById('cap-sucursal-nombre').innerText = `Sucursal: ${sucursal}`;
@@ -707,29 +704,21 @@
         };
 
         window.generarImagenGlobal = async function() {
-            const d = window.datosGlobalesTemp;
-            if(!d) return;
-            const btn = document.getElementById('btn-compartir-global');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            btn.disabled = true;
-
+            const d = window.datosGlobalesTemp; if(!d) return;
+            const btn = document.getElementById('btn-compartir-global'); const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
             document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal}`;
             document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Participante:</b> <span class="text-orange-200 font-bold">${d.personal.join(', ')}</span></p>`;
             
             let listHtml = '';
-            for(let est in d.acumulado) {
-                listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-orange-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`;
-            }
+            for(let est in d.acumulado) { listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-orange-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`; }
             listHtml += `<div class="border-t-2 border-dashed border-white/20 pt-3 mt-4 flex justify-between items-center text-lg"><span class="font-black text-white/90">SUMA SUCURSAL:</span><span class="font-black text-emerald-400">${d.totalG}</span></div>`;
             document.getElementById('cap-glob-lista').innerHTML = listHtml || '<p class="opacity-60 italic text-center">Sin estudios en la sucursal.</p>';
 
             let obsHtml = '';
-            d.desgloseIndividual.forEach(ind => {
-                if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-orange-400 pl-3"><p class="text-xs text-orange-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`;
-            });
+            d.desgloseIndividual.forEach(ind => { if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-orange-400 pl-3"><p class="text-xs text-orange-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`; });
             document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones de ningún compañero.';
 
             await new Promise(r => setTimeout(r, 100));
@@ -739,22 +728,13 @@
 
         async function procesarHtml2Canvas(target, nombreArchivo, tituloShare) {
             try {
-                const canvas = await html2canvas(target, {
-                    scale: 2, useCORS: true, logging: false, backgroundColor: null, 
-                    onclone: (clonedDoc) => {
-                        const el = clonedDoc.getElementById(target.id);
-                        el.style.position = 'static'; el.style.display = 'block';
-                    }
-                });
-
+                const canvas = await html2canvas(target, { scale: 2, useCORS: true, logging: false, backgroundColor: null, onclone: (clonedDoc) => { const el = clonedDoc.getElementById(target.id); el.style.position = 'static'; el.style.display = 'block'; } });
                 if (navigator.share && navigator.canShare) {
                     canvas.toBlob(async (blob) => {
                         const file = new File([blob], `${nombreArchivo}.png`, { type: 'image/png' });
                         if (navigator.canShare({ files: [file] })) {
-                            try {
-                                await navigator.share({ files: [file], title: tituloShare, text: tituloShare });
-                                mostrarToast("¡Imagen compartida!", "exito");
-                            } catch (err) { if(err.name !== 'AbortError') forzarDescarga(canvas, nombreArchivo); }
+                            try { await navigator.share({ files: [file], title: tituloShare, text: tituloShare }); mostrarToast("¡Imagen compartida!", "exito"); } 
+                            catch (err) { if(err.name !== 'AbortError') forzarDescarga(canvas, nombreArchivo); }
                         } else { forzarDescarga(canvas, nombreArchivo); }
                     });
                 } else { forzarDescarga(canvas, nombreArchivo); }
@@ -763,8 +743,7 @@
 
         function forzarDescarga(canvas, nombre) {
             const link = document.createElement('a'); link.download = `${nombre}.png`;
-            link.href = canvas.toDataURL("image/png"); link.click();
-            mostrarToast("Descarga iniciada.", "info");
+            link.href = canvas.toDataURL("image/png"); link.click(); mostrarToast("Descarga iniciada.", "info");
         }
 
         // =========================================================================
@@ -781,7 +760,6 @@
             document.getElementById('lbl-nombre-historial').innerText = sesionActual.medico;
             document.getElementById('vista-mi-historial').classList.remove('hidden');
             
-            // Cargar por defecto la semana para que no se vea vacío
             filtrarHistorial('semana');
         };
 
@@ -806,10 +784,9 @@
             else if (periodo === 'custom') {
                 iStr = document.getElementById('historial-fecha-inicio').value;
                 fStr = document.getElementById('historial-fecha-fin').value;
-                if(!iStr || !fStr) return; // Si falta alguna fecha, no buscar aún
+                if(!iStr || !fStr) return;
             }
 
-            // UI de Botones
             document.querySelectorAll('.btn-filtro').forEach(b => {
                 b.classList.remove('bg-white', 'text-orange-600', 'shadow-sm');
                 b.classList.add('bg-white/20', 'text-white');
@@ -821,7 +798,6 @@
                     btnFiltro.classList.remove('bg-white/20', 'text-white');
                     btnFiltro.classList.add('bg-white', 'text-orange-600', 'shadow-sm');
                 }
-                // Actualizar los inputs para reflejar el rango seleccionado
                 document.getElementById('historial-fecha-inicio').value = iStr;
                 document.getElementById('historial-fecha-fin').value = fStr;
             }
@@ -835,7 +811,6 @@
             let conteoEstudios = {}; let tendencia = {}; let bitacora = [];
 
             try {
-                // 1. Extraer datos de Sucursales
                 let qSuc = window.query(window.collection(window.db, "registros_diarios_sucursales"),
                     window.where("medico", "==", medicoBuscado), window.where("fecha", ">=", iStr), window.where("fecha", "<=", fStr)
                 );
@@ -855,7 +830,6 @@
                     if(sumDia > 0) tendencia[data.fecha] = (tendencia[data.fecha] || 0) + sumDia;
                 });
 
-                // 2. Extraer datos Foráneos
                 let qFor = window.query(window.collection(window.db, "registros"), window.where("fecha", ">=", iStr), window.where("fecha", "<=", fStr));
                 const qsFor = await window.getDocs(qFor);
                 qsFor.forEach(doc => {
@@ -877,7 +851,6 @@
                     if(sumDiaForaneo > 0) tendencia[data.fecha] = (tendencia[data.fecha] || 0) + sumDiaForaneo;
                 });
 
-                // 3. Pintar DOM
                 document.getElementById('mi-kpi-total').innerText = totSucursal + totForaneos;
                 document.getElementById('mi-kpi-sucursal').innerText = totSucursal;
                 
@@ -889,7 +862,6 @@
                     document.getElementById('mi-kpi-empresas').innerText = empresasSet.size;
                 }
 
-                // 4. Dibujar Gráficas
                 let labelsTipos = Object.keys(conteoEstudios);
                 let dataTipos = Object.values(conteoEstudios);
                 dibujarMiGrafico('mi-chart-tipos', 'doughnut', labelsTipos, dataTipos, ['#f97316', '#0ea5e9', '#10b981', '#8b5cf6', '#f43f5e']);
@@ -898,8 +870,7 @@
                 let dataTendencia = fechasOrdenadas.map(f => tendencia[f]);
                 dibujarMiGrafico('mi-chart-tendencia', 'line', fechasOrdenadas, dataTendencia, ['#f97316']);
 
-                // 5. Tabla Bitácora
-                bitacora.sort((a,b) => b.fecha.localeCompare(a.fecha)); // Orden descendente (más nuevos arriba)
+                bitacora.sort((a,b) => b.fecha.localeCompare(a.fecha)); 
                 let tbody = document.getElementById('mi-tabla-bitacora');
                 tbody.innerHTML = '';
                 if (bitacora.length === 0) {
@@ -926,7 +897,7 @@
 
         function dibujarMiGrafico(canvasId, tipo, labels, data, colores) {
             if(misGraficos[canvasId]) misGraficos[canvasId].destroy();
-            let colorFondo = tipo === 'line' ? colores[0] + '30' : colores; // 30 de opacidad
+            let colorFondo = tipo === 'line' ? colores[0] + '30' : colores;
             
             let conf = {
                 type: tipo,
