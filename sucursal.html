@@ -568,7 +568,7 @@
             timerGuardado = setTimeout(async () => {
                 try {
                     datosDelDia.ultimaActualizacion = new Date();
-                    await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia);
+                    await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
                     const indicador = document.getElementById('indicador-guardado');
                     if (indicador) {
                         indicador.classList.remove('opacity-0');
@@ -595,7 +595,7 @@
 
             try {
                 datosDelDia.ultimaActualizacion = new Date();
-                await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia);
+                await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
 
                 const q = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
                     window.where("fecha", "==", fechaOperativa), 
