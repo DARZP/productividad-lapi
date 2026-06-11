@@ -453,6 +453,12 @@
                     datosDelDia = docSnap.data();
                     if(!datosDelDia.estudios) datosDelDia.estudios = {}; 
                     if(!datosDelDia.observaciones) datosDelDia.observaciones = ""; 
+
+                    datosDelDia.tipo = "sucursal_agrupada";
+                    datosDelDia.fecha = fechaOperativa;
+                    datosDelDia.sucursal = sesionActual.sucursal;
+                    datosDelDia.medico = sesionActual.medico;
+                    
                 } else {
                     datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
                 }
