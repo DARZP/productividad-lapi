@@ -116,7 +116,7 @@
                     <button onclick="abrirMiHistorial()" class="text-[11px] bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg font-bold transition active:scale-95 shadow-sm flex items-center gap-1">
                         <i class="fa-solid fa-chart-user"></i> Mi Perfil
                     </button>
-                    <div id="indicador-guardado" class="text-[9px] font-bold text-orange-900 bg-white px-2 py-0.5 rounded opacity-0 transition-opacity"><i class="fa-solid fa-cloud-check"></i> Sync</div>
+                    <div id="indicador-guardado" class="text-[10px] font-black text-white bg-emerald-500 px-2.5 py-1 rounded-md opacity-0 transition-all duration-300 shadow-sm"></div>
                 </div>
             </div>
 
@@ -141,7 +141,7 @@
             <div id="vista-resumen-final" class="hidden glass p-6 rounded-3xl shadow-xl border border-white/20 animate-fade-in">
                 <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
                     <h2 class="font-black text-xl text-white"><i class="fa-solid fa-clipboard-check mr-2"></i> Mi Turno</h2>
-                    </div>
+                </div>
                 
                 <div id="resumen-contenido" class="bg-black/20 p-4 rounded-2xl mb-6 space-y-2 border border-white/10 text-white/90 text-sm"></div>
 
@@ -150,18 +150,13 @@
                     <textarea id="obs-resumen" oninput="actualizarObservaciones(this.value)" class="w-full p-3 rounded-xl bg-black/20 border border-white/10 outline-none placeholder-white/50 text-white font-medium" rows="3"></textarea>
                 </div>
 
-                <div class="flex flex-col gap-3">
-                    <button id="btn-descargar-sucursal" onclick="generarImagenCompartir()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                <div class="flex gap-3">
+                    <button onclick="ocultarResumen()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Volver
+                    </button>
+                    <button id="btn-descargar-sucursal" onclick="generarImagenCompartir()" class="w-2/3 bg-orange-500 hover:bg-orange-600 text-white font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-download"></i> Descargar Mi Reporte
                     </button>
-                    <div class="flex gap-3">
-                        <button onclick="ocultarResumen()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
-                            <i class="fa-solid fa-arrow-left"></i> Volver
-                        </button>
-                        <button id="btn-confirmar-final" onclick="confirmarTurno()" class="w-2/3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
-                            <i class="fa-solid fa-check-double"></i> Actualizar Nube
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -363,9 +358,6 @@
         const sucursalesOficiales = window.LAPI_CONFIG.sucursales;
         const listaEstudiosOficial = window.LAPI_CONFIG.estudiosSucursales;
 
-        document.getElementById('lista-medicos').innerHTML = medicosForaneos.map(m => `<option value="${m}">`).join('');
-        document.getElementById('lista-sucursales').innerHTML = sucursalesOficiales.map(s => `<option value="${s}">`).join('');
-
         let sesionActual = { medico: null, sucursal: null };
         let datosDelDia = { estudios: {}, observaciones: "" };
         let fechaOperativa = "";
@@ -397,14 +389,14 @@
             modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        // 👇 AUTO-LOGIN ACTIVADO 👇
+        // AUTO LOGIN INYECTADO
         window.onload = function() {
             const guardado = localStorage.getItem('lapi_sesion_sucursal');
             if(guardado) {
                 sesionActual = JSON.parse(guardado);
                 document.getElementById('login-medico').value = sesionActual.medico;
                 document.getElementById('login-sucursal').value = sesionActual.sucursal;
-                iniciarApp(); // ¡Pasa directo a la app!
+                iniciarApp(); 
             }
         };
 
@@ -474,7 +466,6 @@
             }
         }
 
-        // 👇 MODIFICACIÓN HAPTICS 👇
         window.cambiarContador = function(estudio, cantidad) {
             if (navigator.vibrate) navigator.vibrate(15);
 
@@ -554,34 +545,32 @@
             document.getElementById('vista-captura-principal').classList.remove('hidden');
         }
 
-        window.confirmarTurno = function() {
-            sincronizarConNube();
-            const btn = document.getElementById('btn-confirmar-final');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finalizando...';
-            btn.disabled = true;
-            mostrarToast("¡Turno actualizado! Regresando...", "exito", 0);
-            setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Actualizar'; btn.disabled = false; ocultarResumen(); }, 1500);
-        }
-
+        // INDICADOR EN TIEMPO REAL INYECTADO Y MERGE TRUE APLICADO
         async function sincronizarConNube() {
+            const indicador = document.getElementById('indicador-guardado');
+            if(indicador) {
+                indicador.classList.remove('opacity-0');
+                indicador.className = "text-[10px] font-black text-white bg-orange-500 px-2.5 py-1 rounded-md shadow-sm transition-all";
+                indicador.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+            }
+
             clearTimeout(timerGuardado);
             timerGuardado = setTimeout(async () => {
                 try {
                     datosDelDia.ultimaActualizacion = new Date();
+                    // SE AGREGA MERGE TRUE
                     await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
-                    const indicador = document.getElementById('indicador-guardado');
+                    
                     if (indicador) {
-                        indicador.classList.remove('opacity-0');
-                        indicador.innerHTML = navigator.onLine ? '<i class="fa-solid fa-cloud-check"></i> Sync' : '<i class="fa-solid fa-hard-drive"></i> Local';
-                        setTimeout(() => indicador.classList.add('opacity-0'), 2000);
+                        indicador.className = navigator.onLine ? "text-[10px] font-black text-white bg-emerald-500 px-2.5 py-1 rounded-md shadow-sm transition-all" : "text-[10px] font-black text-slate-800 bg-white px-2.5 py-1 rounded-md shadow-sm transition-all";
+                        indicador.innerHTML = navigator.onLine ? '<i class="fa-solid fa-cloud-check"></i> ¡Guardado en la Nube!' : '<i class="fa-solid fa-hard-drive"></i> Guardado Local';
+                        setTimeout(() => indicador.classList.add('opacity-0'), 2500);
                     }
                 } catch (error) { console.error("Error guardando silencio:", error); }
             }, 800);
         }
 
-        // =========================================================================
-        // RESUMEN GLOBAL SUCURSAL Y COMPARTIR IMAGEN
-        // =========================================================================
+        // RESUMEN GLOBAL SUCURSAL CON MERGE TRUE
         window.mostrarResumenSucursal = async function() {
             const btn = document.getElementById('btn-ver-global');
             const originalHTML = btn.innerHTML;
@@ -595,6 +584,7 @@
 
             try {
                 datosDelDia.ultimaActualizacion = new Date();
+                // SE AGREGA MERGE TRUE
                 await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
 
                 const q = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
@@ -602,7 +592,10 @@
                     window.where("sucursal", "==", sesionActual.sucursal));
                 const qs = await window.getDocs(q);
 
-                let acumulado = {}; let personal = []; let totalG = 0; let desgloseIndividual = [];
+                let acumulado = {};
+                let personal = [];
+                let totalG = 0;
+                let desgloseIndividual = [];
 
                 qs.forEach(doc => {
                     const data = doc.data();
@@ -660,15 +653,15 @@
 
                 document.getElementById('vista-captura-principal').classList.add('hidden');
                 document.getElementById('vista-resumen-sucursal').classList.remove('hidden');
-
-                // 👇 MOSTRAR TUTORIAL FORZOSO 👇
                 document.getElementById('tutorial-global').classList.remove('hidden');
 
-            } catch(e) { console.error(e); mostrarToast("Hubo un error cargando el global. Intenta de nuevo.", "error"); }
+            } catch(e) {
+                console.error(e);
+                mostrarToast("Hubo un error cargando el global. Intenta de nuevo.", "error");
+            }
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
-        // 👇 OCULTAR TUTORIAL 👇
         window.ocultarTutorialGlobal = function() {
             document.getElementById('tutorial-global').classList.add('hidden');
         };
@@ -683,8 +676,14 @@
             const d = window.datosGlobalesTemp;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
             
-            let texto = `*REPORTE SUCURSAL LAPI*\n🏥 Sucursal: ${d.sucursal}\n📅 Fecha: ${fechaUI}\n👥 Personal: ${d.personal.join(', ')}\n\n📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
+            let texto = `*REPORTE SUCURSAL LAPI*\n`;
+            texto += `🏥 Sucursal: ${d.sucursal}\n`;
+            texto += `📅 Fecha: ${fechaUI}\n`;
+            texto += `👥 Personal: ${d.personal.join(', ')}\n\n`;
+            texto += `📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
+            
             for(let est in d.acumulado) { texto += `- ${est}: ${d.acumulado[est]}\n`; }
+            
             texto += `\n📝 *OBSERVACIONES*\n`;
             let hayObs = false;
             d.desgloseIndividual.forEach(ind => {
@@ -692,18 +691,19 @@
             });
             if(!hayObs) texto += `Sin observaciones relevantes.\n`;
 
-            navigator.clipboard.writeText(texto).then(() => { mostrarToast("¡Resumen copiado al portapapeles!", "exito"); })
-            .catch(err => { mostrarToast("Error al copiar texto.", "error"); });
+            navigator.clipboard.writeText(texto).then(() => {
+                mostrarToast("¡Resumen de Sucursal copiado al portapapeles!", "exito");
+            }).catch(err => { mostrarToast("Error al copiar texto.", "error"); });
         };
 
-        // 👇 LOGICA DE DESCARGA DIRECTA (SIN NAVEGADOR DE COMPARTIR) 👇
+        // DESCARGA DIRECTA (EVITA MENU NATIVO DE COMPARTIR)
         window.generarImagenCompartir = async function() {
-            const btn = document.getElementById('btn-descargar-sucursal'); 
+            const btn = document.getElementById('btn-descargar-sucursal');
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...'; 
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
             btn.disabled = true;
 
-            const sucursal = sesionActual.sucursal.toUpperCase(); 
+            const sucursal = sesionActual.sucursal.toUpperCase();
             const medico = sesionActual.medico.toUpperCase();
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
@@ -714,63 +714,56 @@
             
             await new Promise(r => setTimeout(r, 100));
             await procesarHtml2Canvas(document.getElementById('captura-temp-sucursal'), `LAPI_MiTurno_${sucursal}_${fechaOperativa}`);
-            
-            btn.innerHTML = originalHTML; 
-            btn.disabled = false;
+            btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
         window.generarImagenGlobal = async function() {
-            const d = window.datosGlobalesTemp; if(!d) return;
-            const btn = document.getElementById('btn-descargar-global'); 
+            const d = window.datosGlobalesTemp;
+            if(!d) return;
+            const btn = document.getElementById('btn-descargar-global');
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...'; 
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
             btn.disabled = true;
-            
+
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
             document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal}`;
             document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Participante:</b> <span class="text-orange-200 font-bold">${d.personal.join(', ')}</span></p>`;
             
             let listHtml = '';
-            for(let est in d.acumulado) { listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-orange-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`; }
+            for(let est in d.acumulado) {
+                listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-orange-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`;
+            }
             listHtml += `<div class="border-t-2 border-dashed border-white/20 pt-3 mt-4 flex justify-between items-center text-lg"><span class="font-black text-white/90">SUMA SUCURSAL:</span><span class="font-black text-emerald-400">${d.totalG}</span></div>`;
             document.getElementById('cap-glob-lista').innerHTML = listHtml || '<p class="opacity-60 italic text-center">Sin estudios en la sucursal.</p>';
 
             let obsHtml = '';
-            d.desgloseIndividual.forEach(ind => { if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-orange-400 pl-3"><p class="text-xs text-orange-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`; });
+            d.desgloseIndividual.forEach(ind => {
+                if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-orange-400 pl-3"><p class="text-xs text-orange-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`;
+            });
             document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones de ningún compañero.';
 
             await new Promise(r => setTimeout(r, 100));
             await procesarHtml2Canvas(document.getElementById('captura-temp-global'), `LAPI_Global_${d.sucursal}_${fechaOperativa}`);
-            
-            btn.innerHTML = originalHTML; 
-            btn.disabled = false;
+            btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
         async function procesarHtml2Canvas(target, nombreArchivo) {
             try {
-                const canvas = await html2canvas(target, { 
-                    scale: 2, 
-                    useCORS: true, 
-                    logging: false, 
-                    backgroundColor: null, 
-                    onclone: (clonedDoc) => { 
-                        const el = clonedDoc.getElementById(target.id); 
-                        el.style.position = 'static'; 
-                        el.style.display = 'block'; 
-                    } 
+                const canvas = await html2canvas(target, {
+                    scale: 2, useCORS: true, logging: false, backgroundColor: null, 
+                    onclone: (clonedDoc) => {
+                        const el = clonedDoc.getElementById(target.id);
+                        el.style.position = 'static'; el.style.display = 'block';
+                    }
                 });
-                
+                // DESCARGA DIRECTA INYECTADA
                 const link = document.createElement('a'); 
                 link.download = `${nombreArchivo}.png`;
                 link.href = canvas.toDataURL("image/png"); 
                 link.click(); 
                 mostrarToast("Descarga exitosa. Revisa tu galería o descargas.", "exito");
-                
-            } catch(e) { 
-                console.error("Error captura:", e); 
-                mostrarToast("Falló la generación de imagen.", "error"); 
-            }
+            } catch(e) { console.error("Error captura:", e); mostrarToast("Falló la generación de imagen.", "error"); }
         }
 
         // =========================================================================
@@ -787,6 +780,7 @@
             document.getElementById('lbl-nombre-historial').innerText = sesionActual.medico;
             document.getElementById('vista-mi-historial').classList.remove('hidden');
             
+            // Cargar por defecto la semana para que no se vea vacío
             filtrarHistorial('semana');
         };
 
@@ -811,9 +805,10 @@
             else if (periodo === 'custom') {
                 iStr = document.getElementById('historial-fecha-inicio').value;
                 fStr = document.getElementById('historial-fecha-fin').value;
-                if(!iStr || !fStr) return;
+                if(!iStr || !fStr) return; // Si falta alguna fecha, no buscar aún
             }
 
+            // UI de Botones
             document.querySelectorAll('.btn-filtro').forEach(b => {
                 b.classList.remove('bg-white', 'text-orange-600', 'shadow-sm');
                 b.classList.add('bg-white/20', 'text-white');
@@ -825,6 +820,7 @@
                     btnFiltro.classList.remove('bg-white/20', 'text-white');
                     btnFiltro.classList.add('bg-white', 'text-orange-600', 'shadow-sm');
                 }
+                // Actualizar los inputs para reflejar el rango seleccionado
                 document.getElementById('historial-fecha-inicio').value = iStr;
                 document.getElementById('historial-fecha-fin').value = fStr;
             }
@@ -838,6 +834,7 @@
             let conteoEstudios = {}; let tendencia = {}; let bitacora = [];
 
             try {
+                // 1. Extraer datos de Sucursales
                 let qSuc = window.query(window.collection(window.db, "registros_diarios_sucursales"),
                     window.where("medico", "==", medicoBuscado), window.where("fecha", ">=", iStr), window.where("fecha", "<=", fStr)
                 );
@@ -857,6 +854,7 @@
                     if(sumDia > 0) tendencia[data.fecha] = (tendencia[data.fecha] || 0) + sumDia;
                 });
 
+                // 2. Extraer datos Foráneos
                 let qFor = window.query(window.collection(window.db, "registros"), window.where("fecha", ">=", iStr), window.where("fecha", "<=", fStr));
                 const qsFor = await window.getDocs(qFor);
                 qsFor.forEach(doc => {
@@ -878,6 +876,7 @@
                     if(sumDiaForaneo > 0) tendencia[data.fecha] = (tendencia[data.fecha] || 0) + sumDiaForaneo;
                 });
 
+                // 3. Pintar DOM
                 document.getElementById('mi-kpi-total').innerText = totSucursal + totForaneos;
                 document.getElementById('mi-kpi-sucursal').innerText = totSucursal;
                 
@@ -889,6 +888,7 @@
                     document.getElementById('mi-kpi-empresas').innerText = empresasSet.size;
                 }
 
+                // 4. Dibujar Gráficas
                 let labelsTipos = Object.keys(conteoEstudios);
                 let dataTipos = Object.values(conteoEstudios);
                 dibujarMiGrafico('mi-chart-tipos', 'doughnut', labelsTipos, dataTipos, ['#f97316', '#0ea5e9', '#10b981', '#8b5cf6', '#f43f5e']);
@@ -897,7 +897,8 @@
                 let dataTendencia = fechasOrdenadas.map(f => tendencia[f]);
                 dibujarMiGrafico('mi-chart-tendencia', 'line', fechasOrdenadas, dataTendencia, ['#f97316']);
 
-                bitacora.sort((a,b) => b.fecha.localeCompare(a.fecha)); 
+                // 5. Tabla Bitácora
+                bitacora.sort((a,b) => b.fecha.localeCompare(a.fecha)); // Orden descendente (más nuevos arriba)
                 let tbody = document.getElementById('mi-tabla-bitacora');
                 tbody.innerHTML = '';
                 if (bitacora.length === 0) {
@@ -924,7 +925,7 @@
 
         function dibujarMiGrafico(canvasId, tipo, labels, data, colores) {
             if(misGraficos[canvasId]) misGraficos[canvasId].destroy();
-            let colorFondo = tipo === 'line' ? colores[0] + '30' : colores;
+            let colorFondo = tipo === 'line' ? colores[0] + '30' : colores; // 30 de opacidad
             
             let conf = {
                 type: tipo,
@@ -947,7 +948,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             const versionDiv = document.createElement('div');
             versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
-            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> v2.1.3_Down`;
+            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> v2.1.5_Final`;
             document.body.appendChild(versionDiv);
         });
     </script>
