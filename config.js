@@ -100,6 +100,7 @@ window.LAPI_CONFIG = {
         "Calzada del Hueso", 
         "Condesa", 
         "Cuautitlán", 
+        "Cuautitlán 2".
         "Encuentro Fortuna", 
         "Gabriel Mancera", 
         "Gran Sur", 
@@ -404,32 +405,58 @@ window.LAPI_CONFIG = {
     diccionarioIniciales: {
         "BALBUENA": {
             "JM": "Muñoz Perez Jazmin Nayeli",
+            "JNMP": "Muñoz Perez Jazmin Nayeli",
             "MZ": "Zarate Flores Myriam Alejandra",
+            "MAZF": "Zarate Flores Myriam Alejandra",
             "EP": "Perez Bautista Esther",
+            "EPB": "Perez Bautista Esther",
             "MG": "Dra. Mariana Gaviño"
         },
         "CUAUTITLAN": {
-            "JA": "Angeles Velazquez Jennifer Tabata",
-            "CBG": "Bustos Gonzalez Claudia Montserrat",
+            "JTAV": "Angeles Velazquez Jennifer Tabata",
+            "CBMG": "Bustos Gonzalez Claudia Montserrat",
+            "CMBG": "Bustos Gonzalez Claudia Montserrat",
             "MCG": "Cervantes Erendira Montserrat",
-            "AV": "Velasco Duran Araceli",
+            "EMCG": "Cervantes Erendira Montserrat",
+            "AVD": "Velasco Duran Araceli",
+            "LMSH": "Leilany Montserrat Sanchez",
             "MSH": "Leilany Montserrat Sanchez",
-            "LM": "Sandra Lilian Maceda Licona"
+            "SLML": "Sandra Lilian Maceda Licona"
+            
+        "CUAUTITLAN 2": {
+            "JTAV": "Angeles Velazquez Jennifer Tabata",
+            "CBMG": "Bustos Gonzalez Claudia Montserrat",
+            "CMBG": "Bustos Gonzalez Claudia Montserrat",
+            "MCG": "Cervantes Erendira Montserrat",
+            "EMCG": "Cervantes Erendira Montserrat",
+            "AVD": "Velasco Duran Araceli",
+            "LMSH": "Leilany Montserrat Sanchez",
+            "MSH": "Leilany Montserrat Sanchez",
+            "SLML": "Sandra Lilian Maceda Licona"
         },
         "CONDESA": {
             "UA": "Alanis Aparicio Ulises Jasiel",
-            "MC": "Contreras Herrera Maribel del Carmen"
+            "UJAA": "Alanis Aparicio Ulises Jasiel",
+            "MC": "Contreras Herrera Maribel del Carmen",
+            "MCCH": "Contreras Herrera Maribel del Carmen"
         },
         "CALZADA DEL HUESO": {
             "AF": "Flores Miranda Adriana",
+            "AFM": "Flores Miranda Adriana",
             "PI": "Islas Veivar Patricia Guadalupe",
+            "PGIV": "Islas Veivar Patricia Guadalupe",
             "CR": "Ramirez Ramirez Carlos Antonio",
-            "BC": "Camacho Ortiz Barbara Alejandra"
+            "CARR": "Ramirez Ramirez Carlos Antonio",
+            "BC": "Camacho Ortiz Barbara Alejandra",
+            "BACO": "Camacho Ortiz Barbara Alejandra"
         },
         "ENCUENTRO FORTUNA": {
             "AD": "Dominguez Mojica Jannet Alejandra",
+            "JADM": "Dominguez Mojica Jannet Alejandra",
             "JC": "Cuevas Garcia Javier Alejandro",
-            "AF": "Fuerte Morales Aleydis"
+            "JACG": "Cuevas Garcia Javier Alejandro",
+            "AF": "Fuerte Morales Aleydis",
+            "AFM": "Fuerte Morales Aleydis"
         },
         "GABRIEL MANCERA": {
             "VM": "Monjaraz Sanchez Viviana",
@@ -437,17 +464,24 @@ window.LAPI_CONFIG = {
         },
         "INTERLOMAS": {
             "EE": "Escobar Rios Erika Yeraldi",
-            "CT": "Tahuilan Enciso Cinthia"
+            "EYER": "Escobar Rios Erika Yeraldi",
+            "CT": "Tahuilan Enciso Cinthia",
+            "CTE": "Tahuilan Enciso Cinthia"
         },
         "LINDAVISTA": {
             "SD": "Delgadillo Fredy Sebastian",
+            "FSDC": "Delgadillo Fredy Sebastian", 
             "AG": "Gonzalez Lucas Alondra Estefania",
-            "DL": "Lino Reynoso Deany Alondra"
+            "AEGL": "Gonzalez Lucas Alondra Estefania",
+            "DL": "Lino Reynoso Deany Alondra",
+            "DAIR": "Lino Reynoso Deany Alondra"        
         },
         "LOMAS VERDES": {
             "MIR": "Izaguirre Rojas Martha",
             "BD": "Dulce Maria Buenrostro Perez",
+            "DB": "Dulce Maria Buenrostro Perez",
             "LC": "Cruz Zavala Lucero",
+            "LCZ": "Cruz Zavala Lucero",
             "JT": "Toriz Segura Jessica Noemi"
         },
         "MARTIN CARRERA": {
@@ -457,7 +491,15 @@ window.LAPI_CONFIG = {
         "METEPEC": {
             "RML": "Montoya Linares Rebeca",
             "SSR": "Rueda Pedraza Sabine Shecid",
-            "MRC": "Cabrera Velazquez Miguel Ramon"
+            "SSRP": "Rueda Pedraza Sabine Shecid",
+            "MRC": "Cabrera Velazquez Miguel Ramon",
+            "DB": "Dulce Maria Buenrostro Perez",
+            "MRCV": "Cabrera Velazquez Miguel Ramon",
+            "YA": "Yirelka Yeraldine",
+            "PKEC": "Dra. Patricia Escobar",
+            "AIRV": "Angelica Itzel",
+            "JADM": "Dominguez Mojica Jannet Alejandra",
+            "LCZ": "Cruz Zavala Lucero",
         },
         "MERIDA": {
             "XJ": "Jacqueline Ruiz"
@@ -469,40 +511,62 @@ window.LAPI_CONFIG = {
         "PLATEROS": {
             "PA": "Paulina Alba",
             "AM": "Garcia Morado Ana Lourdes",
+            "ALGM": "Garcia Morado Ana Lourdes",
             "JG": "Juan Manuel",
             "GV": "Giselle Vizuet"
         },
         "PLAZA CENTRAL": {
             "IA": "Arizcorreta Colchado Ivonne Guadalupe",
-            "BC": "Chavez Muñoz Brizeth Alondra"
+            "IGAC": "Arizcorreta Colchado Ivonne Guadalupe",
+            "BC": "Chavez Muñoz Brizeth Alondra",
+            "BACM": "Chavez Muñoz Brizeth Alondra"
         },
         "POLANCO": {
             "KF": "Fernandez Contreras Karla Alitzel",
+            "KAFC": "Fernandez Contreras Karla Alitzel",
             "AS": "Soriano Arvea Ariagna Anahi",
+            "AASA": "Soriano Arvea Ariagna Anahi",
             "GH": "Hernandez Gonzalez Giovanni Mariano",
-            "PP": "Pineda Lopez Patricia"
+            "GMHG": "Hernandez Gonzalez Giovanni Mariano",
+            "PP": "Pineda Lopez Patricia",
+            "PPL": "Pineda Lopez Patricia",
+            "LCZ": "Cruz Zavala Lucero"
         },
         "SANTA FE": {
-            "GM": "Medina Molina Guadalupe"
+            "GM": "Medina Molina Guadalupe",
+            "GMM": "Medina Molina Guadalupe",
+            "EYER": "Escobar Rios Erika Yeraldi"
         },
         "SANTA MARTHA": {
             "JD": "Duque Hernandez Jaqueline",
+            "JDH": "Duque Hernandez Jaqueline",
             "AD": "Dominguez Mojica Jannet Alejandra",
+            "JADM": "Dominguez Mojica Jannet Alejandra",
             "AC": "Cabrera Hernandez Ana Beatriz",
-            "LC": "Lucero Cruz"
+            "ABCH": "Cabrera Hernandez Ana Beatriz",
+            "LC": "Lucero Cruz",
+            "LCZ": "Cruz Zavala Lucero",
+            "PEC": "Dra. Patricia Escobar",
         },
         "SATELITE": {
             "MASR": "Salinas Rojas Miguel Angel",
             "MGZH": "Maria Guadalupe Zapata Hernandez",
             "LLGM": "Lopez Lopez Guadalupe Mireya",
-            "MLL": "Lopez Lopez Guadalupe Mireya"
+            "GMLL": "Lopez Lopez Guadalupe Mireya",
+            "MLL": "Lopez Lopez Guadalupe Mireya",
+            "AGM": "Garcia Morado Ana Lourdes"
         },
         "REVOLUCION": {
             "MS": "Miriam Elizabeth Saavedra Olvera",
+            "MESO": "Miriam Elizabeth Saavedra Olvera",
             "VR": "Reyes Perez Victor",
             "CS": "Sanchez Sanchez Claudia Ivonne",
+            "CISS": "Sanchez Sanchez Claudia Ivonne",
             "DO": "Olvera Aguilar Diana Karen",
-            "XF": "Xally Flores Rosas"
+            "DKOA": "Olvera Aguilar Diana Karen",
+            "XF": "Xally Flores Rosas",
+            "BXFR": "Xally Flores Rosas",
+            "BACM": "Chavez Muñoz Brizeth Alondra"
         }
     }
 };
