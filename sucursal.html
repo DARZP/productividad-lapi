@@ -66,11 +66,18 @@
             <div class="space-y-4 text-left">
                 <div>
                     <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Nombre del Médico / TÉCNICO </label>
-                    <input type="text" id="login-medico" list="lista-medicos" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase font-bold">
+                    <input type="text" id="login-medico" list="lista-medicos" placeholder="Ej. Juan Perez" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase font-bold">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Sucursal</label>
-                    <input type="text" id="login-sucursal" list="lista-sucursales" placeholder="Ej. PLATEROS" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase font-bold">
+                    <div class="relative">
+                        <select id="login-sucursal" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase font-bold appearance-none cursor-pointer">
+                            <option value="" disabled selected class="text-slate-500">SELECCIONA UNA SUCURSAL...</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
                 </div>
                 <button id="btn-login" onclick="iniciarSesion()" class="w-full bg-white text-orange-600 hover:bg-orange-50 font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 mt-2 flex justify-center items-center gap-2">
                     <i class="fa-solid fa-right-to-bracket"></i> Ingresar a mi Turno
@@ -173,7 +180,7 @@
                 <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4 relative z-10">
                     <h2 class="font-black text-xl text-white leading-tight"><i class="fa-solid fa-globe mr-1"></i> Global<br><span class="text-xs text-orange-200 uppercase font-medium">Sucursal del Día</span></h2>
                     <div class="flex gap-2">
-                        <button onclick="copiarResumenTexto()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl transition active:scale-95 flex items-center gap-2 font-bold text-sm" title="Copiar Resumen a texto">
+                        <button onclick="copiarResumenTexto()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl transition active:scale-95 flex items-center gap-2 font-bold text-sm" title="Copiar Texto">
                             <i class="fa-solid fa-copy"></i> Copiar Texto
                         </button>
                     </div>
@@ -351,13 +358,9 @@
     </div>
 
     <datalist id="lista-medicos"></datalist>
-    <datalist id="lista-sucursales"></datalist>
 
     <script>
-        const medicosForaneos = window.LAPI_CONFIG.medicos;
-        const sucursalesOficiales = window.LAPI_CONFIG.sucursales;
         const listaEstudiosOficial = window.LAPI_CONFIG.estudiosSucursales;
-
         let sesionActual = { medico: null, sucursal: null };
         let datosDelDia = { estudios: {}, observaciones: "" };
         let fechaOperativa = "";
@@ -365,8 +368,29 @@
         let timerGuardado = null;
         window.datosGlobalesTemp = null; 
 
-        window.addEventListener('offline', () => { mostrarToast("Sin conexión a Internet. Guardado Local.", "info", 4000); });
-        window.addEventListener('online', () => { mostrarToast("Conexión restaurada. Sincronizando...", "exito", 3000); });
+        // 👇 INYECCIÓN SEGURA PARA POBLAR LISTAS 👇
+        document.addEventListener("DOMContentLoaded", () => {
+            const medicosForaneos = window.LAPI_CONFIG.medicos;
+            const sucursalesOficiales = window.LAPI_CONFIG.sucursales;
+
+            const datalistMedicos = document.getElementById('lista-medicos');
+            if(datalistMedicos) {
+                datalistMedicos.innerHTML = medicosForaneos.map(m => `<option value="${m}">`).join('');
+            }
+            
+            const selectSucursal = document.getElementById('login-sucursal');
+            if(selectSucursal) {
+                selectSucursal.innerHTML += sucursalesOficiales.map(s => `<option value="${s}" class="text-slate-800">${s}</option>`).join('');
+            }
+
+            const versionDiv = document.createElement('div');
+            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
+            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> v2.2.0_SmartAuth`;
+            document.body.appendChild(versionDiv);
+        });
+
+        window.addEventListener('offline', () => { mostrarToast("Modo Offline Activo. Guardando local.", "info", 4000); });
+        window.addEventListener('online', () => { mostrarToast("Conexión recuperada. Sincronizando...", "exito", 3000); });
 
         function mostrarToast(mensaje, tipo = 'error', duracion = 3500) {
             const toast = document.createElement('div');
@@ -375,7 +399,6 @@
             toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs z-[300]`;
             toast.innerHTML = `<i class="fa-solid ${icono} text-lg"></i> <span class="leading-tight">${mensaje}</span>`;
             document.getElementById('toast-container').appendChild(toast);
-            
             setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
             if (duracion > 0) { setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, duracion); }
         }
@@ -389,7 +412,6 @@
             modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        // AUTO LOGIN INYECTADO
         window.onload = function() {
             const guardado = localStorage.getItem('lapi_sesion_sucursal');
             if(guardado) {
@@ -412,24 +434,59 @@
             return { idFormat: `${yyyy}-${mm}-${dd}`, uiFormat: textoAmigable.charAt(0).toUpperCase() + textoAmigable.slice(1) };
         }
 
+        // 👇 MOTOR INTELIGENTE DE BÚSQUEDA FUZZY (SMART MATCH) 👇
         window.iniciarSesion = function() {
-            const med = normalizarTexto(document.getElementById('login-medico').value);
-            const suc = normalizarTexto(document.getElementById('login-sucursal').value);
-            if(!med || !suc) return mostrarToast("Selecciona tu nombre y sucursal.", "error");
+            const rawMedico = document.getElementById('login-medico').value;
+            const suc = document.getElementById('login-sucursal').value;
             
+            if(!rawMedico || !suc) return mostrarToast("Selecciona tu nombre y sucursal.", "error");
+            
+            const medInputNorm = normalizarTexto(rawMedico);
+            const medicosOficiales = window.LAPI_CONFIG.medicos;
+            
+            let medicoValidado = null;
+            
+            // 1. Busqueda Exacta
+            let exactMatch = medicosOficiales.find(m => normalizarTexto(m) === medInputNorm);
+            
+            if (exactMatch) {
+                medicoValidado = exactMatch;
+            } else {
+                // 2. Busqueda Inteligente (Nombres volteados, parciales, etc.)
+                let inputWords = medInputNorm.split(/\s+/).filter(w => w.length > 2); // ignora "de", "la"
+                if(inputWords.length === 0) inputWords = medInputNorm.split(/\s+/);
+                
+                let posibles = medicosOficiales.filter(m => {
+                    let mNorm = normalizarTexto(m);
+                    // Checa que cada palabra que el doctor escribio esté en el nombre oficial
+                    return inputWords.every(word => mNorm.includes(word));
+                });
+                
+                if (posibles.length > 0) {
+                    medicoValidado = posibles[0]; // Auto-corrige a la opción oficial
+                }
+            }
+            
+            if (!medicoValidado) {
+                return mostrarToast("Nombre no reconocido. Verifica o intenta con un apellido diferente.", "error");
+            }
+
+            // Actualizar el campo visualmente para que el doctor vea su nombre bien escrito
+            document.getElementById('login-medico').value = medicoValidado;
+
             const btn = document.getElementById('btn-login');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando...';
             btn.disabled = true;
 
             setTimeout(() => {
-                sesionActual = { medico: med, sucursal: suc };
+                sesionActual = { medico: medicoValidado, sucursal: suc };
                 localStorage.setItem('lapi_sesion_sucursal', JSON.stringify(sesionActual));
                 iniciarApp();
             }, 500);
         }
 
         window.cerrarSesion = function() {
-            if(confirm("¿Seguro que quieres salir de la sesión guardada?")) {
+            if(confirm("¿Seguro que quieres salir de la sesión operativa?")) {
                 localStorage.removeItem('lapi_sesion_sucursal');
                 location.reload();
             }
@@ -453,7 +510,8 @@
                     datosDelDia = docSnap.data();
                     if(!datosDelDia.estudios) datosDelDia.estudios = {}; 
                     if(!datosDelDia.observaciones) datosDelDia.observaciones = ""; 
-
+                    
+                    // 🛡️ DOBLE BLINDAJE DE IDENTIDAD POR SI ACASO
                     datosDelDia.tipo = "sucursal_agrupada";
                     datosDelDia.fecha = fechaOperativa;
                     datosDelDia.sucursal = sesionActual.sucursal;
@@ -465,18 +523,17 @@
                 if(navigator.onLine) mostrarToast(`Turno de ${sesionActual.medico} Listo.`, 'exito');
             } catch (error) { 
                 datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
-                mostrarToast(navigator.onLine ? "Error conectando. Empezando local." : "Modo Offline Activo", "info");
+                mostrarToast("Modo Local Activo.", "info");
             } finally {
                 document.getElementById('obs-principal').value = datosDelDia.observaciones || '';
                 renderizarTablero();
             }
         }
 
-        window.cambiarContador = function(estudio, cantidad) {
+        window.cambiarContador = function(estudio, quantity) {
             if (navigator.vibrate) navigator.vibrate(15);
-
             if(!datosDelDia.estudios[estudio]) datosDelDia.estudios[estudio] = 0;
-            datosDelDia.estudios[estudio] += cantidad;
+            datosDelDia.estudios[estudio] += quantity;
             if(datosDelDia.estudios[estudio] < 0) datosDelDia.estudios[estudio] = 0;
             
             const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
@@ -551,7 +608,6 @@
             document.getElementById('vista-captura-principal').classList.remove('hidden');
         }
 
-        // INDICADOR EN TIEMPO REAL INYECTADO Y MERGE TRUE APLICADO
         async function sincronizarConNube() {
             const indicador = document.getElementById('indicador-guardado');
             if(indicador) {
@@ -564,7 +620,6 @@
             timerGuardado = setTimeout(async () => {
                 try {
                     datosDelDia.ultimaActualizacion = new Date();
-                    // SE AGREGA MERGE TRUE
                     await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
                     
                     if (indicador) {
@@ -572,7 +627,7 @@
                         indicador.innerHTML = navigator.onLine ? '<i class="fa-solid fa-cloud-check"></i> ¡Guardado en la Nube!' : '<i class="fa-solid fa-hard-drive"></i> Guardado Local';
                         setTimeout(() => indicador.classList.add('opacity-0'), 2500);
                     }
-                } catch (error) { console.error("Error guardando silencio:", error); }
+                } catch (error) { console.error("Error en sincronización en la nube:", error); }
             }, 800);
         }
 
@@ -589,7 +644,6 @@
 
             try {
                 datosDelDia.ultimaActualizacion = new Date();
-                // SE AGREGA MERGE TRUE
                 await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
 
                 const q = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
@@ -597,17 +651,13 @@
                     window.where("sucursal", "==", sesionActual.sucursal));
                 const qs = await window.getDocs(q);
 
-                let acumulado = {};
-                let personal = [];
-                let totalG = 0;
-                let desgloseIndividual = [];
+                let acumulado = {}; let personal = []; let totalG = 0; let desgloseIndividual = [];
 
                 qs.forEach(doc => {
                     const data = doc.data();
                     personal.push(data.medico);
                     let obs = data.observaciones ? data.observaciones.trim() : "";
-                    let tieneEstudiosOpc = false;
-                    let estInd = "";
+                    let tieneEstudiosOpc = false; let estInd = "";
 
                     if(data.estudios) {
                         for(let est in data.estudios) {
@@ -620,7 +670,6 @@
                             }
                         }
                     }
-
                     if(tieneEstudiosOpc || obs !== "") {
                         desgloseIndividual.push({ medico: data.medico, htmlEstudios: estInd, observaciones: obs });
                     }
@@ -660,17 +709,11 @@
                 document.getElementById('vista-resumen-sucursal').classList.remove('hidden');
                 document.getElementById('tutorial-global').classList.remove('hidden');
 
-            } catch(e) {
-                console.error(e);
-                mostrarToast("Hubo un error cargando el global. Intenta de nuevo.", "error");
-            }
+            } catch(e) { console.error(e); mostrarToast("Hubo un error cargando el global. Intenta de nuevo.", "error"); }
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
-        window.ocultarTutorialGlobal = function() {
-            document.getElementById('tutorial-global').classList.add('hidden');
-        };
-
+        window.ocultarTutorialGlobal = function() { document.getElementById('tutorial-global').classList.add('hidden'); };
         window.ocultarResumenSucursal = function() {
             document.getElementById('vista-resumen-sucursal').classList.add('hidden');
             document.getElementById('vista-captura-principal').classList.remove('hidden');
@@ -681,14 +724,8 @@
             const d = window.datosGlobalesTemp;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
             
-            let texto = `*REPORTE SUCURSAL LAPI*\n`;
-            texto += `🏥 Sucursal: ${d.sucursal}\n`;
-            texto += `📅 Fecha: ${fechaUI}\n`;
-            texto += `👥 Personal: ${d.personal.join(', ')}\n\n`;
-            texto += `📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
-            
+            let texto = `*REPORTE SUCURSAL LAPI*\n🏥 Sucursal: ${d.sucursal}\n📅 Fecha: ${fechaUI}\n👥 Personal: ${d.personal.join(', ')}\n\n📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
             for(let est in d.acumulado) { texto += `- ${est}: ${d.acumulado[est]}\n`; }
-            
             texto += `\n📝 *OBSERVACIONES*\n`;
             let hayObs = false;
             d.desgloseIndividual.forEach(ind => {
@@ -696,20 +733,15 @@
             });
             if(!hayObs) texto += `Sin observaciones relevantes.\n`;
 
-            navigator.clipboard.writeText(texto).then(() => {
-                mostrarToast("¡Resumen de Sucursal copiado al portapapeles!", "exito");
-            }).catch(err => { mostrarToast("Error al copiar texto.", "error"); });
+            navigator.clipboard.writeText(texto).then(() => { mostrarToast("¡Texto copiado al portapapeles!", "exito"); })
+            .catch(err => { mostrarToast("Error al copiar texto.", "error"); });
         };
 
-        // DESCARGA DIRECTA (EVITA MENU NATIVO DE COMPARTIR)
         window.generarImagenCompartir = async function() {
-            const btn = document.getElementById('btn-descargar-sucursal');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
-            btn.disabled = true;
+            const btn = document.getElementById('btn-descargar-sucursal'); const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...'; btn.disabled = true;
 
-            const sucursal = sesionActual.sucursal.toUpperCase();
-            const medico = sesionActual.medico.toUpperCase();
+            const sucursal = sesionActual.sucursal.toUpperCase(); const medico = sesionActual.medico.toUpperCase();
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
             document.getElementById('cap-sucursal-nombre').innerText = `Sucursal: ${sucursal}`;
@@ -723,29 +755,21 @@
         };
 
         window.generarImagenGlobal = async function() {
-            const d = window.datosGlobalesTemp;
-            if(!d) return;
-            const btn = document.getElementById('btn-descargar-global');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
-            btn.disabled = true;
-
+            const d = window.datosGlobalesTemp; if(!d) return;
+            const btn = document.getElementById('btn-descargar-global'); const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...'; btn.disabled = true;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
             document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal}`;
             document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Presente :</b> <span class="text-orange-200 font-bold">${d.personal.join(', ')}</span></p>`;
             
             let listHtml = '';
-            for(let est in d.acumulado) {
-                listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-orange-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`;
-            }
+            for(let est in d.acumulado) { listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-orange-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`; }
             listHtml += `<div class="border-t-2 border-dashed border-white/20 pt-3 mt-4 flex justify-between items-center text-lg"><span class="font-black text-white/90">SUMA SUCURSAL:</span><span class="font-black text-emerald-400">${d.totalG}</span></div>`;
             document.getElementById('cap-glob-lista').innerHTML = listHtml || '<p class="opacity-60 italic text-center">Sin estudios en la sucursal.</p>';
 
             let obsHtml = '';
-            d.desgloseIndividual.forEach(ind => {
-                if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-orange-400 pl-3"><p class="text-xs text-orange-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`;
-            });
+            d.desgloseIndividual.forEach(ind => { if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-orange-400 pl-3"><p class="text-xs text-orange-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`; });
             document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones.';
 
             await new Promise(r => setTimeout(r, 100));
@@ -755,24 +779,15 @@
 
         async function procesarHtml2Canvas(target, nombreArchivo) {
             try {
-                const canvas = await html2canvas(target, {
-                    scale: 2, useCORS: true, logging: false, backgroundColor: null, 
-                    onclone: (clonedDoc) => {
-                        const el = clonedDoc.getElementById(target.id);
-                        el.style.position = 'static'; el.style.display = 'block';
-                    }
-                });
-                // DESCARGA DIRECTA INYECTADA
-                const link = document.createElement('a'); 
-                link.download = `${nombreArchivo}.png`;
-                link.href = canvas.toDataURL("image/png"); 
-                link.click(); 
+                const canvas = await html2canvas(target, { scale: 2, useCORS: true, logging: false, backgroundColor: null, onclone: (clonedDoc) => { const el = clonedDoc.getElementById(target.id); el.style.position = 'static'; el.style.display = 'block'; } });
+                const link = document.createElement('a'); link.download = `${nombreArchivo}.png`;
+                link.href = canvas.toDataURL("image/png"); link.click(); 
                 mostrarToast("Descarga exitosa. Revisa tu galería o descargas.", "exito");
             } catch(e) { console.error("Error captura:", e); mostrarToast("Falló la generación de imagen.", "error"); }
         }
 
         // =========================================================================
-        // 👇 LÓGICA DE "MI HISTORIAL" CON FILTRO PERSONALIZADO 👇
+        // 👇 LÓGICA DE HISTORIAL E INDICADORES ESTADÍSTICOS 👇
         // =========================================================================
         let misGraficos = {};
 
@@ -781,11 +796,8 @@
             document.getElementById('vista-captura-principal').classList.add('hidden');
             document.getElementById('vista-resumen-final').classList.add('hidden');
             document.getElementById('vista-resumen-sucursal').classList.add('hidden');
-            
             document.getElementById('lbl-nombre-historial').innerText = sesionActual.medico;
             document.getElementById('vista-mi-historial').classList.remove('hidden');
-            
-            // Cargar por defecto la semana para que no se vea vacío
             filtrarHistorial('semana');
         };
 
@@ -804,49 +816,31 @@
                 const inicioSemana = new Date(hoy.setDate(diff));
                 iStr = `${inicioSemana.getFullYear()}-${String(inicioSemana.getMonth()+1).padStart(2,'0')}-${String(inicioSemana.getDate()).padStart(2,'0')}`;
             }
-            else if (periodo === 'mes') {
-                iStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-01`;
-            }
+            else if (periodo === 'mes') { iStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-01`; }
             else if (periodo === 'custom') {
                 iStr = document.getElementById('historial-fecha-inicio').value;
                 fStr = document.getElementById('historial-fecha-fin').value;
-                if(!iStr || !fStr) return; // Si falta alguna fecha, no buscar aún
+                if(!iStr || !fStr) return;
             }
 
-            // UI de Botones
-            document.querySelectorAll('.btn-filtro').forEach(b => {
-                b.classList.remove('bg-white', 'text-orange-600', 'shadow-sm');
-                b.classList.add('bg-white/20', 'text-white');
-            });
-
+            document.querySelectorAll('.btn-filtro').forEach(b => { b.classList.remove('bg-white', 'text-orange-600', 'shadow-sm'); b.classList.add('bg-white/20', 'text-white'); });
             if (periodo !== 'custom') {
                 const btnFiltro = document.getElementById(`btn-filtro-${periodo}`);
-                if(btnFiltro) {
-                    btnFiltro.classList.remove('bg-white/20', 'text-white');
-                    btnFiltro.classList.add('bg-white', 'text-orange-600', 'shadow-sm');
-                }
-                // Actualizar los inputs para reflejar el rango seleccionado
-                document.getElementById('historial-fecha-inicio').value = iStr;
-                document.getElementById('historial-fecha-fin').value = fStr;
+                if(btnFiltro) { btnFiltro.classList.remove('bg-white/20', 'text-white'); btnFiltro.classList.add('bg-white', 'text-orange-600', 'shadow-sm'); }
+                document.getElementById('historial-fecha-inicio').value = iStr; document.getElementById('historial-fecha-fin').value = fStr;
             }
 
             document.getElementById('contenido-historial').classList.add('hidden');
             document.getElementById('loader-historial').classList.remove('hidden');
-
             const medicoBuscado = sesionActual.medico.toUpperCase();
-            
             let totSucursal = 0; let totForaneos = 0; let empresasSet = new Set();
             let conteoEstudios = {}; let tendencia = {}; let bitacora = [];
 
             try {
-                // 1. Extraer datos de Sucursales
-                let qSuc = window.query(window.collection(window.db, "registros_diarios_sucursales"),
-                    window.where("medico", "==", medicoBuscado), window.where("fecha", ">=", iStr), window.where("fecha", "<=", fStr)
-                );
+                let qSuc = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("medico", "==", medicoBuscado), window.where("fecha", ">=", iStr), window.where("fecha", "<=", fStr));
                 const qsSuc = await window.getDocs(qSuc);
                 qsSuc.forEach(doc => {
-                    const data = doc.data();
-                    let sumDia = 0;
+                    const data = doc.data(); let sumDia = 0;
                     if (data.estudios) {
                         for(let est in data.estudios) {
                             if (data.estudios[est] > 0) {
@@ -859,12 +853,10 @@
                     if(sumDia > 0) tendencia[data.fecha] = (tendencia[data.fecha] || 0) + sumDia;
                 });
 
-                // 2. Extraer datos Foráneos
                 let qFor = window.query(window.collection(window.db, "registros"), window.where("fecha", ">=", iStr), window.where("fecha", "<=", fStr));
                 const qsFor = await window.getDocs(qFor);
                 qsFor.forEach(doc => {
-                    const data = doc.data();
-                    let sumDiaForaneo = 0;
+                    const data = doc.data(); let sumDiaForaneo = 0;
                     if (data.detalles) {
                         data.detalles.forEach(d => {
                             if (d.medico && normalizarTexto(d.medico) === medicoBuscado) {
@@ -881,81 +873,47 @@
                     if(sumDiaForaneo > 0) tendencia[data.fecha] = (tendencia[data.fecha] || 0) + sumDiaForaneo;
                 });
 
-                // 3. Pintar DOM
                 document.getElementById('mi-kpi-total').innerText = totSucursal + totForaneos;
                 document.getElementById('mi-kpi-sucursal').innerText = totSucursal;
-                
-                if (totForaneos === 0) {
-                    document.getElementById('card-kpi-foraneos').classList.add('hidden');
-                } else {
+                if (totForaneos === 0) { document.getElementById('card-kpi-foraneos').classList.add('hidden'); } 
+                else {
                     document.getElementById('card-kpi-foraneos').classList.remove('hidden');
-                    document.getElementById('mi-kpi-foraneos').innerText = totForaneos;
-                    document.getElementById('mi-kpi-empresas').innerText = empresasSet.size;
+                    document.getElementById('mi-kpi-foraneos').innerText = totForaneos; document.getElementById('mi-kpi-empresas').innerText = empresasSet.size;
                 }
 
-                // 4. Dibujar Gráficas
-                let labelsTipos = Object.keys(conteoEstudios);
-                let dataTipos = Object.values(conteoEstudios);
+                let labelsTipos = Object.keys(conteoEstudios); let dataTipos = Object.values(conteoEstudios);
                 dibujarMiGrafico('mi-chart-tipos', 'doughnut', labelsTipos, dataTipos, ['#f97316', '#0ea5e9', '#10b981', '#8b5cf6', '#f43f5e']);
-
-                let fechasOrdenadas = Object.keys(tendencia).sort();
-                let dataTendencia = fechasOrdenadas.map(f => tendencia[f]);
+                let fechasOrdenadas = Object.keys(tendencia).sort(); let dataTendencia = fechasOrdenadas.map(f => tendencia[f]);
                 dibujarMiGrafico('mi-chart-tendencia', 'line', fechasOrdenadas, dataTendencia, ['#f97316']);
 
-                // 5. Tabla Bitácora
-                bitacora.sort((a,b) => b.fecha.localeCompare(a.fecha)); // Orden descendente (más nuevos arriba)
-                let tbody = document.getElementById('mi-tabla-bitacora');
-                tbody.innerHTML = '';
-                if (bitacora.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="text-center p-6 text-slate-400 italic">Sin actividad en este periodo</td></tr>';
-                } else {
+                bitacora.sort((a,b) => b.fecha.localeCompare(a.fecha));
+                let tbody = document.getElementById('mi-tabla-bitacora'); tbody.innerHTML = '';
+                if (bitacora.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="text-center p-6 text-slate-400 italic">Sin actividad en este periodo</td></tr>'; } 
+                else {
                     bitacora.forEach(b => {
-                        tbody.innerHTML += `
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="p-3 text-[10px] whitespace-nowrap text-slate-500">${b.fecha}</td>
-                                <td class="p-3 text-xs font-bold text-slate-700">${b.origen}</td>
-                                <td class="p-3 text-xs text-orange-600 font-bold text-right">${b.detalle}</td>
-                            </tr>
-                        `;
+                        tbody.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="p-3 text-[10px] whitespace-nowrap text-slate-500">${b.fecha}</td><td class="p-3 text-xs font-bold text-slate-700">${b.origen}</td><td class="p-3 text-xs text-orange-600 font-bold text-right">${b.detalle}</td></tr>`;
                     });
                 }
-            } catch(e) {
-                console.error("Error al filtrar mi historial", e);
-                mostrarToast("Error calculando tu historial.", "error");
-            }
-
-            document.getElementById('loader-historial').classList.add('hidden');
-            document.getElementById('contenido-historial').classList.remove('hidden');
+            } catch(e) { console.error(e); mostrarToast("Error calculando tu historial.", "error"); }
+            document.getElementById('loader-historial').classList.add('hidden'); document.getElementById('contenido-historial').classList.remove('hidden');
         };
 
         function dibujarMiGrafico(canvasId, tipo, labels, data, colores) {
             if(misGraficos[canvasId]) misGraficos[canvasId].destroy();
-            let colorFondo = tipo === 'line' ? colores[0] + '30' : colores; // 30 de opacidad
-            
+            let colorFondo = tipo === 'line' ? colores[0] + '30' : colores;
             let conf = {
                 type: tipo,
                 data: { labels: labels, datasets: [{ data: data, backgroundColor: colorFondo, borderColor: colores[0], borderWidth: 2, fill: tipo === 'line', tension: 0.3 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: tipo === 'doughnut', position: 'bottom' } } }
             };
-
-            if (tipo === 'doughnut') {
-                conf.data.datasets[0].borderWidth = 0; conf.options.cutout = '70%';
-            } else if (tipo === 'line') {
-                conf.options.scales = { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } };
-            }
-
+            if (tipo === 'doughnut') { conf.data.datasets[0].borderWidth = 0; conf.options.cutout = '70%'; } 
+            else if (tipo === 'line') { conf.options.scales = { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } }; }
             misGraficos[canvasId] = new Chart(document.getElementById(canvasId), conf);
         }
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
-        }
-        document.addEventListener("DOMContentLoaded", () => {
-            const versionDiv = document.createElement('div');
-            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
-            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> v2.1.5_Final`;
-            document.body.appendChild(versionDiv);
-        });
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+        
+        // NO BORRAR: INYECCION PARA OBTENER VERSIÓN (Se movió junto con DOMContentLoaded)
     </script>
 </body>
 </html>
