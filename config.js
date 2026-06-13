@@ -422,7 +422,7 @@ window.LAPI_CONFIG = {
             "LMSH": "Leilany Montserrat Sanchez",
             "MSH": "Leilany Montserrat Sanchez",
             "SLML": "Sandra Lilian Maceda Licona"
-            
+        },
         "CUAUTITLAN 2": {
             "JTAV": "Angeles Velazquez Jennifer Tabata",
             "CBMG": "Bustos Gonzalez Claudia Montserrat",
@@ -499,7 +499,7 @@ window.LAPI_CONFIG = {
             "PKEC": "Dra. Patricia Escobar",
             "AIRV": "Angelica Itzel",
             "JADM": "Dominguez Mojica Jannet Alejandra",
-            "LCZ": "Cruz Zavala Lucero",
+            "LCZ": "Cruz Zavala Lucero"
         },
         "MERIDA": {
             "XJ": "Jacqueline Ruiz"
@@ -546,7 +546,7 @@ window.LAPI_CONFIG = {
             "ABCH": "Cabrera Hernandez Ana Beatriz",
             "LC": "Lucero Cruz",
             "LCZ": "Cruz Zavala Lucero",
-            "PEC": "Dra. Patricia Escobar",
+            "PEC": "Dra. Patricia Escobar"
         },
         "SATELITE": {
             "MASR": "Salinas Rojas Miguel Angel",
