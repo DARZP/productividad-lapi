@@ -100,7 +100,7 @@ window.LAPI_CONFIG = {
         "Calzada del Hueso", 
         "Condesa", 
         "Cuautitlán", 
-        "Cuautitlán 2".
+        "Cuautitlán 2",
         "Encuentro Fortuna", 
         "Gabriel Mancera", 
         "Gran Sur", 
