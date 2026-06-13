@@ -173,7 +173,7 @@
                 <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4 relative z-10">
                     <h2 class="font-black text-xl text-white leading-tight"><i class="fa-solid fa-globe mr-1"></i> Global<br><span class="text-xs text-orange-200 uppercase font-medium">Sucursal del Día</span></h2>
                     <div class="flex gap-2">
-                        <button onclick="copiarResumenTexto()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl transition active:scale-95 flex items-center gap-2 font-bold text-sm" title="Copiar Texto">
+                        <button onclick="copiarResumenTexto()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl transition active:scale-95 flex items-center gap-2 font-bold text-sm" title="Copiar Resumen a texto">
                             <i class="fa-solid fa-copy"></i> Copiar Texto
                         </button>
                     </div>
@@ -576,7 +576,6 @@
             }, 800);
         }
 
-        // RESUMEN GLOBAL SUCURSAL CON MERGE TRUE
         window.mostrarResumenSucursal = async function() {
             const btn = document.getElementById('btn-ver-global');
             const originalHTML = btn.innerHTML;
@@ -584,7 +583,7 @@
             btn.disabled = true;
 
             if(!navigator.onLine) {
-                mostrarToast("Necesitas internet para ver el acumulado de tus compañeros.", "error");
+                mostrarToast("Necesitas internet para ver el acumulado.", "error");
                 btn.innerHTML = originalHTML; btn.disabled = false; return;
             }
 
@@ -652,7 +651,7 @@
                         ${htmlAcumulado || '<p class="text-center text-sm opacity-60 italic">Nadie ha registrado estudios aún.</p>'}
                     </div>
                     <div class="mt-4 relative">
-                        <h3 class="font-bold text-sm uppercase tracking-widest opacity-80 mb-2">Desglose por Compañero</h3>
+                        <h3 class="font-bold text-sm uppercase tracking-widest opacity-80 mb-2">Desglose Global</h3>
                         ${htmlIndividual || '<p class="text-center text-sm opacity-60 italic">Sin datos individuales.</p>'}
                     </div>
                 `;
@@ -734,7 +733,7 @@
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
             document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal}`;
-            document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Participante:</b> <span class="text-orange-200 font-bold">${d.personal.join(', ')}</span></p>`;
+            document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Presente :</b> <span class="text-orange-200 font-bold">${d.personal.join(', ')}</span></p>`;
             
             let listHtml = '';
             for(let est in d.acumulado) {
@@ -747,7 +746,7 @@
             d.desgloseIndividual.forEach(ind => {
                 if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-orange-400 pl-3"><p class="text-xs text-orange-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`;
             });
-            document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones de ningún compañero.';
+            document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones.';
 
             await new Promise(r => setTimeout(r, 100));
             await procesarHtml2Canvas(document.getElementById('captura-temp-global'), `LAPI_Global_${d.sucursal}_${fechaOperativa}`);
