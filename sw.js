@@ -1,7 +1,4 @@
-// sw.js - Service Worker de LAPI (Versión Activa / Network First)
-
-// 🛑 CAMBIA ESTE NÚMERO CADA VEZ QUE SUBAS UNA ACTUALIZACIÓN A NETLIFY
-const CACHE_VERSION = 'lapi-pwa-v2.0.3'; 
+const CACHE_VERSION = 'lapi-pwa-v2.0.4'; 
 
 const ASSETS_TO_CACHE = [
     './',
@@ -9,13 +6,13 @@ const ASSETS_TO_CACHE = [
     './sucursal.html',
     './admin.html',
     './auditoria.html',
-    './reportes.html', // Añadido reportes.html por si acaso
+    './reportes.html', 
     './config.js'
 ];
 
 // 1. Instalar y forzar espera
 self.addEventListener('install', event => {
-    self.skipWaiting(); // Fuerza a este nuevo Service Worker a tomar el control inmediatamente
+    self.skipWaiting(); 
     event.waitUntil(
         caches.open(CACHE_VERSION)
             .then(cache => cache.addAll(ASSETS_TO_CACHE))
@@ -28,7 +25,7 @@ self.addEventListener('activate', event => {
         caches.keys().then(keys => {
             return Promise.all(
                 keys.map(key => {
-                    // Si el nombre del caché no coincide con la versión actual, lo borra
+                 
                     if (key !== CACHE_VERSION) {
                         console.log('[PWA] Borrando caché antiguo:', key);
                         return caches.delete(key);
@@ -40,17 +37,17 @@ self.addEventListener('activate', event => {
     self.clients.claim(); // Toma el control de todas las pestañas abiertas
 });
 
-// 3. Estrategia "Network First" (Primero buscar en internet, si falla, usar Caché)
+
 self.addEventListener('fetch', event => {
     // Solo interceptar peticiones "GET" (Ignorar POST a Firebase, etc.)
     if (event.request.method !== 'GET') return;
 
-    // 🛡️ CORTAFUEGOS 1: Evitar error de "chrome-extension://"
+  
     if (!event.request.url.startsWith('http')) {
         return;
     }
 
-    // 🛡️ CORTAFUEGOS 2: Ignorar peticiones a la BD de Firebase para que no se congelen
+   
     if (event.request.url.includes('firestore.googleapis.com') || 
         event.request.url.includes('identitytoolkit') ||
         event.request.url.includes('firebase')) {
@@ -60,13 +57,13 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         fetch(event.request)
             .then(response => {
-                // Si hay internet y responde bien, clonamos la respuesta y la guardamos en el caché fresco
+               
                 const resClone = response.clone();
                 caches.open(CACHE_VERSION).then(cache => cache.put(event.request, resClone));
                 return response;
             })
             .catch(() => {
-                // Si falla el fetch (ej. no hay internet), devolvemos lo que tengamos en caché
+                
                 return caches.match(event.request);
             })
     );
