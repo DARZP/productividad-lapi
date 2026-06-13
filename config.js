@@ -477,7 +477,7 @@ window.LAPI_CONFIG = {
             "AG": "Gonzalez Lucas Alondra Estefania",
             "AEGL": "Gonzalez Lucas Alondra Estefania",
             "DL": "Lino Reynoso Deany Alondra",
-            "DAIR": "Lino Reynoso Deany Alondra"        
+            "DALR": "Lino Reynoso Deany Alondra"        
         },
         "LOMAS VERDES": {
             "MIR": "Izaguirre Rojas Martha",
