@@ -547,8 +547,8 @@ window.LAPI_CONFIG = {
             "JADM": "Dominguez Mojica Jannet Alejandra",
             "AC": "Cabrera Hernandez Ana Beatriz",
             "ABCH": "Cabrera Hernandez Ana Beatriz",
-            "LC": "Lucero Cruz",
             "LCZ": "Cruz Zavala Lucero",
+            "LC": "Cruz Zavala Lucero",
             "PEC": "Dra. Patricia Escobar"
         },
         "SATELITE": {
