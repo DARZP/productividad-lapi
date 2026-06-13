@@ -33,6 +33,7 @@ window.LAPI_CONFIG = {
         "Escobar Rios Erika Yeraldi",
         "Estefany Becherel",
         "Fernanda",
+        "Fernanda Nicolas Flores",
         "Fernandez Contreras Karla Alitzel",
         "Flores Miranda Adriana",
         "Fuerte Morales Aleydis",
@@ -62,6 +63,7 @@ window.LAPI_CONFIG = {
         "Dra. Mariana Gaviño",
         "Mauricio Ruiz",
         "Medina Molina Guadalupe",
+        "Michelle Delgadillo",
         "Monjaraz Sanchez Viviana",
         "Montoya Linares Rebeca",
         "Muñoz Perez Jazmin Nayeli",
@@ -86,9 +88,11 @@ window.LAPI_CONFIG = {
         "Toriz Segura Jessica Noemi",
         "Vazquez Euan Daniela de los Angeles",
         "Velasco Duran Araceli",
+        "Viviana Mojarra Sanchez",
         "Xally Flores Rosas",
         "Yasmin Cruz",
         "Yirelka Yeraldine",
+        "Yirelka Anaya Zambrano",
         "Zarate Flores Myriam Alejandra"
     ].sort(),
 
@@ -502,7 +506,8 @@ window.LAPI_CONFIG = {
             "PKEC": "Dra. Patricia Escobar",
             "AIRV": "Angelica Itzel",
             "JADM": "Dominguez Mojica Jannet Alejandra",
-            "LCZ": "Cruz Zavala Lucero"
+            "LCZ": "Cruz Zavala Lucero",
+            "AGR": "Alberto Gomez"
         },
         "MERIDA": {
             "XJ": "Jacqueline Ruiz"
@@ -533,7 +538,12 @@ window.LAPI_CONFIG = {
             "GMHG": "Hernandez Gonzalez Giovanni Mariano",
             "PP": "Pineda Lopez Patricia",
             "PPL": "Pineda Lopez Patricia",
-            "LCZ": "Cruz Zavala Lucero"
+            "LCZ": "Cruz Zavala Lucero",
+            "MD":  "Michelle Delgadillo",
+            "VMS": "Viviana Mojarra Sanchez",
+            "YAZ": "Yirelka Anaya Zambrano",
+            "JMF": "Jazmin Morales",
+            "FNF": "Fernanda Nicolas Flores"
         },
         "SANTA FE": {
             "GM": "Medina Molina Guadalupe",
