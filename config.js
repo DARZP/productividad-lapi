@@ -416,12 +416,15 @@ window.LAPI_CONFIG = {
             "JTAV": "Angeles Velazquez Jennifer Tabata",
             "CBMG": "Bustos Gonzalez Claudia Montserrat",
             "CMBG": "Bustos Gonzalez Claudia Montserrat",
+            "CMG": "Bustos Gonzalez Claudia Montserrat",
             "MCG": "Cervantes Erendira Montserrat",
             "EMCG": "Cervantes Erendira Montserrat",
+            "JTAV": "Angeles Velazquez Jennifer Tabata",
             "AVD": "Velasco Duran Araceli",
             "LMSH": "Leilany Montserrat Sanchez",
             "MSH": "Leilany Montserrat Sanchez",
-            "SLML": "Sandra Lilian Maceda Licona"
+            "SLML": "Sandra Lilian Maceda Licona",
+            "IBM": "Ingrid Bernal"
         },
         "CUAUTITLAN 2": {
             "JTAV": "Angeles Velazquez Jennifer Tabata",
