@@ -353,6 +353,7 @@ window.LAPI_CONFIG = {
         "SOLENIS TECHNOLOGIES",
         "SUDARSHAN",
         "TACA DE MEXICO",
+        "TAKEDA",
         "TISK SOLUCIONES",
         "TOYOTA TSUSHO",
         "TRANSFORMADORA INDUSTRIAL",
