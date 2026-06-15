@@ -416,7 +416,7 @@
             datosCrudosExportar = { foraneos: [], sucursales: [] };
 
             try {
-                // 1. EXTRAYENDO FORÁNEOS Y LEGACY SUCURSAL
+                // 1. EXTRAYENDO FORÁNEOS Y LEGACY SUCURSAL (CON FUNCIÓN ARQUEÓLOGA)
                 let q1 = window.collection(window.db, "registros");
                 if (fIni && fFin) q1 = window.query(q1, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
                 const qs1 = await window.getDocs(q1);
@@ -439,7 +439,6 @@
                         s_cDias[diaSemana] += 1;
                         s_Medicos[med] = (s_Medicos[med] || 0) + 1;
 
-                        // EXTRACCIÓN DE METADATA RICA PARA EL SÚPER EXCEL
                         let metaKey = `metadata_${est.replace(/\s+/g,'_')}`;
                         let metadatos = data[metaKey] || [];
                         let procesados = 0;
@@ -458,50 +457,71 @@
                             });
                         }
 
-                    } else if(data.detalles) {
-                        let emp = normalizarDato(data.empresa);
-                        let suc = normalizarDato(data.sucursal || "FORÁNEO");
-                        f_Empresas.add(emp);
-                        let horas = parseFloat(data.horasLaboradas) || 0;
-                        let medicosUnicos = new Set();
-
-                        data.detalles.forEach(det => {
-                            let cant = parseInt(det.cant) || 1;
-                            let est = unificarEstudio(det.estudio); 
-                            let med = normalizarDato(det.medico || data.medico);
-                            medicosUnicos.add(med);
-
-                            t_Global += cant; t_For += cant;
-                            if(!c_Estudios[est]) c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
-                            c_Estudios[est].for += cant; c_Estudios[est].tot += cant;
-
-                            f_cEmpresas[emp] = (f_cEmpresas[emp] || 0) + cant;
-                            f_Tendencia[data.fecha] = (f_Tendencia[data.fecha] || 0) + cant;
-                            
-                            if(!f_Medicos[med]) f_Medicos[med] = { estudios: 0, horas: 0 };
-                            f_Medicos[med].estudios += cant;
-
-                            // EXTRACCIÓN DE METADATA RICA PARA EL SÚPER EXCEL
-                            let metaKey = `metadata_${est.replace(/\s+/g,'_')}`;
-                            let metadatos = data[metaKey] || [];
-                            let procesados = 0;
-
-                            metadatos.forEach(m => {
-                                datosCrudosExportar.foraneos.push({ 
-                                    FECHA: data.fecha, SUCURSAL_BASE: suc, EMPRESA_SERVICIO: emp, MEDICO: med, ESTUDIO: est, CANTIDAD: 1, 
-                                    PACIENTE: m.paciente || "S/D", ORDEN: m.orden || "S/N", EMPRESA_ASOCIADA: m.empresa || "S/D", FOLIO_HC: m.folio || "N/A"
-                                });
-                                procesados++;
-                            });
-                            if (cant > procesados) {
-                                datosCrudosExportar.foraneos.push({ 
-                                    FECHA: data.fecha, SUCURSAL_BASE: suc, EMPRESA_SERVICIO: emp, MEDICO: med, ESTUDIO: est, CANTIDAD: cant - procesados,
-                                    PACIENTE: "NO ENRIQUECIDO", ORDEN: "--", EMPRESA_ASOCIADA: "--", FOLIO_HC: "--"
-                                });
+                    } else {
+                        // 👇 INYECCIÓN: ARQUEÓLOGO DE DATOS (Repara documentos migradores aplanados) 👇
+                        let detallesProcesar = [];
+                        
+                        if (data.detalles) {
+                            // Si el arreglo sobrevivió correctamente
+                            detallesProcesar = Array.isArray(data.detalles) ? data.detalles : Object.values(data.detalles);
+                        } else if (data.observaciones === "Migrado desde Excel histórico" || (data.folio && data.folio.startsWith("HIST-"))) {
+                            // Si el documento se aplanó/rompió, recolecta las variables sueltas
+                            if (data.estudio) {
+                                detallesProcesar.push({ estudio: data.estudio, cant: data.cant || 1, medico: data.medico || "Historial Previo" });
                             }
-                        });
+                            // Recolecta los índices que se guardaron como objetos (1, 2, 3...)
+                            for (let i = 0; i < 50; i++) {
+                                if (data[i] && data[i].estudio) {
+                                    detallesProcesar.push({ estudio: data[i].estudio, cant: data[i].cant || 1, medico: data[i].medico || "Historial Previo" });
+                                }
+                            }
+                        }
 
-                        medicosUnicos.forEach(m => { if(f_Medicos[m]) f_Medicos[m].horas += horas; });
+                        // Procesa la lista de estudios (ya sea sana o reparada)
+                        if (detallesProcesar.length > 0) {
+                            let emp = normalizarDato(data.empresa);
+                            let suc = normalizarDato(data.sucursal || "FORÁNEO");
+                            f_Empresas.add(emp);
+                            let horas = parseFloat(data.horasLaboradas) || 0;
+                            let medicosUnicos = new Set();
+
+                            detallesProcesar.forEach(det => {
+                                let cant = parseInt(det.cant) || 1;
+                                let est = unificarEstudio(det.estudio); 
+                                let med = normalizarDato(det.medico || data.medico);
+                                medicosUnicos.add(med);
+
+                                t_Global += cant; t_For += cant;
+                                if(!c_Estudios[est]) c_Estudios[est] = { suc: 0, for: 0, tot: 0 };
+                                c_Estudios[est].for += cant; c_Estudios[est].tot += cant;
+
+                                f_cEmpresas[emp] = (f_cEmpresas[emp] || 0) + cant;
+                                f_Tendencia[data.fecha] = (f_Tendencia[data.fecha] || 0) + cant;
+                                
+                                if(!f_Medicos[med]) f_Medicos[med] = { estudios: 0, horas: 0 };
+                                f_Medicos[med].estudios += cant;
+
+                                let metaKey = `metadata_${est.replace(/\s+/g,'_')}`;
+                                let metadatos = data[metaKey] || [];
+                                let procesados = 0;
+
+                                metadatos.forEach(m => {
+                                    datosCrudosExportar.foraneos.push({ 
+                                        FECHA: data.fecha, SUCURSAL_BASE: suc, EMPRESA_SERVICIO: emp, MEDICO: med, ESTUDIO: est, CANTIDAD: 1, 
+                                        PACIENTE: m.paciente || "S/D", ORDEN: m.orden || "S/N", EMPRESA_ASOCIADA: m.empresa || "S/D", FOLIO_HC: m.folio || "N/A"
+                                    });
+                                    procesados++;
+                                });
+                                if (cant > procesados) {
+                                    datosCrudosExportar.foraneos.push({ 
+                                        FECHA: data.fecha, SUCURSAL_BASE: suc, EMPRESA_SERVICIO: emp, MEDICO: med, ESTUDIO: est, CANTIDAD: cant - procesados,
+                                        PACIENTE: "NO ENRIQUECIDO", ORDEN: "--", EMPRESA_ASOCIADA: "--", FOLIO_HC: "--"
+                                    });
+                                }
+                            });
+
+                            medicosUnicos.forEach(m => { if(f_Medicos[m]) f_Medicos[m].horas += horas; });
+                        }
                     }
                 });
 
@@ -531,7 +551,6 @@
                                 s_cDias[diaSemana] += cant;
                                 s_Medicos[med] = (s_Medicos[med] || 0) + cant;
 
-                                // EXTRACCIÓN DE METADATA RICA PARA EL SÚPER EXCEL
                                 let metaKey = `metadata_${est.replace(/\s+/g,'_')}`;
                                 let metadatos = data[metaKey] || [];
                                 let procesados = 0;
