@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'lapi-pwa-v2.0.4'; 
+const CACHE_VERSION = 'lapi-pwa-v2.1.0'; 
 
 const ASSETS_TO_CACHE = [
     './',
