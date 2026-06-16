@@ -22,6 +22,7 @@
         .scroll-custom::-webkit-scrollbar { width: 6px; height: 6px; }
         .scroll-custom::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 10px; }
         .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+        /* Animación suave */
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -367,7 +368,7 @@
         let timerGuardado = null;
         window.datosGlobalesTemp = null; 
 
-        // 👇 INYECCIÓN SEGURA PARA POBLAR LISTAS 👇
+        // INYECCIÓN SEGURA PARA POBLAR LISTAS
         document.addEventListener("DOMContentLoaded", () => {
             const medicosForaneos = window.LAPI_CONFIG.medicos;
             const sucursalesOficiales = window.LAPI_CONFIG.sucursales;
@@ -384,7 +385,7 @@
 
             const versionDiv = document.createElement('div');
             versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
-            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> v2.2.1_Blindaje`;
+            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> v2.2.2_AntiDuplicados`;
             document.body.appendChild(versionDiv);
         });
 
@@ -411,16 +412,20 @@
             modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
+        // 👇 BLINDAJE 1: FORZAR CACHÉ VIEJO A MAYÚSCULAS ESTRICTAS
         window.onload = function() {
             const guardado = localStorage.getItem('lapi_sesion_sucursal');
             if(guardado) {
                 sesionActual = JSON.parse(guardado);
+                sesionActual.medico = normalizarTexto(sesionActual.medico);
+                sesionActual.sucursal = normalizarTexto(sesionActual.sucursal);
                 document.getElementById('login-medico').value = sesionActual.medico;
                 document.getElementById('login-sucursal').value = sesionActual.sucursal;
                 iniciarApp(); 
             }
         };
 
+        // LA FUNCIÓN CORE: ELIMINA ACENTOS Y PASA A MAYÚSCULAS PURAS
         function normalizarTexto(texto) { return texto ? texto.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; }
 
         function obtenerFechaOperativaYFormato() {
@@ -433,7 +438,7 @@
             return { idFormat: `${yyyy}-${mm}-${dd}`, uiFormat: textoAmigable.charAt(0).toUpperCase() + textoAmigable.slice(1) };
         }
 
-        // 👇 MOTOR INTELIGENTE DE BÚSQUEDA FUZZY (SMART MATCH) 👇
+        // 👇 BLINDAJE 2: FORZAR NUEVOS LOGINS A MAYÚSCULAS ESTRICTAS
         window.iniciarSesion = function() {
             const rawMedico = document.getElementById('login-medico').value;
             const rawSuc = document.getElementById('login-sucursal').value;
@@ -441,37 +446,29 @@
             if(!rawMedico || !rawSuc) return mostrarToast("Selecciona tu nombre y sucursal.", "error");
             
             const medInputNorm = normalizarTexto(rawMedico);
-            const sucValidado = normalizarTexto(rawSuc); // ¡BLINDAJE DE SUCURSAL (VUELVE A SER MAYÚSCULAS ESTRICTO)!
+            const sucValidado = normalizarTexto(rawSuc); 
             const medicosOficiales = window.LAPI_CONFIG.medicos;
             
             let medicoValidado = null;
             
-            // 1. Busqueda Exacta
             let exactMatch = medicosOficiales.find(m => normalizarTexto(m) === medInputNorm);
-            
             if (exactMatch) {
                 medicoValidado = exactMatch;
             } else {
-                // 2. Busqueda Inteligente (Nombres volteados, parciales, etc.)
-                let inputWords = medInputNorm.split(/\s+/).filter(w => w.length > 2); // ignora "de", "la"
+                let inputWords = medInputNorm.split(/\s+/).filter(w => w.length > 2);
                 if(inputWords.length === 0) inputWords = medInputNorm.split(/\s+/);
                 
                 let posibles = medicosOficiales.filter(m => {
                     let mNorm = normalizarTexto(m);
-                    // Checa que cada palabra que el doctor escribio esté en el nombre oficial
                     return inputWords.every(word => mNorm.includes(word));
                 });
-                
-                if (posibles.length > 0) {
-                    medicoValidado = posibles[0]; // Auto-corrige a la opción oficial
-                }
+                if (posibles.length > 0) medicoValidado = posibles[0]; 
             }
             
-            if (!medicoValidado) {
-                return mostrarToast("Nombre no reconocido. Verifica o intenta con un apellido diferente.", "error");
-            }
+            if (!medicoValidado) return mostrarToast("Nombre no reconocido. Verifica o intenta con un apellido diferente.", "error");
 
-            // Actualizar el campo visualmente para que el doctor vea su nombre bien escrito
+            // SE GUARDA EXCLUSIVAMENTE EN MAYUSCULAS SIN ACENTOS
+            medicoValidado = normalizarTexto(medicoValidado);
             document.getElementById('login-medico').value = medicoValidado;
 
             const btn = document.getElementById('btn-login');
@@ -500,9 +497,13 @@
             
             const fechas = obtenerFechaOperativaYFormato();
             fechaOperativa = fechas.idFormat;
-            document.getElementById('ui-fecha').innerText = fechas.idFormat === new Date().toISOString().split('T')[0] ? "Hoy, " + fechas.uiFormat : "Turno del " + fechas.uiFormat;
             
-            docId = `SUC_${fechaOperativa}_${sesionActual.sucursal.replace(/\s+/g,'')}_${sesionActual.medico.replace(/\s+/g,'')}`;
+            // DOC ID BLINDADO: Siempre mayúsculas sin espacios
+            const sucId = normalizarTexto(sesionActual.sucursal).replace(/\s+/g,'');
+            const medId = normalizarTexto(sesionActual.medico).replace(/\s+/g,'');
+            docId = `SUC_${fechaOperativa}_${sucId}_${medId}`;
+            
+            document.getElementById('ui-fecha').innerText = fechas.idFormat === new Date().toISOString().split('T')[0] ? "Hoy, " + fechas.uiFormat : "Turno del " + fechas.uiFormat;
             
             try {
                 const docSnap = await window.getDoc(window.doc(window.db, "registros_diarios_sucursales", docId));
@@ -510,12 +511,11 @@
                     datosDelDia = docSnap.data();
                     if(!datosDelDia.estudios) datosDelDia.estudios = {}; 
                     if(!datosDelDia.observaciones) datosDelDia.observaciones = ""; 
-                    
-                    // 🛡️ DOBLE BLINDAJE DE IDENTIDAD POR SI ACASO
+
                     datosDelDia.tipo = "sucursal_agrupada";
                     datosDelDia.fecha = fechaOperativa;
-                    datosDelDia.sucursal = sesionActual.sucursal;
-                    datosDelDia.medico = sesionActual.medico;
+                    datosDelDia.sucursal = sesionActual.sucursal; // Ya es mayuscula pura
+                    datosDelDia.medico = sesionActual.medico; // Ya es mayuscula pura
                     
                 } else {
                     datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
@@ -627,11 +627,11 @@
                         indicador.innerHTML = navigator.onLine ? '<i class="fa-solid fa-cloud-check"></i> ¡Guardado en la Nube!' : '<i class="fa-solid fa-hard-drive"></i> Guardado Local';
                         setTimeout(() => indicador.classList.add('opacity-0'), 2500);
                     }
-                } catch (error) { console.error("Error en sincronización en la nube:", error); }
+                } catch (error) { console.error("Error en sincronización:", error); }
             }, 800);
         }
 
-        // 👇 RESUMEN GLOBAL CON FILTRO DE FUSIÓN (BLINDAJE DE MAYÚSCULAS) 👇
+        // 👇 BLINDAJE 3: EL MOTOR FUSIONADOR EN EL RESUMEN GLOBAL 👇
         window.mostrarResumenSucursal = async function() {
             const btn = document.getElementById('btn-ver-global');
             const originalHTML = btn.innerHTML;
@@ -647,37 +647,63 @@
                 datosDelDia.ultimaActualizacion = new Date();
                 await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
 
-                // Quitamos el filtro estricto de la nube para bajar TODO lo del día
                 const q = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
                     window.where("fecha", "==", fechaOperativa));
                 const qs = await window.getDocs(q);
 
-                let acumulado = {}; let personal = []; let totalG = 0; let desgloseIndividual = [];
+                let acumulado = {};
+                let totalG = 0;
                 let miSucursalNorm = normalizarTexto(sesionActual.sucursal);
+                
+                // MATA-DUPLICADOS: Objeto temporal para juntar nombres iguales
+                let agrupacionMedicos = {};
 
                 qs.forEach(doc => {
                     const data = doc.data();
                     
-                    // FILTRO DE FUSIÓN EN JAVASCRIPT: Atrapa "Polanco", "POLANCO", etc.
                     if(normalizarTexto(data.sucursal) !== miSucursalNorm) return;
 
-                    personal.push(data.medico);
+                    let medNorm = normalizarTexto(data.medico);
+                    if(!agrupacionMedicos[medNorm]) {
+                        agrupacionMedicos[medNorm] = { estudios: {}, observaciones: [] };
+                    }
+
                     let obs = data.observaciones ? data.observaciones.trim() : "";
-                    let tieneEstudiosOpc = false; let estInd = "";
+                    if(obs !== "" && obs !== ".") {
+                        agrupacionMedicos[medNorm].observaciones.push(obs);
+                    }
 
                     if(data.estudios) {
                         for(let est in data.estudios) {
-                            let cant = data.estudios[est];
+                            let cant = parseInt(data.estudios[est]) || 0;
                             if(cant > 0) {
-                                tieneEstudiosOpc = true;
+                                agrupacionMedicos[medNorm].estudios[est] = (agrupacionMedicos[medNorm].estudios[est] || 0) + cant;
                                 acumulado[est] = (acumulado[est] || 0) + cant;
                                 totalG += cant;
-                                estInd += `<div class="flex justify-between text-xs text-white/80"><span>${est}</span><b>${cant}</b></div>`;
                             }
                         }
                     }
-                    if(tieneEstudiosOpc || obs !== "") {
-                        desgloseIndividual.push({ medico: data.medico, htmlEstudios: estInd, observaciones: obs });
+                });
+
+                let personal = [];
+                let desgloseIndividual = [];
+
+                // CONSTRUIMOS EL HTML FUSIONADO
+                Object.keys(agrupacionMedicos).sort().forEach(medKey => {
+                    let obj = agrupacionMedicos[medKey];
+                    personal.push(medKey);
+                    
+                    let estInd = "";
+                    let tieneEst = false;
+                    for(let est in obj.estudios) {
+                        let cant = obj.estudios[est];
+                        tieneEst = true;
+                        estInd += `<div class="flex justify-between text-xs text-white/80"><span>${est}</span><b>${cant}</b></div>`;
+                    }
+                    
+                    let obsFinal = obj.observaciones.join(" | ");
+                    if(tieneEst || obsFinal !== "") {
+                        desgloseIndividual.push({ medico: medKey, htmlEstudios: estInd, observaciones: obsFinal });
                     }
                 });
 
@@ -918,8 +944,6 @@
         }
 
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
-        
-        // NO BORRAR: INYECCION PARA OBTENER VERSIÓN
     </script>
 </body>
 </html>
