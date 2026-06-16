@@ -22,7 +22,6 @@
         .scroll-custom::-webkit-scrollbar { width: 6px; height: 6px; }
         .scroll-custom::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 10px; }
         .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
-        /* Animación suave */
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -385,7 +384,7 @@
 
             const versionDiv = document.createElement('div');
             versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
-            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> v2.2.0_SmartAuth`;
+            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> v2.2.1_Blindaje`;
             document.body.appendChild(versionDiv);
         });
 
@@ -437,11 +436,12 @@
         // 👇 MOTOR INTELIGENTE DE BÚSQUEDA FUZZY (SMART MATCH) 👇
         window.iniciarSesion = function() {
             const rawMedico = document.getElementById('login-medico').value;
-            const suc = document.getElementById('login-sucursal').value;
+            const rawSuc = document.getElementById('login-sucursal').value;
             
-            if(!rawMedico || !suc) return mostrarToast("Selecciona tu nombre y sucursal.", "error");
+            if(!rawMedico || !rawSuc) return mostrarToast("Selecciona tu nombre y sucursal.", "error");
             
             const medInputNorm = normalizarTexto(rawMedico);
+            const sucValidado = normalizarTexto(rawSuc); // ¡BLINDAJE DE SUCURSAL (VUELVE A SER MAYÚSCULAS ESTRICTO)!
             const medicosOficiales = window.LAPI_CONFIG.medicos;
             
             let medicoValidado = null;
@@ -479,7 +479,7 @@
             btn.disabled = true;
 
             setTimeout(() => {
-                sesionActual = { medico: medicoValidado, sucursal: suc };
+                sesionActual = { medico: medicoValidado, sucursal: sucValidado };
                 localStorage.setItem('lapi_sesion_sucursal', JSON.stringify(sesionActual));
                 iniciarApp();
             }, 500);
@@ -631,6 +631,7 @@
             }, 800);
         }
 
+        // 👇 RESUMEN GLOBAL CON FILTRO DE FUSIÓN (BLINDAJE DE MAYÚSCULAS) 👇
         window.mostrarResumenSucursal = async function() {
             const btn = document.getElementById('btn-ver-global');
             const originalHTML = btn.innerHTML;
@@ -646,15 +647,20 @@
                 datosDelDia.ultimaActualizacion = new Date();
                 await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
 
+                // Quitamos el filtro estricto de la nube para bajar TODO lo del día
                 const q = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
-                    window.where("fecha", "==", fechaOperativa), 
-                    window.where("sucursal", "==", sesionActual.sucursal));
+                    window.where("fecha", "==", fechaOperativa));
                 const qs = await window.getDocs(q);
 
                 let acumulado = {}; let personal = []; let totalG = 0; let desgloseIndividual = [];
+                let miSucursalNorm = normalizarTexto(sesionActual.sucursal);
 
                 qs.forEach(doc => {
                     const data = doc.data();
+                    
+                    // FILTRO DE FUSIÓN EN JAVASCRIPT: Atrapa "Polanco", "POLANCO", etc.
+                    if(normalizarTexto(data.sucursal) !== miSucursalNorm) return;
+
                     personal.push(data.medico);
                     let obs = data.observaciones ? data.observaciones.trim() : "";
                     let tieneEstudiosOpc = false; let estInd = "";
@@ -760,7 +766,7 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...'; btn.disabled = true;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
-            document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal}`;
+            document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal.toUpperCase()}`;
             document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Presente :</b> <span class="text-orange-200 font-bold">${d.personal.join(', ')}</span></p>`;
             
             let listHtml = '';
@@ -773,7 +779,7 @@
             document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones.';
 
             await new Promise(r => setTimeout(r, 100));
-            await procesarHtml2Canvas(document.getElementById('captura-temp-global'), `LAPI_Global_${d.sucursal}_${fechaOperativa}`);
+            await procesarHtml2Canvas(document.getElementById('captura-temp-global'), `LAPI_Global_${d.sucursal.toUpperCase()}_${fechaOperativa}`);
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
@@ -913,7 +919,7 @@
 
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
         
-        // NO BORRAR: INYECCION PARA OBTENER VERSIÓN (Se movió junto con DOMContentLoaded)
+        // NO BORRAR: INYECCION PARA OBTENER VERSIÓN
     </script>
 </body>
 </html>
