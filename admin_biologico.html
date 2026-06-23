@@ -14,7 +14,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -31,14 +31,14 @@
         window.collection = collection;
         window.query = query;
         window.orderBy = orderBy;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Cargar los últimos 30 días por defecto
-            const hoy = new Date();
-            const haceMes = new Date(); haceMes.setDate(hoy.getDate() - 30);
-            document.getElementById('f-inicio').value = haceMes.toISOString().split('T')[0];
-            document.getElementById('f-fin').value = hoy.toISOString().split('T')[0];
-            buscarServicios();
+            // Por defecto, limpia fechas y busca ACTIVOS de Audiometría
+            document.getElementById('f-inicio').value = '';
+            document.getElementById('f-fin').value = '';
+            buscarServicios(true); 
         });
     </script>
     
@@ -50,30 +50,40 @@
         .scroll-custom::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
         .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 50px); }
         
+        /* Animación acordeón */
+        .acordeon-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; }
+        .acordeon-content.open { max-height: 2000px; padding-top: 1rem; padding-bottom: 1rem; }
+
         /* ==========================================
-           REGLAS DE IMPRESIÓN (PDF REPLICA EXACTA)
+           REGLAS DE IMPRESIÓN (PDF CONTINUO INTELIGENTE)
            ========================================== */
         @media print {
-            @page { size: landscape; margin: 10mm; } /* Horizontal obligatorio para la tabla de Audiometría */
+            @page { size: landscape; margin: 10mm; } 
             
             body * { visibility: hidden; }
             #zona-impresion, #zona-impresion * { visibility: visible; }
             #zona-impresion { position: absolute; left: 0; top: 0; width: 100%; background: white; }
             
-            .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 10px; font-family: Arial, sans-serif; text-align: center; }
+            /* Anti-cortes maestro */
+            .servicio-print-block { break-after: always; page-break-after: always; margin-bottom: 20px; width: 100%; }
+            .header-box, .info-grid { break-inside: avoid; page-break-inside: avoid; }
+            
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; font-family: Arial, sans-serif; text-align: center; }
             .print-table th, .print-table td { border: 1px solid #000; padding: 4px; }
+            .print-table tr { break-inside: avoid; page-break-inside: avoid; } /* Evita cortar filas a la mitad */
+            
             .print-table th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; color-adjust: exact; font-weight: bold; }
             .bg-verde-lapi { background-color: #a3e635 !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
             .bg-rojo-lapi { background-color: #fca5a5 !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
             
-            .header-box { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: Arial, sans-serif; font-size: 12px; }
+            .header-box { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-family: Arial, sans-serif; font-size: 12px; }
             .header-box td { border: 1px solid #000; padding: 5px; }
             .header-title { font-weight: bold; font-size: 16px; text-align: center; }
             .info-grid { display: flex; justify-content: space-between; font-family: Arial, sans-serif; font-size: 12px; margin-bottom: 10px; }
             .info-col { width: 48%; }
             .line-field { border-bottom: 1px solid #000; display: inline-block; min-width: 150px; padding-left: 5px; font-weight: bold; }
             
-            .firma-img { max-height: 25px; vertical-align: middle; display: block; margin: 0 auto; }
+            .firma-img { max-height: 30px; vertical-align: middle; display: block; margin: 0 auto; }
         }
     </style>
 </head>
@@ -111,65 +121,63 @@
                 <h1 class="text-xl font-black tracking-tight flex items-center gap-2 mb-1">
                     <i class="fa-solid fa-filter text-emerald-200"></i> BÚSQUEDA
                 </h1>
-                <p class="opacity-90 text-[10px] font-medium uppercase tracking-widest text-emerald-100 mb-6">Filtros de Calibración</p>
+                <p class="opacity-90 text-[10px] font-medium uppercase tracking-widest text-emerald-100 mb-6">Filtros de Servicio</p>
 
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <div>
                         <label class="block text-[9px] font-black text-emerald-200 uppercase mb-1">Tipo de Estudio</label>
-                        <select id="f-tipo" class="w-full p-2 bg-emerald-900/50 border border-emerald-500/50 rounded-lg text-xs font-bold outline-none text-white focus:border-white transition-colors appearance-none">
-                            <option value="todos">AMBOS (Audio y Espiro)</option>
+                        <select id="f-tipo" class="w-full p-3 bg-emerald-900/50 border border-emerald-500/50 rounded-lg text-sm font-bold outline-none text-white focus:border-white transition-colors appearance-none cursor-pointer">
                             <option value="audiometria">Audiometría</option>
                             <option value="espirometria">Espirometría</option>
                         </select>
                     </div>
 
-                    <div class="flex gap-2">
-                        <div class="flex-1">
-                            <label class="block text-[9px] font-black text-emerald-200 uppercase mb-1">Desde</label>
-                            <input type="date" id="f-inicio" class="w-full p-2 bg-emerald-900/50 border border-emerald-500/50 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
+                    <div class="pt-2 border-t border-emerald-500/30">
+                        <label class="block text-[9px] font-black text-emerald-200 uppercase mb-2">Rango de Búsqueda (Opcional)</label>
+                        <div class="grid grid-cols-3 gap-1 mb-2">
+                            <button onclick="aplicarFiltroRapido('semana')" class="bg-emerald-900/50 hover:bg-emerald-800 text-white text-[9px] font-bold py-1.5 rounded transition border border-emerald-500/30">Semana</button>
+                            <button onclick="aplicarFiltroRapido('mes')" class="bg-emerald-900/50 hover:bg-emerald-800 text-white text-[9px] font-bold py-1.5 rounded transition border border-emerald-500/30">Mes</button>
+                            <button onclick="aplicarFiltroRapido('año')" class="bg-emerald-900/50 hover:bg-emerald-800 text-white text-[9px] font-bold py-1.5 rounded transition border border-emerald-500/30">Año</button>
                         </div>
-                        <div class="flex-1">
-                            <label class="block text-[9px] font-black text-emerald-200 uppercase mb-1">Hasta</label>
+                        <div class="flex gap-2">
+                            <input type="date" id="f-inicio" class="w-full p-2 bg-emerald-900/50 border border-emerald-500/50 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
                             <input type="date" id="f-fin" class="w-full p-2 bg-emerald-900/50 border border-emerald-500/50 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-[9px] font-black text-emerald-200 uppercase mb-1">Empresa</label>
-                        <input type="text" id="f-empresa" placeholder="Ej. AEROMEXICO" class="w-full p-2 bg-emerald-900/50 border border-emerald-500/50 rounded-lg text-xs font-bold outline-none text-white placeholder-white/40 focus:border-white transition-colors uppercase">
-                    </div>
-
-                    <div>
-                        <label class="block text-[9px] font-black text-emerald-200 uppercase mb-1">N/S Equipo o Cabina</label>
-                        <input type="text" id="f-serie" placeholder="Buscar por serie..." class="w-full p-2 bg-emerald-900/50 border border-emerald-500/50 rounded-lg text-xs font-bold outline-none text-white placeholder-white/40 focus:border-white transition-colors uppercase">
-                    </div>
-
-                    <div>
-                        <label class="block text-[9px] font-black text-emerald-200 uppercase mb-1">Médico que Realizó</label>
-                        <input type="text" id="f-medico" placeholder="Buscar por nombre..." class="w-full p-2 bg-emerald-900/50 border border-emerald-500/50 rounded-lg text-xs font-bold outline-none text-white placeholder-white/40 focus:border-white transition-colors uppercase">
+                    <div class="pt-2 border-t border-emerald-500/30">
+                        <label class="block text-[9px] font-black text-emerald-200 uppercase mb-1">Empresa Destino</label>
+                        <input type="text" id="f-empresa" placeholder="Ej. AEROMEXICO" class="w-full p-3 bg-emerald-900/50 border border-emerald-500/50 rounded-lg text-sm font-bold outline-none text-white placeholder-white/40 focus:border-white transition-colors uppercase">
                     </div>
                 </div>
 
-                <button onclick="buscarServicios()" id="btn-buscar" class="w-full bg-white text-emerald-700 hover:bg-emerald-50 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-lg mt-5 flex justify-center items-center gap-2">
+                <button onclick="buscarServicios(false)" id="btn-buscar" class="w-full bg-white text-emerald-700 hover:bg-emerald-50 font-black py-3.5 rounded-xl transition-all text-sm active:scale-95 shadow-lg mt-6 flex justify-center items-center gap-2">
                     <i class="fa-solid fa-magnifying-glass"></i> Aplicar Filtros
+                </button>
+                <button onclick="buscarServicios(true)" class="w-full bg-emerald-900 hover:bg-emerald-800 text-emerald-200 font-bold py-2 rounded-xl transition-all text-[10px] active:scale-95 mt-2 flex justify-center items-center gap-2 border border-emerald-500/30">
+                    <i class="fa-solid fa-rotate-right"></i> Ver Solo Activos
                 </button>
             </div>
             
             <div class="glass p-5 rounded-3xl shadow-sm text-center">
-                <p class="text-xs text-slate-500 font-bold mb-1">Resultados Encontrados</p>
-                <p id="lbl-resultados" class="text-3xl font-black text-emerald-600">0</p>
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Servicios Encontrados</p>
+                <p id="lbl-resultados" class="text-4xl font-black text-emerald-600">0</p>
             </div>
+
+            <button onclick="generarPDFGlobal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-2xl shadow-xl transition-all active:scale-95 flex justify-center items-center gap-2 border-b-4 border-slate-900">
+                <i class="fa-solid fa-file-pdf text-red-400 text-xl"></i> Generar Reporte PDF
+            </button>
         </div>
 
         <div class="w-full flex-1">
             <div class="flex justify-between items-end mb-6 border-b border-emerald-200 pb-4">
-                <h2 class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-folder-open text-emerald-500 mr-2"></i> Expedientes de Control</h2>
+                <h2 id="titulo-resultados" class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-folder-open text-emerald-500 mr-2"></i> Servicios en Curso</h2>
             </div>
 
-            <div id="contenedor-resultados" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div class="col-span-2 text-center py-20 text-slate-400 italic">
-                    <i class="fa-solid fa-hand-pointer text-4xl mb-3 text-emerald-200 block"></i>
-                    Aplica los filtros para ver los registros.
+            <div id="contenedor-resultados" class="flex flex-col gap-4 pb-12">
+                <div class="text-center py-20 text-slate-400 italic">
+                    <i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-emerald-200 block"></i>
+                    Cargando servicios...
                 </div>
             </div>
         </div>
@@ -181,19 +189,35 @@
     <script>
         let serviciosGlobales = []; // Guarda en memoria lo de Firebase
 
-        window.buscarServicios = async function() {
-            const btn = document.getElementById('btn-buscar');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Buscando...'; btn.disabled = true;
+        window.aplicarFiltroRapido = function(tipo) {
+            const hoy = new Date();
+            let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+            if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
+            else if (tipo === 'mes') { iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`; }
+            else if (tipo === 'año') { iStr = `${hoy.getFullYear()}-01-01`; }
+            document.getElementById('f-inicio').value = iStr; document.getElementById('f-fin').value = fStr;
+        };
 
+        window.buscarServicios = async function(soloActivosPorDefecto = false) {
+            const btn = document.getElementById('btn-buscar');
+            if(!soloActivosPorDefecto) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Buscando...'; btn.disabled = true; }
+            
             const fTipo = document.getElementById('f-tipo').value;
             const fIni = document.getElementById('f-inicio').value;
             const fFin = document.getElementById('f-fin').value;
             const fEmp = document.getElementById('f-empresa').value.trim().toUpperCase();
-            const fSerie = document.getElementById('f-serie').value.trim().toUpperCase();
-            const fMed = document.getElementById('f-medico').value.trim().toUpperCase();
+
+            // Configurar Título UI
+            const titulo = document.getElementById('titulo-resultados');
+            if(soloActivosPorDefecto) {
+                titulo.innerHTML = `<i class="fa-solid fa-tower-cell text-emerald-500 mr-2"></i> Equipos Activos en Campo`;
+                document.getElementById('f-inicio').value = ''; document.getElementById('f-fin').value = ''; document.getElementById('f-empresa').value = '';
+            } else {
+                titulo.innerHTML = `<i class="fa-solid fa-folder-open text-emerald-500 mr-2"></i> Historial de Servicios`;
+            }
 
             try {
-                // Descargamos todo y filtramos en JS para permitir búsquedas complejas cruzadas
+                // Query Optimizada
                 const q = window.query(window.collection(window.db, "control_biologico"), window.orderBy("timestamp", "desc"));
                 const qs = await window.getDocs(q);
                 
@@ -204,125 +228,154 @@
                     data.id = doc.id;
                     let pasaFiltro = true;
 
-                    // Filtro Tipo
-                    if(fTipo !== "todos" && data.tipo !== fTipo) pasaFiltro = false;
+                    // 1. Filtro Tipo
+                    if(data.tipo !== fTipo) pasaFiltro = false;
                     
-                    // Filtro Empresa
-                    if(fEmp && !data.empresa.toUpperCase().includes(fEmp)) pasaFiltro = false;
-                    
-                    // Filtro Serie (Audiometro, Espiro o Cabina)
-                    if(fSerie) {
-                        const serieEq = data.ns_equipo ? data.ns_equipo.toUpperCase() : "";
-                        const serieCab = data.ns_cabina ? data.ns_cabina.toUpperCase() : "";
-                        if(!serieEq.includes(fSerie) && !serieCab.includes(fSerie)) pasaFiltro = false;
-                    }
-
-                    // Filtro Médico (Debe existir al menos en una bitácora)
-                    if(fMed && pasaFiltro) {
-                        let docFirmo = false;
-                        if(data.bitacora) {
-                            for(let b of data.bitacora) {
-                                if(b.medico && b.medico.toUpperCase().includes(fMed)) { docFirmo = true; break; }
-                            }
-                        }
-                        if(!docFirmo) pasaFiltro = false;
-                    }
-
-                    // Filtro Fechas (Rango cubre la fecha de inicio O alguna fecha de bitácora)
-                    if(fIni && fFin && pasaFiltro) {
-                        let caeEnRango = false;
-                        if(data.fecha_inicio >= fIni && data.fecha_inicio <= fFin) caeEnRango = true;
+                    // 2. Comportamiento por defecto (Activos) vs Filtros Manuales
+                    if(soloActivosPorDefecto) {
+                        if(data.estado !== "activo") pasaFiltro = false;
+                    } else {
+                        // Filtro Empresa
+                        if(fEmp && !data.empresa.toUpperCase().includes(fEmp)) pasaFiltro = false;
                         
-                        if(!caeEnRango && data.bitacora) {
-                            for(let b of data.bitacora) {
-                                if(b.fecha >= fIni && b.fecha <= fFin) { caeEnRango = true; break; }
+                        // Filtro Fechas (Cubre fecha inicio o bitacora)
+                        if(fIni && fFin && pasaFiltro) {
+                            let caeEnRango = false;
+                            if(data.fecha_inicio >= fIni && data.fecha_inicio <= fFin) caeEnRango = true;
+                            
+                            if(!caeEnRango && data.bitacora) {
+                                for(let b of data.bitacora) {
+                                    if(b.fecha >= fIni && b.fecha <= fFin) { caeEnRango = true; break; }
+                                }
                             }
+                            if(!caeEnRango) pasaFiltro = false;
                         }
-                        if(!caeEnRango) pasaFiltro = false;
                     }
 
                     if(pasaFiltro) serviciosGlobales.push(data);
                 });
 
-                renderizarTarjetas();
+                renderizarListadoAcordeon();
 
             } catch (e) {
                 console.error(e);
                 alert("Error extrayendo datos de Firebase.");
             }
 
-            btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Aplicar Filtros'; btn.disabled = false;
+            if(!soloActivosPorDefecto) { btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Aplicar Filtros'; btn.disabled = false; }
         };
 
-        function renderizarTarjetas() {
+        function renderizarListadoAcordeon() {
             const cont = document.getElementById('contenedor-resultados');
             document.getElementById('lbl-resultados').innerText = serviciosGlobales.length;
             cont.innerHTML = "";
 
             if(serviciosGlobales.length === 0) {
-                cont.innerHTML = `<div class="col-span-2 text-center py-10 glass rounded-3xl"><p class="text-sm font-bold text-slate-500">No se encontraron servicios con esos filtros.</p></div>`;
+                cont.innerHTML = `<div class="text-center py-10 glass rounded-3xl"><p class="text-sm font-bold text-slate-500">No se encontraron servicios.</p></div>`;
                 return;
             }
 
             serviciosGlobales.forEach((serv, index) => {
-                const icono = serv.tipo === 'audiometria' ? 'fa-headphones text-emerald-500' : 'fa-lungs text-sky-500';
-                const colorBorde = serv.tipo === 'audiometria' ? 'border-emerald-400' : 'border-sky-400';
-                const bgTag = serv.estado === 'activo' ? 'bg-orange-100 text-orange-700' : 'bg-slate-200 text-slate-600';
-                
+                const icono = serv.tipo === 'audiometria' ? 'fa-headphones' : 'fa-lungs';
+                const bgTag = serv.estado === 'activo' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-200 text-slate-600 border-slate-300';
+                const txtTag = serv.estado === 'activo' ? 'ACTIVO' : 'FINALIZADO';
                 const numRegs = serv.bitacora ? serv.bitacora.length : 0;
-                let ultimaFecha = serv.fecha_inicio;
-                if(numRegs > 0) ultimaFecha = serv.bitacora[numRegs-1].fecha;
+                
+                // Construir Tabla Interna dependiendo del tipo
+                let thHtml = ''; let trHtml = '';
+                
+                if(numRegs === 0) {
+                    trHtml = `<tr><td colspan="5" class="py-4 text-center text-xs text-slate-400 italic">No hay calibraciones registradas aún.</td></tr>`;
+                } else {
+                    if(serv.tipo === 'audiometria') {
+                        thHtml = `<tr><th class="py-2 px-3 text-left">Fecha</th><th class="py-2 px-3 text-center">Frec. OD Prom</th><th class="py-2 px-3 text-center">Frec. OI Prom</th><th class="py-2 px-3 text-right">Médico</th></tr>`;
+                        serv.bitacora.forEach(b => {
+                            let promOD = b.od ? Object.values(b.od).filter(v=>v).length : 0; // Solo cuenta cuantos llenó para el miniresumen
+                            let promOI = b.oi ? Object.values(b.oi).filter(v=>v).length : 0;
+                            trHtml += `<tr class="border-t border-slate-100"><td class="py-2 px-3 text-xs font-bold text-slate-600">${b.fecha}</td><td class="py-2 px-3 text-center text-xs text-red-500">${promOD}/8 capturas</td><td class="py-2 px-3 text-center text-xs text-blue-500">${promOI}/8 capturas</td><td class="py-2 px-3 text-right text-[10px] font-bold text-slate-500">${b.medico}</td></tr>`;
+                        });
+                    } else {
+                        thHtml = `<tr><th class="py-2 px-3 text-left">Fecha</th><th class="py-2 px-3 text-center">Inspirar %</th><th class="py-2 px-3 text-center">Espirar %</th><th class="py-2 px-3 text-right">Médico</th></tr>`;
+                        serv.bitacora.forEach(b => {
+                            trHtml += `<tr class="border-t border-slate-100"><td class="py-2 px-3 text-xs font-bold text-slate-600">${b.fecha}</td><td class="py-2 px-3 text-center text-xs text-sky-600 font-bold">${b.inspirar_porcentaje}%</td><td class="py-2 px-3 text-center text-xs text-sky-600 font-bold">${b.espirar_porcentaje}%</td><td class="py-2 px-3 text-right text-[10px] font-bold text-slate-500">${b.medico}</td></tr>`;
+                        });
+                    }
+                }
+
+                const btnFinalizar = serv.estado === 'activo' 
+                    ? `<button onclick="finalizarServicio('${serv.id}')" class="w-full mt-4 bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 rounded-lg text-xs transition border border-red-200"><i class="fa-solid fa-power-off mr-1"></i> Finalizar y Archivar Servicio</button>` 
+                    : ``;
 
                 cont.innerHTML += `
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition relative flex flex-col justify-between">
-                        <div class="absolute top-4 right-4 ${bgTag} text-[9px] font-black uppercase px-2 py-1 rounded tracking-wider">${serv.estado}</div>
-                        
-                        <div class="mb-4">
-                            <h3 class="font-black text-lg text-slate-800 uppercase leading-tight pr-14">${serv.empresa}</h3>
-                            <p class="text-xs font-bold text-slate-500 mt-1 uppercase"><i class="fa-solid ${icono} mr-1"></i> ${serv.equipo}</p>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div onclick="toggleAcordeon('acordeon-${serv.id}')" class="p-5 cursor-pointer hover:bg-slate-50 transition relative select-none">
+                            <div class="absolute top-5 right-5 ${bgTag} border text-[9px] font-black uppercase px-2 py-1 rounded tracking-wider">${txtTag}</div>
+                            <h3 class="font-black text-lg text-slate-800 uppercase leading-tight pr-20 mb-1"><i class="fa-solid ${icono} text-slate-400 mr-1"></i> ${serv.empresa}</h3>
+                            <p class="text-xs font-bold text-slate-500 uppercase"><i class="fa-regular fa-calendar mr-1"></i> ${serv.fecha_inicio} &nbsp;|&nbsp; <i class="fa-solid fa-barcode mr-1"></i> ${serv.ns_equipo}</p>
+                            <div class="absolute bottom-5 right-5 text-slate-300 text-xl"><i class="fa-solid fa-chevron-down"></i></div>
                         </div>
                         
-                        <div class="bg-slate-50 rounded-xl p-3 mb-4 grid grid-cols-2 gap-2 text-[10px] font-medium text-slate-600 border border-slate-100">
-                            <p><i class="fa-solid fa-barcode w-4 text-center"></i> N/S Eq: <b class="text-slate-800">${serv.ns_equipo}</b></p>
-                            <p><i class="fa-regular fa-calendar w-4 text-center"></i> Creado: <b class="text-slate-800">${serv.fecha_inicio}</b></p>
-                            ${serv.tipo === 'audiometria' ? `<p><i class="fa-solid fa-box w-4 text-center"></i> Cab: <b class="text-slate-800">${serv.ns_cabina}</b></p>` : `<p></p>`}
-                            <p><i class="fa-solid fa-list-check w-4 text-center"></i> Regs: <b class="text-slate-800">${numRegs} (${ultimaFecha})</b></p>
-                        </div>
-
-                        <div class="flex gap-2">
-                            <button onclick="generarPDF(${index})" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-sm">
-                                <i class="fa-solid fa-file-pdf text-red-400 mr-1"></i> Formato PDF
-                            </button>
+                        <div id="acordeon-${serv.id}" class="acordeon-content bg-slate-50 px-5 border-t border-slate-100">
+                            <h4 class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2 border-b border-slate-200 pb-1">Bitácora Diaria (${numRegs} calibraciones)</h4>
+                            <div class="overflow-x-auto bg-white rounded-xl border border-slate-200">
+                                <table class="w-full text-left">
+                                    <thead class="bg-slate-100 text-[10px] uppercase text-slate-500">${thHtml}</thead>
+                                    <tbody>${trHtml}</tbody>
+                                </table>
+                            </div>
+                            ${btnFinalizar}
                         </div>
                     </div>
                 `;
             });
         }
 
-        window.generarPDF = function(index) {
-            const data = serviciosGlobales[index];
-            const zona = document.getElementById('zona-impresion');
-            zona.innerHTML = '';
+        window.toggleAcordeon = function(idDOM) {
+            const el = document.getElementById(idDOM);
+            el.classList.toggle('open');
+        };
 
-            let htmlPDF = '';
-
-            if(data.tipo === 'audiometria') {
-                htmlPDF = renderizarPDF_Audiometria(data);
-            } else {
-                htmlPDF = renderizarPDF_Espirometria(data);
-            }
-
-            zona.innerHTML = htmlPDF;
+        window.finalizarServicio = async function(idFirebase) {
+            if(!confirm("¿Estás seguro que deseas marcar este servicio como FINALIZADO?\n\nLos médicos ya no lo verán en su lista de activos para agregar calibraciones.")) return;
             
-            // Damos 500ms para que el DOM pinte las imágenes de las firmas antes de lanzar la impresión
-            setTimeout(() => {
-                window.print();
-            }, 500);
+            try {
+                await window.updateDoc(window.doc(window.db, "control_biologico", idFirebase), { estado: "finalizado" });
+                alert("Servicio finalizado correctamente.");
+                // Recargamos en base a si el admin estaba en la vista por defecto o con filtros
+                const fIni = document.getElementById('f-inicio').value;
+                if(fIni === '') buscarServicios(true); 
+                else buscarServicios(false);
+            } catch(e) {
+                alert("Error al intentar finalizar.");
+            }
         };
 
         // =========================================================
-        // GENERADORES DE CÓDIGO HTML PARA LOS FORMATOS DE IMPRESIÓN
+        // MOTOR DE RENDERIZADO PDF (MÚLTIPLES SERVICIOS CONTINUOS)
         // =========================================================
+        window.generarPDFGlobal = function() {
+            if(serviciosGlobales.length === 0) {
+                alert("No hay servicios en pantalla para generar el PDF."); return;
+            }
+
+            const zona = document.getElementById('zona-impresion');
+            zona.innerHTML = '';
+            let htmlPDF = '';
+
+            // Construir una "hoja" por cada servicio en pantalla
+            serviciosGlobales.forEach(data => {
+                htmlPDF += '<div class="servicio-print-block">';
+                if(data.tipo === 'audiometria') htmlPDF += renderizarPDF_Audiometria(data);
+                else htmlPDF += renderizarPDF_Espirometria(data);
+                htmlPDF += '</div>';
+            });
+
+            zona.innerHTML = htmlPDF;
+            
+            // Damos 800ms para que el navegador decodifique y pinte todas las firmas Base64
+            setTimeout(() => { window.print(); }, 800);
+        };
+
         function renderizarPDF_Audiometria(data) {
             let filasBitacora = '';
             if(data.bitacora) {
@@ -333,18 +386,17 @@
                         <td class="bg-verde-lapi">${b.fecha}</td>
                         <td class="bg-rojo-lapi">${od[250]||''}</td><td class="bg-rojo-lapi">${od[500]||''}</td><td class="bg-rojo-lapi">${od[1000]||''}</td><td class="bg-rojo-lapi">${od[2000]||''}</td><td class="bg-rojo-lapi">${od[3000]||''}</td><td class="bg-rojo-lapi">${od[4000]||''}</td><td class="bg-rojo-lapi">${od[6000]||''}</td><td class="bg-rojo-lapi">${od[8000]||''}</td>
                         <td></td> <td>${oi[250]||''}</td><td>${oi[500]||''}</td><td>${oi[1000]||''}</td><td>${oi[2000]||''}</td><td>${oi[3000]||''}</td><td>${oi[4000]||''}</td><td>${oi[6000]||''}</td><td>${oi[8000]||''}</td>
-                        <td class="bg-verde-lapi">
+                        <td class="bg-verde-lapi" style="padding: 2px;">
                             <div style="font-size: 8px; line-height: 1;">${b.medico}</div>
-                            ${b.firma ? `<img src="${b.firma}" class="firma-img mt-1">` : ''}
+                            ${b.firma ? `<img src="${b.firma}" class="firma-img">` : ''}
                         </td>
                     </tr>`;
                 });
             }
 
-            // Rellenar filas en blanco para que parezca una hoja oficial
+            // Rellenar filas en blanco para cuadrar formato
             for(let i = (data.bitacora ? data.bitacora.length : 0); i < 15; i++) {
-                filasBitacora += `
-                    <tr><td class="bg-verde-lapi" style="height: 25px;"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="bg-verde-lapi"></td></tr>`;
+                filasBitacora += `<tr><td class="bg-verde-lapi" style="height: 25px;"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="bg-verde-lapi"></td></tr>`;
             }
 
             return `
@@ -371,7 +423,7 @@
                     <div class="info-col">
                         <div style="margin-bottom: 5px;">AUDIÓMETRO: <span class="line-field">${data.equipo}</span></div>
                         <div style="margin-bottom: 5px;">EMPRESA: <span class="line-field">${data.empresa}</span></div>
-                        <div style="margin-bottom: 5px;">FECHA: <span class="line-field">${data.fecha_inicio}</span></div>
+                        <div style="margin-bottom: 5px;">FECHA INICIO: <span class="line-field">${data.fecha_inicio}</span></div>
                     </div>
                     <div class="info-col">
                         <div style="margin-bottom: 15px;">N/S: <span class="line-field">${data.ns_equipo}</span></div>
@@ -407,9 +459,8 @@
 
         function renderizarPDF_Espirometria(data) {
             let filasBitacora = '';
-            
-            // Obtener fechas para el encabezado (Primera y Última)
             let fechasServicio = data.fecha_inicio;
+            
             if(data.bitacora && data.bitacora.length > 0) {
                 const ultima = data.bitacora[data.bitacora.length - 1].fecha;
                 if(data.fecha_inicio !== ultima) fechasServicio = `${data.fecha_inicio} al ${ultima}`;
@@ -423,12 +474,11 @@
                         <td>${b.inspirar_porcentaje || ''} %</td>
                         <td>${b.espirar_porcentaje || ''} %</td>
                         <td style="font-size: 10px; font-weight: bold;">${b.medico}</td>
-                        <td>${b.firma ? `<img src="${b.firma}" class="firma-img">` : ''}</td>
+                        <td style="padding: 2px;">${b.firma ? `<img src="${b.firma}" class="firma-img">` : ''}</td>
                     </tr>`;
                 });
             }
 
-            // Rellenar filas en blanco
             for(let i = (data.bitacora ? data.bitacora.length : 0); i < 15; i++) {
                 filasBitacora += `<tr><td style="height: 30px;"></td><td></td><td></td><td></td><td></td></tr>`;
             }
