@@ -43,6 +43,7 @@
 
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
+    <!-- NAVEGACIÓN SUPERIOR -->
     <div class="glass text-white p-4 shadow-md sticky top-0 z-50 rounded-b-3xl mx-2 mb-6 flex justify-between items-center">
         <div>
             <h1 class="text-lg font-black tracking-tight leading-tight"><i class="fa-solid fa-wave-square mr-1"></i> Control Biológico</h1>
@@ -53,6 +54,7 @@
 
     <div class="max-w-2xl mx-auto px-4">
 
+        <!-- VISTA 1: LISTA DE SERVICIOS ACTIVOS -->
         <div id="vista-lista" class="animate-fade-in">
             <button onclick="abrirNuevoServicio()" class="w-full bg-white text-teal-700 font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 mb-8 flex justify-center items-center gap-2 text-lg">
                 <i class="fa-solid fa-folder-plus"></i> Crear Nuevo Servicio
@@ -64,6 +66,7 @@
             </div>
         </div>
 
+        <!-- VISTA 2: CREAR NUEVA CABECERA DE SERVICIO -->
         <div id="vista-nuevo" class="hidden animate-fade-in glass p-6 rounded-3xl shadow-xl">
             <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
                 <h2 class="font-black text-xl"><i class="fa-solid fa-file-signature mr-2"></i> Apertura de Equipo</h2>
@@ -71,6 +74,7 @@
             </div>
             
             <div class="space-y-4 text-left">
+                <!-- TIPO DE CONTROL -->
                 <div class="bg-black/20 p-3 rounded-xl border border-white/10 mb-2">
                     <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-2 text-center text-emerald-300">Seleccione el Tipo de Control</label>
                     <div class="grid grid-cols-2 gap-2">
@@ -95,7 +99,8 @@
                         <label id="lbl-equipo" class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Audiómetro</label>
                         <div class="relative">
                             <select id="ns-equipo" class="w-full p-3 bg-black/20 text-white border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold text-sm appearance-none">
-                                </select>
+                                <!-- Se llena dinámicamente -->
+                            </select>
                             <i class="fa-solid fa-chevron-down absolute right-3 top-4 pointer-events-none text-white/50"></i>
                         </div>
                     </div>
@@ -122,14 +127,16 @@
             </div>
         </div>
 
+        <!-- VISTA 3: CAPTURA DE BITÁCORA DIARIA -->
         <div id="vista-captura" class="hidden animate-fade-in">
+            <!-- Header Resumen del Servicio Activo -->
             <div class="glass p-5 rounded-3xl shadow-sm mb-6 border-l-4 border-emerald-400">
                 <div class="flex justify-between items-start mb-2">
                     <h2 id="cap-empresa" class="font-black text-xl leading-tight text-white uppercase">EMPRESA</h2>
                     <button onclick="volverLista()" class="text-xs bg-white/20 px-3 py-1.5 rounded-lg font-bold hover:bg-white/30 shrink-0 ml-2"><i class="fa-solid fa-arrow-left mr-1"></i> Lista</button>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-xs font-medium text-emerald-100">
-                    <p id="p-tipo-icon"><i class="fa-solid fa-headphones mr-1"></i> <span id="cap-equipo"></span></p>
+                    <p id="p-tipo-icon"><i id="icon-equipo" class="fa-solid fa-headphones mr-1"></i> <span id="cap-equipo" class="font-bold"></span></p>
                     <p><i class="fa-solid fa-barcode mr-1"></i> N/S: <span id="cap-ns" class="font-bold"></span></p>
                     <p id="p-cabina"><i class="fa-solid fa-box mr-1"></i> Cab: <span id="cap-cab" class="font-bold"></span></p>
                     <p><i class="fa-regular fa-calendar mr-1"></i> <span id="cap-fecha"></span></p>
@@ -139,7 +146,9 @@
             <div class="glass p-6 rounded-3xl shadow-xl space-y-6">
                 <h3 class="font-black text-lg text-center border-b border-white/20 pb-2 mb-4"><i class="fa-solid fa-pen-to-square text-emerald-300 mr-2"></i> Captura del Día</h3>
                 
+                <!-- 👇 MÓDULO AUDIOMETRÍA 👇 -->
                 <div id="modulo-audiometria" class="space-y-4">
+                    <!-- OÍDO DERECHO -->
                     <div class="bg-black/20 p-4 rounded-2xl border border-white/10">
                         <h4 class="font-black text-red-400 text-sm text-center mb-3 uppercase tracking-widest"><i class="fa-solid fa-ear-listen"></i> Oído Derecho (dB)</h4>
                         <div class="grid grid-cols-4 gap-2">
@@ -154,6 +163,7 @@
                         </div>
                     </div>
 
+                    <!-- OÍDO IZQUIERDO -->
                     <div class="bg-black/20 p-4 rounded-2xl border border-white/10">
                         <h4 class="font-black text-blue-400 text-sm text-center mb-3 uppercase tracking-widest"><i class="fa-solid fa-ear-listen"></i> Oído Izquierdo (dB)</h4>
                         <div class="grid grid-cols-4 gap-2">
@@ -169,6 +179,7 @@
                     </div>
                 </div>
 
+                <!-- 👇 MÓDULO ESPIROMETRÍA 👇 -->
                 <div id="modulo-espirometria" class="hidden space-y-4">
                     <div class="bg-black/20 p-5 rounded-2xl border border-white/10">
                         <h4 class="font-black text-sky-300 text-sm text-center mb-4 uppercase tracking-widest"><i class="fa-solid fa-wind"></i> Diferencia Relativa al Volumen</h4>
@@ -185,6 +196,7 @@
                     </div>
                 </div>
 
+                <!-- SECCIÓN COMÚN (MÉDICO Y FIRMA) -->
                 <div class="border-t border-white/20 pt-4">
                     <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Realizó (Médico)</label>
                     <input type="text" id="cap-medico" list="lista-medicos" placeholder="Seleccione su nombre..." class="w-full p-3 bg-black/20 text-white placeholder-white/50 border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold uppercase text-sm mb-4">
@@ -211,7 +223,7 @@
 
     <script>
         let docIdActivo = null;
-        let tipoControlActivo = null; // 'audiometria' o 'espirometria'
+        let tipoControlActivo = null; 
         
         // FIRMA DIGITAL VARIABLES
         const canvas = document.getElementById('canvas-firma');
@@ -231,7 +243,6 @@
                 datalistMedicos.innerHTML = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">`).join('');
             }
 
-            // Inicializar el formulario por defecto (Audiometría)
             cambiarTipoFormulario();
             cargarServiciosActivos();
             configurarCanvas();
@@ -248,7 +259,6 @@
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
         }
 
-        // LÓGICA DE INTERFAZ DUAL (AUDIO vs ESPIRO)
         window.cambiarTipoFormulario = function() {
             const tipo = document.querySelector('input[name="tipoControl"]:checked').value;
             const selectEquipo = document.getElementById('ns-equipo');
@@ -279,7 +289,6 @@
         async function cargarServiciosActivos() {
             const cont = document.getElementById('contenedor-servicios');
             try {
-                // Buscamos todos los activos, sin importar el tipo
                 const q = window.query(window.collection(window.db, "control_biologico"), window.where("estado", "==", "activo"));
                 const qs = await window.getDocs(q);
                 cont.innerHTML = "";
@@ -310,34 +319,32 @@
             } catch(e) { cont.innerHTML = `<div class="text-center text-red-300 text-xs font-bold">Error cargando nube.</div>`; }
         }
 
-        // CONTROL DE VISTAS
         window.abrirNuevoServicio = () => { document.getElementById('vista-lista').classList.add('hidden'); document.getElementById('vista-nuevo').classList.remove('hidden'); }
         window.volverLista = () => { document.getElementById('vista-nuevo').classList.add('hidden'); document.getElementById('vista-captura').classList.add('hidden'); document.getElementById('vista-lista').classList.remove('hidden'); docIdActivo = null; tipoControlActivo = null; cargarServiciosActivos(); }
         
         window.abrirCaptura = (id, tipo, emp, eq, ns, cab, fec) => {
             docIdActivo = id;
-            tipoControlActivo = tipo; // Guardamos el tipo actual para saber qué guardar después
+            tipoControlActivo = tipo; 
 
             document.getElementById('cap-empresa').innerText = emp;
             document.getElementById('cap-equipo').innerText = eq;
             document.getElementById('cap-ns').innerText = ns;
             document.getElementById('cap-fecha').innerText = fec;
             
-            // Adaptar interfaz según el tipo
+            // 👇 SOLUCIÓN APLICADA: CAMBIO SEGURO DE CLASES Y TEXTO 👇
             if(tipo === 'audiometria') {
-                document.getElementById('p-tipo-icon').innerHTML = `<i class="fa-solid fa-headphones mr-1"></i> <span class="font-bold">${eq}</span>`;
+                document.getElementById('icon-equipo').className = "fa-solid fa-headphones mr-1";
                 document.getElementById('p-cabina').classList.remove('hidden');
                 document.getElementById('cap-cab').innerText = cab;
                 document.getElementById('modulo-audiometria').classList.remove('hidden');
                 document.getElementById('modulo-espirometria').classList.add('hidden');
             } else {
-                document.getElementById('p-tipo-icon').innerHTML = `<i class="fa-solid fa-lungs mr-1"></i> <span class="font-bold">${eq}</span>`;
-                document.getElementById('p-cabina').classList.add('hidden'); // Espiro no tiene cabina
+                document.getElementById('icon-equipo').className = "fa-solid fa-lungs mr-1";
+                document.getElementById('p-cabina').classList.add('hidden'); 
                 document.getElementById('modulo-audiometria').classList.add('hidden');
                 document.getElementById('modulo-espirometria').classList.remove('hidden');
             }
             
-            // Limpiar inputs
             document.querySelectorAll('input[type="number"]').forEach(inp => inp.value = '');
             document.getElementById('cap-medico').value = '';
             limpiarFirma();
@@ -376,17 +383,15 @@
                 timestamp: new Date()
             };
 
-            // Solo agregar cabina si es audiometria
             if (tipo === 'audiometria') nuevoDoc.ns_cabina = cab;
 
             try {
                 const docRef = await window.addDoc(window.collection(window.db, "control_biologico"), nuevoDoc);
-                mostrarToast("Servicio Creado Exitosamente", "exito");
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Iniciar Registro Maestro'; btn.disabled = false;
                 
-                // Limpiar campos de nuevo servicio
                 document.getElementById('ns-empresa').value = ''; document.getElementById('ns-serie').value = ''; document.getElementById('ns-cabina').value = '';
                 
+                // LLAMADA SEGURA AL ABRIR LA CAPTURA
                 abrirCaptura(docRef.id, tipo, emp, eq, ns, cab, fec);
             } catch(e) {
                 mostrarToast("Error de conexión."); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Intentar de nuevo';
@@ -397,7 +402,6 @@
             const med = document.getElementById('cap-medico').value.trim().toUpperCase();
             if(!med) return mostrarToast("Seleccione o escriba el nombre del médico.");
             
-            // Validación de firma (comprobar que no está en blanco)
             const blank = document.createElement('canvas');
             blank.width = canvas.width; blank.height = canvas.height;
             if(canvas.toDataURL() === blank.toDataURL()) return mostrarToast("La firma es obligatoria.");
@@ -406,10 +410,9 @@
                 fecha: new Date().toISOString().split('T')[0],
                 timestamp: new Date(),
                 medico: med,
-                firma: canvas.toDataURL('image/png', 0.5) // Guarda en base64
+                firma: canvas.toDataURL('image/png', 0.5) 
             };
 
-            // Capturar datos según el tipo
             if (tipoControlActivo === 'audiometria') {
                 const frecs = [250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
                 let od = {}, oi = {};
