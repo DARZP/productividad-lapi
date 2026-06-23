@@ -64,10 +64,10 @@
 
         <div id="vista-lista" class="animate-fade-in">
             <button onclick="abrirNuevoReporte()" class="w-full bg-white hover:bg-orange-50 text-orange-600 font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 mb-8 flex justify-center items-center gap-2 text-lg">
-                <i class="fa-solid fa-truck-arrow-right"></i> Reporte de Salida (Inicio)
+                <i class="fa-solid fa-truck-arrow-right"></i> Reporte de Inicio
             </button>
 
-            <h2 class="text-xs font-black uppercase tracking-widest text-orange-200 mb-4 border-b border-white/20 pb-2"><i class="fa-solid fa-route mr-1"></i> Unidades en Ruta (Activas)</h2>
+            <h2 class="text-xs font-black uppercase tracking-widest text-orange-200 mb-4 border-b border-white/20 pb-2"><i class="fa-solid fa-route mr-1"></i> Unidades Activas</h2>
             <div id="contenedor-servicios" class="space-y-4">
                 <div class="text-center py-10 opacity-70"><i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i><p class="text-sm font-bold">Cargando...</p></div>
             </div>
@@ -75,7 +75,7 @@
 
         <div id="vista-datos" class="hidden animate-fade-in glass p-6 rounded-3xl shadow-xl">
             <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
-                <h2 id="titulo-datos" class="font-black text-xl leading-tight"><i class="fa-solid fa-truck-arrow-right mr-2"></i> Salida de Unidad</h2>
+                <h2 id="titulo-datos" class="font-black text-xl leading-tight"><i class="fa-solid fa-truck-arrow-right mr-2"></i> Reporte de Inicio</h2>
                 <button onclick="volverLista()" class="text-sm bg-white/20 px-3 py-1 rounded-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
@@ -196,15 +196,15 @@
     <script>
         // CONFIGURACIÓN DEL CHECKLIST
         const categoriasChecklist = {
-            "Exterior": ["Llantas / Presión", "Pintura y Rotulación", "Escalones y Barandal", "Conexiones Externas"],
-            "Interior": ["Piso y Limpieza", "Iluminación Interior", "Aire Acondicionado"],
-            "Cabinas": ["Espuma Acústica", "Puerta y Bisagras", "Conexiones Internas"]
+            "Exterior": ["Pintura", "Escalones y Barandal"],
+            "Interior": ["Limpieza", "Piso", "Paredes", "Iluminación", "Aire Acondicionado", "Conexiones"],
+            "Cabinas": ["Espuma Acústica", "Puerta", "Panel Jack"]
         };
 
         // ESTADOS GLOBALES DE LA APP
-        let modoActual = 'INICIO'; // Puede ser 'INICIO' o 'TERMINO'
+        let modoActual = 'INICIO'; 
         let docIdActivo = null; 
-        let datosCabeceraTemporal = {}; // Guarda datos cuando cerramos un servicio
+        let datosCabeceraTemporal = {}; 
         let fotosBase64 = []; 
         
         // FIRMA DIGITAL VARIABLES
