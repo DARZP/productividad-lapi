@@ -50,23 +50,23 @@
         .scroll-custom::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
         .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 50px); }
         
-        /* Animaciones acordeón */
         .acordeon-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; }
         .acordeon-content.open { max-height: 2000px; padding-top: 1rem; padding-bottom: 1rem; }
-        
-        /* Acordeón especial para filtros para permitir que los dropdowns salgan */
         .filtros-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out; opacity: 0; }
         .filtros-content.open { max-height: 1000px; opacity: 1; overflow: visible; }
 
         /* ==========================================
-           REGLAS DE IMPRESIÓN (PDF CONTINUO INTELIGENTE)
+           REGLAS DE IMPRESIÓN BLINDADAS
            ========================================== */
         @media print {
             @page { size: landscape; margin: 10mm; } 
             
-            body * { visibility: hidden; }
-            #zona-impresion, #zona-impresion * { visibility: visible; }
-            #zona-impresion { position: absolute; left: 0; top: 0; width: 100%; background: white; }
+            body, html { background-color: white !important; height: auto !important; }
+            
+            /* Escondemos TODO excepto la zona de impresión */
+            nav, main, #modal-audio { display: none !important; }
+            
+            #zona-impresion { display: block !important; position: relative !important; width: 100% !important; background: white !important; color: black !important; }
             
             .servicio-print-block { break-after: always; page-break-after: always; margin-bottom: 20px; width: 100%; }
             .header-box, .info-grid { break-inside: avoid; page-break-inside: avoid; }
@@ -129,7 +129,7 @@
                 </div>
                 
                 <button onclick="buscarServicios(true)" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-md mt-3 flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-rotate-right"></i> Recargar Activos
+                    <i class="fa-solid fa-rotate-right"></i> Ver Solo Activos
                 </button>
 
                 <div onclick="toggleFiltros()" class="mt-4 pt-4 border-t border-emerald-500/30 flex justify-between items-center cursor-pointer select-none group">
@@ -173,19 +173,22 @@
                 </div>
             </div>
             
-            <div class="glass p-5 rounded-3xl shadow-sm text-center">
-                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Servicios Listados</p>
-                <p id="lbl-resultados" class="text-4xl font-black text-emerald-600">0</p>
-            </div>
+            <div class="flex gap-3">
+                <div class="glass p-4 rounded-2xl shadow-sm text-center w-1/2 flex flex-col justify-center border-l-4 border-emerald-400">
+                    <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold mb-1">Listados</p>
+                    <p id="lbl-resultados" class="text-3xl font-black text-emerald-600 leading-none">0</p>
+                </div>
 
-            <button onclick="generarPDFGlobal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-2xl shadow-xl transition-all active:scale-95 flex justify-center items-center gap-2 border-b-4 border-slate-900">
-                <i class="fa-solid fa-file-pdf text-red-400 text-xl"></i> Generar Reporte PDF
-            </button>
+                <button onclick="generarPDFGlobal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-2xl shadow-xl transition-all active:scale-95 flex flex-col justify-center items-center gap-1 border-b-4 border-slate-900">
+                    <i class="fa-solid fa-file-pdf text-red-400 text-2xl"></i> 
+                    <span class="text-[10px] uppercase tracking-widest text-center leading-tight">Generar<br>Reporte</span>
+                </button>
+            </div>
         </div>
 
         <div class="w-full flex-1">
             <div class="flex justify-between items-end mb-6 border-b border-emerald-200 pb-4">
-                <h2 id="titulo-resultados" class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-folder-open text-emerald-500 mr-2"></i> Servicios en Curso</h2>
+                <h2 id="titulo-resultados" class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-tower-cell text-emerald-500 mr-2"></i> Equipos Activos en Campo</h2>
             </div>
 
             <div id="contenedor-resultados" class="flex flex-col gap-4 pb-12">
@@ -197,8 +200,30 @@
         </div>
     </main>
 
-    <div id="zona-impresion" class="hidden">
+    <div id="zona-impresion" class="hidden"></div>
+
+    <div id="modal-audio" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="glass bg-slate-900 p-6 rounded-3xl shadow-2xl max-w-md w-full text-white">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                <h3 class="text-lg font-black text-emerald-400"><i class="fa-solid fa-ear-listen mr-2"></i> Valores de Captura</h3>
+                <button onclick="cerrarModalAudio()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <p id="mod-audio-fecha" class="text-xs text-slate-400 mb-4 uppercase tracking-widest font-bold"></p>
+            
+            <div class="bg-black/40 p-4 rounded-2xl mb-4 border border-slate-700">
+                <h4 class="text-red-400 font-bold text-xs text-center mb-2 tracking-widest">OÍDO DERECHO (dB)</h4>
+                <div class="grid grid-cols-4 gap-1 text-center" id="grid-od"></div>
+            </div>
+
+            <div class="bg-black/40 p-4 rounded-2xl border border-slate-700">
+                <h4 class="text-blue-400 font-bold text-xs text-center mb-2 tracking-widest">OÍDO IZQUIERDO (dB)</h4>
+                <div class="grid grid-cols-4 gap-1 text-center" id="grid-oi"></div>
+            </div>
+            
+            <button onclick="cerrarModalAudio()" class="w-full mt-6 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-all active:scale-95">Cerrar</button>
         </div>
+    </div>
 
     <script>
         let serviciosGlobales = []; // Guarda en memoria lo de Firebase
@@ -237,7 +262,6 @@
             if(soloActivosPorDefecto) {
                 titulo.innerHTML = `<i class="fa-solid fa-tower-cell text-emerald-500 mr-2"></i> Equipos Activos en Campo`;
                 document.getElementById('f-inicio').value = ''; document.getElementById('f-fin').value = ''; document.getElementById('f-empresa').value = '';
-                // Si busca activos directos, cerramos el panel de filtros si está abierto
                 const panel = document.getElementById('panel-filtros');
                 if(panel && panel.classList.contains('open')) toggleFiltros();
             } else {
@@ -256,17 +280,13 @@
                     data.id = doc.id;
                     let pasaFiltro = true;
 
-                    // 1. Filtro Tipo (Aplica tanto a Activos como a Historial)
                     if(fTipo !== "todos" && data.tipo !== fTipo) pasaFiltro = false;
                     
-                    // 2. Comportamiento Activos vs Filtros Manuales
                     if(soloActivosPorDefecto) {
                         if(data.estado !== "activo") pasaFiltro = false;
                     } else {
-                        // Filtro Empresa
                         if(fEmp && !data.empresa.toUpperCase().includes(fEmp)) pasaFiltro = false;
                         
-                        // Filtro Fechas (Cubre fecha inicio o bitacora)
                         if(fIni && fFin && pasaFiltro) {
                             let caeEnRango = false;
                             if(data.fecha_inicio >= fIni && data.fecha_inicio <= fFin) caeEnRango = true;
@@ -303,13 +323,15 @@
                 return;
             }
 
-            serviciosGlobales.forEach((serv, index) => {
-                const icono = serv.tipo === 'audiometria' ? 'fa-headphones' : 'fa-lungs';
+            serviciosGlobales.forEach((serv, indexServicio) => {
+                const icono = serv.tipo === 'audiometria' ? 'fa-headphones text-emerald-500' : 'fa-lungs text-sky-500';
                 const bgTag = serv.estado === 'activo' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-200 text-slate-600 border-slate-300';
                 const txtTag = serv.estado === 'activo' ? 'ACTIVO' : 'FINALIZADO';
                 const numRegs = serv.bitacora ? serv.bitacora.length : 0;
                 
-                // Construir Tabla Interna dependiendo del tipo
+                // 👇 ENCABEZADOS ENRIQUECIDOS (Marca, Equipo, Cabina) 👇
+                let cabinaBadge = serv.tipo === 'audiometria' && serv.ns_cabina ? `<span class="bg-white/50 px-2 py-0.5 rounded border border-slate-200">Cabina: <b>${serv.ns_cabina}</b></span>` : '';
+                
                 let thHtml = ''; let trHtml = '';
                 
                 if(numRegs === 0) {
@@ -317,10 +339,15 @@
                 } else {
                     if(serv.tipo === 'audiometria') {
                         thHtml = `<tr><th class="py-2 px-3 text-left">Fecha</th><th class="py-2 px-3 text-center">Frec. OD Prom</th><th class="py-2 px-3 text-center">Frec. OI Prom</th><th class="py-2 px-3 text-right">Médico</th></tr>`;
-                        serv.bitacora.forEach(b => {
+                        serv.bitacora.forEach((b, indexBitacora) => {
                             let promOD = b.od ? Object.values(b.od).filter(v=>v).length : 0; 
                             let promOI = b.oi ? Object.values(b.oi).filter(v=>v).length : 0;
-                            trHtml += `<tr class="border-t border-slate-100"><td class="py-2 px-3 text-xs font-bold text-slate-600">${b.fecha}</td><td class="py-2 px-3 text-center text-xs text-red-500">${promOD}/8 capturas</td><td class="py-2 px-3 text-center text-xs text-blue-500">${promOI}/8 capturas</td><td class="py-2 px-3 text-right text-[10px] font-bold text-slate-500">${b.medico}</td></tr>`;
+                            
+                            // 👇 BOTONES INTERACTIVOS PARA MODAL DE AUDIOMETRÍA 👇
+                            let btnOD = `<button onclick="abrirDetalleAudio(${indexServicio}, ${indexBitacora})" class="text-red-500 hover:text-red-700 underline decoration-red-300 underline-offset-2"><i class="fa-solid fa-up-right-from-square mr-1"></i>${promOD}/8 capt.</button>`;
+                            let btnOI = `<button onclick="abrirDetalleAudio(${indexServicio}, ${indexBitacora})" class="text-blue-500 hover:text-blue-700 underline decoration-blue-300 underline-offset-2"><i class="fa-solid fa-up-right-from-square mr-1"></i>${promOI}/8 capt.</button>`;
+
+                            trHtml += `<tr class="border-t border-slate-100"><td class="py-2 px-3 text-xs font-bold text-slate-600">${b.fecha}</td><td class="py-2 px-3 text-center text-xs font-bold">${btnOD}</td><td class="py-2 px-3 text-center text-xs font-bold">${btnOI}</td><td class="py-2 px-3 text-right text-[10px] font-bold text-slate-500">${b.medico}</td></tr>`;
                         });
                     } else {
                         thHtml = `<tr><th class="py-2 px-3 text-left">Fecha</th><th class="py-2 px-3 text-center">Inspirar %</th><th class="py-2 px-3 text-center">Espirar %</th><th class="py-2 px-3 text-right">Médico</th></tr>`;
@@ -338,8 +365,16 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                         <div onclick="toggleAcordeon('acordeon-${serv.id}')" class="p-5 cursor-pointer hover:bg-slate-50 transition relative select-none">
                             <div class="absolute top-5 right-5 ${bgTag} border text-[9px] font-black uppercase px-2 py-1 rounded tracking-wider">${txtTag}</div>
-                            <h3 class="font-black text-lg text-slate-800 uppercase leading-tight pr-20 mb-1"><i class="fa-solid ${icono} text-slate-400 mr-1"></i> ${serv.empresa}</h3>
-                            <p class="text-xs font-bold text-slate-500 uppercase"><i class="fa-regular fa-calendar mr-1"></i> ${serv.fecha_inicio} &nbsp;|&nbsp; <i class="fa-solid fa-barcode mr-1"></i> ${serv.ns_equipo}</p>
+                            
+                            <h3 class="font-black text-lg text-slate-800 uppercase leading-tight pr-20 mb-2"><i class="fa-solid ${icono} mr-1"></i> ${serv.empresa}</h3>
+                            
+                            <div class="flex flex-wrap gap-2 text-[10px] font-medium text-slate-500">
+                                <span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200"><i class="fa-regular fa-calendar mr-1"></i> ${serv.fecha_inicio}</span>
+                                <span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-800 font-bold">${serv.equipo}</span>
+                                <span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200"><i class="fa-solid fa-barcode mr-1"></i> ${serv.ns_equipo}</span>
+                                ${cabinaBadge}
+                            </div>
+
                             <div class="absolute bottom-5 right-5 text-slate-300 text-xl"><i class="fa-solid fa-chevron-down"></i></div>
                         </div>
                         
@@ -369,7 +404,6 @@
             try {
                 await window.updateDoc(window.doc(window.db, "control_biologico", idFirebase), { estado: "finalizado" });
                 alert("Servicio finalizado correctamente.");
-                // Recargamos en base a si el admin estaba en la vista por defecto o con filtros
                 const fIni = document.getElementById('f-inicio').value;
                 if(fIni === '') buscarServicios(true); 
                 else buscarServicios(false);
@@ -378,8 +412,34 @@
             }
         };
 
+        // 👇 MODAL INTELIGENTE DE AUDIOMETRÍA 👇
+        window.abrirDetalleAudio = function(indexServicio, indexBitacora) {
+            const b = serviciosGlobales[indexServicio].bitacora[indexBitacora];
+            document.getElementById('mod-audio-fecha').innerText = `Calibración del: ${b.fecha}`;
+            
+            const gridOD = document.getElementById('grid-od');
+            const gridOI = document.getElementById('grid-oi');
+            gridOD.innerHTML = ''; gridOI.innerHTML = '';
+
+            const frecs = [250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
+            
+            frecs.forEach(f => {
+                let valOD = (b.od && b.od[f]) ? b.od[f] : '-';
+                let valOI = (b.oi && b.oi[f]) ? b.oi[f] : '-';
+                
+                gridOD.innerHTML += `<div class="bg-white/10 p-1.5 rounded text-xs"><p class="text-[8px] text-white/50 mb-0.5">${f}</p><b class="text-white">${valOD}</b></div>`;
+                gridOI.innerHTML += `<div class="bg-white/10 p-1.5 rounded text-xs"><p class="text-[8px] text-white/50 mb-0.5">${f}</p><b class="text-white">${valOI}</b></div>`;
+            });
+
+            document.getElementById('modal-audio').classList.remove('hidden');
+        };
+
+        window.cerrarModalAudio = function() {
+            document.getElementById('modal-audio').classList.add('hidden');
+        };
+
         // =========================================================
-        // MOTOR DE RENDERIZADO PDF (MÚLTIPLES SERVICIOS CONTINUOS)
+        // MOTOR DE RENDERIZADO PDF BLINDADO
         // =========================================================
         window.generarPDFGlobal = function() {
             if(serviciosGlobales.length === 0) {
@@ -400,8 +460,12 @@
 
             zona.innerHTML = htmlPDF;
             
-            // Damos 800ms para que el navegador decodifique y pinte todas las firmas Base64
-            setTimeout(() => { window.print(); }, 800);
+            // Revelar, Imprimir, Ocultar de forma segura
+            zona.classList.remove('hidden');
+            setTimeout(() => { 
+                window.print(); 
+                zona.classList.add('hidden');
+            }, 800);
         };
 
         function renderizarPDF_Audiometria(data) {
@@ -497,10 +561,10 @@
                 data.bitacora.forEach(b => {
                     filasBitacora += `
                     <tr>
-                        <td style="font-weight: bold;">${b.fecha}</td>
-                        <td>${b.inspirar_porcentaje || ''} %</td>
-                        <td>${b.espirar_porcentaje || ''} %</td>
-                        <td style="font-size: 10px; font-weight: bold;">${b.medico}</td>
+                        <td style="font-weight: bold; padding: 4px;">${b.fecha}</td>
+                        <td style="padding: 4px;">${b.inspirar_porcentaje || ''} %</td>
+                        <td style="padding: 4px;">${b.espirar_porcentaje || ''} %</td>
+                        <td style="font-size: 10px; font-weight: bold; padding: 4px;">${b.medico}</td>
                         <td style="padding: 2px;">${b.firma ? `<img src="${b.firma}" class="firma-img">` : ''}</td>
                     </tr>`;
                 });
