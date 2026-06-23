@@ -148,7 +148,7 @@
 
             <div class="bg-black/10 p-4 rounded-xl border border-white/10 mb-6">
                 <div class="flex justify-between items-center mb-3">
-                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest">Fotos (Carga evidencia en caso de existir detalles)</label>
+                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest">Fotos (Carga evidencia en caso de detalles)</label>
                     
                     <label class="bg-white text-orange-600 px-3 py-1.5 rounded-lg text-[10px] font-black cursor-pointer active:scale-95 transition shadow-md">
                         <i class="fa-solid fa-camera mr-1"></i> Tomar Foto
@@ -278,7 +278,7 @@
             docIdActivo = null;
             limpiarFormularios();
             
-            document.getElementById('titulo-datos').innerHTML = `<i class="fa-solid fa-truck-arrow-right mr-2"></i> Salida de Unidad`;
+            document.getElementById('titulo-datos').innerHTML = `<i class="fa-solid fa-truck-arrow-right mr-2"></i> Reporte de Inicio`;
             document.getElementById('form-datos-inicio').classList.remove('hidden');
             document.getElementById('form-datos-termino').classList.add('hidden');
             
@@ -318,8 +318,8 @@
             }
             
             document.getElementById('titulo-checklist').innerHTML = modoActual === 'INICIO' 
-                ? `<i class="fa-solid fa-list-check mr-2"></i> Inspección de Salida` 
-                : `<i class="fa-solid fa-list-check mr-2"></i> Inspección de Recepción`;
+                ? `<i class="fa-solid fa-list-check mr-2"></i> Inspección de Inicio` 
+                : `<i class="fa-solid fa-list-check mr-2"></i> Inspección de Término`;
 
             document.getElementById('vista-datos').classList.add('hidden');
             document.getElementById('vista-checklist').classList.remove('hidden');
