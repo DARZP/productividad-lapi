@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control Biológico - LAPI</title>
     
-    <meta name="theme-color" content="#059669">
+    <link rel="manifest" href="manifest_captura.json">
+    <meta name="theme-color" content="#ea580c">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="config.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-        .glass { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25); }
+        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
         .scroll-custom::-webkit-scrollbar { width: 4px; }
         .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
@@ -39,11 +40,10 @@
         window.collection = collection; window.query = query; window.where = where; window.orderBy = orderBy;
     </script>
 </head>
-<body class="bg-gradient-to-br from-emerald-600 to-teal-900 min-h-screen text-white pb-20">
+<body class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen text-white pb-20">
 
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- NAVEGACIÓN SUPERIOR -->
     <div class="glass text-white p-4 shadow-md sticky top-0 z-50 rounded-b-3xl mx-2 mb-6 flex justify-between items-center">
         <div>
             <h1 class="text-lg font-black tracking-tight leading-tight"><i class="fa-solid fa-wave-square mr-1"></i> Control Biológico</h1>
@@ -54,19 +54,17 @@
 
     <div class="max-w-2xl mx-auto px-4">
 
-        <!-- VISTA 1: LISTA DE SERVICIOS ACTIVOS -->
         <div id="vista-lista" class="animate-fade-in">
-            <button onclick="abrirNuevoServicio()" class="w-full bg-white text-teal-700 font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 mb-8 flex justify-center items-center gap-2 text-lg">
+            <button onclick="abrirNuevoServicio()" class="w-full bg-white text-orange-600 font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 mb-8 flex justify-center items-center gap-2 text-lg">
                 <i class="fa-solid fa-folder-plus"></i> Crear Nuevo Servicio
             </button>
 
-            <h2 class="text-xs font-black uppercase tracking-widest text-emerald-200 mb-4 border-b border-white/20 pb-2"><i class="fa-solid fa-tower-cell mr-1"></i> Servicios Activos</h2>
+            <h2 class="text-xs font-black uppercase tracking-widest text-orange-200 mb-4 border-b border-white/20 pb-2"><i class="fa-solid fa-tower-cell mr-1"></i> Servicios Activos</h2>
             <div id="contenedor-servicios" class="space-y-4">
                 <div class="text-center py-10 opacity-70"><i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i><p class="text-sm font-bold">Cargando...</p></div>
             </div>
         </div>
 
-        <!-- VISTA 2: CREAR NUEVA CABECERA DE SERVICIO -->
         <div id="vista-nuevo" class="hidden animate-fade-in glass p-6 rounded-3xl shadow-xl">
             <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
                 <h2 class="font-black text-xl"><i class="fa-solid fa-file-signature mr-2"></i> Apertura de Equipo</h2>
@@ -74,81 +72,75 @@
             </div>
             
             <div class="space-y-4 text-left">
-                <!-- TIPO DE CONTROL -->
-                <div class="bg-black/20 p-3 rounded-xl border border-white/10 mb-2">
-                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-2 text-center text-emerald-300">Seleccione el Tipo de Control</label>
+                <div class="bg-black/10 p-3 rounded-xl border border-white/10 mb-2">
+                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-2 text-center text-orange-200">Seleccione el Tipo de Control</label>
                     <div class="grid grid-cols-2 gap-2">
                         <label class="cursor-pointer">
                             <input type="radio" name="tipoControl" value="audiometria" class="peer sr-only" onchange="cambiarTipoFormulario()" checked>
-                            <div class="peer-checked:bg-emerald-500 peer-checked:text-white bg-white/10 text-emerald-100 font-bold text-center py-2 rounded-lg border border-white/20 transition-all text-sm"><i class="fa-solid fa-headphones mr-1"></i> Audiometría</div>
+                            <div class="peer-checked:bg-white peer-checked:text-orange-600 bg-white/20 text-white font-bold text-center py-2 rounded-lg border border-white/10 transition-all text-sm shadow-sm"><i class="fa-solid fa-headphones mr-1"></i> Audiometría</div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="tipoControl" value="espirometria" class="peer sr-only" onchange="cambiarTipoFormulario()">
-                            <div class="peer-checked:bg-emerald-500 peer-checked:text-white bg-white/10 text-emerald-100 font-bold text-center py-2 rounded-lg border border-white/20 transition-all text-sm"><i class="fa-solid fa-lungs mr-1"></i> Espirometría</div>
+                            <div class="peer-checked:bg-white peer-checked:text-orange-600 bg-white/20 text-white font-bold text-center py-2 rounded-lg border border-white/10 transition-all text-sm shadow-sm"><i class="fa-solid fa-lungs mr-1"></i> Espirometría</div>
                         </label>
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Empresa Destino</label>
-                    <input type="text" id="ns-empresa" list="lista-empresas" placeholder="Buscar empresa..." class="w-full p-3 bg-black/20 text-white placeholder-white/50 border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold uppercase text-sm">
+                    <input type="text" id="ns-empresa" list="lista-empresas" placeholder="Buscar empresa..." class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm">
                 </div>
                 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label id="lbl-equipo" class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Audiómetro</label>
                         <div class="relative">
-                            <select id="ns-equipo" class="w-full p-3 bg-black/20 text-white border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold text-sm appearance-none">
-                                <!-- Se llena dinámicamente -->
-                            </select>
-                            <i class="fa-solid fa-chevron-down absolute right-3 top-4 pointer-events-none text-white/50"></i>
+                            <select id="ns-equipo" class="w-full p-3 bg-white/20 text-white border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold text-sm appearance-none cursor-pointer">
+                                </select>
+                            <i class="fa-solid fa-chevron-down absolute right-3 top-4 pointer-events-none text-white/70"></i>
                         </div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">N/S Equipo</label>
-                        <input type="text" id="ns-serie" placeholder="Ej. SN-4920" class="w-full p-3 bg-black/20 text-white placeholder-white/50 border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold uppercase text-sm">
+                        <input type="text" id="ns-serie" placeholder="Ej. SN-4920" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm">
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-3">
                     <div id="contenedor-cabina">
                         <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">N/S Cabina</label>
-                        <input type="text" id="ns-cabina" placeholder="Ej. C-102" class="w-full p-3 bg-black/20 text-white placeholder-white/50 border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold uppercase text-sm">
+                        <input type="text" id="ns-cabina" placeholder="Ej. C-102" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm">
                     </div>
                     <div id="contenedor-fecha" class="col-span-1">
                         <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Fecha Inicio</label>
-                        <input type="date" id="ns-fecha" class="w-full p-3 bg-black/20 text-white border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold text-sm">
+                        <input type="date" id="ns-fecha" class="w-full p-3 bg-white/20 text-white border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold text-sm">
                     </div>
                 </div>
 
-                <button id="btn-guardar-cabecera" onclick="guardarNuevoServicio()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 mt-4 text-sm flex justify-center items-center gap-2">
+                <button id="btn-guardar-cabecera" onclick="guardarNuevoServicio()" class="w-full bg-white hover:bg-orange-50 text-orange-600 font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 mt-4 text-sm flex justify-center items-center gap-2">
                     <i class="fa-solid fa-check"></i> Iniciar Registro Maestro
                 </button>
             </div>
         </div>
 
-        <!-- VISTA 3: CAPTURA DE BITÁCORA DIARIA -->
         <div id="vista-captura" class="hidden animate-fade-in">
-            <!-- Header Resumen del Servicio Activo -->
-            <div class="glass p-5 rounded-3xl shadow-sm mb-6 border-l-4 border-emerald-400">
+            <div class="glass p-5 rounded-3xl shadow-sm mb-6 border-l-4 border-white/50">
                 <div class="flex justify-between items-start mb-2">
                     <h2 id="cap-empresa" class="font-black text-xl leading-tight text-white uppercase">EMPRESA</h2>
                     <button onclick="volverLista()" class="text-xs bg-white/20 px-3 py-1.5 rounded-lg font-bold hover:bg-white/30 shrink-0 ml-2"><i class="fa-solid fa-arrow-left mr-1"></i> Lista</button>
                 </div>
-                <div class="grid grid-cols-2 gap-2 text-xs font-medium text-emerald-100">
+                <div class="grid grid-cols-2 gap-2 text-xs font-medium text-white/90">
                     <p id="p-tipo-icon"><i id="icon-equipo" class="fa-solid fa-headphones mr-1"></i> <span id="cap-equipo" class="font-bold"></span></p>
-                    <p><i class="fa-solid fa-barcode mr-1"></i> N/S: <span id="cap-ns" class="font-bold"></span></p>
-                    <p id="p-cabina"><i class="fa-solid fa-box mr-1"></i> Cab: <span id="cap-cab" class="font-bold"></span></p>
+                    <p><i class="fa-solid fa-barcode mr-1"></i> N/S: <span id="cap-ns" class="font-bold text-orange-200"></span></p>
+                    <p id="p-cabina"><i class="fa-solid fa-box mr-1"></i> Cab: <span id="cap-cab" class="font-bold text-orange-200"></span></p>
                     <p><i class="fa-regular fa-calendar mr-1"></i> <span id="cap-fecha"></span></p>
                 </div>
             </div>
 
             <div class="glass p-6 rounded-3xl shadow-xl space-y-6">
-                <h3 class="font-black text-lg text-center border-b border-white/20 pb-2 mb-4"><i class="fa-solid fa-pen-to-square text-emerald-300 mr-2"></i> Captura del Día</h3>
+                <h3 class="font-black text-lg text-center border-b border-white/20 pb-2 mb-4"><i class="fa-solid fa-pen-to-square text-orange-200 mr-2"></i> Captura del Día</h3>
                 
-                <!-- 👇 MÓDULO AUDIOMETRÍA 👇 -->
                 <div id="modulo-audiometria" class="space-y-4">
-                    <!-- OÍDO DERECHO -->
                     <div class="bg-black/20 p-4 rounded-2xl border border-white/10">
                         <h4 class="font-black text-red-400 text-sm text-center mb-3 uppercase tracking-widest"><i class="fa-solid fa-ear-listen"></i> Oído Derecho (dB)</h4>
                         <div class="grid grid-cols-4 gap-2">
@@ -163,7 +155,6 @@
                         </div>
                     </div>
 
-                    <!-- OÍDO IZQUIERDO -->
                     <div class="bg-black/20 p-4 rounded-2xl border border-white/10">
                         <h4 class="font-black text-blue-400 text-sm text-center mb-3 uppercase tracking-widest"><i class="fa-solid fa-ear-listen"></i> Oído Izquierdo (dB)</h4>
                         <div class="grid grid-cols-4 gap-2">
@@ -179,38 +170,36 @@
                     </div>
                 </div>
 
-                <!-- 👇 MÓDULO ESPIROMETRÍA 👇 -->
                 <div id="modulo-espirometria" class="hidden space-y-4">
                     <div class="bg-black/20 p-5 rounded-2xl border border-white/10">
                         <h4 class="font-black text-sky-300 text-sm text-center mb-4 uppercase tracking-widest"><i class="fa-solid fa-wind"></i> Diferencia Relativa al Volumen</h4>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-[10px] text-center block text-white/90 uppercase tracking-widest font-bold mb-2">Inspirar %</label>
-                                <input type="number" step="0.1" id="espiro-insp" placeholder="Ej. 0.1" class="w-full text-center p-3 rounded-xl bg-white/10 text-white placeholder-white/40 border border-white/20 focus:border-sky-400 outline-none text-lg font-black">
+                                <input type="number" step="0.1" id="espiro-insp" placeholder="Ej. 0.1" class="w-full text-center p-3 rounded-xl bg-white/10 text-white placeholder-white/50 border border-white/20 focus:border-sky-400 outline-none text-lg font-black">
                             </div>
                             <div>
                                 <label class="text-[10px] text-center block text-white/90 uppercase tracking-widest font-bold mb-2">Espirar %</label>
-                                <input type="number" step="0.1" id="espiro-esp" placeholder="Ej. -1.4" class="w-full text-center p-3 rounded-xl bg-white/10 text-white placeholder-white/40 border border-white/20 focus:border-sky-400 outline-none text-lg font-black">
+                                <input type="number" step="0.1" id="espiro-esp" placeholder="Ej. -1.4" class="w-full text-center p-3 rounded-xl bg-white/10 text-white placeholder-white/50 border border-white/20 focus:border-sky-400 outline-none text-lg font-black">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- SECCIÓN COMÚN (MÉDICO Y FIRMA) -->
                 <div class="border-t border-white/20 pt-4">
                     <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Realizó (Médico)</label>
-                    <input type="text" id="cap-medico" list="lista-medicos" placeholder="Seleccione su nombre..." class="w-full p-3 bg-black/20 text-white placeholder-white/50 border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold uppercase text-sm mb-4">
+                    <input type="text" id="cap-medico" list="lista-medicos" placeholder="Seleccione su nombre..." class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm mb-4">
                     
                     <div class="flex justify-between items-end mb-1">
                         <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest">Firma Digital</label>
-                        <button onclick="limpiarFirma()" class="text-[10px] text-emerald-200 hover:text-white font-bold underline"><i class="fa-solid fa-eraser"></i> Limpiar</button>
+                        <button onclick="limpiarFirma()" class="text-[10px] text-orange-200 hover:text-white font-bold underline"><i class="fa-solid fa-eraser"></i> Limpiar</button>
                     </div>
                     <div class="bg-white p-1 rounded-xl shadow-inner border border-white/30 overflow-hidden relative touch-none">
                         <canvas id="canvas-firma" height="150" class="w-full rounded-lg touch-none"></canvas>
                     </div>
                 </div>
 
-                <button id="btn-enviar-bitacora" onclick="guardarBitacoraDiaria()" class="w-full bg-white text-teal-800 font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 text-sm flex justify-center items-center gap-2 mt-4">
+                <button id="btn-enviar-bitacora" onclick="guardarBitacoraDiaria()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 text-sm flex justify-center items-center gap-2 mt-4">
                     <i class="fa-solid fa-cloud-arrow-up"></i> Guardar Calibración
                 </button>
             </div>
@@ -266,7 +255,7 @@
             const contFecha = document.getElementById('contenedor-fecha');
             const lblEquipo = document.getElementById('lbl-equipo');
 
-            selectEquipo.innerHTML = '<option value="" disabled selected class="text-slate-800">SELECCIONE...</option>';
+            selectEquipo.innerHTML = '<option value="" disabled selected class="text-white/60">SELECCIONE...</option>';
 
             if (tipo === 'audiometria') {
                 lblEquipo.innerText = "Audiómetro";
@@ -294,7 +283,7 @@
                 cont.innerHTML = "";
                 
                 if(qs.empty) {
-                    cont.innerHTML = `<div class="text-center py-6 glass rounded-2xl"><p class="text-sm font-bold text-emerald-100">No hay servicios abiertos.</p></div>`;
+                    cont.innerHTML = `<div class="text-center py-6 glass rounded-2xl"><p class="text-sm font-bold text-orange-100">No hay servicios abiertos.</p></div>`;
                     return;
                 }
 
@@ -302,21 +291,20 @@
                     const d = doc.data();
                     const numRegistros = d.bitacora ? d.bitacora.length : 0;
                     const icono = d.tipo === 'audiometria' ? 'fa-headphones' : 'fa-lungs';
-                    const colorBadge = d.tipo === 'audiometria' ? 'text-emerald-400' : 'text-sky-400';
                     
                     cont.innerHTML += `
-                        <div onclick="abrirCaptura('${doc.id}', '${d.tipo}', '${d.empresa}', '${d.equipo}', '${d.ns_equipo}', '${d.ns_cabina || ''}', '${d.fecha_inicio}')" class="glass p-4 rounded-2xl cursor-pointer hover:bg-white/10 transition border-l-4 border-emerald-400 flex justify-between items-center shadow-sm active:scale-95">
+                        <div onclick="abrirCaptura('${doc.id}', '${d.tipo}', '${d.empresa}', '${d.equipo}', '${d.ns_equipo}', '${d.ns_cabina || ''}', '${d.fecha_inicio}')" class="glass p-4 rounded-2xl cursor-pointer hover:bg-white/30 transition border-l-4 border-white/50 flex justify-between items-center shadow-sm active:scale-95">
                             <div>
                                 <h3 class="font-black text-sm uppercase text-white">${d.empresa}</h3>
-                                <p class="text-[10px] text-emerald-100 font-medium uppercase mt-0.5"><i class="fa-solid ${icono} mr-1"></i> ${d.tipo} | <i class="fa-regular fa-calendar ml-1 mr-1"></i> ${d.fecha_inicio}</p>
+                                <p class="text-[10px] text-white/90 font-medium uppercase mt-0.5"><i class="fa-solid ${icono} mr-1"></i> ${d.tipo} | <i class="fa-regular fa-calendar ml-1 mr-1"></i> ${d.fecha_inicio}</p>
                             </div>
                             <div class="text-right">
-                                <span class="bg-black/30 px-3 py-1 rounded-lg text-xs font-black text-white shadow-inner border border-white/10"><i class="fa-solid fa-list-check mr-1 ${colorBadge}"></i> ${numRegistros} regs.</span>
+                                <span class="bg-white/20 px-3 py-1 rounded-lg text-xs font-black text-white shadow-inner"><i class="fa-solid fa-list-check mr-1 text-orange-200"></i> ${numRegistros} regs.</span>
                             </div>
                         </div>
                     `;
                 });
-            } catch(e) { cont.innerHTML = `<div class="text-center text-red-300 text-xs font-bold">Error cargando nube.</div>`; }
+            } catch(e) { cont.innerHTML = `<div class="text-center text-red-200 text-xs font-bold">Error cargando nube.</div>`; }
         }
 
         window.abrirNuevoServicio = () => { document.getElementById('vista-lista').classList.add('hidden'); document.getElementById('vista-nuevo').classList.remove('hidden'); }
@@ -331,7 +319,6 @@
             document.getElementById('cap-ns').innerText = ns;
             document.getElementById('cap-fecha').innerText = fec;
             
-            // 👇 SOLUCIÓN APLICADA: CAMBIO SEGURO DE CLASES Y TEXTO 👇
             if(tipo === 'audiometria') {
                 document.getElementById('icon-equipo').className = "fa-solid fa-headphones mr-1";
                 document.getElementById('p-cabina').classList.remove('hidden');
@@ -391,7 +378,6 @@
                 
                 document.getElementById('ns-empresa').value = ''; document.getElementById('ns-serie').value = ''; document.getElementById('ns-cabina').value = '';
                 
-                // LLAMADA SEGURA AL ABRIR LA CAPTURA
                 abrirCaptura(docRef.id, tipo, emp, eq, ns, cab, fec);
             } catch(e) {
                 mostrarToast("Error de conexión."); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Intentar de nuevo';
