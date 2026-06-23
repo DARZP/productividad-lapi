@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAPI Suite - Portal</title>
+    
+    <link rel="manifest" href="manifest_captura.json">
+    <meta name="theme-color" content="#1e293b">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .app-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .app-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.4); }
+        .app-card:active { transform: scale(0.95); }
+        /* Animación de entrada en cascada */
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; opacity: 0; transform: translateY(20px); }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-orange-900 min-h-screen text-white flex flex-col items-center justify-center p-6">
+
+    <div class="text-center mb-10 w-full max-w-md animate-fade-in-up">
+        <div class="w-20 h-20 bg-white/10 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-white/20 backdrop-blur-sm">
+            <i class="fa-solid fa-staff-snake text-4xl text-orange-400"></i>
+        </div>
+        <h1 class="text-4xl font-black tracking-tight text-white mb-2">LAPI <span class="text-orange-400">SUITE</span></h1>
+        <p class="text-sm font-medium text-slate-300 tracking-widest uppercase">Portal de Herramientas Operativas</p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 w-full max-w-md mx-auto">
+        
+        <a href="sucursal.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-inner">
+                <i class="fa-solid fa-building text-2xl text-white"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-sm text-white">Sucursales</h3>
+                <p class="text-[9px] text-sky-200 font-bold uppercase tracking-widest mt-1">Productividad</p>
+            </div>
+        </a>
+
+        <a href="index.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-inner">
+                <i class="fa-solid fa-truck-medical text-2xl text-white"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-sm text-white">Foráneos</h3>
+                <p class="text-[9px] text-orange-200 font-bold uppercase tracking-widest mt-1">Productividad</p>
+            </div>
+        </a>
+
+        <a href="sync.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-inner relative">
+                <div class="absolute -top-1 -right-1 bg-red-500 w-3 h-3 rounded-full border-2 border-slate-900 animate-pulse"></div>
+                <i class="fa-solid fa-rotate text-2xl text-white"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-sm text-white">Equipos</h3>
+                <p class="text-[9px] text-emerald-200 font-bold uppercase tracking-widest mt-1">Sincronización</p>
+            </div>
+        </a>
+
+        <a href="unidades.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-400 to-indigo-600 flex items-center justify-center shadow-inner relative">
+                <div class="absolute -top-1 -right-1 bg-red-500 w-3 h-3 rounded-full border-2 border-slate-900 animate-pulse"></div>
+                <i class="fa-solid fa-clipboard-check text-2xl text-white"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-sm text-white">Checklist</h3>
+                <p class="text-[9px] text-purple-200 font-bold uppercase tracking-widest mt-1">Unidades Móviles</p>
+            </div>
+        </a>
+
+        <a href="reportes.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-xl col-span-2 bg-white/5 border-dashed border-2 border-white/20">
+            <div class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300">
+                <i class="fa-solid fa-chart-pie text-xl"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-sm text-white tracking-wide">Panel Administrador</h3>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Métricas y Reportes</p>
+            </div>
+        </a>
+
+    </div>
+
+    <div class="mt-12 text-center animate-fade-in-up delay-300">
+        <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Tecnología LAPI &copy; 2026</p>
+    </div>
+
+</body>
+</html>
