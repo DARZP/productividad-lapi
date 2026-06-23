@@ -16,7 +16,6 @@
         .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* Lienzo de Firma */
         #canvas-firma { touch-action: none; background-color: rgba(255, 255, 255, 0.9); cursor: crosshair; }
     </style>
 
@@ -44,18 +43,16 @@
 
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- NAVEGACIÓN SUPERIOR -->
     <div class="glass text-white p-4 shadow-md sticky top-0 z-50 rounded-b-3xl mx-2 mb-6 flex justify-between items-center">
         <div>
             <h1 class="text-lg font-black tracking-tight leading-tight"><i class="fa-solid fa-wave-square mr-1"></i> Control Biológico</h1>
-            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Audiometrías</p>
+            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Equipos Móviles</p>
         </div>
         <button onclick="window.location.href='portal.html'" class="bg-white/20 hover:bg-white/30 p-2 rounded-xl text-xs font-bold transition-all"><i class="fa-solid fa-house mr-1"></i> Portal</button>
     </div>
 
     <div class="max-w-2xl mx-auto px-4">
 
-        <!-- VISTA 1: LISTA DE SERVICIOS ACTIVOS -->
         <div id="vista-lista" class="animate-fade-in">
             <button onclick="abrirNuevoServicio()" class="w-full bg-white text-teal-700 font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 mb-8 flex justify-center items-center gap-2 text-lg">
                 <i class="fa-solid fa-folder-plus"></i> Crear Nuevo Servicio
@@ -67,7 +64,6 @@
             </div>
         </div>
 
-        <!-- VISTA 2: CREAR NUEVA CABECERA DE SERVICIO -->
         <div id="vista-nuevo" class="hidden animate-fade-in glass p-6 rounded-3xl shadow-xl">
             <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
                 <h2 class="font-black text-xl"><i class="fa-solid fa-file-signature mr-2"></i> Apertura de Equipo</h2>
@@ -75,54 +71,67 @@
             </div>
             
             <div class="space-y-4 text-left">
+                <div class="bg-black/20 p-3 rounded-xl border border-white/10 mb-2">
+                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-2 text-center text-emerald-300">Seleccione el Tipo de Control</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="tipoControl" value="audiometria" class="peer sr-only" onchange="cambiarTipoFormulario()" checked>
+                            <div class="peer-checked:bg-emerald-500 peer-checked:text-white bg-white/10 text-emerald-100 font-bold text-center py-2 rounded-lg border border-white/20 transition-all text-sm"><i class="fa-solid fa-headphones mr-1"></i> Audiometría</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="tipoControl" value="espirometria" class="peer sr-only" onchange="cambiarTipoFormulario()">
+                            <div class="peer-checked:bg-emerald-500 peer-checked:text-white bg-white/10 text-emerald-100 font-bold text-center py-2 rounded-lg border border-white/20 transition-all text-sm"><i class="fa-solid fa-lungs mr-1"></i> Espirometría</div>
+                        </label>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Empresa Destino</label>
                     <input type="text" id="ns-empresa" list="lista-empresas" placeholder="Buscar empresa..." class="w-full p-3 bg-black/20 text-white placeholder-white/50 border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold uppercase text-sm">
                 </div>
+                
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Audiómetro</label>
+                        <label id="lbl-equipo" class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Audiómetro</label>
                         <div class="relative">
-                            <select id="ns-audiometro" class="w-full p-3 bg-black/20 text-white border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold text-sm appearance-none">
-                                <option value="" disabled selected class="text-slate-800">SELECCIONE...</option>
-                                <option value="INTERACOUSTICS" class="text-slate-800">INTERACOUSTICS</option>
-                                <option value="MADSEN ITERA II" class="text-slate-800">MADSEN ITERA II</option>
-                            </select>
+                            <select id="ns-equipo" class="w-full p-3 bg-black/20 text-white border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold text-sm appearance-none">
+                                </select>
                             <i class="fa-solid fa-chevron-down absolute right-3 top-4 pointer-events-none text-white/50"></i>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">N/S Audiómetro</label>
+                        <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">N/S Equipo</label>
                         <input type="text" id="ns-serie" placeholder="Ej. SN-4920" class="w-full p-3 bg-black/20 text-white placeholder-white/50 border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold uppercase text-sm">
                     </div>
                 </div>
+                
                 <div class="grid grid-cols-2 gap-3">
-                    <div>
+                    <div id="contenedor-cabina">
                         <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">N/S Cabina</label>
                         <input type="text" id="ns-cabina" placeholder="Ej. C-102" class="w-full p-3 bg-black/20 text-white placeholder-white/50 border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold uppercase text-sm">
                     </div>
-                    <div>
+                    <div id="contenedor-fecha" class="col-span-1">
                         <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Fecha Inicio</label>
                         <input type="date" id="ns-fecha" class="w-full p-3 bg-black/20 text-white border border-white/10 rounded-xl outline-none focus:border-emerald-400 transition font-bold text-sm">
                     </div>
                 </div>
+
                 <button id="btn-guardar-cabecera" onclick="guardarNuevoServicio()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 mt-4 text-sm flex justify-center items-center gap-2">
                     <i class="fa-solid fa-check"></i> Iniciar Registro Maestro
                 </button>
             </div>
         </div>
 
-        <!-- VISTA 3: CAPTURA DE BITÁCORA DIARIA -->
         <div id="vista-captura" class="hidden animate-fade-in">
             <div class="glass p-5 rounded-3xl shadow-sm mb-6 border-l-4 border-emerald-400">
                 <div class="flex justify-between items-start mb-2">
                     <h2 id="cap-empresa" class="font-black text-xl leading-tight text-white uppercase">EMPRESA</h2>
-                    <button onclick="volverLista()" class="text-xs bg-white/20 px-3 py-1.5 rounded-lg font-bold hover:bg-white/30"><i class="fa-solid fa-arrow-left mr-1"></i> Lista</button>
+                    <button onclick="volverLista()" class="text-xs bg-white/20 px-3 py-1.5 rounded-lg font-bold hover:bg-white/30 shrink-0 ml-2"><i class="fa-solid fa-arrow-left mr-1"></i> Lista</button>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-xs font-medium text-emerald-100">
-                    <p><i class="fa-solid fa-headphones mr-1"></i> <span id="cap-audio"></span></p>
+                    <p id="p-tipo-icon"><i class="fa-solid fa-headphones mr-1"></i> <span id="cap-equipo"></span></p>
                     <p><i class="fa-solid fa-barcode mr-1"></i> N/S: <span id="cap-ns" class="font-bold"></span></p>
-                    <p><i class="fa-solid fa-box mr-1"></i> Cab: <span id="cap-cab" class="font-bold"></span></p>
+                    <p id="p-cabina"><i class="fa-solid fa-box mr-1"></i> Cab: <span id="cap-cab" class="font-bold"></span></p>
                     <p><i class="fa-regular fa-calendar mr-1"></i> <span id="cap-fecha"></span></p>
                 </div>
             </div>
@@ -130,33 +139,49 @@
             <div class="glass p-6 rounded-3xl shadow-xl space-y-6">
                 <h3 class="font-black text-lg text-center border-b border-white/20 pb-2 mb-4"><i class="fa-solid fa-pen-to-square text-emerald-300 mr-2"></i> Captura del Día</h3>
                 
-                <!-- OÍDO DERECHO -->
-                <div class="bg-black/20 p-4 rounded-2xl border border-white/10">
-                    <h4 class="font-black text-red-400 text-sm text-center mb-3 uppercase tracking-widest"><i class="fa-solid fa-ear-listen"></i> Oído Derecho (dB)</h4>
-                    <div class="grid grid-cols-4 gap-2">
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">250</label><input type="number" id="od-250" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">500</label><input type="number" id="od-500" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">1000</label><input type="number" id="od-1000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">2000</label><input type="number" id="od-2000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">3000</label><input type="number" id="od-3000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">4000</label><input type="number" id="od-4000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">6000</label><input type="number" id="od-6000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">8000</label><input type="number" id="od-8000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
+                <div id="modulo-audiometria" class="space-y-4">
+                    <div class="bg-black/20 p-4 rounded-2xl border border-white/10">
+                        <h4 class="font-black text-red-400 text-sm text-center mb-3 uppercase tracking-widest"><i class="fa-solid fa-ear-listen"></i> Oído Derecho (dB)</h4>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">250</label><input type="number" id="od-250" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">500</label><input type="number" id="od-500" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">1000</label><input type="number" id="od-1000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">2000</label><input type="number" id="od-2000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">3000</label><input type="number" id="od-3000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">4000</label><input type="number" id="od-4000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">6000</label><input type="number" id="od-6000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">8000</label><input type="number" id="od-8000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-red-400 outline-none text-sm font-bold"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-black/20 p-4 rounded-2xl border border-white/10">
+                        <h4 class="font-black text-blue-400 text-sm text-center mb-3 uppercase tracking-widest"><i class="fa-solid fa-ear-listen"></i> Oído Izquierdo (dB)</h4>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">250</label><input type="number" id="oi-250" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">500</label><input type="number" id="oi-500" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">1000</label><input type="number" id="oi-1000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">2000</label><input type="number" id="oi-2000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">3000</label><input type="number" id="oi-3000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">4000</label><input type="number" id="oi-4000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">6000</label><input type="number" id="oi-6000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
+                            <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">8000</label><input type="number" id="oi-8000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- OÍDO IZQUIERDO -->
-                <div class="bg-black/20 p-4 rounded-2xl border border-white/10">
-                    <h4 class="font-black text-blue-400 text-sm text-center mb-3 uppercase tracking-widest"><i class="fa-solid fa-ear-listen"></i> Oído Izquierdo (dB)</h4>
-                    <div class="grid grid-cols-4 gap-2">
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">250</label><input type="number" id="oi-250" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">500</label><input type="number" id="oi-500" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">1000</label><input type="number" id="oi-1000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">2000</label><input type="number" id="oi-2000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">3000</label><input type="number" id="oi-3000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">4000</label><input type="number" id="oi-4000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">6000</label><input type="number" id="oi-6000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
-                        <div><label class="text-[9px] text-center block text-white/70 font-bold mb-1">8000</label><input type="number" id="oi-8000" class="w-full text-center p-2 rounded-lg bg-white/10 text-white border border-white/20 focus:border-blue-400 outline-none text-sm font-bold"></div>
+                <div id="modulo-espirometria" class="hidden space-y-4">
+                    <div class="bg-black/20 p-5 rounded-2xl border border-white/10">
+                        <h4 class="font-black text-sky-300 text-sm text-center mb-4 uppercase tracking-widest"><i class="fa-solid fa-wind"></i> Diferencia Relativa al Volumen</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] text-center block text-white/90 uppercase tracking-widest font-bold mb-2">Inspirar %</label>
+                                <input type="number" step="0.1" id="espiro-insp" placeholder="Ej. 0.1" class="w-full text-center p-3 rounded-xl bg-white/10 text-white placeholder-white/40 border border-white/20 focus:border-sky-400 outline-none text-lg font-black">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-center block text-white/90 uppercase tracking-widest font-bold mb-2">Espirar %</label>
+                                <input type="number" step="0.1" id="espiro-esp" placeholder="Ej. -1.4" class="w-full text-center p-3 rounded-xl bg-white/10 text-white placeholder-white/40 border border-white/20 focus:border-sky-400 outline-none text-lg font-black">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -186,6 +211,7 @@
 
     <script>
         let docIdActivo = null;
+        let tipoControlActivo = null; // 'audiometria' o 'espirometria'
         
         // FIRMA DIGITAL VARIABLES
         const canvas = document.getElementById('canvas-firma');
@@ -205,6 +231,8 @@
                 datalistMedicos.innerHTML = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">`).join('');
             }
 
+            // Inicializar el formulario por defecto (Audiometría)
+            cambiarTipoFormulario();
             cargarServiciosActivos();
             configurarCanvas();
         });
@@ -220,10 +248,39 @@
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
         }
 
+        // LÓGICA DE INTERFAZ DUAL (AUDIO vs ESPIRO)
+        window.cambiarTipoFormulario = function() {
+            const tipo = document.querySelector('input[name="tipoControl"]:checked').value;
+            const selectEquipo = document.getElementById('ns-equipo');
+            const contCabina = document.getElementById('contenedor-cabina');
+            const contFecha = document.getElementById('contenedor-fecha');
+            const lblEquipo = document.getElementById('lbl-equipo');
+
+            selectEquipo.innerHTML = '<option value="" disabled selected class="text-slate-800">SELECCIONE...</option>';
+
+            if (tipo === 'audiometria') {
+                lblEquipo.innerText = "Audiómetro";
+                selectEquipo.innerHTML += `
+                    <option value="INTERACOUSTICS" class="text-slate-800">INTERACOUSTICS</option>
+                    <option value="MADSEN ITERA II" class="text-slate-800">MADSEN ITERA II</option>
+                `;
+                contCabina.classList.remove('hidden');
+                contFecha.classList.replace('col-span-2', 'col-span-1');
+            } else {
+                lblEquipo.innerText = "Espirómetro";
+                selectEquipo.innerHTML += `
+                    <option value="MEDKRO- PRO" class="text-slate-800">MEDKRO- PRO</option>
+                `;
+                contCabina.classList.add('hidden');
+                contFecha.classList.replace('col-span-1', 'col-span-2');
+            }
+        }
+
         async function cargarServiciosActivos() {
             const cont = document.getElementById('contenedor-servicios');
             try {
-                const q = window.query(window.collection(window.db, "control_biologico"), window.where("estado", "==", "activo"), window.where("tipo", "==", "audiometria"));
+                // Buscamos todos los activos, sin importar el tipo
+                const q = window.query(window.collection(window.db, "control_biologico"), window.where("estado", "==", "activo"));
                 const qs = await window.getDocs(q);
                 cont.innerHTML = "";
                 
@@ -235,14 +292,17 @@
                 qs.forEach(doc => {
                     const d = doc.data();
                     const numRegistros = d.bitacora ? d.bitacora.length : 0;
+                    const icono = d.tipo === 'audiometria' ? 'fa-headphones' : 'fa-lungs';
+                    const colorBadge = d.tipo === 'audiometria' ? 'text-emerald-400' : 'text-sky-400';
+                    
                     cont.innerHTML += `
-                        <div onclick="abrirCaptura('${doc.id}', '${d.empresa}', '${d.audiometro}', '${d.ns_audiometro}', '${d.ns_cabina}', '${d.fecha_inicio}')" class="glass p-4 rounded-2xl cursor-pointer hover:bg-white/10 transition border-l-4 border-emerald-400 flex justify-between items-center shadow-sm active:scale-95">
+                        <div onclick="abrirCaptura('${doc.id}', '${d.tipo}', '${d.empresa}', '${d.equipo}', '${d.ns_equipo}', '${d.ns_cabina || ''}', '${d.fecha_inicio}')" class="glass p-4 rounded-2xl cursor-pointer hover:bg-white/10 transition border-l-4 border-emerald-400 flex justify-between items-center shadow-sm active:scale-95">
                             <div>
                                 <h3 class="font-black text-sm uppercase text-white">${d.empresa}</h3>
-                                <p class="text-[10px] text-emerald-100 font-medium uppercase mt-0.5"><i class="fa-regular fa-calendar mr-1"></i> Iniciado: ${d.fecha_inicio}</p>
+                                <p class="text-[10px] text-emerald-100 font-medium uppercase mt-0.5"><i class="fa-solid ${icono} mr-1"></i> ${d.tipo} | <i class="fa-regular fa-calendar ml-1 mr-1"></i> ${d.fecha_inicio}</p>
                             </div>
                             <div class="text-right">
-                                <span class="bg-black/30 px-3 py-1 rounded-lg text-xs font-black text-white shadow-inner border border-white/10"><i class="fa-solid fa-list-check mr-1 text-emerald-400"></i> ${numRegistros} regs.</span>
+                                <span class="bg-black/30 px-3 py-1 rounded-lg text-xs font-black text-white shadow-inner border border-white/10"><i class="fa-solid fa-list-check mr-1 ${colorBadge}"></i> ${numRegistros} regs.</span>
                             </div>
                         </div>
                     `;
@@ -252,15 +312,30 @@
 
         // CONTROL DE VISTAS
         window.abrirNuevoServicio = () => { document.getElementById('vista-lista').classList.add('hidden'); document.getElementById('vista-nuevo').classList.remove('hidden'); }
-        window.volverLista = () => { document.getElementById('vista-nuevo').classList.add('hidden'); document.getElementById('vista-captura').classList.add('hidden'); document.getElementById('vista-lista').classList.remove('hidden'); docIdActivo = null; cargarServiciosActivos(); }
+        window.volverLista = () => { document.getElementById('vista-nuevo').classList.add('hidden'); document.getElementById('vista-captura').classList.add('hidden'); document.getElementById('vista-lista').classList.remove('hidden'); docIdActivo = null; tipoControlActivo = null; cargarServiciosActivos(); }
         
-        window.abrirCaptura = (id, emp, aud, ns, cab, fec) => {
+        window.abrirCaptura = (id, tipo, emp, eq, ns, cab, fec) => {
             docIdActivo = id;
+            tipoControlActivo = tipo; // Guardamos el tipo actual para saber qué guardar después
+
             document.getElementById('cap-empresa').innerText = emp;
-            document.getElementById('cap-audio').innerText = aud;
+            document.getElementById('cap-equipo').innerText = eq;
             document.getElementById('cap-ns').innerText = ns;
-            document.getElementById('cap-cab').innerText = cab;
             document.getElementById('cap-fecha').innerText = fec;
+            
+            // Adaptar interfaz según el tipo
+            if(tipo === 'audiometria') {
+                document.getElementById('p-tipo-icon').innerHTML = `<i class="fa-solid fa-headphones mr-1"></i> <span class="font-bold">${eq}</span>`;
+                document.getElementById('p-cabina').classList.remove('hidden');
+                document.getElementById('cap-cab').innerText = cab;
+                document.getElementById('modulo-audiometria').classList.remove('hidden');
+                document.getElementById('modulo-espirometria').classList.add('hidden');
+            } else {
+                document.getElementById('p-tipo-icon').innerHTML = `<i class="fa-solid fa-lungs mr-1"></i> <span class="font-bold">${eq}</span>`;
+                document.getElementById('p-cabina').classList.add('hidden'); // Espiro no tiene cabina
+                document.getElementById('modulo-audiometria').classList.add('hidden');
+                document.getElementById('modulo-espirometria').classList.remove('hidden');
+            }
             
             // Limpiar inputs
             document.querySelectorAll('input[type="number"]').forEach(inp => inp.value = '');
@@ -269,39 +344,50 @@
 
             document.getElementById('vista-lista').classList.add('hidden');
             document.getElementById('vista-captura').classList.remove('hidden');
-            ajustarCanvas(); // Reajusta el tamaño real de la firma
+            ajustarCanvas(); 
         }
 
         window.guardarNuevoServicio = async function() {
+            const tipo = document.querySelector('input[name="tipoControl"]:checked').value;
             const emp = document.getElementById('ns-empresa').value.trim().toUpperCase();
-            const aud = document.getElementById('ns-audiometro').value;
+            const eq = document.getElementById('ns-equipo').value;
             const ns = document.getElementById('ns-serie').value.trim().toUpperCase();
-            const cab = document.getElementById('ns-cabina').value.trim().toUpperCase();
             const fec = document.getElementById('ns-fecha').value;
+            
+            let cab = "";
+            if (tipo === 'audiometria') {
+                cab = document.getElementById('ns-cabina').value.trim().toUpperCase();
+                if(!cab) return mostrarToast("Falta N/S de Cabina.");
+            }
 
-            if(!emp || !aud || !ns || !cab || !fec) return mostrarToast("Llena todos los campos de la cabecera.");
+            if(!emp || !eq || !ns || !fec) return mostrarToast("Llena todos los campos obligatorios.");
             
             const btn = document.getElementById('btn-guardar-cabecera');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creando...'; btn.disabled = true;
 
             const nuevoDoc = {
-                tipo: "audiometria",
+                tipo: tipo,
                 estado: "activo",
                 empresa: emp,
-                audiometro: aud,
-                ns_audiometro: ns,
-                ns_cabina: cab,
+                equipo: eq,
+                ns_equipo: ns,
                 fecha_inicio: fec,
                 bitacora: [],
                 timestamp: new Date()
             };
 
+            // Solo agregar cabina si es audiometria
+            if (tipo === 'audiometria') nuevoDoc.ns_cabina = cab;
+
             try {
                 const docRef = await window.addDoc(window.collection(window.db, "control_biologico"), nuevoDoc);
                 mostrarToast("Servicio Creado Exitosamente", "exito");
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Iniciar Registro Maestro'; btn.disabled = false;
+                
+                // Limpiar campos de nuevo servicio
                 document.getElementById('ns-empresa').value = ''; document.getElementById('ns-serie').value = ''; document.getElementById('ns-cabina').value = '';
-                abrirCaptura(docRef.id, emp, aud, ns, cab, fec);
+                
+                abrirCaptura(docRef.id, tipo, emp, eq, ns, cab, fec);
             } catch(e) {
                 mostrarToast("Error de conexión."); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Intentar de nuevo';
             }
@@ -311,30 +397,38 @@
             const med = document.getElementById('cap-medico').value.trim().toUpperCase();
             if(!med) return mostrarToast("Seleccione o escriba el nombre del médico.");
             
-            // Validar que el canvas no esté en blanco (Validación simple de píxeles negros)
+            // Validación de firma (comprobar que no está en blanco)
             const blank = document.createElement('canvas');
             blank.width = canvas.width; blank.height = canvas.height;
             if(canvas.toDataURL() === blank.toDataURL()) return mostrarToast("La firma es obligatoria.");
 
-            const frecs = [250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
-            let od = {}, oi = {};
-            for(let f of frecs) {
-                od[f] = document.getElementById(`od-${f}`).value;
-                oi[f] = document.getElementById(`oi-${f}`).value;
-                // Pequeña validación: que al menos hayan llenado algunos datos
+            let registroHoy = {
+                fecha: new Date().toISOString().split('T')[0],
+                timestamp: new Date(),
+                medico: med,
+                firma: canvas.toDataURL('image/png', 0.5) // Guarda en base64
+            };
+
+            // Capturar datos según el tipo
+            if (tipoControlActivo === 'audiometria') {
+                const frecs = [250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
+                let od = {}, oi = {};
+                for(let f of frecs) {
+                    od[f] = document.getElementById(`od-${f}`).value;
+                    oi[f] = document.getElementById(`oi-${f}`).value;
+                }
+                registroHoy.od = od;
+                registroHoy.oi = oi;
+            } else {
+                const insp = document.getElementById('espiro-insp').value;
+                const esp = document.getElementById('espiro-esp').value;
+                if(!insp || !esp) return mostrarToast("Llena los campos Inspirar % y Espirar %.");
+                registroHoy.inspirar_porcentaje = insp;
+                registroHoy.espirar_porcentaje = esp;
             }
 
             const btn = document.getElementById('btn-enviar-bitacora');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...'; btn.disabled = true;
-
-            const registroHoy = {
-                fecha: new Date().toISOString().split('T')[0],
-                timestamp: new Date(),
-                medico: med,
-                firma: canvas.toDataURL('image/png', 0.5), // Guarda en base64 comprimido
-                od: od,
-                oi: oi
-            };
 
             try {
                 const docRef = window.doc(window.db, "control_biologico", docIdActivo);
@@ -351,17 +445,13 @@
         // LÓGICA DE FIRMA DIGITAL EN CANVAS
         // ==========================================
         function configurarCanvas() {
-            ctx.lineWidth = 3;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = '#0f172a'; // Tinta oscura
+            ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#0f172a';
 
-            // Mouse Events
             canvas.addEventListener('mousedown', iniciarDibujo);
             canvas.addEventListener('mousemove', dibujar);
             canvas.addEventListener('mouseup', detenerDibujo);
             canvas.addEventListener('mouseout', detenerDibujo);
 
-            // Touch Events (Móvil)
             canvas.addEventListener('touchstart', (e) => {
                 e.preventDefault(); const touch = e.touches[0];
                 const mouseEvent = new MouseEvent("mousedown", { clientX: touch.clientX, clientY: touch.clientY });
@@ -375,12 +465,10 @@
             }, { passive: false });
 
             canvas.addEventListener('touchend', () => canvas.dispatchEvent(new MouseEvent("mouseup")));
-            
             window.addEventListener('resize', ajustarCanvas);
         }
 
         function ajustarCanvas() {
-            // Ajusta la resolución interna del canvas al tamaño en pantalla
             const rect = canvas.getBoundingClientRect();
             canvas.width = rect.width;
             canvas.height = rect.height || 150;
