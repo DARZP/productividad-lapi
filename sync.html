@@ -56,7 +56,7 @@
 
         <div id="vista-lista" class="animate-fade-in">
             <button onclick="abrirNuevoServicio()" class="w-full bg-white text-orange-600 font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 mb-8 flex justify-center items-center gap-2 text-lg">
-                <i class="fa-solid fa-folder-plus"></i> Iniciar Servicio
+                <i class="fa-solid fa-folder-plus"></i> Generar Nuevo Servicio
             </button>
 
             <h2 class="text-xs font-black uppercase tracking-widest text-orange-200 mb-4 border-b border-white/20 pb-2"><i class="fa-solid fa-tower-cell mr-1"></i> Servicios Activos</h2>
@@ -187,7 +187,7 @@
                 </div>
 
                 <div class="border-t border-white/20 pt-4">
-                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Realizó (Médico)</label>
+                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Realizó</label>
                     <input type="text" id="cap-medico" list="lista-medicos" placeholder="Seleccione su nombre..." class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm mb-4">
                     
                     <div class="flex justify-between items-end mb-1">
@@ -200,7 +200,7 @@
                 </div>
 
                 <button id="btn-enviar-bitacora" onclick="guardarBitacoraDiaria()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 text-sm flex justify-center items-center gap-2 mt-4">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Guardar Calibración
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Guardar Control Biológico
                 </button>
             </div>
         </div>
@@ -422,12 +422,12 @@
             try {
                 const docRef = window.doc(window.db, "control_biologico", docIdActivo);
                 await window.updateDoc(docRef, { bitacora: window.arrayUnion(registroHoy) });
-                mostrarToast("Calibración del día guardada.", "exito");
+                mostrarToast("Control Biológico del día guardado.", "exito");
                 setTimeout(() => volverLista(), 1500);
             } catch(e) {
-                mostrarToast("Error guardando calibración.");
+                mostrarToast("Error guardando Control Biológico.");
             }
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Guardar Calibración'; btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Guardar Control Biológico'; btn.disabled = false;
         }
 
         // ==========================================
