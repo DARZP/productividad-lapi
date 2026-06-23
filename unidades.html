@@ -26,8 +26,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        // 👇 IMPORTAMOS FIREBASE STORAGE PARA LAS FOTOS 👇
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
         const firebaseConfig = {
@@ -43,54 +42,49 @@
         window.db = getFirestore(app);
         window.storage = getStorage(app);
         
-        window.addDoc = addDoc; 
-        window.collection = collection;
+        window.addDoc = addDoc; window.getDocs = getDocs; window.doc = doc; window.updateDoc = updateDoc;
+        window.collection = collection; window.query = query; window.where = where; window.orderBy = orderBy;
         window.serverTimestamp = serverTimestamp;
-        window.ref = ref;
-        window.uploadString = uploadString;
-        window.getDownloadURL = getDownloadURL;
+        window.ref = ref; window.uploadString = uploadString; window.getDownloadURL = getDownloadURL;
     </script>
 </head>
 <body class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen text-white pb-20">
 
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- NAVEGACIÓN SUPERIOR -->
     <div class="glass text-white p-4 shadow-md sticky top-0 z-50 rounded-b-3xl mx-2 mb-6 flex justify-between items-center">
         <div>
             <h1 class="text-lg font-black tracking-tight leading-tight"><i class="fa-solid fa-truck-fast mr-1"></i> Unidades Móviles</h1>
-            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Inspección Física</p>
+            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Control Operativo</p>
         </div>
         <button onclick="window.location.href='portal.html'" class="bg-white/20 hover:bg-white/30 p-2 rounded-xl text-xs font-bold transition-all"><i class="fa-solid fa-house mr-1"></i> Portal</button>
     </div>
 
     <div class="max-w-md mx-auto px-4 w-full">
 
-        <!-- PASO 1: DATOS GENERALES -->
-        <div id="paso-1" class="animate-fade-in glass p-6 rounded-3xl shadow-xl">
-            <h2 class="font-black text-xl mb-6 border-b border-white/20 pb-4 text-center"><i class="fa-solid fa-clipboard-list mr-2"></i> Datos de Inspección</h2>
-            
-            <div class="space-y-4 text-left">
-                <!-- TIPO DE REVISIÓN -->
-                <div class="bg-black/10 p-3 rounded-xl border border-white/10 mb-2">
-                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-2 text-center text-orange-200">Momento de la Revisión</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="tipoRevision" value="Llegada" class="peer sr-only" checked>
-                            <div class="peer-checked:bg-white peer-checked:text-orange-600 bg-white/20 text-white font-bold text-center py-2 rounded-lg border border-white/10 transition-all text-sm shadow-sm"><i class="fa-solid fa-right-to-bracket mr-1"></i> Recepción</div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="tipoRevision" value="Salida" class="peer sr-only">
-                            <div class="peer-checked:bg-white peer-checked:text-orange-600 bg-white/20 text-white font-bold text-center py-2 rounded-lg border border-white/10 transition-all text-sm shadow-sm"><i class="fa-solid fa-right-from-bracket mr-1"></i> Entrega</div>
-                        </label>
-                    </div>
-                </div>
+        <div id="vista-lista" class="animate-fade-in">
+            <button onclick="abrirNuevoReporte()" class="w-full bg-white hover:bg-orange-50 text-orange-600 font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 mb-8 flex justify-center items-center gap-2 text-lg">
+                <i class="fa-solid fa-truck-arrow-right"></i> Reporte de Salida (Inicio)
+            </button>
 
+            <h2 class="text-xs font-black uppercase tracking-widest text-orange-200 mb-4 border-b border-white/20 pb-2"><i class="fa-solid fa-route mr-1"></i> Unidades en Ruta (Activas)</h2>
+            <div id="contenedor-servicios" class="space-y-4">
+                <div class="text-center py-10 opacity-70"><i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i><p class="text-sm font-bold">Cargando...</p></div>
+            </div>
+        </div>
+
+        <div id="vista-datos" class="hidden animate-fade-in glass p-6 rounded-3xl shadow-xl">
+            <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
+                <h2 id="titulo-datos" class="font-black text-xl leading-tight"><i class="fa-solid fa-truck-arrow-right mr-2"></i> Salida de Unidad</h2>
+                <button onclick="volverLista()" class="text-sm bg-white/20 px-3 py-1 rounded-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div id="form-datos-inicio" class="space-y-4 text-left">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Unidad</label>
                         <div class="relative">
-                            <select id="chk-unidad" class="w-full p-3 bg-white/20 text-white border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold text-sm appearance-none cursor-pointer">
+                            <select id="dt-unidad" class="w-full p-3 bg-white/20 text-white border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold text-sm appearance-none cursor-pointer">
                                 <option value="" disabled selected class="text-white/60">Elegir...</option>
                                 <option value="UM-01" class="text-slate-800">UM-01</option>
                                 <option value="UM-02" class="text-slate-800">UM-02</option>
@@ -100,56 +94,63 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Fecha</label>
-                        <input type="date" id="chk-fecha" class="w-full p-3 bg-white/20 text-white border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold text-sm">
+                        <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Fecha de Salida</label>
+                        <input type="date" id="dt-fecha" class="w-full p-3 bg-white/20 text-white border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold text-sm">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Lugar / Empresa Destino</label>
-                    <input type="text" id="chk-empresa" list="lista-empresas" placeholder="Buscar empresa..." class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm">
+                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Empresa Destino</label>
+                    <input type="text" id="dt-empresa" list="lista-empresas" placeholder="Buscar empresa..." class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm">
                 </div>
-
-                <button onclick="irPaso2()" class="w-full bg-white hover:bg-orange-50 text-orange-600 font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 mt-4 text-sm flex justify-center items-center gap-2">
-                    Iniciar Checklist <i class="fa-solid fa-arrow-right"></i>
-                </button>
             </div>
+
+            <div id="form-datos-termino" class="hidden space-y-4 text-left bg-black/20 p-4 rounded-xl border border-white/10">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-orange-200 mb-1">Cerrando Servicio de:</p>
+                <h3 id="lbl-empresa-cierre" class="font-black text-xl uppercase leading-tight text-white mb-2">EMPRESA</h3>
+                <div class="flex justify-between text-xs font-bold text-white/80">
+                    <p><i class="fa-solid fa-truck mr-1"></i> <span id="lbl-unidad-cierre"></span></p>
+                    <p><i class="fa-regular fa-calendar mr-1"></i> <span id="lbl-fecha-cierre"></span></p>
+                </div>
+            </div>
+
+            <button onclick="irPasoChecklist()" class="w-full bg-white hover:bg-orange-50 text-orange-600 font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 mt-6 text-sm flex justify-center items-center gap-2">
+                Continuar a Inspección <i class="fa-solid fa-arrow-right"></i>
+            </button>
         </div>
 
-        <!-- PASO 2: CHECKLIST FÍSICO -->
-        <div id="paso-2" class="hidden animate-fade-in glass p-6 rounded-3xl shadow-xl space-y-6">
-            <h2 class="font-black text-xl border-b border-white/20 pb-4 text-center"><i class="fa-solid fa-list-check mr-2"></i> Estado Físico</h2>
+        <div id="vista-checklist" class="hidden animate-fade-in glass p-6 rounded-3xl shadow-xl space-y-6">
+            <div class="flex justify-between items-center border-b border-white/20 pb-4 mb-2">
+                <h2 id="titulo-checklist" class="font-black text-xl text-center flex-1"><i class="fa-solid fa-list-check mr-2"></i> Inspección</h2>
+            </div>
             
-            <p class="text-xs text-center opacity-80 mb-2 italic">Toca el botón si el elemento presenta daños.</p>
+            <p class="text-xs text-center opacity-80 mb-2 italic bg-black/20 p-2 rounded-lg border border-white/10 text-orange-100">Toca el botón solo si el elemento presenta daños.</p>
 
             <div id="contenedor-items" class="space-y-6">
-                <!-- Se inyectan las categorías desde JS -->
-            </div>
+                </div>
 
             <div class="flex gap-2 pt-4">
-                <button onclick="volverPaso1()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                <button onclick="volverDatos()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
                     Atrás
                 </button>
-                <button onclick="irPaso3()" class="w-2/3 bg-white text-orange-600 font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
-                    Continuar <i class="fa-solid fa-arrow-right"></i>
+                <button onclick="irPasoEvidencia()" class="w-2/3 bg-white hover:bg-orange-50 text-orange-600 font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    Ir a Evidencias <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
         </div>
 
-        <!-- PASO 3: EVIDENCIAS Y FIRMA -->
-        <div id="paso-3" class="hidden animate-fade-in glass p-6 rounded-3xl shadow-xl">
+        <div id="vista-evidencia" class="hidden animate-fade-in glass p-6 rounded-3xl shadow-xl">
             <h2 class="font-black text-xl mb-4 border-b border-white/20 pb-4 text-center"><i class="fa-solid fa-camera mr-2"></i> Evidencia y Cierre</h2>
             
-            <div id="alerta-fotos" class="bg-red-500/20 border border-red-400 p-4 rounded-xl mb-6 hidden">
-                <p class="text-xs font-bold text-red-100 text-center"><i class="fa-solid fa-triangle-exclamation mr-1 text-red-300"></i> Reportaste elementos dañados. Por favor, adjunta al menos una foto de evidencia para respaldar tu revisión.</p>
+            <div id="alerta-fotos" class="bg-red-500/20 border border-red-400 p-4 rounded-xl mb-6 hidden shadow-inner">
+                <p class="text-xs font-bold text-red-100 text-center leading-relaxed"><i class="fa-solid fa-triangle-exclamation mr-1 text-red-300"></i> Reportaste elementos dañados. Adjunta fotos de evidencia para respaldar tu revisión.</p>
             </div>
 
-            <!-- GALERÍA DE FOTOS -->
             <div class="bg-black/10 p-4 rounded-xl border border-white/10 mb-6">
                 <div class="flex justify-between items-center mb-3">
                     <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest">Fotos (Opcional si todo está Bien)</label>
                     
-                    <label class="bg-orange-500 hover:bg-orange-400 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer active:scale-95 transition shadow-md">
+                    <label class="bg-white text-orange-600 px-3 py-1.5 rounded-lg text-[10px] font-black cursor-pointer active:scale-95 transition shadow-md">
                         <i class="fa-solid fa-camera mr-1"></i> Tomar Foto
                         <input type="file" accept="image/*" capture="environment" id="input-foto" class="hidden" onchange="procesarFoto(event)">
                     </label>
@@ -178,11 +179,11 @@
             </div>
 
             <div class="flex gap-2 pt-6">
-                <button onclick="volverPaso2()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                <button onclick="volverPasoChecklist()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
                     Atrás
                 </button>
-                <button id="btn-enviar" onclick="guardarChecklist()" class="w-2/3 bg-emerald-500 hover:bg-emerald-400 text-white font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Guardar
+                <button id="btn-enviar" onclick="guardarReporteMaestro()" class="w-2/3 bg-emerald-500 hover:bg-emerald-400 text-white font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Guardar Reporte
                 </button>
             </div>
         </div>
@@ -200,7 +201,11 @@
             "Cabinas": ["Espuma Acústica", "Puerta y Bisagras", "Conexiones Internas"]
         };
 
-        let fotosBase64 = []; // Guarda las fotos procesadas
+        // ESTADOS GLOBALES DE LA APP
+        let modoActual = 'INICIO'; // Puede ser 'INICIO' o 'TERMINO'
+        let docIdActivo = null; 
+        let datosCabeceraTemporal = {}; // Guarda datos cuando cerramos un servicio
+        let fotosBase64 = []; 
         
         // FIRMA DIGITAL VARIABLES
         const canvas = document.getElementById('canvas-firma');
@@ -208,7 +213,7 @@
         let dibujando = false;
 
         document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById('chk-fecha').value = new Date().toISOString().split('T')[0];
+            document.getElementById('dt-fecha').value = new Date().toISOString().split('T')[0];
             
             if(window.LAPI_CONFIG && window.LAPI_CONFIG.empresas) {
                 document.getElementById('lista-empresas').innerHTML = window.LAPI_CONFIG.empresas.map(e => `<option value="${e}">`).join('');
@@ -219,6 +224,7 @@
 
             generarDomChecklist();
             configurarCanvas();
+            cargarActivos();
         });
 
         function mostrarToast(mensaje, tipo = 'error') {
@@ -232,6 +238,136 @@
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
         }
 
+        // ==========================================
+        // VISTA 1: CARGA DE UNIDADES ACTIVAS
+        // ==========================================
+        async function cargarActivos() {
+            const cont = document.getElementById('contenedor-servicios');
+            try {
+                const q = window.query(window.collection(window.db, "unidades_moviles"), window.where("estado", "==", "activo"));
+                const qs = await window.getDocs(q);
+                cont.innerHTML = "";
+                
+                if(qs.empty) {
+                    cont.innerHTML = `<div class="text-center py-6 glass rounded-2xl"><p class="text-sm font-bold text-orange-100">No hay unidades en ruta.</p></div>`;
+                    return;
+                }
+
+                qs.forEach(doc => {
+                    const d = doc.data();
+                    cont.innerHTML += `
+                        <div onclick="abrirCierreReporte('${doc.id}', '${d.unidad}', '${d.empresa}', '${d.fecha_inicio}')" class="glass p-4 rounded-2xl cursor-pointer hover:bg-white/30 transition border-l-4 border-white flex justify-between items-center shadow-sm active:scale-95">
+                            <div>
+                                <h3 class="font-black text-sm uppercase text-white">${d.empresa}</h3>
+                                <p class="text-[10px] text-white/90 font-bold uppercase mt-0.5"><i class="fa-solid fa-truck mr-1"></i> ${d.unidad} | <i class="fa-regular fa-calendar ml-1 mr-1"></i> ${d.fecha_inicio}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="bg-white text-orange-600 px-3 py-1 rounded-lg text-[10px] font-black shadow-sm uppercase"><i class="fa-solid fa-right-from-bracket mr-1"></i> Recibir</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch(e) { cont.innerHTML = `<div class="text-center text-red-200 text-xs font-bold">Error cargando nube.</div>`; }
+        }
+
+        // ==========================================
+        // CONTROL DE NAVEGACIÓN Y FLUJOS
+        // ==========================================
+        window.abrirNuevoReporte = () => { 
+            modoActual = 'INICIO';
+            docIdActivo = null;
+            limpiarFormularios();
+            
+            document.getElementById('titulo-datos').innerHTML = `<i class="fa-solid fa-truck-arrow-right mr-2"></i> Salida de Unidad`;
+            document.getElementById('form-datos-inicio').classList.remove('hidden');
+            document.getElementById('form-datos-termino').classList.add('hidden');
+            
+            document.getElementById('vista-lista').classList.add('hidden'); 
+            document.getElementById('vista-datos').classList.remove('hidden'); 
+        }
+
+        window.abrirCierreReporte = (id, unidad, empresa, fecha) => {
+            modoActual = 'TERMINO';
+            docIdActivo = id;
+            datosCabeceraTemporal = { unidad, empresa, fecha };
+            limpiarFormularios();
+
+            document.getElementById('titulo-datos').innerHTML = `<i class="fa-solid fa-right-from-bracket mr-2"></i> Recepción de Unidad`;
+            document.getElementById('lbl-empresa-cierre').innerText = empresa;
+            document.getElementById('lbl-unidad-cierre').innerText = unidad;
+            document.getElementById('lbl-fecha-cierre').innerText = `Salió: ${fecha}`;
+            
+            document.getElementById('form-datos-inicio').classList.add('hidden');
+            document.getElementById('form-datos-termino').classList.remove('hidden');
+
+            document.getElementById('vista-lista').classList.add('hidden'); 
+            document.getElementById('vista-datos').classList.remove('hidden'); 
+        }
+
+        window.volverLista = () => { 
+            document.getElementById('vista-datos').classList.add('hidden'); 
+            document.getElementById('vista-lista').classList.remove('hidden'); 
+            cargarActivos(); 
+        }
+
+        window.irPasoChecklist = () => {
+            if(modoActual === 'INICIO') {
+                const unidad = document.getElementById('dt-unidad').value;
+                const empresa = document.getElementById('dt-empresa').value;
+                if(!unidad || !empresa) return mostrarToast("Selecciona la Unidad y la Empresa Destino.");
+            }
+            
+            document.getElementById('titulo-checklist').innerHTML = modoActual === 'INICIO' 
+                ? `<i class="fa-solid fa-list-check mr-2"></i> Inspección de Salida` 
+                : `<i class="fa-solid fa-list-check mr-2"></i> Inspección de Recepción`;
+
+            document.getElementById('vista-datos').classList.add('hidden');
+            document.getElementById('vista-checklist').classList.remove('hidden');
+        };
+
+        window.volverDatos = () => {
+            document.getElementById('vista-checklist').classList.add('hidden');
+            document.getElementById('vista-datos').classList.remove('hidden');
+        };
+
+        window.irPasoEvidencia = () => {
+            let hayDanos = false;
+            document.querySelectorAll('.check-toggle').forEach(el => { if(el.checked) hayDanos = true; });
+            
+            if(hayDanos) document.getElementById('alerta-fotos').classList.remove('hidden');
+            else document.getElementById('alerta-fotos').classList.add('hidden');
+
+            document.getElementById('vista-checklist').classList.add('hidden');
+            document.getElementById('vista-evidencia').classList.remove('hidden');
+            ajustarCanvas();
+        };
+
+        window.volverPasoChecklist = () => {
+            document.getElementById('vista-evidencia').classList.add('hidden');
+            document.getElementById('vista-checklist').classList.remove('hidden');
+        };
+
+        function limpiarFormularios() {
+            // Limpia inputs
+            document.getElementById('dt-empresa').value = '';
+            document.getElementById('chk-obs').value = '';
+            document.getElementById('chk-medico').value = '';
+            
+            // Resetea Toggles (Checklist a "Bien")
+            document.querySelectorAll('.check-toggle').forEach(el => {
+                el.checked = false;
+                el.nextElementSibling.innerText = "BIEN";
+            });
+
+            // Limpia Fotos y Firma
+            fotosBase64 = [];
+            renderizarGaleria();
+            limpiarFirma();
+        }
+
+        // ==========================================
+        // GENERACIÓN DINÁMICA DEL CHECKLIST
+        // ==========================================
         function generarDomChecklist() {
             const cont = document.getElementById('contenedor-items');
             cont.innerHTML = "";
@@ -248,7 +384,6 @@
                         <div class="flex justify-between items-center bg-white/10 p-2 pl-3 rounded-xl border border-white/5">
                             <span class="text-sm font-bold text-white/90 leading-tight w-2/3">${item}</span>
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <!-- Ojo: Checkeado = MAL, Descheckeado = BIEN -->
                                 <input type="checkbox" id="${idSaneado}" data-nombre="${item}" class="check-toggle sr-only peer">
                                 <div class="w-16 h-8 flex items-center justify-center rounded-lg border-2 text-[10px] font-black tracking-widest uppercase transition-all duration-300 select-none">
                                     BIEN
@@ -261,7 +396,6 @@
             }
             cont.innerHTML = html;
 
-            // Script para cambiar el texto del switch
             document.querySelectorAll('.check-toggle').forEach(el => {
                 el.addEventListener('change', (e) => {
                     const div = e.target.nextElementSibling;
@@ -271,40 +405,9 @@
             });
         }
 
-        // CONTROL DE FLUJO
-        window.irPaso2 = function() {
-            const unidad = document.getElementById('chk-unidad').value;
-            const empresa = document.getElementById('chk-empresa').value;
-            if(!unidad || !empresa) return mostrarToast("Selecciona la Unidad y la Empresa Destino.");
-            
-            document.getElementById('paso-1').classList.add('hidden');
-            document.getElementById('paso-2').classList.remove('hidden');
-        };
-
-        window.volverPaso1 = function() {
-            document.getElementById('paso-2').classList.add('hidden');
-            document.getElementById('paso-1').classList.remove('hidden');
-        };
-
-        window.irPaso3 = function() {
-            // Verificar si hay daños para mostrar alerta de foto
-            let hayDanos = false;
-            document.querySelectorAll('.check-toggle').forEach(el => { if(el.checked) hayDanos = true; });
-            
-            if(hayDanos) document.getElementById('alerta-fotos').classList.remove('hidden');
-            else document.getElementById('alerta-fotos').classList.add('hidden');
-
-            document.getElementById('paso-2').classList.add('hidden');
-            document.getElementById('paso-3').classList.remove('hidden');
-            ajustarCanvas();
-        };
-
-        window.volverPaso2 = function() {
-            document.getElementById('paso-3').classList.add('hidden');
-            document.getElementById('paso-2').classList.remove('hidden');
-        };
-
+        // ==========================================
         // MANEJO DE FOTOGRAFÍAS (COMPRESIÓN A BASE64)
+        // ==========================================
         window.procesarFoto = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -313,7 +416,6 @@
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    // Redimensionar para no saturar Firebase Storage
                     const canvasImg = document.createElement('canvas');
                     const MAX_WIDTH = 800; const MAX_HEIGHT = 800;
                     let width = img.width; let height = img.height;
@@ -325,7 +427,6 @@
                     const ctxImg = canvasImg.getContext('2d');
                     ctxImg.drawImage(img, 0, 0, width, height);
 
-                    // Comprimir a JPEG calidad media
                     const dataUrl = canvasImg.toDataURL('image/jpeg', 0.6);
                     fotosBase64.push(dataUrl);
                     renderizarGaleria();
@@ -333,7 +434,7 @@
                 img.src = e.target.result;
             }
             reader.readAsDataURL(file);
-            event.target.value = ''; // Reset input
+            event.target.value = ''; 
         };
 
         function renderizarGaleria() {
@@ -359,12 +460,14 @@
             renderizarGaleria();
         };
 
-        // GUARDAR CHECKLIST MAESTRO
-        window.guardarChecklist = async function() {
+        // ==========================================
+        // GUARDADO MAESTRO EN FIREBASE
+        // ==========================================
+        window.guardarReporteMaestro = async function() {
             const btn = document.getElementById('btn-enviar');
             
             const responsable = document.getElementById('chk-medico').value.trim().toUpperCase();
-            if(!responsable) return mostrarToast("Ingresa tu nombre o el del responsable.");
+            if(!responsable) return mostrarToast("Ingresa el nombre del responsable.");
             
             const blank = document.createElement('canvas');
             blank.width = canvas.width; blank.height = canvas.height;
@@ -373,12 +476,9 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo...'; btn.disabled = true;
 
             try {
-                // 1. Recolectar datos generales
-                let dataDoc = {
-                    unidad: document.getElementById('chk-unidad').value,
-                    empresa: document.getElementById('chk-empresa').value.trim().toUpperCase(),
-                    tipo_revision: document.querySelector('input[name="tipoRevision"]:checked').value,
-                    fecha: document.getElementById('chk-fecha').value,
+                // 1. Recolectar datos internos del reporte actual (Sirve para ambos modos)
+                let reporteInterno = {
+                    fecha: new Date().toISOString().split('T')[0],
                     responsable: responsable,
                     observaciones: document.getElementById('chk-obs').value,
                     firma: canvas.toDataURL('image/png', 0.5),
@@ -387,35 +487,57 @@
                     timestamp: window.serverTimestamp()
                 };
 
-                // 2. Recolectar Checklist
                 document.querySelectorAll('.check-toggle').forEach(el => {
                     const nombreItem = el.getAttribute('data-nombre');
-                    dataDoc.evaluacion[nombreItem] = el.checked ? "Mal" : "Bien";
+                    reporteInterno.evaluacion[nombreItem] = el.checked ? "Mal" : "Bien";
                 });
 
-                // 3. Subir Fotos a Firebase Storage (Si hay)
+                // 2. Subir Fotos a Firebase Storage
                 if(fotosBase64.length > 0) {
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo fotos...';
+                    const prefijoUnidad = modoActual === 'INICIO' ? document.getElementById('dt-unidad').value : datosCabeceraTemporal.unidad;
+                    
                     for(let i=0; i<fotosBase64.length; i++) {
-                        const nombreArchivo = `unidades/${dataDoc.unidad}_${Date.now()}_${i}.jpg`;
+                        const nombreArchivo = `unidades/${prefijoUnidad}_${modoActual}_${Date.now()}_${i}.jpg`;
                         const imgRef = window.ref(window.storage, nombreArchivo);
                         await window.uploadString(imgRef, fotosBase64[i], 'data_url');
                         const url = await window.getDownloadURL(imgRef);
-                        dataDoc.fotos_urls.push(url);
+                        reporteInterno.fotos_urls.push(url);
                     }
                 }
 
-                // 4. Guardar Documento en Firestore
+                // 3. Ejecutar Lógica según el MODO (Inicio o Término)
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando Doc...';
-                await window.addDoc(window.collection(window.db, "unidades_moviles"), dataDoc);
                 
-                mostrarToast("Checklist Guardado Exitosamente", "exito");
+                if (modoActual === 'INICIO') {
+                    // CRAMOS UN NUEVO SERVICIO ACTIVO
+                    let dataDoc = {
+                        unidad: document.getElementById('dt-unidad').value,
+                        empresa: document.getElementById('dt-empresa').value.trim().toUpperCase(),
+                        fecha_inicio: document.getElementById('dt-fecha').value,
+                        estado: "activo",
+                        inicio: reporteInterno,
+                        timestamp: window.serverTimestamp()
+                    };
+                    await window.addDoc(window.collection(window.db, "unidades_moviles"), dataDoc);
+                    mostrarToast("Reporte de Salida Guardado.", "exito");
+                
+                } else if (modoActual === 'TERMINO') {
+                    // CERRAMOS EL SERVICIO EXISTENTE
+                    const docRef = window.doc(window.db, "unidades_moviles", docIdActivo);
+                    await window.updateDoc(docRef, {
+                        estado: "finalizado",
+                        termino: reporteInterno
+                    });
+                    mostrarToast("Unidad Recibida. Reporte Cerrado.", "exito");
+                }
+                
                 setTimeout(() => { location.reload(); }, 2000);
 
             } catch (e) {
                 console.error("Error completo:", e);
                 mostrarToast("Error de conexión al guardar.");
-                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Guardar'; btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Guardar Reporte'; btn.disabled = false;
             }
         };
 
