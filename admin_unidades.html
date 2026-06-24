@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Unidades Móviles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        const firebaseConfig = { /* Mismos datos de tu config */ };
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.getDocs = getDocs; window.collection = collection; window.query = query; window.orderBy = orderBy;
+    </script>
+    
+    <style>
+        /* Estilos de impresión para el reporte de Unidades */
+        @media print {
+            .no-print { display: none; }
+            .reporte-pagina { break-after: page; width: 100%; font-family: Arial, sans-serif; }
+            .foto-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .foto-img { width: 100%; border: 1px solid #ccc; border-radius: 4px; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 p-6">
+    <div id="contenedor-admin" class="max-w-5xl mx-auto">
+        <h1 class="text-3xl font-black text-slate-800 mb-6"><i class="fa-solid fa-truck-fast text-orange-600 mr-2"></i> Reportes Unidades Móviles</h1>
+        <div id="lista-unidades" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Se carga via JS -->
+        </div>
+    </div>
+
+    <script>
+        // Lógica de carga similar a admin_biologico.html pero con los campos de 'unidades_moviles'
+        // El motor PDF inyectará:
+        // 1. Encabezado de Reporte de Inicio (con sus firmas/fotos)
+        // 2. Encabezado de Reporte de Término (con sus firmas/fotos)
+    </script>
+</body>
+</html>
