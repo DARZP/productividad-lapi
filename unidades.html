@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checklist Unidades</title>
-
-    <link rel="manifest" href="manifest_captura.json">
-    <link rel="manifest" captura.json">  
+    <title>Checklist Unidades - LAPI</title>
     
+    <link rel="manifest" href="manifest_captura.json">
     <meta name="theme-color" content="#ea580c">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="config.js"></script>
@@ -196,20 +194,17 @@
     <datalist id="lista-medicos"></datalist>
 
     <script>
-        // CONFIGURACIÓN DEL CHECKLIST
         const categoriasChecklist = {
             "Exterior": ["Pintura", "Escalones y Barandal"],
             "Interior": ["Limpieza", "Piso", "Paredes", "Iluminación", "Aire Acondicionado", "Conexiones"],
             "Cabinas": ["Espuma Acústica", "Puerta", "Panel Jack"]
         };
 
-        // ESTADOS GLOBALES DE LA APP
         let modoActual = 'INICIO'; 
         let docIdActivo = null; 
         let datosCabeceraTemporal = {}; 
         let fotosBase64 = []; 
         
-        // FIRMA DIGITAL VARIABLES
         const canvas = document.getElementById('canvas-firma');
         const ctx = canvas.getContext('2d');
         let dibujando = false;
@@ -229,7 +224,7 @@
             cargarActivos();
         });
 
-        function mostrarToast(mensaje, tipo = 'error') {
+        function mostrarToast(mensaje, tipo = 'error', duracion = 3500) {
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : 'bg-red-500';
             const icono = tipo === 'exito' ? 'fa-check-circle' : 'fa-triangle-exclamation';
@@ -237,12 +232,9 @@
             toast.innerHTML = `<i class="fa-solid ${icono} text-lg"></i> <span class="leading-tight">${mensaje}</span>`;
             document.getElementById('toast-container').appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
-            setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
+            setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, duracion);
         }
 
-        // ==========================================
-        // VISTA 1: CARGA DE UNIDADES ACTIVAS
-        // ==========================================
         async function cargarActivos() {
             const cont = document.getElementById('contenedor-servicios');
             try {
@@ -264,7 +256,7 @@
                                 <p class="text-[10px] text-white/90 font-bold uppercase mt-0.5"><i class="fa-solid fa-truck mr-1"></i> ${d.unidad} | <i class="fa-regular fa-calendar ml-1 mr-1"></i> ${d.fecha_inicio}</p>
                             </div>
                             <div class="text-right">
-                                <span class="bg-white text-orange-600 px-3 py-1 rounded-lg text-[10px] font-black shadow-sm uppercase"><i class="fa-solid fa-right-from-bracket mr-1"></i>Reporte de Término</span>
+                                <span class="bg-white text-orange-600 px-3 py-1 rounded-lg text-[10px] font-black shadow-sm uppercase"><i class="fa-solid fa-right-from-bracket mr-1"></i> Recibir</span>
                             </div>
                         </div>
                     `;
@@ -272,9 +264,6 @@
             } catch(e) { cont.innerHTML = `<div class="text-center text-red-200 text-xs font-bold">Error cargando nube.</div>`; }
         }
 
-        // ==========================================
-        // CONTROL DE NAVEGACIÓN Y FLUJOS
-        // ==========================================
         window.abrirNuevoReporte = () => { 
             modoActual = 'INICIO';
             docIdActivo = null;
@@ -350,26 +339,20 @@
         };
 
         function limpiarFormularios() {
-            // Limpia inputs
             document.getElementById('dt-empresa').value = '';
             document.getElementById('chk-obs').value = '';
             document.getElementById('chk-medico').value = '';
             
-            // Resetea Toggles (Checklist a "Bien")
             document.querySelectorAll('.check-toggle').forEach(el => {
                 el.checked = false;
                 el.nextElementSibling.innerText = "BIEN";
             });
 
-            // Limpia Fotos y Firma
             fotosBase64 = [];
             renderizarGaleria();
             limpiarFirma();
         }
 
-        // ==========================================
-        // GENERACIÓN DINÁMICA DEL CHECKLIST
-        // ==========================================
         function generarDomChecklist() {
             const cont = document.getElementById('contenedor-items');
             cont.innerHTML = "";
@@ -407,9 +390,6 @@
             });
         }
 
-        // ==========================================
-        // MANEJO DE FOTOGRAFÍAS (COMPRESIÓN A BASE64)
-        // ==========================================
         window.procesarFoto = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -462,9 +442,6 @@
             renderizarGaleria();
         };
 
-        // ==========================================
-        // GUARDADO MAESTRO EN FIREBASE
-        // ==========================================
         window.guardarReporteMaestro = async function() {
             const btn = document.getElementById('btn-enviar');
             
@@ -475,10 +452,9 @@
             blank.width = canvas.width; blank.height = canvas.height;
             if(canvas.toDataURL() === blank.toDataURL()) return mostrarToast("La firma es obligatoria.");
 
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo...'; btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparando...'; btn.disabled = true;
 
             try {
-                // 1. Recolectar datos internos del reporte actual (Sirve para ambos modos)
                 let reporteInterno = {
                     fecha: new Date().toISOString().split('T')[0],
                     responsable: responsable,
@@ -494,25 +470,30 @@
                     reporteInterno.evaluacion[nombreItem] = el.checked ? "Mal" : "Bien";
                 });
 
-                // 2. Subir Fotos a Firebase Storage
+                // 👇 MANEJO DE ERRORES DE FOTOS (CORS/STORAGE) 👇
                 if(fotosBase64.length > 0) {
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo fotos...';
                     const prefijoUnidad = modoActual === 'INICIO' ? document.getElementById('dt-unidad').value : datosCabeceraTemporal.unidad;
                     
-                    for(let i=0; i<fotosBase64.length; i++) {
-                        const nombreArchivo = `unidades/${prefijoUnidad}_${modoActual}_${Date.now()}_${i}.jpg`;
-                        const imgRef = window.ref(window.storage, nombreArchivo);
-                        await window.uploadString(imgRef, fotosBase64[i], 'data_url');
-                        const url = await window.getDownloadURL(imgRef);
-                        reporteInterno.fotos_urls.push(url);
+                    try {
+                        for(let i=0; i<fotosBase64.length; i++) {
+                            const nombreArchivo = `unidades/${prefijoUnidad}_${modoActual}_${Date.now()}_${i}.jpg`;
+                            const imgRef = window.ref(window.storage, nombreArchivo);
+                            await window.uploadString(imgRef, fotosBase64[i], 'data_url');
+                            const url = await window.getDownloadURL(imgRef);
+                            reporteInterno.fotos_urls.push(url);
+                        }
+                    } catch (storageError) {
+                        console.error("Error Storage Firebase:", storageError);
+                        mostrarToast("Error en Firebase Storage. Revisa los permisos (CORS).", "error", 6000);
+                        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Guardar Reporte'; btn.disabled = false;
+                        return; // Se detiene el proceso si no pudo subir la foto
                     }
                 }
 
-                // 3. Ejecutar Lógica según el MODO (Inicio o Término)
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando Doc...';
                 
                 if (modoActual === 'INICIO') {
-                    // CRAMOS UN NUEVO SERVICIO ACTIVO
                     let dataDoc = {
                         unidad: document.getElementById('dt-unidad').value,
                         empresa: document.getElementById('dt-empresa').value.trim().toUpperCase(),
@@ -525,7 +506,6 @@
                     mostrarToast("Reporte de Salida Guardado.", "exito");
                 
                 } else if (modoActual === 'TERMINO') {
-                    // CERRAMOS EL SERVICIO EXISTENTE
                     const docRef = window.doc(window.db, "unidades_moviles", docIdActivo);
                     await window.updateDoc(docRef, {
                         estado: "finalizado",
@@ -537,15 +517,12 @@
                 setTimeout(() => { location.reload(); }, 2000);
 
             } catch (e) {
-                console.error("Error completo:", e);
-                mostrarToast("Error de conexión al guardar.");
+                console.error("Error completo DB:", e);
+                mostrarToast("Error de base de datos al guardar.");
                 btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Guardar Reporte'; btn.disabled = false;
             }
         };
 
-        // ==========================================
-        // LÓGICA DE FIRMA DIGITAL EN CANVAS
-        // ==========================================
         function configurarCanvas() {
             ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#0f172a';
 
