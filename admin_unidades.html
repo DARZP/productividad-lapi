@@ -125,12 +125,12 @@
                 
                 <div class="flex justify-between items-center mb-1">
                     <h1 class="text-xl font-black tracking-tight flex items-center gap-2">
-                        <i class="fa-solid fa-truck-fast text-fuchsia-200"></i> FLOTILLA
+                        <i class="fa-solid fa-truck-fast text-fuchsia-200"></i> UNIDADES MÓVILES
                     </h1>
                 </div>
                 
                 <button onclick="buscarServicios(true)" class="w-full bg-fuchsia-500 hover:bg-fuchsia-400 text-white font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-md mt-3 flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-rotate-right"></i> Ver Solo en Ruta
+                    <i class="fa-solid fa-rotate-right"></i> Ver Solo unidades en servicio
                 </button>
 
                 <div onclick="toggleFiltros()" class="mt-4 pt-4 border-t border-fuchsia-500/30 flex justify-between items-center cursor-pointer select-none group">
@@ -151,7 +151,7 @@
                         </div>
 
                         <div class="pt-2 border-t border-fuchsia-500/30">
-                            <label class="block text-[9px] font-black text-fuchsia-200 uppercase mb-2">Rango de Salida</label>
+                            <label class="block text-[9px] font-black text-fuchsia-200 uppercase mb-2">Rango de Servicios</label>
                             <div class="grid grid-cols-3 gap-1 mb-2">
                                 <button onclick="aplicarFiltroRapido('semana')" class="bg-fuchsia-900/50 hover:bg-fuchsia-800 text-white text-[9px] font-bold py-1.5 rounded transition border border-fuchsia-500/30">Semana</button>
                                 <button onclick="aplicarFiltroRapido('mes')" class="bg-fuchsia-900/50 hover:bg-fuchsia-800 text-white text-[9px] font-bold py-1.5 rounded transition border border-fuchsia-500/30">Mes</button>
@@ -164,7 +164,7 @@
                         </div>
 
                         <div class="pt-2 border-t border-fuchsia-500/30">
-                            <label class="block text-[9px] font-black text-fuchsia-200 uppercase mb-1">Empresa Destino</label>
+                            <label class="block text-[9px] font-black text-fuchsia-200 uppercase mb-1">Empresa</label>
                             <input type="text" id="f-empresa" placeholder="Ej. AEROMEXICO" class="w-full p-3 bg-fuchsia-900/50 border border-fuchsia-500/50 rounded-lg text-sm font-bold outline-none text-white placeholder-white/40 focus:border-white transition-colors uppercase">
                         </div>
                     </div>
@@ -191,7 +191,7 @@
         <!-- PANEL DE RESULTADOS (ACORDEONES) -->
         <div class="w-full flex-1">
             <div class="flex justify-between items-end mb-6 border-b border-fuchsia-200 pb-4">
-                <h2 id="titulo-resultados" class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-route text-fuchsia-500 mr-2"></i> Unidades en Ruta (Activas)</h2>
+                <h2 id="titulo-resultados" class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-route text-fuchsia-500 mr-2"></i> Unidades en Servicio </h2>
             </div>
 
             <div id="contenedor-resultados" class="flex flex-col gap-4 pb-12">
@@ -307,7 +307,7 @@
                             
                             <div class="flex flex-wrap gap-2 text-[10px] font-medium text-slate-500">
                                 <span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200"><i class="fa-regular fa-building mr-1"></i> ${serv.empresa}</span>
-                                <span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200"><i class="fa-regular fa-calendar mr-1"></i> Salida: ${serv.fecha_inicio}</span>
+                                <span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200"><i class="fa-regular fa-calendar mr-1"></i> Inicio: ${serv.fecha_inicio}</span>
                             </div>
 
                             <div class="absolute bottom-5 right-5 text-slate-300 text-xl"><i class="fa-solid fa-chevron-down"></i></div>
@@ -317,7 +317,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- SALIDA -->
                                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                    <h4 class="text-xs font-black uppercase text-orange-500 tracking-widest mb-3 border-b border-orange-100 pb-2"><i class="fa-solid fa-truck-arrow-right mr-1"></i> Salida (${serv.fecha_inicio})</h4>
+                                    <h4 class="text-xs font-black uppercase text-orange-500 tracking-widest mb-3 border-b border-orange-100 pb-2"><i class="fa-solid fa-truck-arrow-right mr-1"></i> Inicio (${serv.fecha_inicio})</h4>
                                     <div class="space-y-3 text-xs">
                                         <p><span class="font-bold text-slate-400 block text-[9px] uppercase">Responsable</span> ${serv.inicio.responsable}</p>
                                         <div>
@@ -334,7 +334,7 @@
                                 
                                 <!-- LLEGADA -->
                                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                    <h4 class="text-xs font-black uppercase text-indigo-500 tracking-widest mb-3 border-b border-indigo-100 pb-2"><i class="fa-solid fa-right-from-bracket mr-1"></i> Recepción</h4>
+                                    <h4 class="text-xs font-black uppercase text-indigo-500 tracking-widest mb-3 border-b border-indigo-100 pb-2"><i class="fa-solid fa-right-from-bracket mr-1"></i> Término</h4>
                                     ${serv.termino ? `
                                     <div class="space-y-3 text-xs">
                                         <p><span class="font-bold text-slate-400 block text-[9px] uppercase">Responsable</span> ${serv.termino.responsable}</p>
@@ -351,7 +351,7 @@
                                     ` : `
                                     <div class="h-full flex flex-col items-center justify-center text-slate-300 py-10">
                                         <i class="fa-solid fa-route text-3xl mb-2"></i>
-                                        <p class="text-xs font-bold uppercase tracking-widest">En Ruta</p>
+                                        <p class="text-xs font-bold uppercase tracking-widest">En Servicio</p>
                                     </div>
                                     `}
                                 </div>
@@ -415,7 +415,7 @@
         };
 
         function renderizarPDF_Servicio(data) {
-            const fechaFin = data.termino ? data.termino.fecha : 'EN RUTA';
+            const fechaFin = data.termino ? data.termino.fecha : 'EN SERVICIO';
             
             return `
                 <table class="header-box">
@@ -440,22 +440,22 @@
                         <div style="margin-bottom: 5px;">EMPRESA: <span class="line-field">${data.empresa}</span></div>
                     </div>
                     <div class="info-col">
-                        <div style="margin-bottom: 5px;">FECHA SALIDA: <span class="line-field">${data.fecha_inicio}</span></div>
-                        <div style="margin-bottom: 5px;">FECHA LLEGADA: <span class="line-field">${fechaFin}</span></div>
+                        <div style="margin-bottom: 5px;">FECHA INICIO: <span class="line-field">${data.fecha_inicio}</span></div>
+                        <div style="margin-bottom: 5px;">FECHA TÉRMINO: <span class="line-field">${fechaFin}</span></div>
                     </div>
                 </div>
 
                 <div class="comparativa-grid">
                     <!-- COLUMNA IZQUIERDA: SALIDA -->
                     <div class="comparativa-col avoid-break">
-                        <div class="titulo-fase" style="color: #ea580c;">REPORTE DE SALIDA (INICIO)</div>
+                        <div class="titulo-fase" style="color: #ea580c;">REPORTE DE INICIO</div>
                         ${generarBloquePDFFase(data.inicio)}
                     </div>
 
                     <!-- COLUMNA DERECHA: RECEPCIÓN -->
                     <div class="comparativa-col avoid-break">
-                        <div class="titulo-fase" style="color: #4f46e5;">REPORTE DE RECEPCIÓN (TÉRMINO)</div>
-                        ${data.termino ? generarBloquePDFFase(data.termino) : '<div style="text-align:center; padding: 40px; color: #999; font-style: italic;">Servicio activo en ruta.<br>Aún no hay reporte de recepción.</div>'}
+                        <div class="titulo-fase" style="color: #4f46e5;">REPORTE DE TÉRMINO</div>
+                        ${data.termino ? generarBloquePDFFase(data.termino) : '<div style="text-align:center; padding: 40px; color: #999; font-style: italic;">Servicio activo.<br>Aún no hay reporte de término.</div>'}
                     </div>
                 </div>
             `;
