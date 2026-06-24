@@ -6,7 +6,7 @@
     <title>Reportes - LAPI Admin</title>
     
     <link rel="manifest" href="manifest_admin.json">
-    <meta name="theme-color" content="#4f46e5">
+    <meta name="theme-color" content="#ea580c">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,14 +42,15 @@
     
     <style>
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(254, 215, 170, 0.5); }
         .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
         .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; }
         .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 50px); }
         
-        .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
+        /* Switch Naranja LAPI */
+        .toggle-checkbox:checked { right: 0; border-color: #ea580c; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #ea580c; }
         
         /* ==========================================
            REGLAS DE IMPRESIÓN (PDF) CORREGIDAS
@@ -57,16 +58,13 @@
         @media print {
             @page { margin: 15mm; size: A4 portrait; }
             
-            /* 1. Forzamos al navegador a liberar las alturas fijas y mostrar todo el contenido (Múltiples hojas) */
             body, html { height: auto !important; overflow: visible !important; background-color: white !important; display: block !important; }
             main { padding: 0 !important; margin: 0 !important; height: auto !important; overflow: visible !important; display: block !important; }
             #hoja-reporte { max-width: 100% !important; border: none !important; box-shadow: none !important; overflow: visible !important; padding: 0 !important; margin: 0 !important; height: auto !important; }
             
-            /* Ocultamos lo que no es reporte */
             .no-print { display: none !important; }
             nav { display: none !important; }
 
-            /* 2. Blindaje Anti-Cortes: Las tarjetas, gráficas y tablas NO se parten a la mitad */
             .glass { 
                 box-shadow: none !important; 
                 border: 1px solid #cbd5e1 !important; 
@@ -76,93 +74,93 @@
                 overflow: visible !important; 
             }
             
-            /* 3. Excepción: Permitimos que la tabla larguísima sí salte de página de manera natural */
             #mod-tab-suc { break-inside: auto !important; page-break-inside: auto !important; }
             tr { break-inside: avoid !important; page-break-inside: avoid !important; }
 
-            /* Ajustes de Grilla y Gráficas */
             .print-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 15px !important; align-items: start !important; }
             .print-col-span-2 { grid-column: span 2 / span 2 !important; }
             canvas { max-height: 250px !important; width: 100% !important; }
             
-            /* Separadores explícitos */
             .page-break { break-before: page !important; page-break-before: always !important; display: block; height: 1px; margin: 15px 0 !important; }
-            .header-print { border-bottom: 3px solid #0f172a !important; padding-bottom: 10px !important; margin-bottom: 20px !important; break-inside: avoid !important; }
+            .header-print { border-bottom: 3px solid #ea580c !important; padding-bottom: 10px !important; margin-bottom: 20px !important; break-inside: avoid !important; }
         }
     </style>
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-indigo-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-6 shadow-sm">
+    <!-- NAVEGACIÓN LATERAL UNIFICADA -->
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-6 shadow-sm">
         
         <div class="hidden md:flex mb-6 text-3xl">
             <i id="logo-snake-2" class="fa-solid fa-staff-snake transition-colors duration-500"></i>
         </div>
         <script>document.getElementById('logo-snake-2').classList.add(['text-red-500','text-orange-500','text-amber-500','text-emerald-500','text-teal-500','text-cyan-500','text-blue-500','text-indigo-500','text-violet-500','text-purple-500','text-fuchsia-500','text-pink-500'][Math.floor(Math.random()*12)]);</script>
 
-        <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-purple-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-purple-50 transition-all"><i class="fa-solid fa-globe text-base md:text-xl"></i></div>
+        <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Global</span>
         </a>
-        <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-indigo-600 group">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-indigo-100 text-indigo-600 transition-all shadow-sm"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
+        <!-- ACTIVO -->
+        <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Reportes</span>
         </a>
-        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-emerald-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-emerald-50 transition-all"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
+        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span>
         </a>
-        <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-teal-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-teal-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
+        <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Control<br>Biol.</span>
         </a>
-        <a href="admin_unidades.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-fuchsia-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-fuchsia-50 transition-all"><i class="fa-solid fa-truck text-base md:text-xl"></i></div>
+        <a href="admin_unidades.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-truck-fast text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Unidades<br>Móviles</span>
         </a>
     </nav>
 
     <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8 flex flex-col xl:flex-row gap-6 items-start">
         
+        <!-- PANEL DE CONTROL -->
         <div class="w-full xl:w-80 shrink-0 no-print flex flex-col gap-4">
-            <div class="bg-gradient-to-br from-indigo-700 to-blue-600 p-6 rounded-3xl shadow-xl text-white">
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-3xl shadow-xl text-white">
                 <h1 class="text-xl font-black tracking-tight flex items-center gap-2 mb-1">
-                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-300"></i> GENERADOR DE REPORTES
+                    <i class="fa-solid fa-wand-magic-sparkles text-orange-200"></i> GENERADOR
                 </h1>
-                <p class="opacity-90 text-[10px] font-medium uppercase tracking-widest text-indigo-200 mb-6">Configura tu Reporte</p>
+                <p class="opacity-90 text-[10px] font-medium uppercase tracking-widest text-orange-100 mb-6">Configura tu Reporte</p>
 
                 <div class="grid grid-cols-3 gap-2 mb-4">
-                    <button onclick="aplicarFiltroRapido('hoy')" class="bg-indigo-900/50 hover:bg-indigo-800 text-white text-[10px] font-bold py-2 rounded-lg transition border border-indigo-500/30">Hoy</button>
-                    <button onclick="aplicarFiltroRapido('ayer')" class="bg-indigo-900/50 hover:bg-indigo-800 text-white text-[10px] font-bold py-2 rounded-lg transition border border-indigo-500/30">Ayer</button>
-                    <button onclick="aplicarFiltroRapido('semana')" class="bg-indigo-900/50 hover:bg-indigo-800 text-white text-[10px] font-bold py-2 rounded-lg transition border border-indigo-500/30">Semana</button>
-                    <button onclick="aplicarFiltroRapido('mes')" class="bg-indigo-500 text-white text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Mes</button>
-                    <button onclick="aplicarFiltroRapido('año')" class="bg-indigo-900/50 hover:bg-indigo-800 text-white text-[10px] font-bold py-2 rounded-lg transition border border-indigo-500/30">Año</button>
-                    <button onclick="aplicarFiltroRapido('todo')" class="bg-indigo-900/50 hover:bg-indigo-800 text-white text-[10px] font-bold py-2 rounded-lg transition border border-indigo-500/30">Todo</button>
+                    <button onclick="aplicarFiltroRapido('hoy')" id="btn-hoy" class="btn-filtro-rapido bg-white/20 hover:bg-white/30 text-white border border-white/30 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Hoy</button>
+                    <button onclick="aplicarFiltroRapido('ayer')" id="btn-ayer" class="btn-filtro-rapido bg-white/20 hover:bg-white/30 text-white border border-white/30 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Ayer</button>
+                    <button onclick="aplicarFiltroRapido('semana')" id="btn-semana" class="btn-filtro-rapido bg-white/20 hover:bg-white/30 text-white border border-white/30 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Semana</button>
+                    <button onclick="aplicarFiltroRapido('mes')" id="btn-mes" class="btn-filtro-rapido bg-white text-orange-600 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Mes</button>
+                    <button onclick="aplicarFiltroRapido('año')" id="btn-año" class="btn-filtro-rapido bg-white/20 hover:bg-white/30 text-white border border-white/30 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Año</button>
+                    <button onclick="aplicarFiltroRapido('todo')" id="btn-todo" class="btn-filtro-rapido bg-white/20 hover:bg-white/30 text-white border border-white/30 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Todo</button>
                 </div>
 
                 <div class="flex gap-2 w-full mb-6">
                     <div class="flex-1">
-                        <label class="block text-[9px] font-black text-indigo-200 uppercase mb-1">Desde</label>
-                        <input type="date" id="r-fecha-inicio" class="w-full p-2 bg-indigo-900/50 border border-indigo-500/50 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
+                        <label class="block text-[9px] font-black text-orange-200 uppercase mb-1">Desde</label>
+                        <input type="date" id="r-fecha-inicio" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
                     </div>
                     <div class="flex-1">
-                        <label class="block text-[9px] font-black text-indigo-200 uppercase mb-1">Hasta</label>
-                        <input type="date" id="r-fecha-fin" class="w-full p-2 bg-indigo-900/50 border border-indigo-500/50 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
+                        <label class="block text-[9px] font-black text-orange-200 uppercase mb-1">Hasta</label>
+                        <input type="date" id="r-fecha-fin" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
                     </div>
                 </div>
 
-                <button onclick="generarReporteDinamico()" id="btn-generar" class="w-full bg-white text-indigo-700 hover:bg-indigo-50 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-lg mb-3 flex justify-center items-center gap-2"><i class="fa-solid fa-bolt"></i> Cargar Datos</button>
+                <button onclick="generarReporteDinamico()" id="btn-generar" class="w-full bg-white text-orange-600 hover:bg-orange-50 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-lg mb-3 flex justify-center items-center gap-2"><i class="fa-solid fa-bolt"></i> Cargar Datos</button>
                 
-                <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-indigo-500/50">
-                    <button onclick="window.print()" class="bg-indigo-900/50 hover:bg-indigo-800 text-white font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider border border-indigo-500/30"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
-                    <button onclick="exportarExcelData()" class="bg-emerald-600/80 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider border border-emerald-500/30"><i class="fa-solid fa-file-excel mr-1"></i> Analítico</button>
+                <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/20">
+                    <button onclick="window.print()" class="bg-white/20 hover:bg-white/30 text-white font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider border border-white/30"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
+                    <button onclick="exportarExcelData()" class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider shadow-sm"><i class="fa-solid fa-file-excel mr-1"></i> Analítico</button>
                 </div>
             </div>
 
             <div class="glass p-5 rounded-3xl shadow-sm">
                 <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2 flex justify-between items-center">
                     Módulos Visibles
-                    <button onclick="toggleAllModules()" class="text-[9px] text-indigo-600 bg-indigo-50 px-2 py-1 rounded font-bold hover:bg-indigo-100 transition">ON/OFF</button>
+                    <button onclick="toggleAllModules()" class="text-[9px] text-orange-600 bg-orange-50 px-2 py-1 rounded font-bold hover:bg-orange-100 transition">ON/OFF</button>
                 </h3>
                 
                 <div class="flex flex-col gap-3 max-h-[40vh] overflow-y-auto scroll-custom pr-2" id="checklist-modulos">
@@ -170,11 +168,12 @@
             </div>
         </div>
 
+        <!-- HOJA DE REPORTE A IMPRIMIR -->
         <div class="w-full flex-1 bg-white p-6 md:p-10 rounded-[2rem] shadow-sm border border-slate-200 mx-auto max-w-5xl" id="hoja-reporte">
             
             <div class="header-print flex justify-between items-end pb-4 mb-6">
                 <div>
-                    <h1 class="text-3xl font-black tracking-tight text-slate-900"><i class="fa-solid fa-chart-line text-indigo-600 mr-2"></i> Reporte Operativo LAPI</h1>
+                    <h1 class="text-3xl font-black tracking-tight text-slate-900"><i class="fa-solid fa-chart-line text-orange-500 mr-2"></i> Reporte Operativo LAPI</h1>
                     <p id="label-periodo" class="text-sm font-black text-slate-400 uppercase tracking-widest mt-1">--/--/---- al --/--/----</p>
                 </div>
                 <div class="text-right hidden print:block">
@@ -183,14 +182,14 @@
             </div>
 
             <div id="canvas-vacio" class="text-center py-20 text-slate-400 italic">
-                <i class="fa-solid fa-hand-pointer text-4xl mb-3 text-slate-200 block"></i>
+                <i class="fa-solid fa-hand-pointer text-4xl mb-3 text-orange-200 block"></i>
                 Haz clic en "Cargar Datos" para iniciar.
             </div>
 
             <div id="contenedor-modulos" class="flex flex-col gap-6 hidden">
                 
                 <div id="mod-kpis" class="grid grid-cols-2 md:grid-cols-4 gap-4 print-grid">
-                    <div class="glass bg-slate-50/50 p-4 rounded-2xl border-l-4 border-indigo-600 text-center">
+                    <div class="glass bg-slate-50/50 p-4 rounded-2xl border-l-4 border-orange-500 text-center">
                         <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Estudios Totales</p>
                         <p id="kpi-tot" class="text-3xl font-black text-slate-800 mt-1">0</p>
                     </div>
@@ -198,9 +197,9 @@
                         <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Volumen Sucursal</p>
                         <p id="kpi-suc" class="text-3xl font-black text-sky-600 mt-1">0</p>
                     </div>
-                    <div class="glass bg-slate-50/50 p-4 rounded-2xl border-l-4 border-orange-500 text-center">
+                    <div class="glass bg-slate-50/50 p-4 rounded-2xl border-l-4 border-red-500 text-center">
                         <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Volumen Foráneos</p>
-                        <p id="kpi-for" class="text-3xl font-black text-orange-600 mt-1">0</p>
+                        <p id="kpi-for" class="text-3xl font-black text-red-600 mt-1">0</p>
                     </div>
                     <div class="glass bg-slate-50/50 p-4 rounded-2xl border-l-4 border-emerald-500 text-center">
                         <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Empresas Atend.</p>
@@ -220,17 +219,17 @@
                 </div>
 
                 <div id="mod-tab-glob" class="glass rounded-2xl overflow-hidden shadow-sm">
-                    <div class="bg-indigo-900 p-3"><h3 class="text-[10px] font-black text-white uppercase tracking-widest">DESGLOSE GLOBAL</h3></div>
+                    <div class="bg-orange-500 p-3"><h3 class="text-[10px] font-black text-white uppercase tracking-widest">DESGLOSE GLOBAL</h3></div>
                     <table class="w-full text-left border-collapse">
                         <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 border-b border-slate-200">
-                            <tr><th class="p-3">Tipo de Estudio</th><th class="p-3 text-center text-sky-600">Sucursales</th><th class="p-3 text-center text-orange-600">Foráneos</th><th class="p-3 text-center text-indigo-700 font-black">Total</th></tr>
+                            <tr><th class="p-3">Tipo de Estudio</th><th class="p-3 text-center text-sky-600">Sucursales</th><th class="p-3 text-center text-red-600">Foráneos</th><th class="p-3 text-center text-orange-700 font-black">Total</th></tr>
                         </thead>
                         <tbody id="tbody-desglose" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs"></tbody>
                     </table>
                 </div>
 
-                <div id="sep-foraneos" class="header-print flex items-center gap-3 pb-2 mt-4 page-break">
-                    <i class="fa-solid fa-truck-medical text-orange-500 text-xl"></i>
+                <div id="sep-foraneos" class="header-print flex items-center gap-3 pb-2 mt-4 page-break border-b-2 border-red-200">
+                    <i class="fa-solid fa-suitcase-medical text-red-500 text-xl"></i>
                     <h2 class="text-xl font-black tracking-tight text-slate-800 uppercase">Métricas Foráneos</h2>
                 </div>
 
@@ -250,7 +249,7 @@
                 </div>
 
                 <div id="mod-tab-for" class="glass rounded-2xl overflow-hidden shadow-sm">
-                    <div class="bg-orange-500 p-3"><h3 class="text-[10px] font-black text-white uppercase tracking-widest">Productividad PERSONAL. Foráneos</h3></div>
+                    <div class="bg-red-500 p-3"><h3 class="text-[10px] font-black text-white uppercase tracking-widest">Productividad PERSONAL. Foráneos</h3></div>
                     <table class="w-full text-left border-collapse">
                         <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 border-b border-slate-200">
                             <tr><th class="p-3">PERSONAL</th><th class="p-3 text-center">Total Estudios</th><th class="p-3 text-center">Horas Registradas</th></tr>
@@ -259,7 +258,7 @@
                     </table>
                 </div>
 
-                <div id="sep-sucursales" class="header-print flex items-center gap-3 pb-2 mt-4 page-break">
+                <div id="sep-sucursales" class="header-print flex items-center gap-3 pb-2 mt-4 page-break border-b-2 border-sky-200">
                     <i class="fa-solid fa-hospital text-sky-500 text-xl"></i>
                     <h2 class="text-xl font-black tracking-tight text-slate-800 uppercase">Métricas Sucursales</h2>
                 </div>
@@ -360,13 +359,16 @@
         };
 
         window.aplicarFiltroRapido = function(tipo) {
-            const btns = document.querySelectorAll('.grid.grid-cols-3 button');
+            const btns = document.querySelectorAll('.btn-filtro-rapido');
             btns.forEach(b => {
-                b.classList.remove('bg-indigo-500', 'shadow-sm');
-                b.classList.add('bg-indigo-900/50', 'border-indigo-500/30');
+                b.classList.remove('bg-white', 'text-orange-600', 'shadow-sm');
+                b.classList.add('bg-white/20', 'text-white', 'border-white/30');
             });
-            event.target.classList.remove('bg-indigo-900/50', 'border-indigo-500/30');
-            event.target.classList.add('bg-indigo-500', 'shadow-sm');
+            const btnActivo = document.getElementById(`btn-${tipo}`);
+            if(btnActivo) {
+                btnActivo.classList.remove('bg-white/20', 'text-white', 'border-white/30');
+                btnActivo.classList.add('bg-white', 'text-orange-600', 'shadow-sm');
+            }
 
             const hoy = new Date();
             let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
@@ -428,7 +430,7 @@
             datosCrudosExportar = { foraneos: [], sucursales: [] };
 
             try {
-                // 1. EXTRAYENDO FORÁNEOS Y LEGACY SUCURSAL (CON FUNCIÓN ARQUEÓLOGA)
+                // 1. EXTRAYENDO FORÁNEOS Y LEGACY SUCURSAL
                 let q1 = window.collection(window.db, "registros");
                 if (fIni && fFin) q1 = window.query(q1, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
                 const qs1 = await window.getDocs(q1);
@@ -470,18 +472,14 @@
                         }
 
                     } else {
-                        // 👇 INYECCIÓN: ARQUEÓLOGO DE DATOS (Repara documentos migradores aplanados) 👇
                         let detallesProcesar = [];
                         
                         if (data.detalles) {
-                            // Si el arreglo sobrevivió correctamente
                             detallesProcesar = Array.isArray(data.detalles) ? data.detalles : Object.values(data.detalles);
                         } else if (data.observaciones === "Migrado desde Excel histórico" || (data.folio && data.folio.startsWith("HIST-"))) {
-                            // Si el documento se aplanó/rompió, recolecta las variables sueltas
                             if (data.estudio) {
                                 detallesProcesar.push({ estudio: data.estudio, cant: data.cant || 1, medico: data.medico || "Historial Previo" });
                             }
-                            // Recolecta los índices que se guardaron como objetos (1, 2, 3...)
                             for (let i = 0; i < 50; i++) {
                                 if (data[i] && data[i].estudio) {
                                     detallesProcesar.push({ estudio: data[i].estudio, cant: data[i].cant || 1, medico: data[i].medico || "Historial Previo" });
@@ -489,7 +487,6 @@
                             }
                         }
 
-                        // Procesa la lista de estudios (ya sea sana o reparada)
                         if (detallesProcesar.length > 0) {
                             let emp = normalizarDato(data.empresa);
                             let suc = normalizarDato(data.sucursal || "FORÁNEO");
@@ -594,29 +591,29 @@
                 document.getElementById('kpi-for').innerText = t_For.toLocaleString();
                 document.getElementById('kpi-emp').innerText = f_Empresas.size;
 
-                dibujarGrafico('chart-origen', 'doughnut', ['Sucursal', 'Foráneos'], [t_Suc, t_For], ['#0ea5e9', '#f97316']);
+                dibujarGrafico('chart-origen', 'doughnut', ['Sucursal', 'Foráneos'], [t_Suc, t_For], ['#0ea5e9', '#ef4444']);
 
                 let aEstGlobal = Object.keys(c_Estudios).map(k => ({ n: k, v: c_Estudios[k].tot })).sort((a,b) => b.v - a.v);
-                dibujarGrafico('chart-estudios-global', 'bar', aEstGlobal.map(e=>e.n), aEstGlobal.map(e=>e.v), ['#6366f1'], 'x');
+                dibujarGrafico('chart-estudios-global', 'bar', aEstGlobal.map(e=>e.n), aEstGlobal.map(e=>e.v), ['#f97316'], 'x');
 
                 let tbodyDesglose = document.getElementById('tbody-desglose'); tbodyDesglose.innerHTML = '';
                 aEstGlobal.forEach(e => {
                     let d = c_Estudios[e.n];
-                    tbodyDesglose.innerHTML += `<tr class="hover:bg-slate-100"><td class="p-3 font-bold uppercase">${e.n}</td><td class="p-3 text-center text-sky-600 font-bold">${d.suc}</td><td class="p-3 text-center text-orange-600 font-bold">${d.for}</td><td class="p-3 text-center text-indigo-700 font-black">${d.tot}</td></tr>`;
+                    tbodyDesglose.innerHTML += `<tr class="hover:bg-slate-100"><td class="p-3 font-bold uppercase">${e.n}</td><td class="p-3 text-center text-sky-600 font-bold">${d.suc}</td><td class="p-3 text-center text-red-600 font-bold">${d.for}</td><td class="p-3 text-center text-orange-700 font-black">${d.tot}</td></tr>`;
                 });
 
                 // --- FORÁNEOS ---
                 let fechasForSort = Object.keys(f_Tendencia).sort();
-                dibujarGrafico('chart-tend-for', 'line', fechasForSort, fechasForSort.map(f => f_Tendencia[f]), ['#f97316']);
+                dibujarGrafico('chart-tend-for', 'line', fechasForSort, fechasForSort.map(f => f_Tendencia[f]), ['#ef4444']);
 
                 let aEmpresas = Object.keys(f_cEmpresas).map(k => ({ n: k, v: f_cEmpresas[k] })).sort((a,b) => b.v - a.v).slice(0,10);
-                dibujarGrafico('chart-emp', 'bar', aEmpresas.map(e=>e.n), aEmpresas.map(e=>e.v), ['#f97316'], 'x');
+                dibujarGrafico('chart-emp', 'bar', aEmpresas.map(e=>e.n), aEmpresas.map(e=>e.v), ['#ef4444'], 'x');
 
                 let aMedFor = Object.keys(f_Medicos).map(k => ({ n: k, est: f_Medicos[k].estudios, hrs: f_Medicos[k].horas })).sort((a,b) => b.est - a.est);
-                dibujarGrafico('chart-med-for', 'bar', aMedFor.map(m=>m.n), aMedFor.map(m=>m.est), ['#3b82f6'], 'x');
+                dibujarGrafico('chart-med-for', 'bar', aMedFor.map(m=>m.n), aMedFor.map(m=>m.est), ['#ef4444'], 'x');
                 
                 let tbodyMedFor = document.getElementById('tbody-med-for'); tbodyMedFor.innerHTML = '';
-                aMedFor.forEach(m => { tbodyMedFor.innerHTML += `<tr class="hover:bg-slate-100"><td class="p-3 uppercase text-orange-700">${m.n}</td><td class="p-3 text-center font-black">${m.est}</td><td class="p-3 text-center text-slate-500">${m.hrs.toFixed(1)} hrs</td></tr>`; });
+                aMedFor.forEach(m => { tbodyMedFor.innerHTML += `<tr class="hover:bg-slate-100"><td class="p-3 uppercase text-red-700">${m.n}</td><td class="p-3 text-center font-black">${m.est}</td><td class="p-3 text-center text-slate-500">${m.hrs.toFixed(1)} hrs</td></tr>`; });
 
                 // --- SUCURSALES ---
                 let fechasSucSort = Object.keys(s_Tendencia).sort();
@@ -626,7 +623,7 @@
                 dibujarGrafico('chart-top-suc', 'bar', aSucursales.map(s=>s.n), aSucursales.map(s=>s.v), ['#0ea5e9'], 'x');
 
                 const ordenDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-                dibujarGrafico('chart-dias-suc', 'bar', ordenDias, ordenDias.map(d => s_cDias[d]), ['#f59e0b'], 'x');
+                dibujarGrafico('chart-dias-suc', 'bar', ordenDias, ordenDias.map(d => s_cDias[d]), ['#0ea5e9'], 'x');
 
                 let aMedSuc = Object.keys(s_Medicos).map(k => ({ n: k, v: s_Medicos[k] })).sort((a,b) => b.v - a.v);
                 let tbodyMedSuc = document.getElementById('tbody-med-suc'); tbodyMedSuc.innerHTML = '';
