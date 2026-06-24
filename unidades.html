@@ -123,6 +123,15 @@
             <div class="flex justify-between items-center border-b border-white/20 pb-4 mb-2">
                 <h2 id="titulo-checklist" class="font-black text-xl text-center flex-1"><i class="fa-solid fa-list-check mr-2"></i> Inspección</h2>
             </div>
+
+            <div id="contenedor-referencia" class="hidden mb-4 bg-black/30 rounded-2xl border border-white/10 overflow-hidden shadow-inner">
+                <div onclick="document.getElementById('ref-inicio-content').classList.toggle('hidden'); document.getElementById('icon-ref-chev').classList.toggle('rotate-180');" class="p-3 hover:bg-white/5 transition flex justify-between items-center cursor-pointer select-none">
+                    <h3 class="text-[10px] font-black text-emerald-300 uppercase tracking-widest"><i class="fa-solid fa-file-contract mr-1"></i> Ver Reporte Original de Salida</h3>
+                    <i id="icon-ref-chev" class="fa-solid fa-chevron-down text-white/50 transition-transform duration-300"></i>
+                </div>
+                <div id="ref-inicio-content" class="p-4 border-t border-white/5 text-white/90">
+                    </div>
+            </div>
             
             <p class="text-xs text-center opacity-80 mb-2 italic bg-black/20 p-2 rounded-lg border border-white/10 text-orange-100">Toca el botón si el elemento presenta detalles</p>
 
@@ -204,6 +213,7 @@
         let docIdActivo = null; 
         let datosCabeceraTemporal = {}; 
         let fotosBase64 = []; 
+        window.unidadesActivasData = []; // ALMACENA LA DATA EN MEMORIA
         
         const canvas = document.getElementById('canvas-firma');
         const ctx = canvas.getContext('2d');
@@ -237,6 +247,7 @@
 
         async function cargarActivos() {
             const cont = document.getElementById('contenedor-servicios');
+            window.unidadesActivasData = [];
             try {
                 const q = window.query(window.collection(window.db, "unidades_moviles"), window.where("estado", "==", "activo"));
                 const qs = await window.getDocs(q);
@@ -247,10 +258,14 @@
                     return;
                 }
 
+                let idx = 0;
                 qs.forEach(doc => {
                     const d = doc.data();
+                    d.id = doc.id;
+                    window.unidadesActivasData.push(d); // Guardamos la info completa
+                    
                     cont.innerHTML += `
-                        <div onclick="abrirCierreReporte('${doc.id}', '${d.unidad}', '${d.empresa}', '${d.fecha_inicio}')" class="glass p-4 rounded-2xl cursor-pointer hover:bg-white/30 transition border-l-4 border-white flex justify-between items-center shadow-sm active:scale-95">
+                        <div onclick="abrirCierreReporte(${idx})" class="glass p-4 rounded-2xl cursor-pointer hover:bg-white/30 transition border-l-4 border-white flex justify-between items-center shadow-sm active:scale-95">
                             <div>
                                 <h3 class="font-black text-sm uppercase text-white">${d.empresa}</h3>
                                 <p class="text-[10px] text-white/90 font-bold uppercase mt-0.5"><i class="fa-solid fa-truck mr-1"></i> ${d.unidad} | <i class="fa-regular fa-calendar ml-1 mr-1"></i> ${d.fecha_inicio}</p>
@@ -260,6 +275,7 @@
                             </div>
                         </div>
                     `;
+                    idx++;
                 });
             } catch(e) { cont.innerHTML = `<div class="text-center text-red-200 text-xs font-bold">Error cargando nube.</div>`; }
         }
@@ -277,22 +293,83 @@
             document.getElementById('vista-datos').classList.remove('hidden'); 
         }
 
-        window.abrirCierreReporte = (id, unidad, empresa, fecha) => {
+        window.abrirCierreReporte = (index) => {
+            const data = window.unidadesActivasData[index];
             modoActual = 'TERMINO';
-            docIdActivo = id;
-            datosCabeceraTemporal = { unidad, empresa, fecha };
+            docIdActivo = data.id;
+            datosCabeceraTemporal = { unidad: data.unidad, empresa: data.empresa, fecha: data.fecha_inicio };
             limpiarFormularios();
 
             document.getElementById('titulo-datos').innerHTML = `<i class="fa-solid fa-right-from-bracket mr-2"></i> Recepción de Unidad`;
-            document.getElementById('lbl-empresa-cierre').innerText = empresa;
-            document.getElementById('lbl-unidad-cierre').innerText = unidad;
-            document.getElementById('lbl-fecha-cierre').innerText = `Salió: ${fecha}`;
+            document.getElementById('lbl-empresa-cierre').innerText = data.empresa;
+            document.getElementById('lbl-unidad-cierre').innerText = data.unidad;
+            document.getElementById('lbl-fecha-cierre').innerText = `Salió: ${data.fecha_inicio}`;
             
+            // Inyectar visualmente el reporte de inicio original
+            generarReferenciaInicio(data.inicio);
+
             document.getElementById('form-datos-inicio').classList.add('hidden');
             document.getElementById('form-datos-termino').classList.remove('hidden');
 
             document.getElementById('vista-lista').classList.add('hidden'); 
             document.getElementById('vista-datos').classList.remove('hidden'); 
+        }
+
+        function generarReferenciaInicio(inicio) {
+            const contRef = document.getElementById('contenedor-referencia');
+            const contContent = document.getElementById('ref-inicio-content');
+            
+            if(!inicio) {
+                contContent.innerHTML = '<p class="text-xs italic text-white/50">No hay datos del reporte de salida original.</p>';
+                contRef.classList.remove('hidden');
+                return;
+            }
+
+            let htmlDanos = '';
+            if(inicio.evaluacion) {
+                for(let [item, estado] of Object.entries(inicio.evaluacion)) {
+                    if(estado === 'Mal') {
+                        htmlDanos += `<span class="bg-red-500/20 text-red-200 border border-red-500/50 px-2 py-1 rounded text-[10px] font-bold mr-1 mb-1 inline-block">${item}</span>`;
+                    }
+                }
+            }
+            if(htmlDanos === '') htmlDanos = '<span class="text-xs text-emerald-300 font-bold"><i class="fa-solid fa-check-circle mr-1"></i> Entregada sin daños</span>';
+
+            let htmlFotos = '';
+            if(inicio.fotos_urls && inicio.fotos_urls.length > 0) {
+                inicio.fotos_urls.forEach(url => {
+                    htmlFotos += `<img src="${url}" class="w-16 h-16 object-cover rounded-lg border border-white/20 cursor-pointer hover:opacity-80 transition" onclick="window.open('${url}', '_blank')">`;
+                });
+            } else {
+                htmlFotos = '<p class="text-[10px] text-white/50 italic mt-1">Sin evidencia fotográfica</p>';
+            }
+
+            contContent.innerHTML = `
+                <div class="text-xs space-y-3">
+                    <div class="bg-black/20 p-2 rounded-lg border border-white/5">
+                        <p class="text-[9px] uppercase tracking-widest text-orange-200 mb-0.5">Responsable Salida:</p>
+                        <p class="font-bold">${inicio.responsable}</p>
+                    </div>
+                    
+                    <div class="bg-black/20 p-2 rounded-lg border border-white/5">
+                        <p class="text-[9px] uppercase tracking-widest text-orange-200 mb-1">Detalles al Salir:</p>
+                        <div>${htmlDanos}</div>
+                    </div>
+
+                    <div class="bg-black/20 p-2 rounded-lg border border-white/5">
+                        <p class="text-[9px] uppercase tracking-widest text-orange-200 mb-1">Observaciones:</p>
+                        <p class="italic">"${inicio.observaciones || 'Sin comentarios.'}"</p>
+                    </div>
+
+                    <div class="bg-black/20 p-2 rounded-lg border border-white/5">
+                        <p class="text-[9px] uppercase tracking-widest text-orange-200 mb-1">Fotos de Salida:</p>
+                        <div class="flex gap-2 flex-wrap">${htmlFotos}</div>
+                    </div>
+                </div>
+            `;
+            contContent.classList.remove('hidden');
+            document.getElementById('icon-ref-chev').classList.add('rotate-180');
+            contRef.classList.remove('hidden');
         }
 
         window.volverLista = () => { 
@@ -306,6 +383,9 @@
                 const unidad = document.getElementById('dt-unidad').value;
                 const empresa = document.getElementById('dt-empresa').value;
                 if(!unidad || !empresa) return mostrarToast("Selecciona la Unidad y la Empresa Destino.");
+                
+                // Ocultar acordeon si es un reporte nuevo
+                document.getElementById('contenedor-referencia').classList.add('hidden');
             }
             
             document.getElementById('titulo-checklist').innerHTML = modoActual === 'INICIO' 
@@ -470,7 +550,6 @@
                     reporteInterno.evaluacion[nombreItem] = el.checked ? "Mal" : "Bien";
                 });
 
-                // 👇 MANEJO DE ERRORES DE FOTOS (CORS/STORAGE) 👇
                 if(fotosBase64.length > 0) {
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo fotos...';
                     const prefijoUnidad = modoActual === 'INICIO' ? document.getElementById('dt-unidad').value : datosCabeceraTemporal.unidad;
@@ -487,7 +566,7 @@
                         console.error("Error Storage Firebase:", storageError);
                         mostrarToast("Error en Firebase Storage. Revisa los permisos (CORS).", "error", 6000);
                         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Guardar Reporte'; btn.disabled = false;
-                        return; // Se detiene el proceso si no pudo subir la foto
+                        return; 
                     }
                 }
 
