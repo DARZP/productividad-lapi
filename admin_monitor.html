@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global - LAPI Admin</title>
+    
+    <link rel="manifest" href="manifest_admin.json">
+    <meta name="theme-color" content="#ea580c">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.query = query;
+        window.where = where; 
+        window.orderBy = orderBy;
+        window.doc = doc;
+        window.deleteDoc = deleteDoc;
+        window.updateDoc = updateDoc;
+
+        window.iniciarAdmin();
+    </script>
+    
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(254, 215, 170, 0.5); }
+        .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 50px); }
+        .grupo-1 { background-color: #ffffff; }
+        .grupo-2 { background-color: #fffaf5; } 
+    </style>
+</head>
+<body class="text-slate-800 flex h-screen overflow-hidden">
+
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-6 shadow-sm">
+        
+        <div class="hidden md:flex mb-6 text-3xl">
+            <i id="logo-snake" class="fa-solid fa-staff-snake transition-colors duration-500"></i>
+        </div>
+        <script>document.getElementById('logo-snake').classList.add(['text-red-500','text-orange-500','text-amber-500','text-emerald-500','text-teal-500','text-cyan-500','text-blue-500','text-indigo-500','text-violet-500','text-purple-500','text-fuchsia-500','text-pink-500'][Math.floor(Math.random()*12)]);</script>
+
+        <!-- ACTIVO -->
+        <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Global</span>
+        </a>
+        <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Reportes</span>
+        </a>
+        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span>
+        </a>
+        <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Control<br>Biol.</span>
+        </a>
+        <a href="admin_unidades.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-truck-fast text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Unidades<br>Móviles</span>
+        </a>
+    </nav>
+
+    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-3xl shadow-md text-white gap-4">
+            <div>
+                <h1 class="text-3xl font-black tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-server text-orange-200"></i> MONITOR GLOBAL
+                </h1>
+                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest text-orange-100">Base de Datos Operativa</p>
+            </div>
+            <div class="flex gap-2 bg-black/20 p-1.5 rounded-xl text-sm font-bold items-center px-4">
+                <i class="fa-solid fa-circle-nodes text-emerald-300 animate-pulse"></i> Sync Activo
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="glass p-5 rounded-3xl shadow-sm text-center transform transition border-b-4 border-orange-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Estudios</p>
+                <p id="kpi-total" class="text-4xl font-black text-orange-600 mt-1">0</p>
+            </div>
+            <div class="glass p-5 rounded-3xl shadow-sm text-center transform transition border-b-4 border-sky-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sucursales</p>
+                <p id="kpi-sucursal" class="text-4xl font-black text-sky-600 mt-1">0</p>
+            </div>
+            <div class="glass p-5 rounded-3xl shadow-sm text-center transform transition border-b-4 border-red-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Foráneos</p>
+                <p id="kpi-foraneo" class="text-4xl font-black text-red-600 mt-1">0</p>
+            </div>
+            <div class="glass p-5 rounded-3xl shadow-sm text-center transform transition border-b-4 border-emerald-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Empresas</p>
+                <p id="kpi-empresas" class="text-4xl font-black text-emerald-600 mt-1">0</p>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-3xl shadow-sm mb-6 flex flex-col gap-4 border-l-4 border-orange-500">
+            <div class="flex flex-col md:flex-row justify-between gap-4 w-full">
+                <div class="grid grid-cols-3 md:flex gap-2 w-full md:w-auto">
+                    <button id="btn-hoy" onclick="aplicarFiltroRapido('hoy')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Hoy</button>
+                    <button id="btn-ayer" onclick="aplicarFiltroRapido('ayer')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Ayer</button>
+                    <button id="btn-semana" onclick="aplicarFiltroRapido('semana')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Semana</button>
+                    <button id="btn-mes" onclick="aplicarFiltroRapido('mes')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Mes</button>
+                    <button id="btn-año" onclick="aplicarFiltroRapido('año')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Año</button>
+                    <button id="btn-todo" onclick="aplicarFiltroRapido('todo')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Todo</button>
+                </div>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <input type="date" id="filtro-fecha-inicio" onchange="cargarDatosAdmin()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:border-orange-400 flex-1">
+                    <input type="date" id="filtro-fecha-fin" onchange="cargarDatosAdmin()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:border-orange-400 flex-1">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 pt-3 border-t border-slate-100">
+                <div class="md:col-span-2 relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    <input type="text" id="buscador-tabla" onkeyup="filtrarTablaAdmin()" placeholder="Búsqueda Universal (Incluye N° Orden y Pacientes)..." class="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-orange-400 transition-colors">
+                </div>
+                <select id="filtro-origen" onchange="filtrarTablaAdmin()" class="py-2 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600 focus:border-orange-400">
+                    <option value="">Cualquier Origen</option>
+                    <option value="Sucursal">Solo Sucursales</option>
+                    <option value="Foráneo">Solo Foráneos</option>
+                </select>
+                <input type="text" id="filtro-medico" onkeyup="filtrarTablaAdmin()" placeholder="Médico Exacto..." class="py-2 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600 focus:border-orange-400">
+                <input type="text" id="filtro-lugar" onkeyup="filtrarTablaAdmin()" placeholder="Empresa o Sucursal..." class="py-2 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600 focus:border-orange-400">
+            </div>
+        </div>
+
+        <div class="glass rounded-3xl overflow-hidden shadow-sm flex flex-col min-h-[500px] border border-slate-200">
+            <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                <h3 class="font-black text-xs text-slate-700 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-table-list text-orange-500"></i> Registros Unitarios</h3>
+                <span id="status-db" class="text-[10px] font-bold text-slate-400">Listo</span>
+            </div>
+            <div class="overflow-x-auto scroll-custom flex-1">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead class="bg-white text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th class="p-4">Origen / Grupo ID</th>
+                            <th class="p-4">Fecha</th>
+                            <th class="p-4">Médico Responsable</th>
+                            <th class="p-4">Lugar (Empresa/Sucursal)</th>
+                            <th class="p-4">Estudio Realizado</th>
+                            <th class="p-4 text-center">Cant.</th>
+                            <th class="p-4 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-registros" class="divide-y divide-slate-100 text-sm font-medium text-slate-700">
+                        <tr><td colspan="7" class="text-center py-10 text-slate-400 italic">Cargando base de datos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs font-bold text-slate-500">
+                <span id="info-paginacion">Mostrando 0 registros</span>
+                <div class="flex gap-2">
+                    <button onclick="cambiarPagina(-1)" class="px-3 py-1.5 bg-white border border-slate-200 rounded hover:bg-slate-100 transition text-orange-600"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button onclick="cambiarPagina(1)" class="px-3 py-1.5 bg-white border border-slate-200 rounded hover:bg-slate-100 transition text-orange-600"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- SÚPER LUPA DE ADMIN -->
+    <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-2xl w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
+                <h3 class="text-lg font-black text-orange-600 flex items-center gap-2"><i class="fa-solid fa-users"></i> Detalle de Pacientes</h3>
+                <button onclick="cerrarModal('lupa')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div id="lupa-info" class="text-xs text-slate-500 mb-3 bg-slate-50 p-3 rounded-xl border border-slate-200"></div>
+            <div class="overflow-y-auto scroll-custom flex-1 border border-slate-200 rounded-xl">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm text-[10px] uppercase text-slate-500">
+                        <tr><th class="p-3 border-b">N° Orden</th><th class="p-3 border-b">Paciente</th><th class="p-3 border-b">Empresa</th><th class="p-3 border-b text-center">Folio HC</th></tr>
+                    </thead>
+                    <tbody id="lupa-tbody" class="divide-y divide-slate-100 text-xs font-medium text-slate-700"></tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex gap-3"><button onclick="cerrarModal('lupa')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cerrar Visor</button></div>
+        </div>
+    </div>
+
+    <script>
+        let registrosGlobales = [];
+        let paginaActual = 1;
+        const regsPorPagina = 100;
+
+        window.abrirModal = function(id) {
+            const modal = document.getElementById(`modal-${id}`);
+            const card = document.getElementById(`modal-${id}-card`);
+            if(modal && card) {
+                modal.classList.remove('hidden');
+                setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
+            }
+        };
+
+        window.cerrarModal = function(id) {
+            const modal = document.getElementById(`modal-${id}`);
+            const card = document.getElementById(`modal-${id}-card`);
+            if(modal && card) {
+                modal.classList.add('opacity-0'); card.classList.add('scale-95');
+                setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            }
+        };
+
+        function normalizarDato(texto) {
+            if (!texto) return "Desconocido";
+            return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        }
+
+        function unificarEstudio(est) {
+            if(!est) return "Desconocido";
+            let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clínica";
+            if (upper.includes("CONSULTA")) return "Consulta Médica";
+            if (upper.includes("ESPIROMETRIA")) return "Espirometría";
+            if (upper.includes("AUDIOMETRIA")) return "Audiometría";
+            if (upper.includes("ELECTROCARDIOGRAMA")) return "Electrocardiograma";
+            if (upper.includes("VISUAL")) return "Examen Capacidad Visual";
+            return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        }
+
+        function getMetaKey(estudioStr) {
+            if(!estudioStr) return "metadata_DESCONOCIDO";
+            let safeName = estudioStr.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
+            return `metadata_${safeName}`;
+        }
+
+        window.iniciarAdmin = async function() {
+            aplicarFiltroRapido('hoy');
+        };
+
+        window.aplicarFiltroRapido = function(tipo) {
+            document.querySelectorAll('.btn-filtro-rapido').forEach(btn => {
+                btn.classList.remove('bg-orange-100', 'text-orange-700');
+                btn.classList.add('bg-slate-100', 'text-slate-600');
+            });
+            const btnActivo = document.getElementById(`btn-${tipo}`);
+            if(btnActivo) {
+                btnActivo.classList.remove('bg-slate-100', 'text-slate-600');
+                btnActivo.classList.add('bg-orange-100', 'text-orange-700');
+            }
+
+            const hoy = new Date();
+            let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+            if (tipo === 'hoy') iStr = fStr; 
+            else if (tipo === 'ayer') { const ayer = new Date(); ayer.setDate(ayer.getDate() - 1); iStr = `${ayer.getFullYear()}-${String(ayer.getMonth() + 1).padStart(2, '0')}-${String(ayer.getDate()).padStart(2, '0')}`; fStr = iStr; }
+            else if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
+            else if (tipo === 'mes') { iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`; }
+            else if (tipo === 'año') { iStr = `${hoy.getFullYear()}-01-01`; }
+            else if (tipo === 'todo') { iStr = ''; fStr = ''; }
+            
+            document.getElementById('filtro-fecha-inicio').value = iStr; 
+            document.getElementById('filtro-fecha-fin').value = fStr;
+            cargarDatosAdmin();
+        };
+
+        window.cargarDatosAdmin = async function() {
+            const fIni = document.getElementById('filtro-fecha-inicio').value;
+            const fFin = document.getElementById('filtro-fecha-fin').value;
+            const tbody = document.getElementById('tabla-registros');
+            
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Sincronizando con Firebase...</td></tr>';
+            registrosGlobales = [];
+            
+            try {
+                let t_Global = 0, t_Suc = 0, t_For = 0;
+                let empresas = new Set();
+
+                let q1 = window.collection(window.db, "registros");
+                if (fIni && fFin) {
+                    q1 = window.query(q1, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                }
+                const qs1 = await window.getDocs(q1);
+                
+                qs1.forEach(doc => {
+                    const data = doc.data();
+
+                    if(data.tipo === "sucursal" || data.tipo === "Sucursal") {
+                        t_Global++; t_Suc++;
+                        let estLimpio = unificarEstudio(data.estudio);
+                        let metaKey = getMetaKey(estLimpio);
+
+                        registrosGlobales.push({ 
+                            groupId: doc.id,
+                            fecha: data.fecha,
+                            medico: normalizarDato(data.medico),
+                            lugar: normalizarDato(data.sucursal),
+                            estudio: estLimpio,
+                            cant: 1,
+                            origen: "Sucursal",
+                            dbSource: "registros",
+                            metadatos: data[metaKey] || []
+                        });
+                    } else if(data.detalles) {
+                        empresas.add(normalizarDato(data.empresa));
+                        data.detalles.forEach(det => {
+                            let c = parseInt(det.cant) || 1;
+                            let estLimpio = unificarEstudio(det.estudio);
+                            let metaKey = getMetaKey(estLimpio);
+
+                            t_Global += c; t_For += c;
+                            registrosGlobales.push({ 
+                                groupId: doc.id,
+                                fecha: data.fecha,
+                                medico: normalizarDato(det.medico || data.medico),
+                                lugar: normalizarDato(data.empresa),
+                                estudio: estLimpio,
+                                cant: c,
+                                origen: "Foráneo",
+                                dbSource: "registros",
+                                metadatos: data[metaKey] || []
+                            });
+                        });
+                    }
+                });
+
+                let q2 = window.collection(window.db, "registros_diarios_sucursales");
+                if (fIni && fFin) {
+                    q2 = window.query(q2, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
+                }
+                const qs2 = await window.getDocs(q2);
+                
+                qs2.forEach(doc => {
+                    const data = doc.data();
+                    
+                    if(data.estudios) {
+                        Object.entries(data.estudios).forEach(([estRaw, cantVal]) => {
+                            let c = parseInt(cantVal) || 0;
+                            if(c > 0) {
+                                t_Global += c; t_Suc += c;
+                                let estLimpio = unificarEstudio(estRaw);
+                                let metaKey = getMetaKey(estLimpio);
+
+                                registrosGlobales.push({ 
+                                    groupId: doc.id,
+                                    fecha: data.fecha,
+                                    medico: normalizarDato(data.medico),
+                                    lugar: normalizarDato(data.sucursal),
+                                    estudio: estLimpio,
+                                    cant: c,
+                                    origen: "Sucursal",
+                                    dbSource: "registros_diarios_sucursales",
+                                    metadatos: data[metaKey] || []
+                                });
+                            }
+                        });
+                    }
+                });
+
+                document.getElementById('kpi-total').innerText = t_Global.toLocaleString();
+                document.getElementById('kpi-sucursal').innerText = t_Suc.toLocaleString();
+                document.getElementById('kpi-foraneo').innerText = t_For.toLocaleString();
+                document.getElementById('kpi-empresas').innerText = empresas.size;
+
+                registrosGlobales.sort((a,b) => {
+                    let fA = a.fecha ? String(a.fecha) : "1900-01-01";
+                    let fB = b.fecha ? String(b.fecha) : "1900-01-01";
+                    if (fA !== fB) return fB.localeCompare(fA);
+                    
+                    let gA = a.groupId ? String(a.groupId) : "";
+                    let gB = b.groupId ? String(b.groupId) : "";
+                    return gB.localeCompare(gA);
+                });
+
+                paginaActual = 1;
+                renderizarTablaAdmin();
+
+            } catch(e) {
+                console.error("Error BD:", e);
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Error conectando a la base de datos.</td></tr>';
+            }
+        };
+
+        window.renderizarTablaAdmin = function() {
+            const tbody = document.getElementById('tabla-registros');
+            
+            const fGen = document.getElementById('buscador-tabla').value.toLowerCase();
+            const fOri = document.getElementById('filtro-origen').value;
+            const fMed = document.getElementById('filtro-medico').value.toLowerCase();
+            const fLug = document.getElementById('filtro-lugar').value.toLowerCase();
+            
+            let filtrados = registrosGlobales.filter(r => {
+                if(fOri && r.origen !== fOri) return false;
+                if(fMed && !r.medico.toLowerCase().includes(fMed)) return false;
+                if(fLug && !r.lugar.toLowerCase().includes(fLug)) return false;
+                
+                if(fGen) {
+                    let textToSearch = `${r.medico} ${r.lugar} ${r.estudio} ${r.groupId}`.toLowerCase();
+                    let metaText = r.metadatos ? r.metadatos.map(m => `${m.paciente} ${m.orden} ${m.empresa} ${m.folio}`).join(" ").toLowerCase() : "";
+                    
+                    if(!textToSearch.includes(fGen) && !metaText.includes(fGen)) return false;
+                }
+                return true;
+            });
+
+            const totalPaginas = Math.ceil(filtrados.length / regsPorPagina);
+            if(paginaActual > totalPaginas && totalPaginas > 0) paginaActual = totalPaginas;
+            if(paginaActual < 1) paginaActual = 1;
+
+            const inicio = (paginaActual - 1) * regsPorPagina;
+            const fin = inicio + regsPorPagina;
+            const vista = filtrados.slice(inicio, fin);
+
+            tbody.innerHTML = '';
+            
+            if(vista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-slate-400 italic">No hay registros que coincidan con tus filtros.</td></tr>`;
+                document.getElementById('info-paginacion').innerText = '0 registros';
+                return;
+            }
+
+            let lastGroup = null;
+            let bgClass = "grupo-1"; 
+
+            vista.forEach((r, index) => {
+                if(r.groupId !== lastGroup) {
+                    bgClass = bgClass === "grupo-1" ? "grupo-2" : "grupo-1";
+                    lastGroup = r.groupId;
+                }
+
+                let badge = r.origen === "Foráneo" 
+                    ? '<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">Foráneo</span>'
+                    : '<span class="bg-sky-100 text-sky-700 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">Sucursal</span>';
+                
+                let borderColor = r.origen === "Foráneo" ? "border-l-red-400" : "border-l-sky-400";
+                
+                let trClass = `${bgClass} border-b border-slate-100 border-l-4 ${borderColor} transition hover:bg-orange-50/50`;
+
+                let esPrimeroDelGrupo = (index === 0 || vista[index - 1].groupId !== r.groupId);
+                let btnBorrar = esPrimeroDelGrupo 
+                    ? `<button onclick="eliminarRegistro('${r.groupId}', '${r.dbSource}')" class="text-red-400 hover:text-red-600 bg-white hover:bg-red-50 p-2 rounded-lg transition border border-slate-200 hover:border-red-200 shadow-sm" title="Eliminar este bloque completo"><i class="fa-solid fa-trash-can"></i></button>` 
+                    : '';
+
+                let btnLupa = r.metadatos && r.metadatos.length > 0 ? `<button onclick="verLupaAdmin('${r.groupId}', '${r.estudio}')" class="ml-2 text-orange-500 hover:text-orange-700 hover:bg-orange-100 p-1 rounded transition"><i class="fa-solid fa-users"></i></button>` : '';
+
+                tbody.innerHTML += `
+                    <tr class="${trClass}">
+                        <td class="p-3"><div class="mb-1">${badge}</div><span class="text-[8px] text-slate-400 font-mono" title="${r.groupId}">${r.groupId.substring(0,6)}..</span></td>
+                        <td class="p-3 font-bold text-slate-600 text-xs">${r.fecha}</td>
+                        <td class="p-3 font-bold text-slate-800 text-xs">${r.medico}</td>
+                        <td class="p-3 font-bold text-slate-700 text-xs">${r.lugar}</td>
+                        <td class="p-3 text-slate-500 font-bold text-[11px]">${r.estudio}</td>
+                        <td class="p-3 text-center font-black text-orange-600">${r.cant} ${btnLupa}</td>
+                        <td class="p-3 text-center">${btnBorrar}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('info-paginacion').innerText = `Mostrando ${inicio + 1} - ${Math.min(fin, filtrados.length)} de ${filtrados.length} estudios`;
+        };
+
+        window.verLupaAdmin = function(groupId, estudio) {
+            const reg = registrosGlobales.find(r => r.groupId === groupId && r.estudio === estudio);
+            if(!reg || !reg.metadatos) return;
+            
+            document.getElementById('lupa-info').innerHTML = `
+                <span class="font-black text-slate-700">${reg.medico}</span><br>
+                ${reg.estudio} <span class="mx-1">|</span> ${reg.fecha} <span class="mx-1">|</span> ${reg.lugar}
+            `;
+
+            let tbody = document.getElementById('lupa-tbody');
+            tbody.innerHTML = '';
+            reg.metadatos.forEach(item => {
+                let badgeFolio = item.folio !== 'N/A' && item.folio !== 'S/F' 
+                    ? `<span class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">${item.folio}</span>` 
+                    : `<span class="text-slate-300">--</span>`;
+
+                tbody.innerHTML += `<tr class="hover:bg-orange-50 transition">
+                    <td class="p-3 font-bold text-slate-500 text-[10px]">${item.orden}</td>
+                    <td class="p-3 text-slate-800 text-[11px] font-bold">${item.paciente}</td>
+                    <td class="p-3 text-slate-600 text-[10px]">${item.empresa}</td>
+                    <td class="p-3 text-center">${badgeFolio}</td>
+                </tr>`;
+            });
+
+            abrirModal('lupa');
+        };
+
+        window.cambiarPagina = function(delta) {
+            paginaActual += delta;
+            renderizarTablaAdmin();
+        };
+
+        window.filtrarTablaAdmin = function() {
+            paginaActual = 1;
+            renderizarTablaAdmin();
+        };
+
+        window.eliminarRegistro = async function(id, sourceCollection) {
+            if(!confirm("⚠️ ¿ELIMINAR PAQUETE COMPLETO? Esta acción borrará el registro y TODOS sus estudios asociados de la base de datos oficial. No se puede deshacer.")) return;
+            try {
+                await window.deleteDoc(window.doc(window.db, sourceCollection, id));
+                alert("Servicio eliminado con éxito.");
+                cargarDatosAdmin();
+            } catch(e) {
+                console.error("Error al borrar:", e);
+                alert("No se pudo eliminar el registro. Verifica permisos.");
+            }
+        };
+    </script>
+</body>
+</html>
