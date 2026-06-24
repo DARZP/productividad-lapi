@@ -6,7 +6,7 @@
     <title>Auditoría Inbox - LAPI Admin</title>
     
     <link rel="manifest" href="manifest_admin.json">
-    <meta name="theme-color" content="#10b981">
+    <meta name="theme-color" content="#ea580c">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -48,42 +48,44 @@
     
     <style>
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(254, 215, 170, 0.5); }
         .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
         .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; }
         .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .tab-active { background: white; color: #1e293b; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .estado-tab.active { border-bottom: 3px solid #10b981; color: #10b981; font-weight: 900; }
+        .estado-tab.active { border-bottom: 3px solid #ea580c; color: #ea580c; font-weight: 900; }
         .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 50px); }
     </style>
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-emerald-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-6 shadow-sm">
+    <!-- NAVEGACIÓN LATERAL UNIFICADA LAPI -->
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-6 shadow-sm">
         
         <div class="hidden md:flex mb-6 text-3xl">
             <i id="logo-snake-3" class="fa-solid fa-staff-snake transition-colors duration-500"></i>
         </div>
         <script>document.getElementById('logo-snake-3').classList.add(['text-red-500','text-orange-500','text-amber-500','text-emerald-500','text-teal-500','text-cyan-500','text-blue-500','text-indigo-500','text-violet-500','text-purple-500','text-fuchsia-500','text-pink-500'][Math.floor(Math.random()*12)]);</script>
 
-        <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-purple-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-purple-50 transition-all"><i class="fa-solid fa-globe text-base md:text-xl"></i></div>
+        <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Global</span>
         </a>
-        <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-indigo-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-indigo-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
+        <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Reportes</span>
         </a>
-        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-emerald-600 group">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-emerald-100 text-emerald-600 transition-all shadow-sm"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
+        <!-- ACTIVO -->
+        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span>
         </a>
-        <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-teal-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-teal-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
+        <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Control<br>Biol.</span>
         </a>
-        <a href="admin_unidades.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-fuchsia-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-fuchsia-50 transition-all"><i class="fa-solid fa-truck text-base md:text-xl"></i></div>
+        <a href="admin_unidades.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-truck-fast text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Unidades<br>Móviles</span>
         </a>
     </nav>
@@ -92,12 +94,12 @@
 
     <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8 flex flex-col">
         
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-gradient-to-r from-emerald-600 to-teal-500 p-6 rounded-3xl shadow-xl text-white gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-3xl shadow-xl text-white gap-4">
             <div>
                 <h1 class="text-2xl font-black tracking-tight flex items-center gap-3">
-                    <i class="fa-solid fa-inbox text-emerald-200"></i> BANDEJA DE AUDITORÍA
+                    <i class="fa-solid fa-inbox text-orange-200"></i> BANDEJA DE AUDITORÍA
                 </h1>
-                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest text-emerald-100">Centro de Calidad y TNC</p>
+                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest text-orange-100">Centro de Calidad y TNC</p>
             </div>
             
             <div class="flex flex-wrap gap-2 bg-black/20 p-1.5 rounded-xl w-full md:w-auto">
@@ -139,7 +141,7 @@
                         <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-2.5 rounded-xl transition-all shadow-sm text-xs active:scale-95"><i class="fa-solid fa-upload mr-1"></i> Procesar Archivos Locales</button>
                     </div>
                     
-                    <div class="glass p-5 rounded-2xl shadow-sm border-l-4 border-emerald-500">
+                    <div class="glass p-5 rounded-2xl shadow-sm border-l-4 border-orange-500">
                         <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-calendar-day mr-1"></i> Rango Operativo</h3>
                         <div class="grid grid-cols-2 gap-2 mb-4">
                             <button id="btn-mes_anterior" onclick="aplicarFiltroRapido('mes_anterior')" class="btn-filtro-rapido bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold py-2 rounded-lg transition tracking-tighter">Mes Anterior</button>
@@ -149,7 +151,7 @@
                         </div>
                         <input type="date" id="a-inicio" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-3 border border-slate-300">
                         <input type="date" id="a-fin" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-4 border border-slate-300">
-                        <button onclick="window.initAuditoria()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 rounded-xl transition-all text-xs active:scale-95">Aplicar Vista</button>
+                        <button onclick="window.initAuditoria()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-2.5 rounded-xl transition-all text-xs active:scale-95">Aplicar Vista</button>
                     </div>
 
                     <div class="glass p-4 rounded-2xl shadow-sm border-l-4 border-indigo-500">
@@ -164,7 +166,7 @@
                     <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200 min-h-[500px]">
                         
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest"><span id="lbl-sucursal-activa" class="text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded mr-2">TODAS</span> Discrepancias Pendientes</h3>
+                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest"><span id="lbl-sucursal-activa" class="text-orange-600 bg-orange-100 px-2 py-0.5 rounded mr-2">TODAS</span> Discrepancias Pendientes</h3>
                             
                             <div class="flex flex-wrap items-center gap-2">
                                 <button id="btn-bulk-enriquecer" onclick="enriquecerMatchesMasivo()" style="display:none;" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-brain mr-1"></i> Enriquecer Matches</button>
@@ -203,9 +205,9 @@
         <div id="sec-tnc" class="hidden animate-fade-in flex-1">
             <div class="glass p-6 rounded-3xl shadow-sm flex flex-col min-h-full border border-slate-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-slate-200 pb-4 gap-4">
-                    <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><i class="fa-solid fa-list-check text-emerald-600"></i> Control de Trabajos No Conformes (TNC)</h2>
+                    <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><i class="fa-solid fa-list-check text-orange-600"></i> Control de Trabajos No Conformes (TNC)</h2>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="abrirBuscadorUniversal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-search mr-1"></i> Buscar Servicio y Levantar TNC</button>
+                        <button onclick="abrirBuscadorUniversal()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-search mr-1"></i> Buscar Servicio y Levantar TNC</button>
                         <button onclick="exportarTNCs()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-file-excel mr-1"></i> Exportar</button>
                     </div>
                 </div>
@@ -232,10 +234,10 @@
         <div id="sec-perfil" class="hidden animate-fade-in flex-1">
             <div class="glass p-8 rounded-3xl shadow-sm border border-slate-200 min-h-full">
                 <div class="flex flex-col md:flex-row gap-6 mb-8 items-center bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-2xl shadow-md"><i class="fa-solid fa-user-doctor"></i></div>
+                    <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white text-2xl shadow-md"><i class="fa-solid fa-user-doctor"></i></div>
                     <div class="flex-1 w-full">
                         <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Buscar Expediente de Calidad</label>
-                        <input type="text" id="input-buscar-medico" list="lista-medicos-perfil" onchange="cargarPerfilMedico()" class="w-full p-4 bg-white text-slate-800 rounded-xl outline-none font-bold uppercase border border-slate-300 focus:border-emerald-500 transition-colors shadow-sm" placeholder="Escribe el nombre del médico...">
+                        <input type="text" id="input-buscar-medico" list="lista-medicos-perfil" onchange="cargarPerfilMedico()" class="w-full p-4 bg-white text-slate-800 rounded-xl outline-none font-bold uppercase border border-slate-300 focus:border-orange-500 transition-colors shadow-sm" placeholder="Escribe el nombre del médico...">
                     </div>
                 </div>
 
@@ -251,7 +253,7 @@
                         </div>
                     </div>
                     <div class="lg:col-span-2 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col max-h-[450px]">
-                        <h4 class="text-sm font-black text-slate-800 uppercase mb-4 flex items-center gap-2 border-b border-slate-100 pb-3"><i class="fa-solid fa-timeline text-emerald-500"></i> Historial de Incidencias</h4>
+                        <h4 class="text-sm font-black text-slate-800 uppercase mb-4 flex items-center gap-2 border-b border-slate-100 pb-3"><i class="fa-solid fa-timeline text-orange-500"></i> Historial de Incidencias</h4>
                         <div class="overflow-y-auto scroll-custom flex-1 pr-2 space-y-3" id="perf-historial"></div>
                     </div>
                 </div>
@@ -287,7 +289,7 @@
     <!-- MODAL TNC -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
-            <h3 class="text-xl font-black mb-4 text-emerald-700 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
+            <h3 class="text-xl font-black mb-4 text-orange-600 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
             <input type="hidden" id="tnc-hash"><input type="hidden" id="tnc-origen"><input type="hidden" id="tnc-fecha"><input type="hidden" id="tnc-medico"><input type="hidden" id="tnc-lugar"><input type="hidden" id="tnc-estudio">
             
             <div id="tnc-paso-1" class="block overflow-y-auto pr-2 scroll-custom flex-1">
@@ -305,9 +307,9 @@
             </div>
 
             <div id="tnc-paso-2" class="hidden flex-col flex-1">
-                <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl mb-4 flex justify-between items-center shadow-sm">
-                    <div id="tnc-servicio-seleccionado" class="text-xs text-emerald-900 font-bold leading-tight"></div>
-                    <button onclick="resetBuscadorTNC()" class="text-emerald-600 hover:text-emerald-800 bg-white p-2 rounded-lg shadow-sm" title="Cambiar Servicio"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <div class="bg-orange-50 border border-orange-200 p-3 rounded-xl mb-4 flex justify-between items-center shadow-sm">
+                    <div id="tnc-servicio-seleccionado" class="text-xs text-orange-900 font-bold leading-tight"></div>
+                    <button onclick="resetBuscadorTNC()" class="text-orange-600 hover:text-orange-800 bg-white p-2 rounded-lg shadow-sm" title="Cambiar Servicio"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
                 <label class="block text-[11px] font-bold text-red-600 uppercase mb-2">2. Clasificación (Potencial TNC)</label>
                 <select id="tnc-clasificacion" class="w-full p-3 bg-red-50 text-red-700 rounded-xl outline-none mb-4 border border-red-200 text-sm font-bold shadow-sm"></select>
@@ -315,7 +317,7 @@
                 <textarea id="tnc-notas" rows="2" class="w-full p-3 bg-slate-50 text-slate-700 rounded-xl outline-none mb-6 border border-slate-200 text-sm placeholder-slate-400" placeholder="Añade detalles sobre el error..."></textarea>
                 <div class="flex gap-3 mt-auto">
                     <button onclick="resetBuscadorTNC()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Atrás</button>
-                    <button onclick="guardarTNC()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2"><i class="fa-solid fa-save"></i> Guardar TNC</button>
+                    <button onclick="guardarTNC()" class="w-2/3 bg-orange-600 hover:bg-orange-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2"><i class="fa-solid fa-save"></i> Guardar TNC</button>
                 </div>
             </div>
         </div>
@@ -325,7 +327,7 @@
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-2xl w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
-                <h3 class="text-lg font-black text-emerald-700 flex items-center gap-2"><i class="fa-solid fa-microscope"></i> Visor de Metadatos (Excel)</h3>
+                <h3 class="text-lg font-black text-orange-600 flex items-center gap-2"><i class="fa-solid fa-microscope"></i> Visor de Metadatos (Excel)</h3>
                 <button onclick="cerrarModal('lupa')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <div id="lupa-info" class="text-xs text-slate-500 mb-3 bg-slate-50 p-3 rounded-xl border border-slate-200"></div>
@@ -343,17 +345,17 @@
 
     <!-- MODAL CORRECCIÓN INDIVIDUAL -->
     <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-correccion-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-emerald-200 text-center">
-            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <div id="modal-correccion-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-orange-200 text-center">
+            <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
             <h3 class="text-lg font-black mb-2 text-slate-800">Forzar Sincronización</h3>
             <p class="text-sm text-slate-500 mb-5">El sistema ajustará Firebase para que cuadre exactamente con el Excel subido.</p>
-            <p id="c-info" class="text-xs text-emerald-800 bg-emerald-50 p-3 rounded-xl border border-emerald-200 font-bold mb-6"></p>
+            <p id="c-info" class="text-xs text-orange-800 bg-orange-50 p-3 rounded-xl border border-orange-200 font-bold mb-6"></p>
             <input type="hidden" id="c-hash">
             <input type="hidden" id="c-cantE">
             <input type="hidden" id="c-cantA">
             <div class="flex gap-3">
                 <button onclick="cerrarModal('correccion')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar</button>
-                <button id="btn-ejecutar-corr" onclick="ejecutarCorreccion()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Sincronizar</button>
+                <button id="btn-ejecutar-corr" onclick="ejecutarCorreccion()" class="w-1/2 bg-orange-600 hover:bg-orange-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Sincronizar</button>
             </div>
         </div>
     </div>
@@ -417,7 +419,7 @@
 
         window.mostrarToast = function(mensaje, tipo = 'info') {
             const toast = document.createElement('div');
-            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-emerald-600');
+            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-orange-600');
             const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-triangle-exclamation' : 'fa-info-circle');
             toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-lg font-bold text-xs flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
             toast.innerHTML = `<i class="fa-solid ${icono} text-base"></i> <span class="leading-tight">${mensaje}</span>`;
@@ -471,7 +473,7 @@
                     ? `<span class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">${item.folio}</span>` 
                     : `<span class="text-slate-300">--</span>`;
 
-                tbody.innerHTML += `<tr class="hover:bg-indigo-50 transition">
+                tbody.innerHTML += `<tr class="hover:bg-orange-50 transition">
                     <td class="p-3 font-bold text-slate-500 text-[10px]">${item.orden}</td>
                     <td class="p-3 text-slate-800 text-[11px] font-bold">${item.paciente}</td>
                     <td class="p-3 text-slate-600 text-[10px]">${item.empresa}</td>
@@ -798,33 +800,6 @@
             });
         };
 
-        window.ejecutarCruceDeDatos = async function() {
-            const input = document.getElementById('archivoAuditoria');
-            if(input.files.length === 0) return mostrarToast("Sube un archivo Excel.", "error");
-            document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cruzando...';
-            excelDataGlobal = {};
-
-            try {
-                for(let i=0; i<input.files.length; i++){
-                    let data = await input.files[i].arrayBuffer();
-                    await procesarArrayBufferExcel(data); 
-                }
-                sincronizarAppGlobal();
-                window.reRenderAuditoria();
-            } catch(e) { mostrarToast("Error leyendo Excel", "error"); console.error(e); }
-            document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-upload mr-1"></i> Procesar Archivos Locales';
-        };
-
-        function verificarParametrosURL() {
-            const params = new URLSearchParams(window.location.search);
-            if(params.has('medico')) {
-                cambiarSeccion('tnc');
-                window.seleccionarRegistroTNC(params.get('origen') || 'Sucursal', params.get('fecha') || '', params.get('lugar') || '', params.get('medico') || '', params.get('estudio') || '');
-                abrirModal('tnc');
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        }
-
         window.initAuditoria = async function() {
             try {
                 rawDataGlobal = [];
@@ -910,13 +885,13 @@
 
         window.aplicarFiltroRapido = function(tipo) {
             document.querySelectorAll('.btn-filtro-rapido').forEach(btn => {
-                btn.classList.remove('bg-emerald-100', 'text-emerald-700');
+                btn.classList.remove('bg-orange-100', 'text-orange-700');
                 btn.classList.add('bg-slate-100', 'text-slate-600');
             });
             const btnActivo = document.getElementById(`btn-${tipo}`);
             if(btnActivo) {
                 btnActivo.classList.remove('bg-slate-100', 'text-slate-600');
-                btnActivo.classList.add('bg-emerald-100', 'text-emerald-700');
+                btnActivo.classList.add('bg-orange-100', 'text-orange-700');
             }
 
             const hoy = new Date();
@@ -1012,7 +987,7 @@
                 const { hash, fecha, sucursalBase, medico, estudio, cE, cA } = item;
                 
                 let cHTML='', aHTML='';
-                let btnLupa = cE > 0 ? `<button onclick="verLupa('${hash}')" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-2 py-1 rounded ml-2 transition shadow-sm" title="Ver Metadatos Extraídos del Excel"><i class="fa-solid fa-magnifying-glass"></i></button>` : '';
+                let btnLupa = cE > 0 ? `<button onclick="verLupa('${hash}')" class="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-2 py-1 rounded ml-2 transition shadow-sm" title="Ver Metadatos Extraídos del Excel"><i class="fa-solid fa-magnifying-glass"></i></button>` : '';
 
                 if (cE > cA) { 
                     cHTML = 'bg-red-50 hover:bg-red-100 border-l-4 border-red-400'; 
@@ -1025,14 +1000,14 @@
                 window.discrepanciasTNC.push({hash: hash, cE: cE, cA: cA});
 
                 aHTML = `
-                    <button onclick="prepararCorreccion('${hash}', ${cE}, ${cA})" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Ajustar Base de Datos"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                    <button onclick="prepararCorreccion('${hash}', ${cE}, ${cA})" class="bg-orange-600 hover:bg-orange-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Ajustar Base de Datos"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
                     <button onclick="abrirModalTncAutomatica('${hash}', ${cE}, ${cA})" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button>
                     <button onclick="ignorarDiscrepancia('${hash}')" class="bg-slate-300 hover:bg-slate-400 text-slate-700 p-2 rounded-lg text-xs shadow-sm transition" title="Ignorar / Descartar"><i class="fa-solid fa-eye-slash"></i></button>
                 `;
                 
                 let alertMedico = medico.includes('[') ? `text-red-500 font-black` : `text-slate-700 font-bold`;
 
-                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursalBase}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-indigo-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black"><div class="flex items-center justify-center">${cE} ${btnLupa}</div></td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
+                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursalBase}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-orange-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black"><div class="flex items-center justify-center">${cE} ${btnLupa}</div></td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
             });
 
             tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-16 text-slate-400 italic">No hay discrepancias. La operación está sana o no has cruzado datos.</td></tr>';
@@ -1054,12 +1029,12 @@
             let html = '';
             let totalErr = Object.values(conteos).reduce((a,b) => a+b, 0);
             
-            let actTodas = window.sucursalActiva === "Todas" ? "bg-indigo-600 text-white shadow-md" : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100";
+            let actTodas = window.sucursalActiva === "Todas" ? "bg-orange-600 text-white shadow-md" : "bg-orange-50 text-orange-700 hover:bg-orange-100";
             html += `<button onclick="cambiarFiltroSucursal('Todas')" class="w-full text-left p-2.5 rounded-xl font-bold text-xs flex justify-between items-center transition-all ${actTodas}">Todas <span class="bg-black/20 px-2 py-0.5 rounded-lg text-[10px]">${totalErr}</span></button>`;
             
             for(let suc in conteos) {
                 let errs = conteos[suc];
-                let act = window.sucursalActiva === suc ? "bg-indigo-600 text-white shadow-md" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50";
+                let act = window.sucursalActiva === suc ? "bg-orange-600 text-white shadow-md" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50";
                 let badge = errs > 0 ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-600";
                 html += `<button onclick="cambiarFiltroSucursal('${suc}')" class="w-full text-left p-2.5 rounded-xl font-bold text-xs flex justify-between items-center transition-all mt-1 ${act}">${suc} <span class="${badge} px-2 py-0.5 rounded-lg text-[10px]">${errs}</span></button>`;
             }
@@ -1071,18 +1046,14 @@
             window.reRenderAuditoria();
         }
 
-        // ==========================================
-        // BOTÓN: ENRIQUECER MATCHES A VOLUNTAD
-        // ==========================================
         window.enriquecerMatchesMasivo = async function() {
-            if(!confirm(`¿Deseas inyectar los metadatos de Excel (Pacientes, Órdenes, Folios) a los ${window.matchesParaEnriquecer.length} grupos que hicieron Match perfecto?\n\n(Esto consumirá operaciones de escritura en Firebase)`)) return;
+            if(!confirm(`¿Deseas inyectar los metadatos de Excel a los ${window.matchesParaEnriquecer.length} grupos que hicieron Match perfecto?`)) return;
             const btn = document.getElementById('btn-bulk-enriquecer');
             const txtOriginal = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Enriqueciendo BD...'; btn.disabled = true;
 
             try {
                 let actualizados = 0;
-                
                 let hashesPorFecha = {};
                 for(let hash of window.matchesParaEnriquecer) {
                     const [fecha, sucursal, medico, estudio] = hash.split('|');
@@ -1093,7 +1064,6 @@
                 for(let fecha in hashesPorFecha) {
                     const qDocs = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", "==", fecha));
                     const qsDocs = await window.getDocs(qDocs);
-                    
                     const qLeg = window.query(window.collection(window.db, "registros"), window.where("fecha", "==", fecha));
                     const qsLeg = await window.getDocs(qLeg);
 
@@ -1103,7 +1073,6 @@
 
                         let docRefToUpdate = null;
 
-                        // BUSQUEDA EN PWA (NUEVA BD)
                         for(let d of qsDocs.docs) {
                             let data = d.data();
                             let dbSuc = normalizarDato(data.sucursal);
@@ -1113,7 +1082,6 @@
                                 if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed];
                             }
                             if (dbMed === item.medico && dbSuc === item.sucursal) {
-                                // Confirmar que el documento realmente tiene el estudio
                                 let hasStudy = false;
                                 if (data.estudios) {
                                     for(let k in data.estudios) {
@@ -1127,7 +1095,6 @@
                             }
                         }
 
-                        // BUSQUEDA EN LEGACY (VIEJA BD)
                         if (!docRefToUpdate) {
                             for(let d of qsLeg.docs) {
                                 let data = d.data();
@@ -1171,9 +1138,6 @@
             btn.innerHTML = txtOriginal; btn.disabled = false;
         };
 
-        // ==========================================
-        // ACCIONES MASIVAS Y CORRECCIÓN EN BD
-        // ==========================================
         window.aplicarAjuste = async function(fecha, sucursal, medico, estudio, cantApp, cantExcel) {
             if (cantExcel === cantApp) return;
 
@@ -1447,9 +1411,9 @@
                     const arg = `'${r.tipo}', '${r.fecha}', '${r.lugar}', '${r.medico}', '${r.estudio}'`;
                     const color = r.tipo === 'Sucursal' ? 'text-sky-600 bg-sky-50' : 'text-orange-600 bg-orange-50';
                     html += `
-                        <button onclick="seleccionarRegistroTNC(${arg})" class="w-full text-left p-3 bg-white hover:bg-emerald-50 border border-slate-100 rounded-xl text-xs transition flex justify-between items-center shadow-sm">
+                        <button onclick="seleccionarRegistroTNC(${arg})" class="w-full text-left p-3 bg-white hover:bg-orange-50 border border-slate-100 rounded-xl text-xs transition flex justify-between items-center shadow-sm">
                             <div>
-                                <b class="text-emerald-700 text-sm">${r.medico}</b> <span class="text-slate-400 font-bold ml-1">${r.fecha}</span><br>
+                                <b class="text-orange-700 text-sm">${r.medico}</b> <span class="text-slate-400 font-bold ml-1">${r.fecha}</span><br>
                                 <span class="text-slate-600 font-bold">${r.estudio}</span> <span class="text-slate-500">en ${r.lugar}</span>
                             </div>
                             <span class="${color} px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider">${r.tipo}</span>
@@ -1469,7 +1433,7 @@
             document.getElementById('tnc-estudio').value = estudio;
 
             document.getElementById('tnc-servicio-seleccionado').innerHTML = `
-                <span class="text-[10px] text-emerald-500 uppercase tracking-widest block mb-1">Servicio Afectado</span>
+                <span class="text-[10px] text-orange-500 uppercase tracking-widest block mb-1">Servicio Afectado</span>
                 <span class="text-sm font-black text-slate-800">${medico}</span><br>
                 <span class="font-bold text-slate-500">${estudio} <span class="font-normal mx-1">|</span> ${fecha} <span class="font-normal mx-1">|</span> ${lugar} (${origen})</span>
             `;
@@ -1563,7 +1527,7 @@
                 tbody.innerHTML += `
                     <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
                         <td class="p-4"><p class="font-bold text-slate-700">${d.fechaOperativa}</p><p class="text-[9px] text-slate-400 uppercase">${d.origen}</p></td>
-                        <td class="p-4"><p class="font-bold text-emerald-700 uppercase">${d.medico}</p><p class="text-[9px] font-bold text-slate-500 uppercase">${d.sucursal}</p></td>
+                        <td class="p-4"><p class="font-bold text-orange-700 uppercase">${d.medico}</p><p class="text-[9px] font-bold text-slate-500 uppercase">${d.sucursal}</p></td>
                         <td class="p-4 text-xs font-bold text-slate-600">${d.estudio}</td>
                         <td class="p-4 text-[10px] font-black text-red-600 uppercase">${d.clasificacion}</td>
                         <td class="p-4 text-xs text-slate-500 max-w-[200px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
