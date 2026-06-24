@@ -3,42 +3,506 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Unidades Móviles</title>
+    <title>Admin - Unidades Móviles LAPI</title>
+    
+    <link rel="manifest" href="manifest_admin.json">
+    <meta name="theme-color" content="#d946ef"> <!-- Fuchsia theme -->
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        const firebaseConfig = { /* Mismos datos de tu config */ };
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
-        window.getDocs = getDocs; window.collection = collection; window.query = query; window.orderBy = orderBy;
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.query = query;
+        window.orderBy = orderBy;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('f-inicio').value = '';
+            document.getElementById('f-fin').value = '';
+            buscarServicios(true); 
+        });
     </script>
     
     <style>
-        /* Estilos de impresión para el reporte de Unidades */
+        body { background-color: #fdf4ff; font-family: 'Inter', sans-serif; } /* Fondo fuchsia ultra claro */
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(240, 171, 252, 0.8); }
+        .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 50px); }
+        
+        .acordeon-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; }
+        .acordeon-content.open { max-height: 5000px; padding-top: 1rem; padding-bottom: 1rem; }
+        .filtros-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out; opacity: 0; }
+        .filtros-content.open { max-height: 1000px; opacity: 1; overflow: visible; }
+
+        /* ==========================================
+           REGLAS DE IMPRESIÓN (PDF CONTINUO INTELIGENTE)
+           ========================================== */
         @media print {
-            .no-print { display: none; }
-            .reporte-pagina { break-after: page; width: 100%; font-family: Arial, sans-serif; }
-            .foto-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-            .foto-img { width: 100%; border: 1px solid #ccc; border-radius: 4px; }
+            @page { size: portrait; margin: 10mm; } 
+            
+            body, html { background-color: white !important; height: auto !important; }
+            nav, main { display: none !important; }
+            
+            #zona-impresion, #zona-impresion * { visibility: visible; }
+            #zona-impresion { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; }
+            
+            .servicio-print-block { break-after: always; page-break-after: always; margin-bottom: 20px; width: 100%; }
+            .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+            
+            .header-box { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-family: Arial, sans-serif; font-size: 12px; }
+            .header-box td { border: 1px solid #000; padding: 5px; }
+            .header-title { font-weight: bold; font-size: 16px; text-align: center; }
+            
+            .info-grid { display: flex; justify-content: space-between; font-family: Arial, sans-serif; font-size: 11px; margin-bottom: 15px; }
+            .info-col { width: 48%; }
+            .line-field { border-bottom: 1px solid #000; display: inline-block; min-width: 150px; padding-left: 5px; font-weight: bold; }
+            
+            .comparativa-grid { display: flex; gap: 15px; width: 100%; font-family: Arial, sans-serif; }
+            .comparativa-col { width: 50%; border: 1px solid #000; border-radius: 5px; padding: 10px; }
+            
+            .titulo-fase { font-size: 14px; font-weight: bold; text-align: center; padding-bottom: 5px; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
+            .firma-img { max-height: 40px; vertical-align: middle; display: block; margin: 5px auto 0; }
+            .foto-print { max-width: 60px; max-height: 60px; object-fit: cover; border: 1px solid #ccc; border-radius: 4px; margin: 2px; display: inline-block; }
+            
+            .badge-mal { background-color: #fee2e2 !important; border: 1px solid #ef4444; color: #b91c1c; padding: 2px 4px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; margin: 2px; -webkit-print-color-adjust: exact; color-adjust: exact; }
+            .badge-bien { color: #15803d; font-size: 11px; font-weight: bold; }
         }
     </style>
 </head>
-<body class="bg-slate-50 p-6">
-    <div id="contenedor-admin" class="max-w-5xl mx-auto">
-        <h1 class="text-3xl font-black text-slate-800 mb-6"><i class="fa-solid fa-truck-fast text-orange-600 mr-2"></i> Reportes Unidades Móviles</h1>
-        <div id="lista-unidades" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Se carga via JS -->
+<body class="text-slate-800 flex h-screen overflow-hidden">
+
+    <!-- NAVEGACIÓN LATERAL -->
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-fuchsia-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-6 shadow-sm">
+        <div class="hidden md:flex mb-6 text-3xl"><i id="logo-snake" class="fa-solid fa-staff-snake transition-colors duration-500"></i></div>
+        <script>document.getElementById('logo-snake').classList.add(['text-red-500','text-orange-500','text-amber-500','text-emerald-500','text-teal-500','text-cyan-500','text-blue-500','text-indigo-500','text-violet-500','text-purple-500','text-fuchsia-500','text-pink-500'][Math.floor(Math.random()*12)]);</script>
+
+        <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-purple-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-purple-50 transition-all"><i class="fa-solid fa-globe text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase">Global</span>
+        </a>
+        <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-indigo-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-indigo-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase">Reportes</span>
+        </a>
+        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-emerald-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-emerald-50 transition-all"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase">Auditoría</span>
+        </a>
+        <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-teal-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-teal-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Control<br>Biol.</span>
+        </a>
+        <!-- ACTIVO -->
+        <a href="admin_unidades.html" class="flex flex-col items-center p-1 md:p-2 text-fuchsia-600 group">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-fuchsia-100 text-fuchsia-600 transition-all shadow-sm"><i class="fa-solid fa-truck text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Unidades<br>Móviles</span>
+        </a>
+    </nav>
+
+    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8 flex flex-col xl:flex-row gap-6 items-start">
+        
+        <!-- PANEL DE FILTROS COLAPSABLE -->
+        <div class="w-full xl:w-80 shrink-0 flex flex-col gap-4">
+            <div class="bg-gradient-to-br from-fuchsia-600 to-purple-800 p-6 rounded-3xl shadow-xl text-white transition-all">
+                
+                <div class="flex justify-between items-center mb-1">
+                    <h1 class="text-xl font-black tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-truck-fast text-fuchsia-200"></i> FLOTILLA
+                    </h1>
+                </div>
+                
+                <button onclick="buscarServicios(true)" class="w-full bg-fuchsia-500 hover:bg-fuchsia-400 text-white font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-md mt-3 flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Ver Solo en Ruta
+                </button>
+
+                <div onclick="toggleFiltros()" class="mt-4 pt-4 border-t border-fuchsia-500/30 flex justify-between items-center cursor-pointer select-none group">
+                    <p class="text-xs font-bold uppercase tracking-widest text-fuchsia-100 group-hover:text-white transition"><i class="fa-solid fa-sliders mr-1"></i> Búsqueda Avanzada</p>
+                    <i id="icon-filtros" class="fa-solid fa-chevron-down text-fuchsia-200 transition-transform"></i>
+                </div>
+
+                <div id="panel-filtros" class="filtros-content mt-2">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[9px] font-black text-fuchsia-200 uppercase mb-1">Unidad</label>
+                            <select id="f-unidad" class="w-full p-3 bg-fuchsia-900/50 border border-fuchsia-500/50 rounded-lg text-sm font-bold outline-none text-white focus:border-white transition-colors appearance-none cursor-pointer">
+                                <option value="todas">Todas las Unidades</option>
+                                <option value="UM-01">UM-01</option>
+                                <option value="UM-02">UM-02</option>
+                                <option value="UM-03">UM-03</option>
+                            </select>
+                        </div>
+
+                        <div class="pt-2 border-t border-fuchsia-500/30">
+                            <label class="block text-[9px] font-black text-fuchsia-200 uppercase mb-2">Rango de Salida</label>
+                            <div class="grid grid-cols-3 gap-1 mb-2">
+                                <button onclick="aplicarFiltroRapido('semana')" class="bg-fuchsia-900/50 hover:bg-fuchsia-800 text-white text-[9px] font-bold py-1.5 rounded transition border border-fuchsia-500/30">Semana</button>
+                                <button onclick="aplicarFiltroRapido('mes')" class="bg-fuchsia-900/50 hover:bg-fuchsia-800 text-white text-[9px] font-bold py-1.5 rounded transition border border-fuchsia-500/30">Mes</button>
+                                <button onclick="aplicarFiltroRapido('año')" class="bg-fuchsia-900/50 hover:bg-fuchsia-800 text-white text-[9px] font-bold py-1.5 rounded transition border border-fuchsia-500/30">Año</button>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="date" id="f-inicio" class="w-full p-2 bg-fuchsia-900/50 border border-fuchsia-500/50 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
+                                <input type="date" id="f-fin" class="w-full p-2 bg-fuchsia-900/50 border border-fuchsia-500/50 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-fuchsia-500/30">
+                            <label class="block text-[9px] font-black text-fuchsia-200 uppercase mb-1">Empresa Destino</label>
+                            <input type="text" id="f-empresa" placeholder="Ej. AEROMEXICO" class="w-full p-3 bg-fuchsia-900/50 border border-fuchsia-500/50 rounded-lg text-sm font-bold outline-none text-white placeholder-white/40 focus:border-white transition-colors uppercase">
+                        </div>
+                    </div>
+
+                    <button onclick="buscarServicios(false)" id="btn-buscar" class="w-full bg-white text-fuchsia-700 hover:bg-fuchsia-50 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-lg mt-6 flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-magnifying-glass"></i> Consultar Historial
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <div class="glass p-4 rounded-2xl shadow-sm text-center w-1/2 flex flex-col justify-center border-l-4 border-fuchsia-400">
+                    <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold mb-1">Listados</p>
+                    <p id="lbl-resultados" class="text-3xl font-black text-fuchsia-600 leading-none">0</p>
+                </div>
+
+                <button onclick="generarPDFGlobal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-2xl shadow-xl transition-all active:scale-95 flex flex-col justify-center items-center gap-1 border-b-4 border-slate-900">
+                    <i class="fa-solid fa-file-pdf text-red-400 text-2xl"></i> 
+                    <span class="text-[10px] uppercase tracking-widest text-center leading-tight">Generar<br>Reporte</span>
+                </button>
+            </div>
         </div>
-    </div>
+
+        <!-- PANEL DE RESULTADOS (ACORDEONES) -->
+        <div class="w-full flex-1">
+            <div class="flex justify-between items-end mb-6 border-b border-fuchsia-200 pb-4">
+                <h2 id="titulo-resultados" class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-route text-fuchsia-500 mr-2"></i> Unidades en Ruta (Activas)</h2>
+            </div>
+
+            <div id="contenedor-resultados" class="flex flex-col gap-4 pb-12">
+                <div class="text-center py-20 text-slate-400 italic">
+                    <i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-fuchsia-200 block"></i>
+                    Cargando servicios...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ZONA OCULTA PARA GENERACIÓN DE PDF -->
+    <div id="zona-impresion" class="hidden"></div>
 
     <script>
-        // Lógica de carga similar a admin_biologico.html pero con los campos de 'unidades_moviles'
-        // El motor PDF inyectará:
-        // 1. Encabezado de Reporte de Inicio (con sus firmas/fotos)
-        // 2. Encabezado de Reporte de Término (con sus firmas/fotos)
+        let serviciosGlobales = []; 
+
+        window.toggleFiltros = function() {
+            const panel = document.getElementById('panel-filtros');
+            const icon = document.getElementById('icon-filtros');
+            panel.classList.toggle('open');
+            if(panel.classList.contains('open')) icon.style.transform = 'rotate(180deg)';
+            else icon.style.transform = 'rotate(0deg)';
+        };
+
+        window.aplicarFiltroRapido = function(tipo) {
+            const hoy = new Date();
+            let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+            if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
+            else if (tipo === 'mes') { iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`; }
+            else if (tipo === 'año') { iStr = `${hoy.getFullYear()}-01-01`; }
+            document.getElementById('f-inicio').value = iStr; document.getElementById('f-fin').value = fStr;
+        };
+
+        window.buscarServicios = async function(soloActivosPorDefecto = false) {
+            const btn = document.getElementById('btn-buscar');
+            if(!soloActivosPorDefecto && btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Buscando...'; btn.disabled = true; }
+            
+            const fUni = document.getElementById('f-unidad') ? document.getElementById('f-unidad').value : 'todas';
+            const fIni = document.getElementById('f-inicio').value;
+            const fFin = document.getElementById('f-fin').value;
+            const fEmp = document.getElementById('f-empresa').value.trim().toUpperCase();
+
+            const titulo = document.getElementById('titulo-resultados');
+            if(soloActivosPorDefecto) {
+                titulo.innerHTML = `<i class="fa-solid fa-route text-fuchsia-500 mr-2"></i> Unidades en Ruta (Activas)`;
+                document.getElementById('f-inicio').value = ''; document.getElementById('f-fin').value = ''; document.getElementById('f-empresa').value = '';
+                const panel = document.getElementById('panel-filtros');
+                if(panel && panel.classList.contains('open')) toggleFiltros();
+            } else {
+                titulo.innerHTML = `<i class="fa-solid fa-folder-open text-fuchsia-500 mr-2"></i> Historial de Unidades`;
+            }
+
+            try {
+                const q = window.query(window.collection(window.db, "unidades_moviles"), window.orderBy("timestamp", "desc"));
+                const qs = await window.getDocs(q);
+                
+                serviciosGlobales = [];
+                
+                qs.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    let pasaFiltro = true;
+
+                    if(fUni !== "todas" && data.unidad !== fUni) pasaFiltro = false;
+                    
+                    if(soloActivosPorDefecto) {
+                        if(data.estado !== "activo") pasaFiltro = false;
+                    } else {
+                        if(fEmp && !data.empresa.toUpperCase().includes(fEmp)) pasaFiltro = false;
+                        if(fIni && fFin && pasaFiltro) {
+                            if(!(data.fecha_inicio >= fIni && data.fecha_inicio <= fFin)) pasaFiltro = false;
+                        }
+                    }
+
+                    if(pasaFiltro) serviciosGlobales.push(data);
+                });
+
+                renderizarListadoAcordeon();
+
+            } catch (e) {
+                console.error(e);
+                alert("Error extrayendo datos de Firebase.");
+            }
+
+            if(!soloActivosPorDefecto && btn) { btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Consultar Historial'; btn.disabled = false; }
+        };
+
+        function renderizarListadoAcordeon() {
+            const cont = document.getElementById('contenedor-resultados');
+            document.getElementById('lbl-resultados').innerText = serviciosGlobales.length;
+            cont.innerHTML = "";
+
+            if(serviciosGlobales.length === 0) {
+                cont.innerHTML = `<div class="text-center py-10 glass rounded-3xl"><p class="text-sm font-bold text-slate-500">No se encontraron registros de unidades.</p></div>`;
+                return;
+            }
+
+            serviciosGlobales.forEach((serv) => {
+                const bgTag = serv.estado === 'activo' ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                const txtTag = serv.estado === 'activo' ? 'EN RUTA' : 'FINALIZADO';
+                
+                // Extraer daños
+                let danosInicio = extraerDanos(serv.inicio);
+                let danosTermino = serv.termino ? extraerDanos(serv.termino) : [];
+
+                cont.innerHTML += `
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div onclick="toggleAcordeon('acordeon-${serv.id}')" class="p-5 cursor-pointer hover:bg-slate-50 transition relative select-none">
+                            <div class="absolute top-5 right-5 ${bgTag} border text-[9px] font-black uppercase px-2 py-1 rounded tracking-wider">${txtTag}</div>
+                            
+                            <h3 class="font-black text-lg text-slate-800 uppercase leading-tight pr-20 mb-2"><i class="fa-solid fa-truck text-slate-400 mr-1"></i> ${serv.unidad}</h3>
+                            
+                            <div class="flex flex-wrap gap-2 text-[10px] font-medium text-slate-500">
+                                <span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200"><i class="fa-regular fa-building mr-1"></i> ${serv.empresa}</span>
+                                <span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200"><i class="fa-regular fa-calendar mr-1"></i> Salida: ${serv.fecha_inicio}</span>
+                            </div>
+
+                            <div class="absolute bottom-5 right-5 text-slate-300 text-xl"><i class="fa-solid fa-chevron-down"></i></div>
+                        </div>
+                        
+                        <div id="acordeon-${serv.id}" class="acordeon-content bg-slate-50 border-t border-slate-100">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- SALIDA -->
+                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                    <h4 class="text-xs font-black uppercase text-orange-500 tracking-widest mb-3 border-b border-orange-100 pb-2"><i class="fa-solid fa-truck-arrow-right mr-1"></i> Salida (${serv.fecha_inicio})</h4>
+                                    <div class="space-y-3 text-xs">
+                                        <p><span class="font-bold text-slate-400 block text-[9px] uppercase">Responsable</span> ${serv.inicio.responsable}</p>
+                                        <div>
+                                            <span class="font-bold text-slate-400 block text-[9px] uppercase mb-1">Detalles Reportados</span>
+                                            ${generarBadgesDanos(danosInicio)}
+                                        </div>
+                                        <p><span class="font-bold text-slate-400 block text-[9px] uppercase">Observaciones</span> <span class="italic text-slate-600">"${serv.inicio.observaciones || 'Ninguna.'}"</span></p>
+                                        <div>
+                                            <span class="font-bold text-slate-400 block text-[9px] uppercase mb-1">Evidencia Fotográfica</span>
+                                            <div class="flex gap-2 flex-wrap">${generarGaleriaHTML(serv.inicio.fotos_urls)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- LLEGADA -->
+                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                    <h4 class="text-xs font-black uppercase text-indigo-500 tracking-widest mb-3 border-b border-indigo-100 pb-2"><i class="fa-solid fa-right-from-bracket mr-1"></i> Recepción</h4>
+                                    ${serv.termino ? `
+                                    <div class="space-y-3 text-xs">
+                                        <p><span class="font-bold text-slate-400 block text-[9px] uppercase">Responsable</span> ${serv.termino.responsable}</p>
+                                        <div>
+                                            <span class="font-bold text-slate-400 block text-[9px] uppercase mb-1">Detalles Reportados</span>
+                                            ${generarBadgesDanos(danosTermino)}
+                                        </div>
+                                        <p><span class="font-bold text-slate-400 block text-[9px] uppercase">Observaciones</span> <span class="italic text-slate-600">"${serv.termino.observaciones || 'Ninguna.'}"</span></p>
+                                        <div>
+                                            <span class="font-bold text-slate-400 block text-[9px] uppercase mb-1">Evidencia Fotográfica</span>
+                                            <div class="flex gap-2 flex-wrap">${generarGaleriaHTML(serv.termino.fotos_urls)}</div>
+                                        </div>
+                                    </div>
+                                    ` : `
+                                    <div class="h-full flex flex-col items-center justify-center text-slate-300 py-10">
+                                        <i class="fa-solid fa-route text-3xl mb-2"></i>
+                                        <p class="text-xs font-bold uppercase tracking-widest">En Ruta</p>
+                                    </div>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function extraerDanos(obj) {
+            let daños = [];
+            if(obj && obj.evaluacion) {
+                for(let [item, estado] of Object.entries(obj.evaluacion)) {
+                    if(estado === 'Mal') daños.push(item);
+                }
+            }
+            return daños;
+        }
+
+        function generarBadgesDanos(arrayDanos) {
+            if(arrayDanos.length === 0) return '<span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded border border-emerald-200"><i class="fa-solid fa-check-circle mr-1"></i> Sin daños</span>';
+            return arrayDanos.map(d => `<span class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded text-[9px] font-bold mr-1 mb-1 inline-block">${d}</span>`).join('');
+        }
+
+        function generarGaleriaHTML(urls) {
+            if(!urls || urls.length === 0) return '<span class="text-[9px] text-slate-400 italic">Sin fotos.</span>';
+            return urls.map(url => `<img src="${url}" class="w-12 h-12 object-cover rounded-md border border-slate-200 cursor-pointer hover:opacity-80 transition" onclick="window.open('${url}', '_blank')">`).join('');
+        }
+
+        window.toggleAcordeon = function(idDOM) {
+            const el = document.getElementById(idDOM);
+            el.classList.toggle('open');
+        };
+
+        // =========================================================
+        // MOTOR DE RENDERIZADO PDF (DOBLE COLUMNA INTELIGENTE)
+        // =========================================================
+        window.generarPDFGlobal = function() {
+            if(serviciosGlobales.length === 0) {
+                alert("No hay servicios en pantalla para generar el PDF."); return;
+            }
+
+            const zona = document.getElementById('zona-impresion');
+            zona.innerHTML = '';
+            let htmlPDF = '';
+
+            serviciosGlobales.forEach(data => {
+                htmlPDF += `<div class="servicio-print-block">`;
+                htmlPDF += renderizarPDF_Servicio(data);
+                htmlPDF += `</div>`;
+            });
+
+            zona.innerHTML = htmlPDF;
+            
+            zona.classList.remove('hidden');
+            setTimeout(() => { 
+                window.print(); 
+                zona.classList.add('hidden');
+            }, 800);
+        };
+
+        function renderizarPDF_Servicio(data) {
+            const fechaFin = data.termino ? data.termino.fecha : 'EN RUTA';
+            
+            return `
+                <table class="header-box">
+                    <tr>
+                        <td style="width: 25%; text-align: center; vertical-align: middle;">
+                            <img src="logoLAPI.png" style="max-width: 150px; max-height: 65px; display: block; margin: 0 auto;">
+                        </td>
+                        <td style="width: 50%;" class="header-title">CONTROL OPERATIVO<br>INSPECCIÓN DE UNIDADES MÓVILES</td>
+                        <td style="width: 25%; padding: 0;">
+                            <table style="width: 100%; height: 100%; border-collapse: collapse; text-align: center; border: none;">
+                                <tr><td style="border-top: none; border-left: none; font-weight: bold; width: 50%;">Código:</td><td style="border-top: none; border-right: none;">UM-CHK-01</td></tr>
+                                <tr><td style="border-left: none; font-weight: bold;">Versión:</td><td style="border-right: none;">1</td></tr>
+                                <tr><td style="border-bottom: none; border-left: none; font-weight: bold;">Fecha Impresión:</td><td style="border-bottom: none; border-right: none;">${new Date().toLocaleDateString()}</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="info-grid avoid-break">
+                    <div class="info-col">
+                        <div style="margin-bottom: 5px;">UNIDAD: <span class="line-field">${data.unidad}</span></div>
+                        <div style="margin-bottom: 5px;">EMPRESA: <span class="line-field">${data.empresa}</span></div>
+                    </div>
+                    <div class="info-col">
+                        <div style="margin-bottom: 5px;">FECHA SALIDA: <span class="line-field">${data.fecha_inicio}</span></div>
+                        <div style="margin-bottom: 5px;">FECHA LLEGADA: <span class="line-field">${fechaFin}</span></div>
+                    </div>
+                </div>
+
+                <div class="comparativa-grid">
+                    <!-- COLUMNA IZQUIERDA: SALIDA -->
+                    <div class="comparativa-col avoid-break">
+                        <div class="titulo-fase" style="color: #ea580c;">REPORTE DE SALIDA (INICIO)</div>
+                        ${generarBloquePDFFase(data.inicio)}
+                    </div>
+
+                    <!-- COLUMNA DERECHA: RECEPCIÓN -->
+                    <div class="comparativa-col avoid-break">
+                        <div class="titulo-fase" style="color: #4f46e5;">REPORTE DE RECEPCIÓN (TÉRMINO)</div>
+                        ${data.termino ? generarBloquePDFFase(data.termino) : '<div style="text-align:center; padding: 40px; color: #999; font-style: italic;">Servicio activo en ruta.<br>Aún no hay reporte de recepción.</div>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function generarBloquePDFFase(faseData) {
+            let daños = extraerDanos(faseData);
+            let htmlDanos = daños.length === 0 
+                ? '<div class="badge-bien">✔ Unidad reportada sin daños.</div>' 
+                : daños.map(d => `<span class="badge-mal">${d}</span>`).join('');
+
+            let htmlFotos = '';
+            if(faseData.fotos_urls && faseData.fotos_urls.length > 0) {
+                htmlFotos = faseData.fotos_urls.map(url => `<img src="${url}" class="foto-print">`).join('');
+            } else {
+                htmlFotos = '<span style="font-size: 10px; color: #666; font-style: italic;">Sin evidencia fotográfica adjunta.</span>';
+            }
+
+            return `
+                <div style="font-size: 11px; margin-bottom: 10px;">
+                    <b>Responsable:</b> ${faseData.responsable}<br>
+                    <b>Fecha Registro:</b> ${faseData.fecha}
+                </div>
+                
+                <div style="margin-bottom: 10px; min-height: 40px;">
+                    <b style="font-size: 11px; display: block; margin-bottom: 4px;">Detalles Reportados:</b>
+                    ${htmlDanos}
+                </div>
+
+                <div style="margin-bottom: 10px; font-size: 11px;">
+                    <b style="display: block; margin-bottom: 2px;">Observaciones:</b>
+                    <div style="padding: 5px; border: 1px dashed #ccc; border-radius: 4px; min-height: 30px; font-style: italic;">
+                        ${faseData.observaciones || 'Ninguna.'}
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <b style="font-size: 11px; display: block; margin-bottom: 4px;">Evidencia:</b>
+                    <div>${htmlFotos}</div>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px; border-top: 1px solid #000; padding-top: 5px; width: 80%; margin-left: auto; margin-right: auto;">
+                    ${faseData.firma ? `<img src="${faseData.firma}" class="firma-img">` : ''}
+                    <span style="font-size: 10px; font-weight: bold;">FIRMA RESPONSABLE</span>
+                </div>
+            `;
+        }
     </script>
 </body>
 </html>
