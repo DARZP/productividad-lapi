@@ -59,13 +59,18 @@
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <!-- NAVEGACIÓN LATERAL UNIFICADA LAPI -->
-    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-6 shadow-sm">
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom">
         
-        <div class="hidden md:flex mb-6 text-3xl">
-            <i id="logo-snake-3" class="fa-solid fa-staff-snake transition-colors duration-500"></i>
+        <div class="hidden md:flex mb-2 text-3xl">
+            <i id="logo-snake" class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i>
         </div>
-        <script>document.getElementById('logo-snake-3').classList.add(['text-red-500','text-orange-500','text-amber-500','text-emerald-500','text-teal-500','text-cyan-500','text-blue-500','text-indigo-500','text-violet-500','text-purple-500','text-fuchsia-500','text-pink-500'][Math.floor(Math.random()*12)]);</script>
+
+        <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
+        </a>
+
+        <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
 
         <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
@@ -75,7 +80,6 @@
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Reportes</span>
         </a>
-        <!-- ACTIVO -->
         <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span>
@@ -94,9 +98,9 @@
 
     <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8 flex flex-col">
         
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-3xl shadow-xl text-white gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-3xl shadow-md text-white gap-4">
             <div>
-                <h1 class="text-2xl font-black tracking-tight flex items-center gap-3">
+                <h1 class="text-3xl font-black tracking-tight flex items-center gap-3">
                     <i class="fa-solid fa-inbox text-orange-200"></i> BANDEJA DE AUDITORÍA
                 </h1>
                 <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest text-orange-100">Centro de Calidad y TNC</p>
@@ -112,103 +116,99 @@
         <div id="sec-cruce" class="block animate-fade-in flex-1">
             
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="glass p-4 rounded-2xl text-center border-b-4 border-emerald-500 shadow-sm"><p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Match Ocultos (OK)</p><p id="kpi-aud-match" class="text-3xl font-black text-emerald-600 mt-1">0</p></div>
-                <div class="glass p-4 rounded-2xl text-center border-b-4 border-red-500 shadow-sm"><p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Faltan en App</p><p id="kpi-aud-rojo" class="text-3xl font-black text-red-600 mt-1">0</p></div>
-                <div class="glass p-4 rounded-2xl text-center border-b-4 border-amber-500 shadow-sm"><p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sobran en App</p><p id="kpi-aud-ama" class="text-3xl font-black text-amber-600 mt-1">0</p></div>
-                <div class="glass p-4 rounded-2xl text-center border-b-4 border-slate-400 shadow-sm relative group">
-                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Descartados</p>
+                <div class="glass p-4 rounded-3xl text-center border-b-4 border-emerald-500 shadow-sm"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Match Ocultos (OK)</p><p id="kpi-aud-match" class="text-3xl font-black text-emerald-600 mt-1">0</p></div>
+                <div class="glass p-4 rounded-3xl text-center border-b-4 border-red-500 shadow-sm"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Faltan en App</p><p id="kpi-aud-rojo" class="text-3xl font-black text-red-600 mt-1">0</p></div>
+                <div class="glass p-4 rounded-3xl text-center border-b-4 border-amber-500 shadow-sm"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sobran en App</p><p id="kpi-aud-ama" class="text-3xl font-black text-amber-600 mt-1">0</p></div>
+                <div class="glass p-4 rounded-3xl text-center border-b-4 border-slate-400 shadow-sm relative group overflow-hidden">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Descartados</p>
                     <p id="kpi-aud-ign" class="text-3xl font-black text-slate-400 mt-1">0</p>
-                    <button onclick="limpiarIgnorados()" class="absolute inset-0 bg-slate-800/80 text-white font-bold text-[10px] rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm uppercase tracking-widest">Recuperar Todos</button>
+                    <button onclick="limpiarIgnorados()" class="absolute inset-0 bg-slate-800/90 text-white font-bold text-[10px] rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm uppercase tracking-widest cursor-pointer">Recuperar Todos</button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 
-                <div class="xl:col-span-1 space-y-6">
+                <div class="glass p-6 rounded-3xl shadow-sm border-l-4 border-sky-500 relative flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 bg-sky-100 text-sky-600 text-[9px] font-black px-2 py-1 rounded-bl-lg">M2M ENABLED</div>
+                    <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Origen de Datos (Excel)</h3>
                     
-                    <div class="glass p-5 rounded-2xl shadow-sm border-l-4 border-sky-500 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 bg-sky-100 text-sky-600 text-[9px] font-black px-2 py-1 rounded-bl-lg">M2M ENABLED</div>
-                        <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Origen de Datos</h3>
-                        <button onclick="iniciarExtraccionInteligente()" class="w-full bg-[#0078d4] hover:bg-[#005a9e] text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm active:scale-95 mb-4 flex items-center justify-center gap-2">
-                            <i class="fa-brands fa-microsoft text-lg"></i> Extraer de OneDrive
-                        </button>
-                        <div class="relative flex py-2 items-center mb-2">
-                            <div class="flex-grow border-t border-slate-200"></div>
-                            <span class="flex-shrink-0 mx-4 text-slate-400 text-[9px] font-bold uppercase tracking-widest">Opción Manual</span>
-                            <div class="flex-grow border-t border-slate-200"></div>
-                        </div>
-                        <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="w-full mb-3 text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer bg-slate-50 border border-slate-200 p-2 rounded-xl">
-                        <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-2.5 rounded-xl transition-all shadow-sm text-xs active:scale-95"><i class="fa-solid fa-upload mr-1"></i> Procesar Archivos Locales</button>
+                    <button onclick="iniciarExtraccionInteligente()" class="w-full bg-[#0078d4] hover:bg-[#005a9e] text-white font-bold py-2.5 rounded-xl transition-all shadow-md text-sm active:scale-95 mb-4 flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-microsoft text-lg"></i> Extraer de OneDrive
+                    </button>
+                    
+                    <div class="relative flex py-1 items-center mb-2">
+                        <div class="flex-grow border-t border-slate-200"></div>
+                        <span class="flex-shrink-0 mx-4 text-slate-400 text-[9px] font-bold uppercase tracking-widest">O Archivo Local</span>
+                        <div class="flex-grow border-t border-slate-200"></div>
                     </div>
                     
-                    <div class="glass p-5 rounded-2xl shadow-sm border-l-4 border-orange-500">
-                        <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-calendar-day mr-1"></i> Rango Operativo</h3>
-                        <div class="grid grid-cols-2 gap-2 mb-4">
-                            <button id="btn-mes_anterior" onclick="aplicarFiltroRapido('mes_anterior')" class="btn-filtro-rapido bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold py-2 rounded-lg transition tracking-tighter">Mes Anterior</button>
-                            <button id="btn-semana_anterior" onclick="aplicarFiltroRapido('semana_anterior')" class="btn-filtro-rapido bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold py-2 rounded-lg transition tracking-tighter">Semana Ant.</button>
-                            <button id="btn-mes_actual" onclick="aplicarFiltroRapido('mes_actual')" class="btn-filtro-rapido bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold py-2 rounded-lg transition tracking-tighter">Mes Actual</button>
-                            <button id="btn-semana_actual" onclick="aplicarFiltroRapido('semana_actual')" class="btn-filtro-rapido bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold py-2 rounded-lg transition tracking-tighter">Semana Act.</button>
-                        </div>
-                        <input type="date" id="a-inicio" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-3 border border-slate-300">
-                        <input type="date" id="a-fin" class="w-full p-2.5 bg-white text-slate-800 rounded-lg text-xs font-bold outline-none mb-4 border border-slate-300">
-                        <button onclick="window.initAuditoria()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-2.5 rounded-xl transition-all text-xs active:scale-95">Aplicar Vista</button>
-                    </div>
-
-                    <div class="glass p-4 rounded-2xl shadow-sm border-l-4 border-indigo-500">
-                        <h3 class="font-black text-xs uppercase tracking-wider mb-3 text-slate-500"><i class="fa-solid fa-list-ul mr-1"></i> Sucursales con Tareas</h3>
-                        <div id="menu-sucursales" class="space-y-1.5 max-h-48 overflow-y-auto scroll-custom pr-2">
-                            <p class="text-[10px] text-slate-400 italic py-2 text-center">Cruza datos para ver pendientes.</p>
-                        </div>
-                    </div>
+                    <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="w-full mb-3 text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
+                    <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-2.5 rounded-xl transition-all shadow-sm text-xs active:scale-95 mt-auto"><i class="fa-solid fa-upload mr-1"></i> Cruzar Archivos Locales</button>
                 </div>
                 
-                <div class="xl:col-span-3 flex flex-col">
-                    <div class="glass rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200 min-h-[500px]">
-                        
-                        <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                            <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest"><span id="lbl-sucursal-activa" class="text-orange-600 bg-orange-100 px-2 py-0.5 rounded mr-2">TODAS</span> Discrepancias Pendientes</h3>
-                            
-                            <div class="flex flex-wrap items-center gap-2">
-                                <button id="btn-bulk-enriquecer" onclick="enriquecerMatchesMasivo()" style="display:none;" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-brain mr-1"></i> Enriquecer Matches</button>
-                                <button id="btn-bulk-inyectar" onclick="inyectarFaltantesMasivo()" style="display:none;" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Inyectar Visibles</button>
-                                <button id="btn-bulk-eliminar" onclick="eliminarSobrantesMasivo()" style="display:none;" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-eraser mr-1"></i> Eliminar Visibles</button>
-                                <button id="btn-bulk-tnc" onclick="generarTncMasivo()" style="display:none;" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-triangle-exclamation mr-1"></i> TNCs Masivos</button>
-                                <span id="status-db" class="text-[10px] text-slate-500 font-bold ml-2"><i class="fa-solid fa-spinner fa-spin"></i> Listo</span>
-                            </div>
-                        </div>
-
-                        <div class="overflow-x-auto scroll-custom flex-1">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-200">
-                                    <tr>
-                                        <th class="p-4">Fecha / Lugar</th>
-                                        <th class="p-4">Médico Responsable</th>
-                                        <th class="p-4">Estudio</th>
-                                        <th class="p-4 text-center">Excel</th>
-                                        <th class="p-4 text-center">En App</th>
-                                        <th class="p-4 text-center">Acción Inmediata</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabla-auditoria" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs bg-slate-50/50">
-                                    <tr><td colspan="6" class="text-center py-16 text-slate-400 italic">No hay discrepancias. La operación está sana o no has cruzado datos.</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
+                <div class="glass p-6 rounded-3xl shadow-sm border-l-4 border-orange-500 flex flex-col justify-between">
+                    <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-calendar-day mr-1"></i> Rango Operativo</h3>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <button id="btn-mes_anterior" onclick="aplicarFiltroRapido('mes_anterior')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] font-bold py-2 rounded-lg transition tracking-tighter">Mes Anterior</button>
+                        <button id="btn-semana_anterior" onclick="aplicarFiltroRapido('semana_anterior')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] font-bold py-2 rounded-lg transition tracking-tighter">Semana Ant.</button>
+                        <button id="btn-mes_actual" onclick="aplicarFiltroRapido('mes_actual')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] font-bold py-2 rounded-lg transition tracking-tighter">Mes Actual</button>
+                        <button id="btn-semana_actual" onclick="aplicarFiltroRapido('semana_actual')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] font-bold py-2 rounded-lg transition tracking-tighter">Semana Act.</button>
                     </div>
+                    <div class="flex gap-2 w-full mb-4">
+                        <input type="date" id="a-inicio" class="w-full p-2.5 bg-slate-50 text-slate-800 rounded-xl text-xs font-bold outline-none border border-slate-200 focus:border-orange-400 transition-colors">
+                        <input type="date" id="a-fin" class="w-full p-2.5 bg-slate-50 text-slate-800 rounded-xl text-xs font-bold outline-none border border-slate-200 focus:border-orange-400 transition-colors">
+                    </div>
+                    <button onclick="window.initAuditoria()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-2.5 rounded-xl transition-all text-xs active:scale-95 mt-auto shadow-md">Aplicar Vista</button>
+                </div>
+
+                <div class="glass p-6 rounded-3xl shadow-sm border-l-4 border-indigo-500 flex flex-col">
+                    <h3 class="font-black text-xs uppercase tracking-wider mb-3 text-slate-500"><i class="fa-solid fa-list-ul mr-1"></i> Sucursales / Empresas con Tareas</h3>
+                    <div id="menu-sucursales" class="space-y-1.5 overflow-y-auto scroll-custom pr-2 flex-1 max-h-[160px]">
+                        <p class="text-[10px] text-slate-400 italic py-6 text-center">Cruza datos para ver sucursales pendientes.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass rounded-3xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200 min-h-[500px]">
+                <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest"><span id="lbl-sucursal-activa" class="text-orange-600 bg-orange-100 px-2 py-0.5 rounded mr-2 border border-orange-200">TODAS</span> Discrepancias Pendientes</h3>
+                    
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="btn-bulk-enriquecer" onclick="enriquecerMatchesMasivo()" style="display:none;" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-brain mr-1"></i> Enriquecer Matches</button>
+                        <button id="btn-bulk-inyectar" onclick="inyectarFaltantesMasivo()" style="display:none;" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Inyectar Visibles</button>
+                        <button id="btn-bulk-eliminar" onclick="eliminarSobrantesMasivo()" style="display:none;" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-eraser mr-1"></i> Eliminar Visibles</button>
+                        <button id="btn-bulk-tnc" onclick="generarTncMasivo()" style="display:none;" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] shadow-sm transition-all active:scale-95 uppercase tracking-widest"><i class="fa-solid fa-triangle-exclamation mr-1"></i> TNCs Masivos</button>
+                        <span id="status-db" class="text-[10px] text-slate-500 font-bold ml-2"><i class="fa-solid fa-spinner fa-spin"></i> Listo</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto scroll-custom flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-200">
+                            <tr>
+                                <th class="p-4">Fecha / Lugar</th>
+                                <th class="p-4">Médico Responsable</th>
+                                <th class="p-4">Estudio</th>
+                                <th class="p-4 text-center">Excel</th>
+                                <th class="p-4 text-center">En App</th>
+                                <th class="p-4 text-center">Acción Inmediata</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-auditoria" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs bg-slate-50/30">
+                            <tr><td colspan="6" class="text-center py-20 text-slate-400 italic font-bold">No hay discrepancias. La operación está sana o no has cruzado datos.</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN TNC Y PERFIL                       -->
-        <!-- ========================================== -->
         <div id="sec-tnc" class="hidden animate-fade-in flex-1">
             <div class="glass p-6 rounded-3xl shadow-sm flex flex-col min-h-full border border-slate-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-slate-200 pb-4 gap-4">
-                    <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><i class="fa-solid fa-list-check text-orange-600"></i> Control de Trabajos No Conformes (TNC)</h2>
+                    <h2 class="text-xl font-black text-slate-800 flex items-center gap-2"><i class="fa-solid fa-list-check text-orange-600"></i> Control de Trabajos No Conformes (TNC)</h2>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="abrirBuscadorUniversal()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-search mr-1"></i> Buscar Servicio y Levantar TNC</button>
-                        <button onclick="exportarTNCs()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-95"><i class="fa-solid fa-file-excel mr-1"></i> Exportar</button>
+                        <button onclick="abrirBuscadorUniversal()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-md active:scale-95"><i class="fa-solid fa-search mr-1"></i> Levantar TNC Manual</button>
+                        <button onclick="exportarTNCs()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-md active:scale-95"><i class="fa-solid fa-file-excel text-emerald-400 mr-1"></i> Exportar a Excel</button>
                     </div>
                 </div>
 
@@ -218,7 +218,7 @@
                     <button onclick="filtrarTickets('Cerrado')" id="tab-Cerrado" class="estado-tab pb-2 text-sm font-bold text-slate-500 transition-colors uppercase tracking-widest"><i class="fa-solid fa-check-double text-emerald-500 mr-1"></i> Cerrados (<span id="c-cerrados">0</span>)</button>
                 </div>
 
-                <div class="overflow-x-auto scroll-custom flex-1">
+                <div class="overflow-x-auto scroll-custom flex-1 rounded-xl border border-slate-200">
                     <table class="w-full text-left border-collapse">
                         <thead class="sticky top-0 bg-slate-50 z-10 text-[11px] uppercase text-slate-500 border-b border-slate-200 shadow-sm">
                             <tr><th class="p-4">Fecha Suceso</th><th class="p-4">Médico / Lugar</th><th class="p-4">Estudio</th><th class="p-4">Categoría TNC</th><th class="p-4">Notas Internas</th><th class="p-4 text-center">Estado</th><th class="p-4 text-center">Gestión</th></tr>
@@ -233,45 +233,44 @@
 
         <div id="sec-perfil" class="hidden animate-fade-in flex-1">
             <div class="glass p-8 rounded-3xl shadow-sm border border-slate-200 min-h-full">
-                <div class="flex flex-col md:flex-row gap-6 mb-8 items-center bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex flex-col md:flex-row gap-6 mb-8 items-center bg-slate-50 p-6 rounded-3xl border border-slate-200 shadow-sm">
                     <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white text-2xl shadow-md"><i class="fa-solid fa-user-doctor"></i></div>
                     <div class="flex-1 w-full">
                         <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Buscar Expediente de Calidad</label>
-                        <input type="text" id="input-buscar-medico" list="lista-medicos-perfil" onchange="cargarPerfilMedico()" class="w-full p-4 bg-white text-slate-800 rounded-xl outline-none font-bold uppercase border border-slate-300 focus:border-orange-500 transition-colors shadow-sm" placeholder="Escribe el nombre del médico...">
+                        <input type="text" id="input-buscar-medico" list="lista-medicos-perfil" onchange="cargarPerfilMedico()" class="w-full p-4 bg-white text-slate-800 rounded-xl outline-none font-bold uppercase border border-slate-300 focus:border-orange-500 transition-colors shadow-sm" placeholder="Escribe el nombre del médico o usuario...">
                     </div>
                 </div>
 
                 <div id="contenido-perfil" class="hidden grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-1 space-y-6">
-                        <div class="bg-red-50 border border-red-100 p-6 rounded-2xl text-center shadow-sm">
-                            <p class="text-xs font-black text-red-400 uppercase tracking-widest">Total TNCs Históricos</p>
+                        <div class="bg-red-50 border border-red-100 p-6 rounded-3xl text-center shadow-sm">
+                            <p class="text-xs font-black text-red-500 uppercase tracking-widest">Total TNCs Históricos</p>
                             <p id="perf-total-tnc" class="text-5xl font-black text-red-600 mt-2">0</p>
                         </div>
-                        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                        <div class="bg-white border border-slate-200 p-5 rounded-3xl shadow-sm">
                             <h4 class="text-xs font-black text-slate-500 uppercase mb-4 text-center border-b border-slate-100 pb-2">Desglose de Errores</h4>
                             <div class="relative h-48 w-full"><canvas id="chart-tnc-medico"></canvas></div>
                         </div>
                     </div>
-                    <div class="lg:col-span-2 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col max-h-[450px]">
+                    <div class="lg:col-span-2 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col max-h-[450px]">
                         <h4 class="text-sm font-black text-slate-800 uppercase mb-4 flex items-center gap-2 border-b border-slate-100 pb-3"><i class="fa-solid fa-timeline text-orange-500"></i> Historial de Incidencias</h4>
                         <div class="overflow-y-auto scroll-custom flex-1 pr-2 space-y-3" id="perf-historial"></div>
                     </div>
                 </div>
-                <div id="mensaje-perfil-vacio" class="text-center py-16 text-slate-400 italic font-medium text-lg">Selecciona un médico en la barra superior para visualizar su expediente.</div>
+                <div id="mensaje-perfil-vacio" class="text-center py-20 text-slate-400 italic font-medium text-lg">Selecciona un médico en la barra superior para visualizar su expediente de calidad.</div>
             </div>
         </div>
     </main>
 
-    <!-- MODAL DE EXTRACCIÓN ONEDRIVE -->
     <div id="modal-onedrive" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-onedrive-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-blue-200 text-center flex flex-col max-h-[90vh]">
-            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-brands fa-microsoft"></i></div>
+        <div id="modal-onedrive-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-sky-200 text-center flex flex-col max-h-[90vh]">
+            <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-brands fa-microsoft"></i></div>
             <h3 class="text-xl font-black mb-2 text-slate-800">Extracción de Nube</h3>
             <p class="text-sm text-slate-500 mb-5">El sistema buscará los archivos Excel basándose en el mes seleccionado.</p>
             
             <div id="od-config">
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2 text-left">Periodo a buscar (Mes/Año)</label>
-                <input type="month" id="od-mes-buscar" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 font-bold text-slate-700 outline-none focus:border-blue-400">
+                <input type="month" id="od-mes-buscar" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 font-bold text-slate-700 outline-none focus:border-sky-400">
                 <div class="flex gap-3 mt-4">
                     <button onclick="cerrarModal('onedrive')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar</button>
                     <button onclick="ejecutarExtraccionOneDrive()" class="w-1/2 bg-[#0078d4] hover:bg-[#005a9e] text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Buscar y Extraer</button>
@@ -279,14 +278,13 @@
             </div>
 
             <div id="od-status" class="hidden flex-col items-center">
-                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-sky-500 mb-4"></i>
                 <p id="od-status-text" class="text-sm font-bold text-slate-600 mb-4">Conectando con Microsoft Graph...</p>
                 <div id="od-lista-archivos" class="w-full text-left bg-slate-50 border border-slate-200 rounded-lg p-3 max-h-48 overflow-y-auto scroll-custom text-xs font-mono text-slate-500 space-y-1 mb-4"></div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL TNC -->
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-orange-600 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
@@ -295,12 +293,12 @@
             <div id="tnc-paso-1" class="block overflow-y-auto pr-2 scroll-custom flex-1">
                 <p class="text-xs text-slate-500 mb-2 font-bold">1. Busca el servicio exacto en la base de datos:</p>
                 <div class="flex gap-2 mb-3">
-                    <select id="tnc-filtro-origen" onchange="ejecutarBuscadorTNC()" class="w-1/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600">
+                    <select id="tnc-filtro-origen" onchange="ejecutarBuscadorTNC()" class="w-1/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600 focus:border-orange-400">
                         <option value="Todos">Todos</option>
                         <option value="Sucursal">Sucursal</option>
                         <option value="Foráneo">Foráneo</option>
                     </select>
-                    <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Ej. Lomas Verdes, Juan, HC..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
+                    <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Ej. Lomas Verdes, Juan, HC..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-orange-400">
                 </div>
                 <div id="tnc-resultados-busqueda" class="space-y-1 mb-4 border border-slate-200 rounded-lg p-1 bg-slate-50"><p class="text-center text-xs text-slate-400 py-4">Teclea para buscar...</p></div>
                 <button onclick="cerrarModal('tnc')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all mt-auto">Cancelar y Cerrar</button>
@@ -323,7 +321,6 @@
         </div>
     </div>
 
-    <!-- SÚPER LUPA (AMPLIADA PARA METADATOS) -->
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-2xl w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
@@ -343,7 +340,6 @@
         </div>
     </div>
 
-    <!-- MODAL CORRECCIÓN INDIVIDUAL -->
     <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-correccion-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-orange-200 text-center">
             <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
@@ -566,7 +562,7 @@
                     if(!dlUrl) continue;
                     
                     try {
-                        listaArchivos.innerHTML = `<div><i class="fa-solid fa-spinner fa-spin text-blue-400 mr-1"></i> Leyendo: ${file.name}</div>` + listaArchivos.innerHTML;
+                        listaArchivos.innerHTML = `<div><i class="fa-solid fa-spinner fa-spin text-sky-400 mr-1"></i> Leyendo: ${file.name}</div>` + listaArchivos.innerHTML;
                         const fileRes = await fetch(dlUrl); 
                         const arrayBuffer = await fileRes.arrayBuffer();
                         await procesarArrayBufferExcel(arrayBuffer); 
@@ -653,9 +649,9 @@
             med = med.replace(/\./g, '');
             med = med.replace(/\[INICIAL NO REGISTRADA:\s*/g, '').replace(/\]/g, '').trim();
 
-            let suc = normalizarDato(rawSuc).toUpperCase();
-
             if (med === 'X' || med === '✔' || med === 'OK') return "X";
+
+            let suc = normalizarDato(rawSuc).toUpperCase();
 
             if (diccIniciales[suc] && diccIniciales[suc][med]) return normalizarDato(diccIniciales[suc][med]);
             for (const sucursalKey in diccIniciales) {
@@ -799,6 +795,33 @@
                 if(reg.hasMeta) window.enrichedHashes.add(hash);
             });
         };
+
+        window.ejecutarCruceDeDatos = async function() {
+            const input = document.getElementById('archivoAuditoria');
+            if(input.files.length === 0) return mostrarToast("Sube un archivo Excel.", "error");
+            document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cruzando...';
+            excelDataGlobal = {};
+
+            try {
+                for(let i=0; i<input.files.length; i++){
+                    let data = await input.files[i].arrayBuffer();
+                    await procesarArrayBufferExcel(data); 
+                }
+                sincronizarAppGlobal();
+                window.reRenderAuditoria();
+            } catch(e) { mostrarToast("Error leyendo Excel", "error"); console.error(e); }
+            document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-upload mr-1"></i> Cruzar Archivos Locales';
+        };
+
+        function verificarParametrosURL() {
+            const params = new URLSearchParams(window.location.search);
+            if(params.has('medico')) {
+                cambiarSeccion('tnc');
+                window.seleccionarRegistroTNC(params.get('origen') || 'Sucursal', params.get('fecha') || '', params.get('lugar') || '', params.get('medico') || '', params.get('estudio') || '');
+                abrirModal('tnc');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
 
         window.initAuditoria = async function() {
             try {
@@ -1000,7 +1023,7 @@
                 window.discrepanciasTNC.push({hash: hash, cE: cE, cA: cA});
 
                 aHTML = `
-                    <button onclick="prepararCorreccion('${hash}', ${cE}, ${cA})" class="bg-orange-600 hover:bg-orange-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Ajustar Base de Datos"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                    <button onclick="prepararCorreccion('${hash}', ${cE}, ${cA})" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Ajustar Base de Datos"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
                     <button onclick="abrirModalTncAutomatica('${hash}', ${cE}, ${cA})" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button>
                     <button onclick="ignorarDiscrepancia('${hash}')" class="bg-slate-300 hover:bg-slate-400 text-slate-700 p-2 rounded-lg text-xs shadow-sm transition" title="Ignorar / Descartar"><i class="fa-solid fa-eye-slash"></i></button>
                 `;
