@@ -51,8 +51,6 @@
         
         .acordeon-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; }
         .acordeon-content.open { max-height: 2000px; padding-top: 1rem; padding-bottom: 1rem; }
-        .filtros-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out; opacity: 0; }
-        .filtros-content.open { max-height: 1000px; opacity: 1; overflow: visible; }
 
         /* ==========================================
            REGLAS DE IMPRESIÓN BLINDADAS
@@ -89,12 +87,20 @@
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-6 shadow-sm">
+    <!-- NAVEGACIÓN LATERAL LAPI -->
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom">
         
-        <div class="hidden md:flex mb-6 text-3xl">
-            <i id="logo-snake" class="fa-solid fa-staff-snake transition-colors duration-500"></i>
+        <div class="hidden md:flex mb-2 text-3xl">
+            <i id="logo-snake" class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i>
         </div>
-        <script>document.getElementById('logo-snake').classList.add(['text-red-500','text-orange-500','text-amber-500','text-emerald-500','text-teal-500','text-cyan-500','text-blue-500','text-indigo-500','text-violet-500','text-purple-500','text-fuchsia-500','text-pink-500'][Math.floor(Math.random()*12)]);</script>
+
+        <!-- BOTÓN PANEL (INICIO) -->
+        <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
+        </a>
+
+        <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
 
         <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
@@ -108,6 +114,7 @@
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span>
         </a>
+        <!-- ACTIVO -->
         <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Control<br>Biol.</span>
@@ -118,92 +125,79 @@
         </a>
     </nav>
 
-    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8 flex flex-col xl:flex-row gap-6 items-start">
+    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8">
         
-        <div class="w-full xl:w-80 shrink-0 flex flex-col gap-4">
-            <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-3xl shadow-xl text-white transition-all">
-                
-                <div class="flex justify-between items-center mb-1">
-                    <h1 class="text-xl font-black tracking-tight flex items-center gap-2">
-                        <i class="fa-solid fa-tower-broadcast text-orange-200"></i> MONITOREO
-                    </h1>
+        <!-- BANNER CABECERA -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-3xl shadow-md text-white gap-4">
+            <div>
+                <h1 class="text-3xl font-black tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-tower-broadcast text-orange-200"></i> CONTROL BIOLÓGICO
+                </h1>
+                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest text-orange-100">Bitácora de Equipos</p>
+            </div>
+            <div class="flex gap-2 bg-black/20 p-1.5 rounded-xl text-sm font-bold items-center px-4 hover:bg-black/30 transition cursor-pointer" onclick="buscarServicios(true)">
+                <i class="fa-solid fa-rotate-right text-emerald-300"></i> Ver Solo Activos
+            </div>
+        </div>
+
+        <!-- RECUADRO DE FILTROS AL ESTILO MONITOR GLOBAL -->
+        <div class="glass p-5 rounded-3xl shadow-sm mb-6 flex flex-col gap-4 border-l-4 border-orange-500">
+            <div class="flex flex-col md:flex-row justify-between gap-4 w-full">
+                <div class="grid grid-cols-3 md:flex gap-2 w-full md:w-auto">
+                    <button id="btn-hoy" onclick="aplicarFiltroRapido('hoy')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Hoy</button>
+                    <button id="btn-ayer" onclick="aplicarFiltroRapido('ayer')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Ayer</button>
+                    <button id="btn-semana" onclick="aplicarFiltroRapido('semana')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Semana</button>
+                    <button id="btn-mes" onclick="aplicarFiltroRapido('mes')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Mes</button>
+                    <button id="btn-año" onclick="aplicarFiltroRapido('año')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Año</button>
+                    <button id="btn-todo" onclick="aplicarFiltroRapido('todo')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Todo</button>
                 </div>
-                
-                <button onclick="buscarServicios(true)" class="w-full bg-white hover:bg-orange-50 text-orange-600 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-md mt-3 flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-rotate-right"></i> Ver Solo Activos
-                </button>
-
-                <div onclick="toggleFiltros()" class="mt-4 pt-4 border-t border-white/30 flex justify-between items-center cursor-pointer select-none group">
-                    <p class="text-xs font-bold uppercase tracking-widest text-orange-100 group-hover:text-white transition"><i class="fa-solid fa-sliders mr-1"></i> Búsqueda Avanzada</p>
-                    <i id="icon-filtros" class="fa-solid fa-chevron-down text-orange-200 transition-transform"></i>
-                </div>
-
-                <div id="panel-filtros" class="filtros-content mt-2">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-[9px] font-black text-orange-200 uppercase mb-1">Tipo de Estudio</label>
-                            <select id="f-tipo" class="w-full p-3 bg-white/20 border border-white/30 rounded-lg text-sm font-bold outline-none text-white focus:border-white transition-colors appearance-none cursor-pointer">
-                                <option value="todos" class="text-slate-800">Todos los Tipos</option>
-                                <option value="audiometria" class="text-slate-800">Audiometría</option>
-                                <option value="espirometria" class="text-slate-800">Espirometría</option>
-                            </select>
-                        </div>
-
-                        <div class="pt-2 border-t border-white/30">
-                            <label class="block text-[9px] font-black text-orange-200 uppercase mb-2">Rango de Búsqueda</label>
-                            <div class="grid grid-cols-3 gap-1 mb-2">
-                                <button onclick="aplicarFiltroRapido('semana')" class="bg-white/20 hover:bg-white/30 text-white text-[9px] font-bold py-1.5 rounded transition border border-white/30">Semana</button>
-                                <button onclick="aplicarFiltroRapido('mes')" class="bg-white/20 hover:bg-white/30 text-white text-[9px] font-bold py-1.5 rounded transition border border-white/30">Mes</button>
-                                <button onclick="aplicarFiltroRapido('año')" class="bg-white/20 hover:bg-white/30 text-white text-[9px] font-bold py-1.5 rounded transition border border-white/30">Año</button>
-                            </div>
-                            <div class="flex gap-2">
-                                <input type="date" id="f-inicio" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
-                                <input type="date" id="f-fin" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
-                            </div>
-                        </div>
-
-                        <div class="pt-2 border-t border-white/30">
-                            <label class="block text-[9px] font-black text-orange-200 uppercase mb-1">Empresa Destino</label>
-                            <input type="text" id="f-empresa" placeholder="Ej. AEROMEXICO" class="w-full p-3 bg-white/20 border border-white/30 rounded-lg text-sm font-bold outline-none text-white placeholder-white/60 focus:border-white transition-colors uppercase">
-                        </div>
-                    </div>
-
-                    <button onclick="buscarServicios(false)" id="btn-buscar" class="w-full bg-slate-800 text-white hover:bg-slate-700 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-lg mt-6 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-magnifying-glass"></i> Consultar Historial
-                    </button>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <input type="date" id="f-inicio" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:border-orange-400 flex-1">
+                    <input type="date" id="f-fin" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:border-orange-400 flex-1">
                 </div>
             </div>
-            
-            <div class="flex gap-3">
-                <div class="glass p-4 rounded-2xl shadow-sm text-center w-1/2 flex flex-col justify-center border-l-4 border-orange-400">
-                    <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold mb-1">Listados</p>
-                    <p id="lbl-resultados" class="text-3xl font-black text-orange-600 leading-none">0</p>
-                </div>
 
-                <button onclick="generarPDFGlobal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-2xl shadow-xl transition-all active:scale-95 flex flex-col justify-center items-center gap-1 border-b-4 border-slate-900">
-                    <i class="fa-solid fa-file-pdf text-red-400 text-2xl"></i> 
-                    <span class="text-[10px] uppercase tracking-widest text-center leading-tight">Generar<br>Reporte</span>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 pt-3 border-t border-slate-100">
+                <select id="f-tipo" class="py-2 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600 focus:border-orange-400 cursor-pointer">
+                    <option value="todos">Todos los Tipos</option>
+                    <option value="audiometria">Audiometría</option>
+                    <option value="espirometria">Espirometría</option>
+                </select>
+                <div class="md:col-span-2 relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    <input type="text" id="f-empresa" placeholder="Empresa Destino..." class="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-orange-400 transition-colors uppercase">
+                </div>
+                <button onclick="buscarServicios(false)" id="btn-buscar" class="bg-slate-800 hover:bg-slate-700 text-white font-black py-2 px-4 rounded-xl transition-all text-xs active:scale-95 shadow-md flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass"></i> Consultar
                 </button>
             </div>
         </div>
 
-        <div class="w-full flex-1">
-            <div class="flex justify-between items-end mb-6 border-b border-orange-200 pb-4">
-                <h2 id="titulo-resultados" class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-tower-cell text-orange-500 mr-2"></i> Equipos Activos en Campo</h2>
-            </div>
+        <!-- LISTADOS Y PDF HEADER -->
+        <div class="flex justify-between items-end mb-6 border-b border-orange-200 pb-4">
+            <h2 id="titulo-resultados" class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-tower-cell text-orange-500 mr-2"></i> Equipos Activos (<span id="lbl-resultados">0</span>)</h2>
+            <button onclick="generarPDFGlobal()" class="bg-slate-800 hover:bg-slate-700 text-white font-black py-2 px-4 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-xs border-b-4 border-slate-900">
+                <i class="fa-solid fa-file-pdf text-red-400 text-lg"></i> Imprimir Reportes
+            </button>
+        </div>
 
-            <div id="contenedor-resultados" class="flex flex-col gap-4 pb-12">
-                <div class="text-center py-20 text-slate-400 italic">
-                    <i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-orange-200 block"></i>
-                    Cargando servicios...
-                </div>
+        <!-- CONTENEDOR DE ACORDEONES -->
+        <div id="contenedor-resultados" class="flex flex-col gap-4 pb-12">
+            <!-- Se llena con JS -->
+            <div class="text-center py-20 text-slate-400 italic">
+                <i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-orange-200 block"></i>
+                Cargando servicios...
             </div>
         </div>
+
     </main>
 
+    <!-- ZONA OCULTA PARA GENERACIÓN DE PDF -->
     <div id="zona-impresion" class="hidden">
-        </div>
+        <!-- Se inyecta la réplica de los formatos -->
+    </div>
 
+    <!-- 👇 MODAL PARA VER AUDIOMETRÍA 👇 -->
     <div id="modal-audio" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-audio-card" class="bg-white border border-slate-200 p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
@@ -230,29 +224,33 @@
     <script>
         let serviciosGlobales = []; // Guarda en memoria lo de Firebase
 
-        window.toggleFiltros = function() {
-            const panel = document.getElementById('panel-filtros');
-            const icon = document.getElementById('icon-filtros');
-            panel.classList.toggle('open');
-            if(panel.classList.contains('open')) {
-                icon.style.transform = 'rotate(180deg)';
-            } else {
-                icon.style.transform = 'rotate(0deg)';
-            }
-        };
-
         window.aplicarFiltroRapido = function(tipo) {
+            document.querySelectorAll('.btn-filtro-rapido').forEach(btn => {
+                btn.classList.remove('bg-orange-100', 'text-orange-700');
+                btn.classList.add('bg-slate-100', 'text-slate-600');
+            });
+            const btnActivo = document.getElementById(`btn-${tipo}`);
+            if(btnActivo) {
+                btnActivo.classList.remove('bg-slate-100', 'text-slate-600');
+                btnActivo.classList.add('bg-orange-100', 'text-orange-700');
+            }
+
             const hoy = new Date();
             let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
-            if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
+            if (tipo === 'hoy') iStr = fStr; 
+            else if (tipo === 'ayer') { const ayer = new Date(); ayer.setDate(ayer.getDate() - 1); iStr = `${ayer.getFullYear()}-${String(ayer.getMonth() + 1).padStart(2, '0')}-${String(ayer.getDate()).padStart(2, '0')}`; fStr = iStr; }
+            else if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
             else if (tipo === 'mes') { iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`; }
             else if (tipo === 'año') { iStr = `${hoy.getFullYear()}-01-01`; }
-            document.getElementById('f-inicio').value = iStr; document.getElementById('f-fin').value = fStr;
+            else if (tipo === 'todo') { iStr = ''; fStr = ''; }
+            
+            document.getElementById('f-inicio').value = iStr; 
+            document.getElementById('f-fin').value = fStr;
         };
 
         window.buscarServicios = async function(soloActivosPorDefecto = false) {
             const btn = document.getElementById('btn-buscar');
-            if(!soloActivosPorDefecto) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Buscando...'; btn.disabled = true; }
+            if(!soloActivosPorDefecto && btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true; }
             
             const fTipo = document.getElementById('f-tipo') ? document.getElementById('f-tipo').value : 'todos';
             const fIni = document.getElementById('f-inicio').value;
@@ -262,13 +260,15 @@
             // Configurar Título UI
             const titulo = document.getElementById('titulo-resultados');
             if(soloActivosPorDefecto) {
-                titulo.innerHTML = `<i class="fa-solid fa-tower-cell text-orange-500 mr-2"></i> Equipos Activos en Campo`;
+                titulo.innerHTML = `<i class="fa-solid fa-tower-cell text-orange-500 mr-2"></i> Equipos Activos (<span id="lbl-resultados">0</span>)`;
                 document.getElementById('f-inicio').value = ''; document.getElementById('f-fin').value = ''; document.getElementById('f-empresa').value = '';
-                // Si busca activos directos, cerramos el panel de filtros si está abierto
-                const panel = document.getElementById('panel-filtros');
-                if(panel && panel.classList.contains('open')) toggleFiltros();
+                // Limpiar estilo botones
+                document.querySelectorAll('.btn-filtro-rapido').forEach(btn => {
+                    btn.classList.remove('bg-orange-100', 'text-orange-700');
+                    btn.classList.add('bg-slate-100', 'text-slate-600');
+                });
             } else {
-                titulo.innerHTML = `<i class="fa-solid fa-folder-open text-orange-500 mr-2"></i> Historial de Servicios`;
+                titulo.innerHTML = `<i class="fa-solid fa-folder-open text-orange-500 mr-2"></i> Historial de Servicios (<span id="lbl-resultados">0</span>)`;
             }
 
             try {
@@ -317,7 +317,7 @@
                 alert("Error extrayendo datos de Firebase.");
             }
 
-            if(!soloActivosPorDefecto && btn) { btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Consultar Historial'; btn.disabled = false; }
+            if(!soloActivosPorDefecto && btn) { btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Consultar'; btn.disabled = false; }
         };
 
         function renderizarListadoAcordeon() {
@@ -354,12 +354,12 @@
                             let btnOD = `<button onclick="abrirDetalleAudio(${indexServicio}, ${indexBitacora})" class="text-red-500 hover:text-red-700 underline decoration-red-300 underline-offset-2"><i class="fa-solid fa-up-right-from-square mr-1"></i>${promOD}/8 capt.</button>`;
                             let btnOI = `<button onclick="abrirDetalleAudio(${indexServicio}, ${indexBitacora})" class="text-blue-500 hover:text-blue-700 underline decoration-blue-300 underline-offset-2"><i class="fa-solid fa-up-right-from-square mr-1"></i>${promOI}/8 capt.</button>`;
 
-                            trHtml += `<tr class="border-t border-slate-100"><td class="py-2 px-3 text-xs font-bold text-slate-600">${b.fecha}</td><td class="py-2 px-3 text-center text-xs font-bold">${btnOD}</td><td class="py-2 px-3 text-center text-xs font-bold">${btnOI}</td><td class="py-2 px-3 text-right text-[10px] font-bold text-slate-500">${b.medico}</td></tr>`;
+                            trHtml += `<tr class="border-t border-slate-100 hover:bg-slate-50 transition"><td class="py-2 px-3 text-xs font-bold text-slate-600">${b.fecha}</td><td class="py-2 px-3 text-center text-xs font-bold">${btnOD}</td><td class="py-2 px-3 text-center text-xs font-bold">${btnOI}</td><td class="py-2 px-3 text-right text-[10px] font-bold text-slate-500">${b.medico}</td></tr>`;
                         });
                     } else {
                         thHtml = `<tr><th class="py-2 px-3 text-left">Fecha</th><th class="py-2 px-3 text-center">Inspirar %</th><th class="py-2 px-3 text-center">Espirar %</th><th class="py-2 px-3 text-right">Médico</th></tr>`;
                         serv.bitacora.forEach(b => {
-                            trHtml += `<tr class="border-t border-slate-100"><td class="py-2 px-3 text-xs font-bold text-slate-600">${b.fecha}</td><td class="py-2 px-3 text-center text-xs text-blue-600 font-bold">${b.inspirar_porcentaje}%</td><td class="py-2 px-3 text-center text-xs text-blue-600 font-bold">${b.espirar_porcentaje}%</td><td class="py-2 px-3 text-right text-[10px] font-bold text-slate-500">${b.medico}</td></tr>`;
+                            trHtml += `<tr class="border-t border-slate-100 hover:bg-slate-50 transition"><td class="py-2 px-3 text-xs font-bold text-slate-600">${b.fecha}</td><td class="py-2 px-3 text-center text-xs text-blue-600 font-bold">${b.inspirar_porcentaje}%</td><td class="py-2 px-3 text-center text-xs text-blue-600 font-bold">${b.espirar_porcentaje}%</td><td class="py-2 px-3 text-right text-[10px] font-bold text-slate-500">${b.medico}</td></tr>`;
                         });
                     }
                 }
@@ -487,7 +487,8 @@
                     <tr>
                         <td class="bg-verde-lapi">${b.fecha}</td>
                         <td class="bg-rojo-lapi">${od[250]||''}</td><td class="bg-rojo-lapi">${od[500]||''}</td><td class="bg-rojo-lapi">${od[1000]||''}</td><td class="bg-rojo-lapi">${od[2000]||''}</td><td class="bg-rojo-lapi">${od[3000]||''}</td><td class="bg-rojo-lapi">${od[4000]||''}</td><td class="bg-rojo-lapi">${od[6000]||''}</td><td class="bg-rojo-lapi">${od[8000]||''}</td>
-                        <td></td> <td>${oi[250]||''}</td><td>${oi[500]||''}</td><td>${oi[1000]||''}</td><td>${oi[2000]||''}</td><td>${oi[3000]||''}</td><td>${oi[4000]||''}</td><td>${oi[6000]||''}</td><td>${oi[8000]||''}</td>
+                        <td></td> <!-- Separador central -->
+                        <td>${oi[250]||''}</td><td>${oi[500]||''}</td><td>${oi[1000]||''}</td><td>${oi[2000]||''}</td><td>${oi[3000]||''}</td><td>${oi[4000]||''}</td><td>${oi[6000]||''}</td><td>${oi[8000]||''}</td>
                         <td class="bg-verde-lapi" style="padding: 2px;">
                             <div style="font-size: 8px; line-height: 1;">${b.medico}</div>
                             ${b.firma ? `<img src="${b.firma}" class="firma-img">` : ''}
