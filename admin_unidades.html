@@ -6,7 +6,7 @@
     <title>Admin - Unidades Móviles LAPI</title>
     
     <link rel="manifest" href="manifest_admin.json">
-    <meta name="theme-color" content="#d946ef"> 
+    <meta name="theme-color" content="#ea580c">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -41,7 +41,7 @@
     
     <style>
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(240, 171, 252, 0.8); }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(254, 215, 170, 0.5); }
         .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
         .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; }
         .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -49,8 +49,6 @@
         
         .acordeon-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; }
         .acordeon-content.open { max-height: 5000px; padding-top: 1rem; padding-bottom: 1rem; }
-        .filtros-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out; opacity: 0; }
-        .filtros-content.open { max-height: 1000px; opacity: 1; overflow: visible; }
 
         /* ==========================================
            REGLAS DE IMPRESIÓN (PDF CONTINUO INTELIGENTE)
@@ -89,146 +87,135 @@
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <!-- NAVEGACIÓN LATERAL -->
-    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-6 shadow-sm">
-        <div class="hidden md:flex mb-6 text-3xl"><i id="logo-snake" class="fa-solid fa-staff-snake transition-colors duration-500"></i></div>
-        <script>document.getElementById('logo-snake').classList.add(['text-red-500','text-orange-500','text-amber-500','text-emerald-500','text-teal-500','text-cyan-500','text-blue-500','text-indigo-500','text-violet-500','text-purple-500','text-fuchsia-500','text-pink-500'][Math.floor(Math.random()*12)]);</script>
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom">
+        
+        <div class="hidden md:flex mb-2 text-3xl">
+            <i id="logo-snake" class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i>
+        </div>
 
-        <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-purple-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-purple-50 transition-all"><i class="fa-solid fa-globe text-base md:text-xl"></i></div>
-            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase">Global</span>
+        <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
         </a>
-        <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-indigo-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-indigo-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
-            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase">Reportes</span>
+
+        <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
+
+        <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Global</span>
         </a>
-        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-emerald-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-emerald-50 transition-all"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
-            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase">Auditoría</span>
+        <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Reportes</span>
         </a>
-        <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-teal-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-teal-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
+        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span>
+        </a>
+        <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Control<br>Biol.</span>
         </a>
-        <!-- ACTIVO -->
-        <a href="admin_unidades.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-truck text-base md:text-xl"></i></div>
+        <a href="admin_unidades.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-truck-fast text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Unidades<br>Móviles</span>
         </a>
     </nav>
 
-    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8 flex flex-col xl:flex-row gap-6 items-start">
+    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8">
         
-        <!-- PANEL DE FILTROS COLAPSABLE -->
-        <div class="w-full xl:w-80 shrink-0 flex flex-col gap-4">
-            <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-3xl shadow-xl text-white transition-all">
-                
-                <div class="flex justify-between items-center mb-1">
-                    <h1 class="text-xl font-black tracking-tight flex items-center gap-2">
-                        <i class="fa-solid fa-truck-fast text-orange-500"></i> UNIDADES MÓVILES
-                    </h1>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-3xl shadow-md text-white gap-4">
+            <div>
+                <h1 class="text-3xl font-black tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-truck-fast text-orange-200"></i> UNIDADES MÓVILES
+                </h1>
+                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest text-orange-100">Control de Flotilla LAPI</p>
+            </div>
+            <div class="flex gap-2 bg-black/20 p-1.5 rounded-xl text-sm font-bold items-center px-4 hover:bg-black/30 transition cursor-pointer" onclick="buscarServicios(true)">
+                <i class="fa-solid fa-rotate-right text-emerald-300"></i> Ver Solo Activos
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-3xl shadow-sm mb-6 flex flex-col gap-4 border-l-4 border-orange-500">
+            <div class="flex flex-col md:flex-row justify-between gap-4 w-full">
+                <div class="grid grid-cols-3 md:flex gap-2 w-full md:w-auto">
+                    <button id="btn-hoy" onclick="aplicarFiltroRapido('hoy')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Hoy</button>
+                    <button id="btn-ayer" onclick="aplicarFiltroRapido('ayer')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Ayer</button>
+                    <button id="btn-semana" onclick="aplicarFiltroRapido('semana')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Semana</button>
+                    <button id="btn-mes" onclick="aplicarFiltroRapido('mes')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Mes</button>
+                    <button id="btn-año" onclick="aplicarFiltroRapido('año')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Año</button>
+                    <button id="btn-todo" onclick="aplicarFiltroRapido('todo')" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] md:text-xs font-black px-3 py-2 rounded-xl transition-colors uppercase tracking-widest">Todo</button>
                 </div>
-                
-                <button onclick="buscarServicios(true)" class="w-full bg-white hover:bg-orange-50 text-orange-600 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-md mt-3 flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-rotate-right"></i> Ver Solo unidades en servicio
-                </button>
-
-                <div onclick="toggleFiltros()" class="mt-4 pt-4 border-t border-white/30 flex justify-between items-center cursor-pointer select-none group">
-                    <p class="text-xs font-bold uppercase tracking-widest text-orange-100 group-hover:text-white transition"><i class="fa-solid fa-sliders mr-1"></i> Búsqueda Avanzada</p>
-                    <i id="icon-filtros" class="fa-solid fa-chevron-down text-orange-200 transition-transform"></i>
-                </div>
-
-                <div id="panel-filtros" class="filtros-content mt-2">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-[9px] font-black text-orange-200 uppercase mb-1">Unidad</label>
-                            <select id="f-unidad" class="w-full p-3 bg-white/20 border border-white/30 rounded-lg text-sm font-bold outline-none text-white focus:border-white transition-colors appearance-none cursor-pointer">
-                                <option value="todas">Todas las Unidades</option>
-                                <option value="UM-01">UM-01</option>
-                                <option value="UM-02">UM-02</option>
-                                <option value="UM-03">UM-03</option>
-                            </select>
-                        </div>
-
-                        <div class="pt-2 border-t border-white/30">
-                            <label class="block text-[9px] font-black text-orange-200 uppercase mb-2">Rango de Servicios</label>
-                            <div class="grid grid-cols-3 gap-1 mb-2">
-                                <button onclick="aplicarFiltroRapido('semana')" class="bg-white/20 hover:bg-white/30 text-white text-[9px] font-bold py-1.5 rounded transition border border-white/30">Semana</button>
-                                <button onclick="aplicarFiltroRapido('mes')" class="bg-white/20 hover:bg-white/30 text-white text-[9px] font-bold py-1.5 rounded transition border border-white/30">Mes</button>
-                                <button onclick="aplicarFiltroRapido('año')" class="bg-white/20 hover:bg-white/30 text-white text-[9px] font-bold py-1.5 rounded transition border border-white/30">Año</button>
-                            </div>
-                            <div class="flex gap-2">
-                                <input type="date" id="f-inicio" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
-                                <input type="date" id="f-fin" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
-                            </div>
-                        </div>
-
-                        <div class="pt-2 border-t border-white/30">
-                            <label class="block text-[9px] font-black text-orange-200 uppercase mb-1">Empresa</label>
-                            <input type="text" id="f-empresa" placeholder="Ej. AEROMEXICO" class="w-full p-3 bg-white/20 border border-white/30 rounded-lg text-sm font-bold outline-none text-white placeholder-white/60 focus:border-white transition-colors uppercase">
-                        </div>
-                    </div>
-
-                    <button onclick="buscarServicios(false)" id="btn-buscar" class="w-full bg-slate-800 text-white hover:bg-slate-700 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-lg mt-6 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-magnifying-glass"></i> Consultar Historial
-                    </button>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <input type="date" id="f-inicio" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:border-orange-400 flex-1">
+                    <input type="date" id="f-fin" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:border-orange-400 flex-1">
                 </div>
             </div>
-            
-            <div class="flex gap-3">
-                <div class="glass p-4 rounded-2xl shadow-sm text-center w-1/2 flex flex-col justify-center border-l-4 border-orange-400">
-                    <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold mb-1">Listados</p>
-                    <p id="lbl-resultados" class="text-3xl font-black text-orange-600 leading-none">0</p>
-                </div>
 
-                <button onclick="generarPDFGlobal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-2xl shadow-xl transition-all active:scale-95 flex flex-col justify-center items-center gap-1 border-b-4 border-slate-900">
-                    <i class="fa-solid fa-file-pdf text-red-400 text-2xl"></i> 
-                    <span class="text-[10px] uppercase tracking-widest text-center leading-tight">Generar<br>Reporte</span>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 pt-3 border-t border-slate-100">
+                <select id="f-unidad" class="py-2 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600 focus:border-orange-400 cursor-pointer">
+                    <option value="todas">Todas las Unidades</option>
+                    <option value="UM-01">UM-01</option>
+                    <option value="UM-02">UM-02</option>
+                    <option value="UM-03">UM-03</option>
+                </select>
+                <div class="md:col-span-2 relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    <input type="text" id="f-empresa" placeholder="Empresa Destino..." class="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-orange-400 transition-colors uppercase">
+                </div>
+                <button onclick="buscarServicios(false)" id="btn-buscar" class="bg-slate-800 hover:bg-slate-700 text-white font-black py-2 px-4 rounded-xl transition-all text-xs active:scale-95 shadow-md flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass"></i> Consultar
                 </button>
             </div>
         </div>
 
-        <!-- PANEL DE RESULTADOS (ACORDEONES) -->
-        <div class="w-full flex-1">
-            <div class="flex justify-between items-end mb-6 border-b border-orange-200 pb-4">
-                <h2 id="titulo-resultados" class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-route text-orange-500 mr-2"></i> Unidades en Servicio </h2>
-            </div>
+        <div class="flex justify-between items-end mb-6 border-b border-orange-200 pb-4">
+            <h2 id="titulo-resultados" class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-route text-orange-500 mr-2"></i> Unidades en Servicio (<span id="lbl-resultados">0</span>)</h2>
+            <button onclick="generarPDFGlobal()" class="bg-slate-800 hover:bg-slate-700 text-white font-black py-2 px-4 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-xs border-b-4 border-slate-900">
+                <i class="fa-solid fa-file-pdf text-red-400 text-lg"></i> Imprimir Reportes
+            </button>
+        </div>
 
-            <div id="contenedor-resultados" class="flex flex-col gap-4 pb-12">
-                <div class="text-center py-20 text-slate-400 italic">
-                    <i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-orange-200 block"></i>
-                    Cargando servicios...
-                </div>
+        <div id="contenedor-resultados" class="flex flex-col gap-4 pb-12">
+            <div class="text-center py-20 text-slate-400 italic">
+                <i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-orange-200 block"></i>
+                Cargando servicios...
             </div>
         </div>
     </main>
 
-    <!-- ZONA OCULTA PARA GENERACIÓN DE PDF -->
     <div id="zona-impresion" class="hidden"></div>
 
     <script>
         let serviciosGlobales = []; 
 
-        window.toggleFiltros = function() {
-            const panel = document.getElementById('panel-filtros');
-            const icon = document.getElementById('icon-filtros');
-            panel.classList.toggle('open');
-            if(panel.classList.contains('open')) icon.style.transform = 'rotate(180deg)';
-            else icon.style.transform = 'rotate(0deg)';
-        };
-
         window.aplicarFiltroRapido = function(tipo) {
+            document.querySelectorAll('.btn-filtro-rapido').forEach(btn => {
+                btn.classList.remove('bg-orange-100', 'text-orange-700');
+                btn.classList.add('bg-slate-100', 'text-slate-600');
+            });
+            const btnActivo = document.getElementById(`btn-${tipo}`);
+            if(btnActivo) {
+                btnActivo.classList.remove('bg-slate-100', 'text-slate-600');
+                btnActivo.classList.add('bg-orange-100', 'text-orange-700');
+            }
+
             const hoy = new Date();
             let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
-            if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
+            if (tipo === 'hoy') iStr = fStr; 
+            else if (tipo === 'ayer') { const ayer = new Date(); ayer.setDate(ayer.getDate() - 1); iStr = `${ayer.getFullYear()}-${String(ayer.getMonth() + 1).padStart(2, '0')}-${String(ayer.getDate()).padStart(2, '0')}`; fStr = iStr; }
+            else if (tipo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(new Date(hoy.setDate(diff)).getDate()).padStart(2, '0')}`; }
             else if (tipo === 'mes') { iStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`; }
             else if (tipo === 'año') { iStr = `${hoy.getFullYear()}-01-01`; }
-            document.getElementById('f-inicio').value = iStr; document.getElementById('f-fin').value = fStr;
+            else if (tipo === 'todo') { iStr = ''; fStr = ''; }
+            
+            document.getElementById('f-inicio').value = iStr; 
+            document.getElementById('f-fin').value = fStr;
         };
 
         window.buscarServicios = async function(soloActivosPorDefecto = false) {
             const btn = document.getElementById('btn-buscar');
-            if(!soloActivosPorDefecto && btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Buscando...'; btn.disabled = true; }
+            if(!soloActivosPorDefecto && btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true; }
             
             const fUni = document.getElementById('f-unidad') ? document.getElementById('f-unidad').value : 'todas';
             const fIni = document.getElementById('f-inicio').value;
@@ -237,12 +224,15 @@
 
             const titulo = document.getElementById('titulo-resultados');
             if(soloActivosPorDefecto) {
-                titulo.innerHTML = `<i class="fa-solid fa-route text-orange-500 mr-2"></i> Unidades en Servicio`;
+                titulo.innerHTML = `<i class="fa-solid fa-route text-orange-500 mr-2"></i> Unidades en Servicio (<span id="lbl-resultados">0</span>)`;
                 document.getElementById('f-inicio').value = ''; document.getElementById('f-fin').value = ''; document.getElementById('f-empresa').value = '';
-                const panel = document.getElementById('panel-filtros');
-                if(panel && panel.classList.contains('open')) toggleFiltros();
+                // Limpiar estilo botones
+                document.querySelectorAll('.btn-filtro-rapido').forEach(btn => {
+                    btn.classList.remove('bg-orange-100', 'text-orange-700');
+                    btn.classList.add('bg-slate-100', 'text-slate-600');
+                });
             } else {
-                titulo.innerHTML = `<i class="fa-solid fa-folder-open text-orange-500 mr-2"></i> Historial de Unidades`;
+                titulo.innerHTML = `<i class="fa-solid fa-folder-open text-orange-500 mr-2"></i> Historial de Unidades (<span id="lbl-resultados">0</span>)`;
             }
 
             try {
@@ -277,7 +267,7 @@
                 alert("Error extrayendo datos de Firebase.");
             }
 
-            if(!soloActivosPorDefecto && btn) { btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Consultar Historial'; btn.disabled = false; }
+            if(!soloActivosPorDefecto && btn) { btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Consultar'; btn.disabled = false; }
         };
 
         function renderizarListadoAcordeon() {
@@ -315,7 +305,6 @@
                         
                         <div id="acordeon-${serv.id}" class="acordeon-content bg-slate-50 border-t border-slate-100">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- SALIDA -->
                                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                                     <h4 class="text-xs font-black uppercase text-orange-500 tracking-widest mb-3 border-b border-orange-100 pb-2"><i class="fa-solid fa-truck-arrow-right mr-1"></i> Inicio (${serv.fecha_inicio})</h4>
                                     <div class="space-y-3 text-xs">
@@ -332,7 +321,6 @@
                                     </div>
                                 </div>
                                 
-                                <!-- LLEGADA -->
                                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                                     <h4 class="text-xs font-black uppercase text-indigo-500 tracking-widest mb-3 border-b border-indigo-100 pb-2"><i class="fa-solid fa-right-from-bracket mr-1"></i> Término</h4>
                                     ${serv.termino ? `
@@ -446,13 +434,11 @@
                 </div>
 
                 <div class="comparativa-grid">
-                    <!-- COLUMNA IZQUIERDA: SALIDA -->
                     <div class="comparativa-col avoid-break">
                         <div class="titulo-fase" style="color: #ea580c;">REPORTE DE INICIO</div>
                         ${generarBloquePDFFase(data.inicio)}
                     </div>
 
-                    <!-- COLUMNA DERECHA: RECEPCIÓN -->
                     <div class="comparativa-col avoid-break">
                         <div class="titulo-fase" style="color: #4f46e5;">REPORTE DE TÉRMINO</div>
                         ${data.termino ? generarBloquePDFFase(data.termino) : '<div style="text-align:center; padding: 40px; color: #999; font-style: italic;">Servicio activo.<br>Aún no hay reporte de término.</div>'}
