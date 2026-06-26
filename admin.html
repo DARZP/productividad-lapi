@@ -29,7 +29,7 @@
         <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
     </a>
 
-    <div class="text-center mb-10 w-full max-w-2xl animate-fade-in-up mt-8">
+    <div class="text-center mb-10 w-full max-w-md animate-fade-in-up mt-8">
         <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-md border border-orange-100">
             <i class="fa-solid fa-user-tie text-4xl text-orange-500"></i>
         </div>
@@ -37,14 +37,16 @@
         <p class="text-sm font-medium text-slate-500 tracking-widest uppercase">Gestión Operativa</p>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl mx-auto">
+    <!-- CUADRÍCULA RESTRINGIDA (max-w-md) PARA FORZAR PROPORCIÓN CUADRADA -->
+    <div class="grid grid-cols-2 gap-4 w-full max-w-md mx-auto">
         
         <a href="admin_monitor.html" class="glass-card rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-sm">
             <div class="w-14 h-14 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mb-1">
                 <i class="fa-solid fa-server text-2xl"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-slate-800 leading-tight">Monitor<br>Global</h3>
+                <h3 class="font-black text-sm text-slate-800 uppercase">Monitor</h3>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Global</p>
             </div>
         </a>
 
@@ -53,7 +55,8 @@
                 <i class="fa-solid fa-chart-pie text-2xl"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-slate-800 leading-tight">Métricas y<br>Reportes</h3>
+                <h3 class="font-black text-sm text-slate-800 uppercase">Reportes</h3>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Métricas</p>
             </div>
         </a>
 
@@ -62,7 +65,8 @@
                 <i class="fa-solid fa-shield-halved text-2xl"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-slate-800 leading-tight">Control de<br>Auditoría</h3>
+                <h3 class="font-black text-sm text-slate-800 uppercase">Auditoría</h3>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Calidad / TNC</p>
             </div>
         </a>
 
@@ -71,16 +75,19 @@
                 <i class="fa-solid fa-wave-square text-2xl"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-slate-800 leading-tight">Control<br>Biológico</h3>
+                <h3 class="font-black text-sm text-slate-800 uppercase">Equipos</h3>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">C. Biológico</p>
             </div>
         </a>
 
-        <a href="admin_unidades.html" class="glass-card rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-sm md:col-start-2 md:col-span-2">
+        <!-- EL 5TO ELEMENTO ABARCA LAS DOS COLUMNAS -->
+        <a href="admin_unidades.html" class="glass-card rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-sm col-span-2">
             <div class="w-14 h-14 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mb-1">
                 <i class="fa-solid fa-truck-fast text-2xl"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-slate-800 leading-tight">Flotilla y<br>Unidades Móviles</h3>
+                <h3 class="font-black text-sm text-slate-800 uppercase">Unidades Móviles</h3>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Control de Flotilla</p>
             </div>
         </a>
 
