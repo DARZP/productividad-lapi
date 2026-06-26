@@ -53,7 +53,7 @@
         .toggle-checkbox:checked + .toggle-label { background-color: #ea580c; }
         
         /* ==========================================
-           REGLAS DE IMPRESIÓN (PDF) CORREGIDAS
+           REGLAS DE IMPRESIÓN (PDF)
            ========================================== */
         @media print {
             @page { margin: 15mm; size: A4 portrait; }
@@ -88,14 +88,13 @@
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <!-- NAVEGACIÓN LATERAL LAPI -->
     <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom">
         
         <div class="hidden md:flex mb-2 text-3xl">
             <i id="logo-snake-2" class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i>
         </div>
+        <script>document.getElementById('logo-snake-2').classList.add(['text-red-500','text-orange-500','text-amber-500','text-emerald-500','text-teal-500','text-cyan-500','text-blue-500','text-indigo-500','text-violet-500','text-purple-500','text-fuchsia-500','text-pink-500'][Math.floor(Math.random()*12)]);</script>
 
-        <!-- BOTÓN PANEL (INICIO) -->
         <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
@@ -107,7 +106,6 @@
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Global</span>
         </a>
-        <!-- ACTIVO -->
         <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Reportes</span>
@@ -129,41 +127,44 @@
     <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8 flex flex-col xl:flex-row gap-6 items-start">
         
         <div class="w-full xl:w-80 shrink-0 no-print flex flex-col gap-4">
-            <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-3xl shadow-xl text-white">
+            
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-3xl shadow-md text-white">
                 <h1 class="text-xl font-black tracking-tight flex items-center gap-2 mb-1">
                     <i class="fa-solid fa-wand-magic-sparkles text-orange-200"></i> GENERADOR
                 </h1>
-                <p class="opacity-90 text-[10px] font-medium uppercase tracking-widest text-orange-100 mb-6">Configura tu Reporte</p>
+                <p class="opacity-90 text-[10px] font-medium uppercase tracking-widest text-orange-100">Configura tu Reporte Analítico</p>
+            </div>
 
+            <div class="glass p-6 rounded-3xl shadow-sm border-l-4 border-orange-500">
                 <div class="grid grid-cols-3 gap-2 mb-4">
-                    <button onclick="aplicarFiltroRapido('hoy')" id="btn-hoy" class="btn-filtro-rapido bg-white/20 hover:bg-white/30 text-white border border-white/30 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Hoy</button>
-                    <button onclick="aplicarFiltroRapido('ayer')" id="btn-ayer" class="btn-filtro-rapido bg-white/20 hover:bg-white/30 text-white border border-white/30 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Ayer</button>
-                    <button onclick="aplicarFiltroRapido('semana')" id="btn-semana" class="btn-filtro-rapido bg-white/20 hover:bg-white/30 text-white border border-white/30 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Semana</button>
-                    <button onclick="aplicarFiltroRapido('mes')" id="btn-mes" class="btn-filtro-rapido bg-white text-orange-600 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Mes</button>
-                    <button onclick="aplicarFiltroRapido('año')" id="btn-año" class="btn-filtro-rapido bg-white/20 hover:bg-white/30 text-white border border-white/30 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Año</button>
-                    <button onclick="aplicarFiltroRapido('todo')" id="btn-todo" class="btn-filtro-rapido bg-white/20 hover:bg-white/30 text-white border border-white/30 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Todo</button>
+                    <button onclick="aplicarFiltroRapido('hoy')" id="btn-hoy" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] font-bold py-2 rounded-lg transition">Hoy</button>
+                    <button onclick="aplicarFiltroRapido('ayer')" id="btn-ayer" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] font-bold py-2 rounded-lg transition">Ayer</button>
+                    <button onclick="aplicarFiltroRapido('semana')" id="btn-semana" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] font-bold py-2 rounded-lg transition">Semana</button>
+                    <button onclick="aplicarFiltroRapido('mes')" id="btn-mes" class="btn-filtro-rapido bg-orange-100 text-orange-700 text-[10px] font-bold py-2 rounded-lg transition shadow-sm">Mes</button>
+                    <button onclick="aplicarFiltroRapido('año')" id="btn-año" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] font-bold py-2 rounded-lg transition">Año</button>
+                    <button onclick="aplicarFiltroRapido('todo')" id="btn-todo" class="btn-filtro-rapido bg-slate-100 hover:bg-orange-50 text-slate-600 hover:text-orange-700 text-[10px] font-bold py-2 rounded-lg transition">Todo</button>
                 </div>
 
                 <div class="flex gap-2 w-full mb-6">
                     <div class="flex-1">
-                        <label class="block text-[9px] font-black text-orange-200 uppercase mb-1">Desde</label>
-                        <input type="date" id="r-fecha-inicio" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
+                        <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Desde</label>
+                        <input type="date" id="r-fecha-inicio" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none text-slate-700 focus:border-orange-400 transition-colors">
                     </div>
                     <div class="flex-1">
-                        <label class="block text-[9px] font-black text-orange-200 uppercase mb-1">Hasta</label>
-                        <input type="date" id="r-fecha-fin" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white transition-colors">
+                        <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Hasta</label>
+                        <input type="date" id="r-fecha-fin" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none text-slate-700 focus:border-orange-400 transition-colors">
                     </div>
                 </div>
 
-                <button onclick="generarReporteDinamico()" id="btn-generar" class="w-full bg-white text-orange-600 hover:bg-orange-50 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-lg mb-3 flex justify-center items-center gap-2"><i class="fa-solid fa-bolt"></i> Cargar Datos</button>
+                <button onclick="generarReporteDinamico()" id="btn-generar" class="w-full bg-slate-800 text-white hover:bg-slate-700 font-black py-3 rounded-xl transition-all text-sm active:scale-95 shadow-md mb-3 flex justify-center items-center gap-2"><i class="fa-solid fa-bolt"></i> Cargar Datos</button>
                 
-                <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/20">
-                    <button onclick="window.print()" class="bg-white/20 hover:bg-white/30 text-white font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider border border-white/30"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
+                <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-200">
+                    <button onclick="window.print()" class="bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider border border-slate-200"><i class="fa-solid fa-file-pdf mr-1 text-red-500"></i> PDF</button>
                     <button onclick="exportarExcelData()" class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 rounded-lg transition-all text-[10px] active:scale-95 uppercase tracking-wider shadow-sm"><i class="fa-solid fa-file-excel mr-1"></i> Analítico</button>
                 </div>
             </div>
 
-            <div class="glass p-5 rounded-3xl shadow-sm">
+            <div class="glass p-5 rounded-3xl shadow-sm border-l-4 border-slate-300">
                 <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2 flex justify-between items-center">
                     Módulos Visibles
                     <button onclick="toggleAllModules()" class="text-[9px] text-orange-600 bg-orange-50 px-2 py-1 rounded font-bold hover:bg-orange-100 transition">ON/OFF</button>
@@ -366,13 +367,13 @@
         window.aplicarFiltroRapido = function(tipo) {
             const btns = document.querySelectorAll('.btn-filtro-rapido');
             btns.forEach(b => {
-                b.classList.remove('bg-white', 'text-orange-600', 'shadow-sm');
-                b.classList.add('bg-white/20', 'text-white', 'border-white/30');
+                b.classList.remove('bg-orange-100', 'text-orange-700', 'shadow-sm');
+                b.classList.add('bg-slate-100', 'text-slate-600');
             });
             const btnActivo = document.getElementById(`btn-${tipo}`);
             if(btnActivo) {
-                btnActivo.classList.remove('bg-white/20', 'text-white', 'border-white/30');
-                btnActivo.classList.add('bg-white', 'text-orange-600', 'shadow-sm');
+                btnActivo.classList.remove('bg-slate-100', 'text-slate-600');
+                btnActivo.classList.add('bg-orange-100', 'text-orange-700', 'shadow-sm');
             }
 
             const hoy = new Date();
