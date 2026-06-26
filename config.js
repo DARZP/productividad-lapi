@@ -154,6 +154,7 @@ window.LAPI_CONFIG = {
         "ATLAS GUADALAJARA",
         "AVANTOR",
         "AVIENT COLORANTS",
+        "AVIMEX",
         "AXA SEGUROS",
         "AZ FINE CHEMICAL",
         "BANAMEX",
