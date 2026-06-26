@@ -485,21 +485,18 @@
                     let oi = b.oi || {}; let od = b.od || {};
                     filasBitacora += `
                     <tr>
-                        <td class="bg-verde-lapi">${b.fecha}</td>
-                        <td class="bg-rojo-lapi">${od[250]||''}</td><td class="bg-rojo-lapi">${od[500]||''}</td><td class="bg-rojo-lapi">${od[1000]||''}</td><td class="bg-rojo-lapi">${od[2000]||''}</td><td class="bg-rojo-lapi">${od[3000]||''}</td><td class="bg-rojo-lapi">${od[4000]||''}</td><td class="bg-rojo-lapi">${od[6000]||''}</td><td class="bg-rojo-lapi">${od[8000]||''}</td>
-                        <td></td> <!-- Separador central -->
-                        <td>${oi[250]||''}</td><td>${oi[500]||''}</td><td>${oi[1000]||''}</td><td>${oi[2000]||''}</td><td>${oi[3000]||''}</td><td>${oi[4000]||''}</td><td>${oi[6000]||''}</td><td>${oi[8000]||''}</td>
-                        <td class="bg-verde-lapi" style="padding: 2px;">
-                            <div style="font-size: 8px; line-height: 1;">${b.medico}</div>
+                        <td style="font-weight: bold;">${b.fecha}</td>
+                        <td>${od[250]||''}</td><td>${od[500]||''}</td><td>${od[1000]||''}</td><td>${od[2000]||''}</td><td>${od[3000]||''}</td><td>${od[4000]||''}</td><td>${od[6000]||''}</td><td>${od[8000]||''}</td>
+                        <td style="border-top: none; border-bottom: none;"></td> <td>${oi[250]||''}</td><td>${oi[500]||''}</td><td>${oi[1000]||''}</td><td>${oi[2000]||''}</td><td>${oi[3000]||''}</td><td>${oi[4000]||''}</td><td>${oi[6000]||''}</td><td>${oi[8000]||''}</td>
+                        <td style="padding: 2px;">
+                            <div style="font-size: 8px; line-height: 1; font-weight: bold;">${b.medico}</div>
                             ${b.firma ? `<img src="${b.firma}" class="firma-img">` : ''}
                         </td>
                     </tr>`;
                 });
             }
 
-            for(let i = (data.bitacora ? data.bitacora.length : 0); i < 15; i++) {
-                filasBitacora += `<tr><td class="bg-verde-lapi" style="height: 25px;"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td class="bg-rojo-lapi"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="bg-verde-lapi"></td></tr>`;
-            }
+            // Se elimina el for() que creaba las filas en blanco
 
             return `
                 <table class="header-box">
@@ -519,23 +516,29 @@
                     </tr>
                 </table>
 
-                <h3 style="text-align: center; font-family: Arial; font-weight: normal; margin-bottom: 20px;">CONTROL BIOLÓGICO</h3>
-
-                <div class="info-grid">
-                    <div class="info-col">
-                        <div style="margin-bottom: 5px;">AUDIÓMETRO: <span class="line-field">${data.equipo}</span></div>
-                        <div style="margin-bottom: 5px;">EMPRESA: <span class="line-field">${data.empresa}</span></div>
-                        <div style="margin-bottom: 5px;">FECHA INICIO: <span class="line-field">${data.fecha_inicio}</span></div>
-                    </div>
-                    <div class="info-col">
-                        <div style="margin-bottom: 15px;">N/S: <span class="line-field">${data.ns_equipo}</span></div>
-                        <div style="margin-bottom: 5px;">N/S CABINA: <span class="line-field">${data.ns_cabina || ''}</span></div>
-                    </div>
-                </div>
+                <table style="width: 100%; font-family: Arial, sans-serif; font-size: 11px; margin-bottom: 15px; border-collapse: collapse;">
+                    <tr>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0;">AUDIÓMETRO:</td>
+                        <td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.equipo}</td>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S:</td>
+                        <td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_equipo}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td>
+                        <td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa}</td>
+                        <td style="font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S CABINA:</td>
+                        <td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_cabina || ''}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; padding: 3px 0;">FECHA INICIO:</td>
+                        <td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.fecha_inicio}</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </table>
 
                 <div style="display: flex; justify-content: space-around; font-family: Arial; font-weight: bold; margin-bottom: 5px; font-size: 14px;">
-                    <div style="width: 45%; text-align: center;">OIDO DERECHO</div>
-                    <div style="width: 45%; text-align: center;">OIDO IZQUIERDO</div>
+                    <div style="width: 45%; text-align: center;">OÍDO DERECHO</div>
+                    <div style="width: 45%; text-align: center;">OÍDO IZQUIERDO</div>
                 </div>
 
                 <table class="print-table">
@@ -543,13 +546,20 @@
                         <tr>
                             <th rowspan="2" class="bg-verde-lapi">FECHA</th>
                             <th colspan="8" class="bg-rojo-lapi"></th>
-                            <th rowspan="2" style="background: white !important; border-top: none; border-bottom: none;"></th>
-                            <th colspan="8"></th>
+                            <th rowspan="2" style="background: white !important; border-top: none; border-bottom: none; width: 2%;"></th>
+                            <th colspan="8" style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;"></th>
                             <th rowspan="2" class="bg-verde-lapi">REALIZÓ<br>NOMBRE Y FIRMA</th>
                         </tr>
                         <tr>
                             <th class="bg-rojo-lapi">250</th><th class="bg-rojo-lapi">500</th><th class="bg-rojo-lapi">1000</th><th class="bg-rojo-lapi">2000</th><th class="bg-rojo-lapi">3000</th><th class="bg-rojo-lapi">4000</th><th class="bg-rojo-lapi">6000</th><th class="bg-rojo-lapi">8000</th>
-                            <th>250</th><th>500</th><th>1000</th><th>2000</th><th>3000</th><th>4000</th><th>6000</th><th>8000</th>
+                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">250</th>
+                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">500</th>
+                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">1000</th>
+                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">2000</th>
+                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">3000</th>
+                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">4000</th>
+                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">6000</th>
+                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">8000</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -581,9 +591,7 @@
                 });
             }
 
-            for(let i = (data.bitacora ? data.bitacora.length : 0); i < 15; i++) {
-                filasBitacora += `<tr><td style="height: 30px;"></td><td></td><td></td><td></td><td></td></tr>`;
-            }
+            // Se elimina el for() que creaba las filas en blanco
 
             return `
                 <table class="header-box">
@@ -603,16 +611,20 @@
                     </tr>
                 </table>
 
-                <div class="info-grid">
-                    <div class="info-col">
-                        <div style="margin-bottom: 5px;">ESPIRÓMETRO: <span class="line-field">${data.equipo}</span></div>
-                        <div style="margin-bottom: 5px;">EMPRESA: <span class="line-field">${data.empresa}</span></div>
-                    </div>
-                    <div class="info-col">
-                        <div style="margin-bottom: 5px;">N/S: <span class="line-field">${data.ns_equipo}</span></div>
-                        <div style="margin-bottom: 5px;">FECHAS DEL SERVICIO: <span class="line-field">${fechasServicio}</span></div>
-                    </div>
-                </div>
+                <table style="width: 100%; font-family: Arial, sans-serif; font-size: 11px; margin-bottom: 15px; border-collapse: collapse;">
+                    <tr>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0;">ESPIRÓMETRO:</td>
+                        <td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.equipo}</td>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S:</td>
+                        <td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_equipo}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td>
+                        <td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa}</td>
+                        <td style="font-weight: bold; padding: 3px 0; padding-left: 15px;">FECHAS:</td>
+                        <td style="border-bottom: 1px solid #000; padding: 3px 5px;">${fechasServicio}</td>
+                    </tr>
+                </table>
 
                 <table class="print-table" style="font-size: 12px;">
                     <thead>
