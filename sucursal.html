@@ -396,7 +396,7 @@
 
             const versionDiv = document.createElement('div');
             versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
-            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> v2.2.2_AntiDuplicados`;
+            versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
             document.body.appendChild(versionDiv);
         });
 
