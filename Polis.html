@@ -3,32 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SICP - Sistema de Gestión de Estado de Fuerza y Despliegue Operativo v2.0</title>
-    <!-- Tailwind CSS -->
+    <title>SICP - Sistema de Gestión de Estado de Fuerza y Despliegue Operativo</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SortableJS -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
         .police-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); }
         .gold-accent { color: #c5a85c; }
         .border-gold { border-color: #c5a85c; }
+        .bg-gold { background-color: #c5a85c; }
         .sortable-ghost { opacity: 0.4; background-color: #1e293b !important; border: 2px dashed #3b82f6 !important; }
-        
-        /* Ocultar barra de desplazamiento para un look más limpio, pero permitir scroll */
+
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
+        /* Tabs styling */
         .nav-active { background-color: #172554; border-left-width: 4px; border-color: #3b82f6; color: white; font-weight: 500; }
         .nav-inactive { color: #94a3b8; font-weight: 400; }
         .nav-inactive:hover { background-color: #1e293b; color: white; }
@@ -36,7 +37,6 @@
 </head>
 <body class="min-h-screen antialiased selection:bg-blue-500 selection:text-white">
 
-    <!-- ==================== VISTA 1: PANTALLA DE LOGIN ==================== -->
     <div id="login-view" class="flex min-h-screen items-center justify-center px-4 sm:px-6 lg:px-8 police-gradient absolute inset-0 z-50">
         <div class="w-full max-w-md space-y-8 bg-slate-900/80 p-8 rounded-2xl border border-slate-800 shadow-2xl backdrop-blur-md">
             <div class="text-center">
@@ -45,36 +45,52 @@
                 </div>
                 <h2 class="mt-6 text-2xl font-bold tracking-tight text-white uppercase">SICP</h2>
                 <p class="mt-2 text-xs font-medium tracking-widest text-slate-400 uppercase">Sistema Integral de Control Policial</p>
-                <p class="text-xs text-slate-500 mt-1">v2.0 - Despliegue y Logística</p>
+                <p class="text-xs text-slate-500 mt-1">Estado de Fuerza y Despliegue Operativo</p>
             </div>
             
             <form class="mt-8 space-y-6" onsubmit="handleLogin(event)">
                 <div class="space-y-4 rounded-md">
                     <div>
+                        <label for="username" class="block text-xs font-semibold text-slate-400 uppercase mb-1">Usuario Institucional</label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-user-shield text-sm"></i></span>
-                            <input id="username" type="text" required class="block w-full rounded-lg bg-slate-950 border border-slate-700 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" placeholder="comisaria_apetatitlan o mando_estatal">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                                <i class="fa-solid fa-user-shield text-sm"></i>
+                            </span>
+                            <input id="username" name="username" type="text" required class="block w-full rounded-lg bg-slate-950 border border-slate-700 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="comisaria_apetatitlan o mando_estatal">
                         </div>
                     </div>
                     <div>
+                        <label for="password" class="block text-xs font-semibold text-slate-400 uppercase mb-1">Contraseña de Seguridad</label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-key text-sm"></i></span>
-                            <input id="password" type="password" required class="block w-full rounded-lg bg-slate-950 border border-slate-700 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" placeholder="••••••••">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                                <i class="fa-solid fa-key text-sm"></i>
+                            </span>
+                            <input id="password" name="password" type="password" required class="block w-full rounded-lg bg-slate-950 border border-slate-700 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="••••••••">
                         </div>
                     </div>
                 </div>
+
+                <div class="bg-slate-950/60 p-3 rounded-lg border border-slate-800 text-xs text-slate-400 space-y-1">
+                    <p class="font-semibold gold-accent mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Credenciales de demostración:</p>
+                    <p>• <strong>Comisaría Local:</strong> <span class="text-blue-400">comisaria_apetatitlan</span> / 12345</p>
+                    <p>• <strong>Mando Estatal:</strong> <span class="text-blue-400">mando_estatal</span> / 12345</p>
+                </div>
+
                 <div>
-                    <button type="submit" class="w-full flex justify-center rounded-lg bg-blue-700 px-3 py-3 text-sm font-semibold text-white hover:bg-blue-600 transition duration-150">Autenticar e Ingresar</button>
+                    <button type="submit" class="group relative flex w-full justify-center rounded-lg bg-blue-700 px-3 py-3 text-sm font-semibold text-white hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 transition duration-150">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fa-solid fa-lock text-blue-500 group-hover:text-blue-400"></i>
+                        </span>
+                        Autenticar e Ingresar
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
 
-    <!-- ==================== VISTA 2: PORTAL OPERATIVO (COMISARÍA) ==================== -->
     <div id="commissary-view" class="hidden min-h-screen bg-slate-950 flex flex-col md:flex-row">
-        <!-- Sidebar Comisaría -->
-        <aside class="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
+        <aside class="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 h-screen sticky top-0">
             <div class="p-4 border-b border-slate-800 flex items-center space-x-3">
                 <i class="fa-solid fa-shield-halved text-2xl gold-accent"></i>
                 <div>
@@ -83,9 +99,18 @@
                 </div>
             </div>
             
+            <div class="p-3 bg-slate-950/50 border-b border-slate-800/80 text-xs">
+                <div class="flex items-center justify-between text-slate-400 mb-1">
+                    <span>Estado Técnico:</span>
+                    <span class="text-emerald-400 flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block mr-1 animate-pulse"></span> En línea</span>
+                </div>
+                <p class="text-slate-500">Región: Faro 2</p>
+                <p class="text-slate-500 font-mono text-[11px] mt-1" id="current-date-lbl">29-JUNIO-2026</p>
+            </div>
+
             <nav class="flex-1 p-3 space-y-1" id="nav-com">
                 <button onclick="switchTabCom('tab-com-fuerza', this)" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm transition nav-active">
-                    <i class="fa-solid fa-users-viewfinder w-5 text-center"></i> <span>Estado de Fuerza</span>
+                    <i class="fa-solid fa-users-viewfinder w-5 text-center text-blue-400"></i> <span>Estado de Fuerza</span>
                 </button>
                 <button onclick="switchTabCom('tab-com-armamento', this)" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm transition nav-inactive">
                     <i class="fa-solid fa-gun w-5 text-center"></i> <span>Armamento y Cargo</span>
@@ -95,146 +120,178 @@
                 </button>
             </nav>
 
-            <div class="p-3 border-t border-slate-800">
+            <div class="p-3 border-t border-slate-800 mt-auto">
                 <button onclick="logout()" class="flex items-center space-x-3 w-full px-3 py-2 rounded-lg text-rose-400 hover:bg-rose-950/30 transition text-sm font-medium">
-                    <i class="fa-solid fa-right-from-bracket"></i> <span>Cerrar Sesión</span>
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Cerrar Sesión</span>
                 </button>
             </div>
         </aside>
 
-        <!-- Main Content Comisaría -->
         <main class="flex-1 flex flex-col h-screen overflow-hidden">
-            <!-- Topbar -->
-            <header class="bg-slate-900 border-b border-slate-800 h-16 flex items-center justify-between px-6 shrink-0">
+            <header class="bg-slate-900 border-b border-slate-800 h-16 flex items-center justify-between px-6 shrink-0 z-10">
                 <div class="flex items-center space-x-4">
-                    <span class="bg-blue-950 border border-blue-800 px-3 py-1 rounded text-xs font-semibold text-blue-400 uppercase">Turno A</span>
-                    <h2 class="text-sm font-semibold text-slate-300 hidden md:block">Sistema Integral de Control Policial</h2>
+                    <span class="bg-blue-950 border border-blue-800 px-3 py-1 rounded text-xs font-semibold text-blue-400 uppercase tracking-wider">Turno A</span>
+                    <h2 class="text-sm font-semibold text-slate-300 hidden md:block">Panel de Despliegue Diario de la Comisaría</h2>
                 </div>
                 <div class="flex items-center space-x-3" id="com-actions">
-                    <button onclick="copyPreviousDay()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium inline-flex items-center transition">
+                    <button onclick="copyPreviousDay()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium inline-flex items-center transition shadow-sm">
                         <i class="fa-solid fa-clone mr-2 text-blue-400"></i> Copiar Día Previo
                     </button>
-                    <button onclick="generateReportPDF()" class="bg-blue-700 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium inline-flex items-center transition shadow-sm border border-blue-500">
-                        <i class="fa-solid fa-print mr-2 gold-accent"></i> Imprimir Reporte
+                    <button onclick="generateReportPDF()" class="bg-blue-700 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium inline-flex items-center transition shadow-sm">
+                        <i class="fa-solid fa-file-pdf mr-2 gold-accent"></i> Generar Informe Oficial
                     </button>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-6">
-                <!-- TAB 1: ESTADO DE FUERZA (DRAG & DROP) -->
+            <div class="flex-1 p-6 overflow-y-auto relative">
+                
                 <div id="tab-com-fuerza" class="space-y-6 block">
-                    <!-- KPIs -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm"><p class="text-[10px] uppercase font-bold text-slate-400">Fuerza Total</p><p class="text-2xl font-bold text-white mt-1" id="kpi-total">0</p></div>
-                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm"><p class="text-[10px] uppercase font-bold text-emerald-400">Operativos Activos</p><p class="text-2xl font-bold text-emerald-400 mt-1" id="kpi-operativo">0</p></div>
-                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm"><p class="text-[10px] uppercase font-bold text-blue-400">Apoyo Admin</p><p class="text-2xl font-bold text-blue-400 mt-1" id="kpi-admin">0</p></div>
-                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm"><p class="text-[10px] uppercase font-bold text-amber-500">Ausencias</p><p class="text-2xl font-bold text-amber-500 mt-1" id="kpi-ausente">0</p></div>
+                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                        <div class="xl:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm relative overflow-hidden">
+                                <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Fuerza Total</p>
+                                <p class="text-2xl font-bold text-white mt-1" id="kpi-total">13</p>
+                                <div class="absolute right-3 bottom-3 text-slate-800 text-2xl"><i class="fa-solid fa-users"></i></div>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm relative overflow-hidden">
+                                <p class="text-[10px] uppercase font-bold tracking-widest text-emerald-400">Operativos Activos</p>
+                                <p class="text-2xl font-bold text-emerald-400 mt-1" id="kpi-operativo">2</p>
+                                <div class="absolute right-3 bottom-3 text-emerald-950 text-2xl"><i class="fa-solid fa-user-shield"></i></div>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm relative overflow-hidden">
+                                <p class="text-[10px] uppercase font-bold tracking-widest text-blue-400">Apoyo Admin</p>
+                                <p class="text-2xl font-bold text-blue-400 mt-1" id="kpi-admin">9</p>
+                                <div class="absolute right-3 bottom-3 text-blue-950 text-2xl"><i class="fa-solid fa-building-user"></i></div>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm relative overflow-hidden">
+                                <p class="text-[10px] uppercase font-bold tracking-widest text-amber-500">Novedad / Franco</p>
+                                <p class="text-2xl font-bold text-amber-500 mt-1" id="kpi-ausente">2</p>
+                                <div class="absolute right-3 bottom-3 text-amber-950 text-2xl"><i class="fa-solid fa-calendar-minus"></i></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900 border border-amber-900/40 p-4 rounded-xl shadow-sm">
+                            <div class="flex items-center space-x-2 text-amber-500 mb-3">
+                                <i class="fa-solid fa-triangle-exclamation animate-pulse"></i>
+                                <h3 class="text-xs font-bold uppercase tracking-wider">Alertas y Novedades del Turno</h3>
+                            </div>
+                            <div class="space-y-2 max-h-[90px] overflow-y-auto pr-1 text-xs text-slate-300" id="alerts-container">
+                                </div>
+                        </div>
                     </div>
 
-                    <!-- Drag & Drop Board -->
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
-                        <!-- Administrativos -->
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[500px]">
-                            <div class="p-3 bg-slate-850 border-b border-slate-800 flex justify-between items-center"><h3 class="text-xs font-bold uppercase text-slate-200"><span class="text-blue-500 mr-1">●</span> Administrativos</h3><span class="bg-blue-950 text-blue-400 px-2 py-0.5 rounded-full text-[10px]" id="cnt-administrativo">0</span></div>
-                            <div id="col-administrativo" class="p-2 space-y-2 overflow-y-auto flex-1"></div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[500px] overflow-hidden shadow-md">
+                            <div class="p-3 bg-slate-850 border-b border-slate-800 flex justify-between items-center shrink-0">
+                                <div class="flex items-center space-x-2"><span class="h-2 w-2 rounded-full bg-blue-500"></span><h3 class="text-xs font-bold uppercase text-slate-200 tracking-wide">Administrativos</h3></div>
+                                <span class="bg-blue-950 text-blue-400 px-2 py-0.5 rounded-full text-[10px] font-bold" id="cnt-administrativo">0</span>
+                            </div>
+                            <div id="col-administrativo" class="p-2 space-y-2 overflow-y-auto flex-1 pb-10"></div>
                         </div>
-                        <!-- Operativos -->
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[500px]">
-                            <div class="p-3 bg-slate-850 border-b border-slate-800 flex justify-between items-center"><h3 class="text-xs font-bold uppercase text-slate-200"><span class="text-emerald-500 mr-1">●</span> Operativa</h3><span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full text-[10px]" id="cnt-operativo">0</span></div>
-                            <div id="col-operativo" class="p-2 space-y-2 overflow-y-auto flex-1"></div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[500px] overflow-hidden shadow-md">
+                            <div class="p-3 bg-slate-850 border-b border-slate-800 flex justify-between items-center shrink-0">
+                                <div class="flex items-center space-x-2"><span class="h-2 w-2 rounded-full bg-emerald-500"></span><h3 class="text-xs font-bold uppercase text-slate-200 tracking-wide">Fuerza Operativa</h3></div>
+                                <span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full text-[10px] font-bold" id="cnt-operativo">0</span>
+                            </div>
+                            <div id="col-operativo" class="p-2 space-y-2 overflow-y-auto flex-1 pb-10"></div>
                         </div>
-                        <!-- Francos -->
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[500px]">
-                            <div class="p-3 bg-slate-850 border-b border-slate-800 flex justify-between items-center"><h3 class="text-xs font-bold uppercase text-slate-200"><span class="text-slate-500 mr-1">●</span> Franco/Descanso</h3><span class="bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full text-[10px]" id="cnt-franco">0</span></div>
-                            <div id="col-franco" class="p-2 space-y-2 overflow-y-auto flex-1"></div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[500px] overflow-hidden shadow-md">
+                            <div class="p-3 bg-slate-850 border-b border-slate-800 flex justify-between items-center shrink-0">
+                                <div class="flex items-center space-x-2"><span class="h-2 w-2 rounded-full bg-slate-500"></span><h3 class="text-xs font-bold uppercase text-slate-200 tracking-wide">Franco / Descanso</h3></div>
+                                <span class="bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full text-[10px] font-bold" id="cnt-franco">0</span>
+                            </div>
+                            <div id="col-franco" class="p-2 space-y-2 overflow-y-auto flex-1 pb-10"></div>
                         </div>
-                        <!-- Novedades -->
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[500px]">
-                            <div class="p-3 bg-slate-850 border-b border-slate-800 flex justify-between items-center"><h3 class="text-xs font-bold uppercase text-slate-200"><span class="text-amber-500 mr-1">●</span> Ausencias</h3><span class="bg-amber-950 text-amber-500 px-2 py-0.5 rounded-full text-[10px]" id="cnt-novedad">0</span></div>
-                            <div id="col-novedad" class="p-2 space-y-2 overflow-y-auto flex-1"></div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[500px] overflow-hidden shadow-md">
+                            <div class="p-3 bg-slate-850 border-b border-slate-800 flex justify-between items-center shrink-0">
+                                <div class="flex items-center space-x-2"><span class="h-2 w-2 rounded-full bg-amber-500"></span><h3 class="text-xs font-bold uppercase text-slate-200 tracking-wide">Ausencias / Licencias</h3></div>
+                                <span class="bg-amber-950 text-amber-500 px-2 py-0.5 rounded-full text-[10px] font-bold" id="cnt-novedad">0</span>
+                            </div>
+                            <div id="col-novedad" class="p-2 space-y-2 overflow-y-auto flex-1 pb-10"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 2: ARMAMENTO -->
                 <div id="tab-com-armamento" class="hidden space-y-6">
-                    <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-gun text-slate-400 mr-2"></i> Inventario y Resguardo de Armamento</h2>
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-gun text-slate-400 mr-2"></i> Inventario y Resguardo de Armamento</h2>
+                        <span class="bg-blue-950 text-blue-400 px-3 py-1 rounded-full text-xs font-bold border border-blue-900">Total Armas: 4</span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
                         <table class="w-full text-left text-sm text-slate-300">
-                            <thead class="bg-slate-950 text-slate-400 text-xs uppercase border-b border-slate-800">
+                            <thead class="bg-slate-950 text-slate-400 text-xs uppercase border-b border-slate-800 tracking-wider">
                                 <tr><th class="p-4">Tipo / Modelo</th><th class="p-4">Matrícula</th><th class="p-4">Asignada a</th><th class="p-4">Estatus C.U.I.P.</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-800/60">
-                                <tr><td class="p-4 font-semibold">Glock 19 (Arma Corta)</td><td class="p-4 font-mono">GLK-9921</td><td class="p-4">DAVID ALVARADO RODRIGUEZ</td><td class="p-4"><span class="bg-emerald-950 text-emerald-400 px-2 py-1 rounded text-xs">Vigente</span></td></tr>
-                                <tr><td class="p-4 font-semibold">Beretta 92FS (Arma Corta)</td><td class="p-4 font-mono">BER-1045</td><td class="p-4">SOTOMAYOR VEGA ALEJO</td><td class="p-4"><span class="bg-emerald-950 text-emerald-400 px-2 py-1 rounded text-xs">Vigente</span></td></tr>
-                                <tr><td class="p-4 font-semibold">AR-15 (Arma Larga)</td><td class="p-4 font-mono">AR-MX-009</td><td class="p-4">DAVID ALVARADO RODRIGUEZ</td><td class="p-4"><span class="bg-emerald-950 text-emerald-400 px-2 py-1 rounded text-xs">Vigente</span></td></tr>
-                                <tr><td class="p-4 font-semibold text-slate-500">Mendoza HM-3</td><td class="p-4 font-mono text-slate-500">MDZ-553</td><td class="p-4 text-slate-500">EN ARMERÍA (STOCK)</td><td class="p-4"><span class="bg-slate-800 text-slate-400 px-2 py-1 rounded text-xs">Resguardo</span></td></tr>
+                                <tr class="hover:bg-slate-800/50 transition"><td class="p-4 font-semibold">Glock 19 (Arma Corta)</td><td class="p-4 font-mono text-blue-300">GLK-9921</td><td class="p-4 text-white">DAVID ALVARADO RODRIGUEZ</td><td class="p-4"><span class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-1 rounded text-xs">Vigente</span></td></tr>
+                                <tr class="hover:bg-slate-800/50 transition"><td class="p-4 font-semibold">Beretta 92FS (Arma Corta)</td><td class="p-4 font-mono text-blue-300">BER-1045</td><td class="p-4 text-white">SOTOMAYOR VEGA ALEJO</td><td class="p-4"><span class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-1 rounded text-xs">Vigente</span></td></tr>
+                                <tr class="hover:bg-slate-800/50 transition"><td class="p-4 font-semibold">AR-15 (Arma Larga)</td><td class="p-4 font-mono text-blue-300">AR-MX-009</td><td class="p-4 text-white">DAVID ALVARADO RODRIGUEZ</td><td class="p-4"><span class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-1 rounded text-xs">Vigente</span></td></tr>
+                                <tr class="bg-slate-950/50"><td class="p-4 font-semibold text-slate-500">Mendoza HM-3</td><td class="p-4 font-mono text-slate-600">MDZ-553</td><td class="p-4 text-slate-500"><i class="fa-solid fa-lock mr-1"></i> EN ARMERÍA (STOCK)</td><td class="p-4"><span class="bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1 rounded text-xs">Resguardo</span></td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- TAB 3: VEHÍCULOS -->
                 <div id="tab-com-vehiculos" class="hidden space-y-6">
-                    <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-car-on text-slate-400 mr-2"></i> Parque Vehicular y Bitácora</h2>
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-car-on text-slate-400 mr-2"></i> Parque Vehicular y Bitácora</h2>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- CRP 1 -->
-                        <div class="bg-slate-900 border border-emerald-900/50 p-5 rounded-xl flex flex-col justify-between">
-                            <div>
+                        <div class="bg-slate-900 border border-emerald-900/50 p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-bl-full z-0 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10">
                                 <div class="flex justify-between items-start mb-4">
                                     <h3 class="text-xl font-bold text-white font-mono tracking-wider">CRP-011</h3>
-                                    <span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded text-xs font-bold border border-emerald-900">EN RUTA</span>
+                                    <span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-900 tracking-wider">EN RUTA</span>
                                 </div>
-                                <p class="text-sm text-slate-400 mb-1"><i class="fa-solid fa-truck-pickup mr-1"></i> Toyota Hilux 2023</p>
-                                <p class="text-sm text-slate-400"><i class="fa-solid fa-user-shield mr-1"></i> Tripulación: Cmdte. Alvarado</p>
+                                <p class="text-sm text-slate-300 mb-2"><i class="fa-solid fa-truck-pickup w-5 text-slate-500"></i> Toyota Hilux 2023</p>
+                                <p class="text-sm text-white"><i class="fa-solid fa-user-shield w-5 text-blue-400"></i> Tripulación: Cmdte. Alvarado</p>
                             </div>
-                            <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-slate-500">
-                                <span>Combustible: 85%</span>
-                                <span>Mantenimiento: Al día</span>
+                            <div class="mt-5 pt-4 border-t border-slate-800 flex justify-between text-xs text-slate-400 relative z-10">
+                                <span><i class="fa-solid fa-gas-pump mr-1 text-emerald-500"></i> 85%</span>
+                                <span><i class="fa-solid fa-check-circle mr-1 text-emerald-500"></i> Al día</span>
                             </div>
                         </div>
-                        <!-- CRP 2 -->
-                        <div class="bg-slate-900 border border-blue-900/50 p-5 rounded-xl flex flex-col justify-between">
-                            <div>
+                        <div class="bg-slate-900 border border-blue-900/50 p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-bl-full z-0 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10">
                                 <div class="flex justify-between items-start mb-4">
                                     <h3 class="text-xl font-bold text-white font-mono tracking-wider">CRP-015</h3>
-                                    <span class="bg-blue-950 text-blue-400 px-2 py-0.5 rounded text-xs font-bold border border-blue-900">BASE (PREVENCIÓN)</span>
+                                    <span class="bg-blue-950 text-blue-400 px-2 py-0.5 rounded text-[10px] font-bold border border-blue-900 tracking-wider">BASE (PREVENCIÓN)</span>
                                 </div>
-                                <p class="text-sm text-slate-400 mb-1"><i class="fa-solid fa-car mr-1"></i> Dodge Charger 2021</p>
-                                <p class="text-sm text-slate-400"><i class="fa-solid fa-user-shield mr-1"></i> Tripulación: Sotomayor Vega</p>
+                                <p class="text-sm text-slate-300 mb-2"><i class="fa-solid fa-car w-5 text-slate-500"></i> Dodge Charger 2021</p>
+                                <p class="text-sm text-white"><i class="fa-solid fa-user-shield w-5 text-blue-400"></i> Tripulación: Sotomayor Vega</p>
                             </div>
-                            <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-slate-500">
-                                <span>Combustible: 60%</span>
-                                <span>Mantenimiento: Al día</span>
+                            <div class="mt-5 pt-4 border-t border-slate-800 flex justify-between text-xs text-slate-400 relative z-10">
+                                <span><i class="fa-solid fa-gas-pump mr-1 text-amber-500"></i> 60%</span>
+                                <span><i class="fa-solid fa-check-circle mr-1 text-emerald-500"></i> Al día</span>
                             </div>
                         </div>
-                        <!-- CRP 3 -->
-                        <div class="bg-slate-900 border border-amber-900/50 p-5 rounded-xl flex flex-col justify-between opacity-75">
-                            <div>
+                        <div class="bg-slate-900 border border-amber-900/50 p-5 rounded-xl flex flex-col justify-between shadow-sm opacity-75 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-amber-500/10 rounded-bl-full z-0"></div>
+                            <div class="relative z-10">
                                 <div class="flex justify-between items-start mb-4">
-                                    <h3 class="text-xl font-bold text-white font-mono tracking-wider">CRP-008</h3>
-                                    <span class="bg-amber-950 text-amber-500 px-2 py-0.5 rounded text-xs font-bold border border-amber-900">TALLER</span>
+                                    <h3 class="text-xl font-bold text-white font-mono tracking-wider text-slate-400">CRP-008</h3>
+                                    <span class="bg-amber-950 text-amber-500 px-2 py-0.5 rounded text-[10px] font-bold border border-amber-900 tracking-wider">TALLER</span>
                                 </div>
-                                <p class="text-sm text-slate-400 mb-1"><i class="fa-solid fa-motorcycle mr-1"></i> Yamaha 250cc</p>
-                                <p class="text-sm text-slate-400"><i class="fa-solid fa-wrench mr-1"></i> Falla en balatas</p>
+                                <p class="text-sm text-slate-500 mb-2"><i class="fa-solid fa-motorcycle w-5 text-slate-600"></i> Yamaha 250cc</p>
+                                <p class="text-sm text-amber-400/80"><i class="fa-solid fa-wrench w-5"></i> Falla en balatas</p>
                             </div>
-                            <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-slate-500">
+                            <div class="mt-5 pt-4 border-t border-slate-800 flex justify-between text-xs text-slate-500 relative z-10">
                                 <span>Ingreso: 27-Jun</span>
-                                <span>Salida Est: 30-Jun</span>
+                                <span>Salida: 30-Jun</span>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
 
 
-    <!-- ==================== VISTA 3: PORTAL ADMINISTRATIVO (MANDO ESTATAL) ==================== -->
     <div id="admin-view" class="hidden min-h-screen bg-slate-950 flex flex-col md:flex-row">
-        <!-- Sidebar Admin -->
-        <aside class="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
+        <aside class="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 h-screen sticky top-0">
             <div class="p-4 border-b border-slate-800 flex items-center space-x-3">
                 <i class="fa-solid fa-shield-halved text-2xl text-blue-500"></i>
                 <div>
@@ -242,124 +299,212 @@
                     <p class="text-[10px] text-gold-accent uppercase font-bold">Mando e Inteligencia</p>
                 </div>
             </div>
-            
+
             <nav class="flex-1 p-3 space-y-1" id="nav-adm">
                 <button onclick="switchTabAdm('tab-adm-dashboard', this)" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm transition nav-active">
-                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> <span>Dashboard Global</span>
+                    <i class="fa-solid fa-chart-pie text-blue-400 w-5"></i>
+                    <span>Dashboard Global</span>
                 </button>
                 <button onclick="switchTabAdm('tab-adm-territorial', this)" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm transition nav-inactive">
-                    <i class="fa-solid fa-map-location-dot w-5 text-center"></i> <span>Despliegue Territorial</span>
+                    <i class="fa-solid fa-map-location-dot w-5 text-center"></i>
+                    <span>Despliegue Territorial</span>
                 </button>
                 <button onclick="switchTabAdm('tab-adm-reportes', this)" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm transition nav-inactive">
-                    <i class="fa-solid fa-receipt w-5 text-center"></i> <span>Reportes Consolidados</span>
+                    <i class="fa-solid fa-receipt w-5 text-center"></i>
+                    <span>Reportes Consolidados</span>
                 </button>
             </nav>
 
-            <div class="p-3 border-t border-slate-800">
+            <div class="p-3 border-t border-slate-800 mt-auto">
                 <button onclick="logout()" class="flex items-center space-x-3 w-full px-3 py-2 rounded-lg text-rose-400 hover:bg-rose-950/30 transition text-sm font-medium">
-                    <i class="fa-solid fa-right-from-bracket"></i> <span>Cerrar Sesión</span>
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Cerrar Sesión</span>
                 </button>
             </div>
         </aside>
 
-        <!-- Main Content Admin -->
         <main class="flex-1 flex flex-col h-screen overflow-hidden">
-            <header class="bg-slate-900 border-b border-slate-800 h-16 flex items-center justify-between px-6 shrink-0">
+            <header class="bg-slate-900 border-b border-slate-800 h-16 flex items-center justify-between px-6 shrink-0 z-10">
                 <div class="flex items-center space-x-4">
-                    <span class="bg-amber-950 border border-amber-800 px-3 py-1 rounded text-xs font-semibold text-amber-400 uppercase">Centro de Mando General</span>
+                    <span class="bg-amber-950 border border-amber-800 px-3 py-1 rounded text-xs font-semibold text-amber-400 uppercase tracking-wider">Centro de Mando General</span>
+                    <h2 class="text-sm font-semibold text-slate-300 hidden md:block">Integración de Despliegue Estatal (20 Regiones / Faros)</h2>
                 </div>
-                <div class="text-xs text-slate-400">29 de Junio de 2026</div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 text-xs text-slate-400 hidden lg:flex">
+                        <span>Filtro Región:</span>
+                        <select class="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white focus:outline-none shadow-sm" onchange="alert('Filtrando datos dinámicamente...')">
+                            <option>TODAS LAS COMISARÍAS</option>
+                            <option>FARO 1 TLAXCALA</option>
+                            <option>FARO 2 APETATITLÁN</option>
+                            <option>FARO 9 ZACATELCO</option>
+                            <option>FARO 10 SAN PABLO DEL MONTE</option>
+                        </select>
+                    </div>
+                    <button onclick="generateAdminPDF()" class="bg-blue-700 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium inline-flex items-center transition shadow-sm border border-blue-500">
+                        <i class="fa-solid fa-print mr-2 gold-accent"></i> Imprimir Reporte Estatal
+                    </button>
+                </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-6">
-                <!-- TAB 1: DASHBOARD -->
+            <div class="flex-1 p-6 overflow-y-auto">
+                
                 <div id="tab-adm-dashboard" class="space-y-6 block">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl"><p class="text-[10px] uppercase font-bold text-slate-400">Fuerza Estatal Integrada</p><p class="text-3xl font-bold text-white mt-1">248</p></div>
-                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl"><p class="text-[10px] uppercase font-bold text-emerald-400">Despliegue Operativo</p><p class="text-3xl font-bold text-emerald-400 mt-1">164</p></div>
-                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl"><p class="text-[10px] uppercase font-bold text-blue-400">Personal Estructura</p><p class="text-3xl font-bold text-blue-400 mt-1">52</p></div>
-                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl"><p class="text-[10px] uppercase font-bold text-amber-500">Ausencias/Francos</p><p class="text-3xl font-bold text-amber-500 mt-1">32</p></div>
+                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm">
+                            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Fuerza Estatal Integrada</p>
+                            <p class="text-3xl font-bold text-white mt-1">248 <span class="text-xs text-slate-500 font-normal">Elementos</span></p>
+                            <div class="mt-2 text-xs text-slate-400 flex items-center">
+                                <span class="text-emerald-400 font-semibold mr-1"><i class="fa-solid fa-circle-check"></i> 100%</span> de reportes locales recibidos
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm">
+                            <p class="text-[10px] uppercase font-bold tracking-widest text-emerald-400">Despliegue Operativo Real</p>
+                            <p class="text-3xl font-bold text-emerald-400 mt-1">164 <span class="text-xs text-slate-500 font-normal">En Campo</span></p>
+                            <div class="mt-2 text-xs text-slate-500">Unidades de Reacción, Patrullas e Infantería</div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm">
+                            <p class="text-[10px] uppercase font-bold tracking-widest text-blue-400">Personal de Estructura / Oficina</p>
+                            <p class="text-3xl font-bold text-blue-400 mt-1">52 <span class="text-xs text-slate-500 font-normal">Administrativos</span></p>
+                            <div class="mt-2 text-xs text-slate-500">Escribientes, Radio Operadores, Armeros</div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-sm">
+                            <p class="text-[10px] uppercase font-bold tracking-widest text-amber-500">Ausencias y Francos Consolidados</p>
+                            <p class="text-3xl font-bold text-amber-500 mt-1">32 <span class="text-xs text-slate-500 font-normal">Bajas Temporales</span></p>
+                            <div class="mt-2 text-xs text-slate-500">Vacaciones, Incapacidades, Suspensiones</div>
+                        </div>
                     </div>
+
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl h-72">
-                            <h3 class="text-xs font-bold uppercase text-slate-300 mb-2">Distribución Global</h3>
-                            <div class="h-56"><canvas id="statusChart"></canvas></div>
+                        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl shadow-sm">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-4"><i class="fa-solid fa-chart-pie mr-2 text-blue-500"></i>Distribución Porcentual del Estado de Fuerza Global</h3>
+                            <div class="relative h-64 flex justify-center"><canvas id="statusChart"></canvas></div>
                         </div>
-                        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl h-72">
-                            <h3 class="text-xs font-bold uppercase text-slate-300 mb-2">Elementos Operativos Activos por Región</h3>
-                            <div class="h-56"><canvas id="municipalityChart"></canvas></div>
+                        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl shadow-sm">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-4"><i class="fa-solid fa-chart-bar mr-2 text-emerald-500"></i>Elementos Operativos Activos por Comisaría de Región</h3>
+                            <div class="relative h-64"><canvas id="municipalityChart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                        <div class="p-4 bg-slate-850 border-b border-slate-800 flex items-center">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Resumen Ejecutivo Territorial de Fuerza</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                                    <tr>
+                                        <th class="p-3">Comisaría de Región</th>
+                                        <th class="p-3 text-center">Edo. Fuerza Total</th>
+                                        <th class="p-3 text-center">Operativos A</th>
+                                        <th class="p-3 text-center">Operativos B</th>
+                                        <th class="p-3 text-center">Administrativos</th>
+                                        <th class="p-3 text-center">Unidades CRP</th>
+                                        <th class="p-3 text-center">Estatus Reporte</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/60">
+                                    <tr class="hover:bg-slate-800/50 transition">
+                                        <td class="p-3 font-semibold text-white">FARO 1 TLAXCALA</td>
+                                        <td class="p-3 text-center font-mono">84</td>
+                                        <td class="p-3 text-center font-mono text-emerald-400">38</td>
+                                        <td class="p-3 text-center font-mono text-emerald-400">36</td>
+                                        <td class="p-3 text-center font-mono text-blue-300">10</td>
+                                        <td class="p-3 text-center font-mono text-amber-400">18</td>
+                                        <td class="p-3 text-center"><span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-800">Validado</span></td>
+                                    </tr>
+                                    <tr class="bg-slate-950/40 hover:bg-slate-800/50 transition">
+                                        <td class="p-3 font-semibold text-white">FARO 2 APETATITLÁN</td>
+                                        <td class="p-3 text-center font-mono">13</td>
+                                        <td class="p-3 text-center font-mono text-emerald-400">7</td>
+                                        <td class="p-3 text-center font-mono text-emerald-400">4</td>
+                                        <td class="p-3 text-center font-mono text-blue-300">2</td>
+                                        <td class="p-3 text-center font-mono text-amber-400">4</td>
+                                        <td class="p-3 text-center"><span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-800">Validado</span></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-800/50 transition">
+                                        <td class="p-3 font-semibold text-white">FARO 9 ZACATELCO</td>
+                                        <td class="p-3 text-center font-mono">65</td>
+                                        <td class="p-3 text-center font-mono text-emerald-400">28</td>
+                                        <td class="p-3 text-center font-mono text-emerald-400">25</td>
+                                        <td class="p-3 text-center font-mono text-blue-300">12</td>
+                                        <td class="p-3 text-center font-mono text-amber-400">11</td>
+                                        <td class="p-3 text-center"><span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-800">Validado</span></td>
+                                    </tr>
+                                    <tr class="bg-slate-950/40 hover:bg-slate-800/50 transition">
+                                        <td class="p-3 font-semibold text-white">FARO 10 SAN PABLO DEL MONTE</td>
+                                        <td class="p-3 text-center font-mono">51</td>
+                                        <td class="p-3 text-center font-mono text-emerald-400">22</td>
+                                        <td class="p-3 text-center font-mono text-emerald-400">20</td>
+                                        <td class="p-3 text-center font-mono text-blue-300">9</td>
+                                        <td class="p-3 text-center font-mono text-amber-400">9</td>
+                                        <td class="p-3 text-center"><span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-800">Validado</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 2: DESPLIEGUE TERRITORIAL -->
                 <div id="tab-adm-territorial" class="hidden space-y-6">
-                    <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-map-location-dot text-slate-400 mr-2"></i> Monitoreo de Faros y Regiones</h2>
+                    <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-map-location-dot text-slate-400 mr-2"></i> Monitoreo de Faros y Regiones en Tiempo Real</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        <!-- Faro 1 -->
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="font-bold text-white text-lg">FARO 1 TLAXCALA</h3>
-                                <span class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-1 rounded text-xs"><i class="fa-solid fa-satellite-dish mr-1"></i> Online</span>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition shadow-sm group">
+                            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                                <h3 class="font-bold text-white text-lg group-hover:text-blue-400 transition">FARO 1 TLAXCALA</h3>
+                                <span class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-1 rounded text-xs animate-pulse"><i class="fa-solid fa-satellite-dish mr-1"></i> Online</span>
                             </div>
-                            <div class="space-y-2 text-sm text-slate-300">
-                                <div class="flex justify-between border-b border-slate-800 pb-1"><span>Fuerza Total:</span> <span class="font-mono">84</span></div>
-                                <div class="flex justify-between border-b border-slate-800 pb-1"><span>Despliegue (A/B):</span> <span class="font-mono text-emerald-400">74</span></div>
-                                <div class="flex justify-between border-b border-slate-800 pb-1"><span>Unidades CRP:</span> <span class="font-mono text-blue-400">18</span></div>
-                            </div>
-                        </div>
-                        <!-- Faro 2 -->
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="font-bold text-white text-lg">FARO 2 APETATITLÁN</h3>
-                                <span class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-1 rounded text-xs"><i class="fa-solid fa-satellite-dish mr-1"></i> Online</span>
-                            </div>
-                            <div class="space-y-2 text-sm text-slate-300">
-                                <div class="flex justify-between border-b border-slate-800 pb-1"><span>Fuerza Total:</span> <span class="font-mono">13</span></div>
-                                <div class="flex justify-between border-b border-slate-800 pb-1"><span>Despliegue (A/B):</span> <span class="font-mono text-emerald-400">11</span></div>
-                                <div class="flex justify-between border-b border-slate-800 pb-1"><span>Unidades CRP:</span> <span class="font-mono text-blue-400">4</span></div>
+                            <div class="space-y-3 text-sm text-slate-300">
+                                <div class="flex justify-between items-center"><span class="text-slate-400"><i class="fa-solid fa-users w-5"></i> Fuerza Total:</span> <span class="font-mono font-bold text-white bg-slate-800 px-2 rounded">84</span></div>
+                                <div class="flex justify-between items-center"><span class="text-slate-400"><i class="fa-solid fa-user-shield w-5"></i> Operativos (A/B):</span> <span class="font-mono font-bold text-emerald-400 bg-emerald-950 px-2 rounded">74</span></div>
+                                <div class="flex justify-between items-center"><span class="text-slate-400"><i class="fa-solid fa-truck-pickup w-5"></i> Unidades CRP:</span> <span class="font-mono font-bold text-amber-400 bg-amber-950 px-2 rounded">18</span></div>
                             </div>
                         </div>
-                        <!-- Faro 9 -->
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="font-bold text-white text-lg">FARO 9 ZACATELCO</h3>
-                                <span class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-1 rounded text-xs"><i class="fa-solid fa-satellite-dish mr-1"></i> Online</span>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition shadow-sm group">
+                            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                                <h3 class="font-bold text-white text-lg group-hover:text-blue-400 transition">FARO 2 APETATITLÁN</h3>
+                                <span class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-1 rounded text-xs animate-pulse"><i class="fa-solid fa-satellite-dish mr-1"></i> Online</span>
                             </div>
-                            <div class="space-y-2 text-sm text-slate-300">
-                                <div class="flex justify-between border-b border-slate-800 pb-1"><span>Fuerza Total:</span> <span class="font-mono">65</span></div>
-                                <div class="flex justify-between border-b border-slate-800 pb-1"><span>Despliegue (A/B):</span> <span class="font-mono text-emerald-400">53</span></div>
-                                <div class="flex justify-between border-b border-slate-800 pb-1"><span>Unidades CRP:</span> <span class="font-mono text-blue-400">11</span></div>
+                            <div class="space-y-3 text-sm text-slate-300">
+                                <div class="flex justify-between items-center"><span class="text-slate-400"><i class="fa-solid fa-users w-5"></i> Fuerza Total:</span> <span class="font-mono font-bold text-white bg-slate-800 px-2 rounded">13</span></div>
+                                <div class="flex justify-between items-center"><span class="text-slate-400"><i class="fa-solid fa-user-shield w-5"></i> Operativos (A/B):</span> <span class="font-mono font-bold text-emerald-400 bg-emerald-950 px-2 rounded">11</span></div>
+                                <div class="flex justify-between items-center"><span class="text-slate-400"><i class="fa-solid fa-truck-pickup w-5"></i> Unidades CRP:</span> <span class="font-mono font-bold text-amber-400 bg-amber-950 px-2 rounded">4</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition shadow-sm group">
+                            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                                <h3 class="font-bold text-white text-lg group-hover:text-blue-400 transition">FARO 9 ZACATELCO</h3>
+                                <span class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-1 rounded text-xs animate-pulse"><i class="fa-solid fa-satellite-dish mr-1"></i> Online</span>
+                            </div>
+                            <div class="space-y-3 text-sm text-slate-300">
+                                <div class="flex justify-between items-center"><span class="text-slate-400"><i class="fa-solid fa-users w-5"></i> Fuerza Total:</span> <span class="font-mono font-bold text-white bg-slate-800 px-2 rounded">65</span></div>
+                                <div class="flex justify-between items-center"><span class="text-slate-400"><i class="fa-solid fa-user-shield w-5"></i> Operativos (A/B):</span> <span class="font-mono font-bold text-emerald-400 bg-emerald-950 px-2 rounded">53</span></div>
+                                <div class="flex justify-between items-center"><span class="text-slate-400"><i class="fa-solid fa-truck-pickup w-5"></i> Unidades CRP:</span> <span class="font-mono font-bold text-amber-400 bg-amber-950 px-2 rounded">11</span></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 3: REPORTES CONSOLIDADOS -->
                 <div id="tab-adm-reportes" class="hidden space-y-6">
                     <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-receipt text-slate-400 mr-2"></i> Incidencias y Novedades Relevantes de las últimas 24 hrs</h2>
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
                         <table class="w-full text-left text-sm text-slate-300">
                             <thead class="bg-slate-950 text-slate-400 text-xs uppercase border-b border-slate-800">
                                 <tr><th class="p-4">Hora</th><th class="p-4">Región</th><th class="p-4">Tipo de Incidencia</th><th class="p-4">Descripción Breve</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-800/60">
-                                <tr><td class="p-4 font-mono text-xs">08:15 AM</td><td class="p-4 font-semibold">FARO 1</td><td class="p-4"><span class="bg-amber-950 text-amber-500 px-2 py-1 rounded text-xs">Faltas Injustificadas</span></td><td class="p-4 text-slate-400">2 elementos no se presentaron a pase de lista en sector centro.</td></tr>
-                                <tr><td class="p-4 font-mono text-xs">09:30 AM</td><td class="p-4 font-semibold">FARO 2</td><td class="p-4"><span class="bg-blue-950 text-blue-400 px-2 py-1 rounded text-xs">Novedad Médica</span></td><td class="p-4 text-slate-400">Policía ORDOÑEZ exceptuada de esfuerzos físicos (Gestación).</td></tr>
-                                <tr><td class="p-4 font-mono text-xs">11:45 AM</td><td class="p-4 font-semibold">FARO 9</td><td class="p-4"><span class="bg-rose-950 text-rose-400 px-2 py-1 rounded text-xs">Falla Vehicular</span></td><td class="p-4 text-slate-400">Unidad CRP-102 ingresa a taller por colisión menor, sin lesionados.</td></tr>
+                                <tr class="hover:bg-slate-800/50"><td class="p-4 font-mono text-xs text-slate-500">08:15 AM</td><td class="p-4 font-semibold text-white">FARO 1</td><td class="p-4"><span class="bg-amber-950 text-amber-500 border border-amber-800 px-2 py-1 rounded text-xs">Faltas Injustificadas</span></td><td class="p-4 text-slate-400">2 elementos no se presentaron a pase de lista en sector centro.</td></tr>
+                                <tr class="hover:bg-slate-800/50 bg-slate-950/30"><td class="p-4 font-mono text-xs text-slate-500">09:30 AM</td><td class="p-4 font-semibold text-white">FARO 2</td><td class="p-4"><span class="bg-blue-950 text-blue-400 border border-blue-800 px-2 py-1 rounded text-xs">Novedad Médica</span></td><td class="p-4 text-slate-400">Policía ORDOÑEZ exceptuada de esfuerzos físicos (Gestación).</td></tr>
+                                <tr class="hover:bg-slate-800/50"><td class="p-4 font-mono text-xs text-slate-500">11:45 AM</td><td class="p-4 font-semibold text-white">FARO 9</td><td class="p-4"><span class="bg-rose-950 text-rose-400 border border-rose-800 px-2 py-1 rounded text-xs">Falla Vehicular</span></td><td class="p-4 text-slate-400">Unidad CRP-102 ingresa a taller por colisión menor, sin lesionados.</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
+
             </div>
         </main>
     </div>
 
-    <!-- ==================== CONTENEDOR OCULTO PARA IMPRESIÓN (PDF LIMPIO) ==================== -->
-    <!-- Este div está posicionado fuera de la pantalla. Es un formato formal, fondo blanco, texto negro, 
-         sin bordes redondeados ni colores oscuros, ideal para imprimir y ahorrar tinta. -->
-    <div id="pdf-export-container" class="fixed -left-[9999px] top-0 w-[900px] bg-white text-black p-10 font-sans z-[-10]">
-        <!-- Encabezado Institucional -->
+    <div id="pdf-export-container-com" class="fixed -left-[9999px] top-0 w-[900px] bg-white text-black p-10 font-sans z-[-10]">
         <div class="border-b-2 border-black pb-4 mb-6 flex justify-between items-end">
             <div>
                 <h1 class="text-2xl font-extrabold uppercase tracking-widest text-black">Secretaría de Seguridad Ciudadana</h1>
@@ -372,7 +517,6 @@
             </div>
         </div>
 
-        <!-- Resumen de KPIs en texto plano -->
         <div class="flex space-x-12 mb-8 font-bold text-sm bg-gray-100 p-4 border border-black">
             <p>Fuerza Total: <span id="pdf-kpi-total" class="text-lg ml-1"></span></p>
             <p>Operativos: <span id="pdf-kpi-operativo" class="text-lg ml-1"></span></p>
@@ -380,10 +524,8 @@
             <p>Ausencias / Francos: <span id="pdf-kpi-ausencias" class="text-lg ml-1"></span></p>
         </div>
 
-        <!-- Tablas Inyectadas Dinámicamente -->
-        <div id="pdf-tables-container" class="space-y-6"></div>
+        <div id="pdf-tables-container-com" class="space-y-6"></div>
         
-        <!-- Firmas -->
         <div class="mt-24 flex justify-around text-center text-sm pt-8">
             <div>
                 <div class="w-56 border-b border-black mx-auto mb-2"></div>
@@ -398,8 +540,67 @@
         </div>
     </div>
 
+    <div id="pdf-export-container-adm" class="fixed -left-[9999px] top-0 w-[950px] bg-white text-black p-10 font-sans z-[-10]">
+        <div class="border-b-2 border-black pb-4 mb-6 flex justify-between items-end">
+            <div>
+                <h1 class="text-2xl font-extrabold uppercase tracking-widest text-black">Secretaría de Seguridad Ciudadana</h1>
+                <h2 class="text-lg font-bold uppercase text-gray-800 mt-1">Centro de Mando e Inteligencia Estatal</h2>
+                <p class="text-sm mt-2 text-gray-600 font-medium">Integración de Despliegue de Personal | Fecha: <span class="text-black">29 de Junio de 2026</span></p>
+            </div>
+            <div class="text-right text-xs font-mono text-gray-600">
+                <p>SICP-ESTATAL-REF: 2026-06-29-ADM</p>
+                <p>DOCUMENTO OFICIAL CLASIFICADO</p>
+            </div>
+        </div>
 
-    <!-- ==================== LÓGICA DE JAVASCRIPT ==================== -->
+        <div class="flex justify-between mb-8 font-bold text-sm bg-gray-100 p-4 border border-black">
+            <p>Fuerza Estatal Integrada: <span class="text-lg ml-1">248</span></p>
+            <p>Operativos Desplegados: <span class="text-lg ml-1">164</span></p>
+            <p>Personal Estructura: <span class="text-lg ml-1">52</span></p>
+            <p>Ausencias: <span class="text-lg ml-1">32</span></p>
+        </div>
+
+        <div class="mb-4">
+            <h3 class="text-sm font-bold bg-gray-200 border border-black p-2 uppercase m-0">Consolidado Territorial de Fuerza Operativa y Logística</h3>
+            <table class="w-full text-xs border-collapse border border-black">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="border border-black p-2 text-left">Región / Comisaría</th>
+                        <th class="border border-black p-2 text-center">Fuerza Total</th>
+                        <th class="border border-black p-2 text-center bg-green-50">Operativos A</th>
+                        <th class="border border-black p-2 text-center bg-green-50">Operativos B</th>
+                        <th class="border border-black p-2 text-center">Admin / Oficina</th>
+                        <th class="border border-black p-2 text-center bg-blue-50">Unidades CRP</th>
+                        <th class="border border-black p-2 text-center">Estatus</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="border border-black p-2 font-bold">FARO 1 TLAXCALA</td><td class="border border-black p-2 text-center">84</td><td class="border border-black p-2 text-center font-bold">38</td><td class="border border-black p-2 text-center font-bold">36</td><td class="border border-black p-2 text-center">10</td><td class="border border-black p-2 text-center font-bold">18</td><td class="border border-black p-2 text-center text-xs">Validado</td>
+                    </tr>
+                    <tr class="bg-gray-50">
+                        <td class="border border-black p-2 font-bold">FARO 2 APETATITLÁN</td><td class="border border-black p-2 text-center">13</td><td class="border border-black p-2 text-center font-bold">7</td><td class="border border-black p-2 text-center font-bold">4</td><td class="border border-black p-2 text-center">2</td><td class="border border-black p-2 text-center font-bold">4</td><td class="border border-black p-2 text-center text-xs">Validado</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-black p-2 font-bold">FARO 9 ZACATELCO</td><td class="border border-black p-2 text-center">65</td><td class="border border-black p-2 text-center font-bold">28</td><td class="border border-black p-2 text-center font-bold">25</td><td class="border border-black p-2 text-center">12</td><td class="border border-black p-2 text-center font-bold">11</td><td class="border border-black p-2 text-center text-xs">Validado</td>
+                    </tr>
+                    <tr class="bg-gray-50">
+                        <td class="border border-black p-2 font-bold">FARO 10 SAN PABLO DEL MONTE</td><td class="border border-black p-2 text-center">51</td><td class="border border-black p-2 text-center font-bold">22</td><td class="border border-black p-2 text-center font-bold">20</td><td class="border border-black p-2 text-center">9</td><td class="border border-black p-2 text-center font-bold">9</td><td class="border border-black p-2 text-center text-xs">Validado</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-16 flex justify-around text-center text-sm pt-8">
+            <div>
+                <div class="w-64 border-b border-black mx-auto mb-2"></div>
+                <p class="font-bold uppercase text-xs">Firma Autorizada</p>
+                <p class="text-xs text-gray-600">Director Operativo Estatal</p>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         const initialPersonnel = [
             { id: 1, rank: "SUBOFICIAL", name: "SANTANA MAYEN SERGIO", function: "ESCRIBIENTE", status: "administrativo" },
@@ -413,8 +614,14 @@
             { id: 9, rank: "POLICIA", name: "HERNANDEZ MONTIEL JOSE LUIS", function: "CUARTELERO", status: "administrativo" },
             { id: 10, rank: "POLICIA", name: "SOTOMAYOR VEGA ALEJO", function: "PATRULLAJE SECTOR CENTRO", status: "operativo" },
             { id: 11, rank: "POLICÍA PRIMERO", name: "DAVID ALVARADO RODRIGUEZ", function: "MANDO REACCIÓN 1", status: "operativo" },
-            { id: 12, rank: "POLICIA", name: "ILHUICATZI HERNANDEZ LARISA", function: "VACACIONES", status: "franco" },
+            { id: 12, rank: "POLICIA", name: "ILHUICATZI HERNANDEZ LARISA", function: "VACACIONES (REGRESA MAÑANA)", status: "franco" },
             { id: 13, rank: "POLICIA", name: "ORDOÑEZ CORTES ANA PAOLA", function: "EXCEPTUACION POR GESTACIÓN", status: "novedad" }
+        ];
+
+        const initialAlerts = [
+            "Policía ILHUICATZI HERNANDEZ LARISA concluye período vacacional y se reincorpora al próximo turno.",
+            "Policía ORDOÑEZ CORTES ANA PAOLA se encuentra en estatus de exceptuada de esfuerzos en oficina por gestación confirmada.",
+            "Policía HERNANDEZ MONTIEL JOSE LUIS cambió transitoriamente de Cuartelero a Sin Portación de Arma por vigencia de examen."
         ];
 
         let statePersonnel = [...initialPersonnel];
@@ -427,12 +634,18 @@
             document.getElementById('tab-com-vehiculos').classList.add('hidden');
             document.getElementById(tabId).classList.remove('hidden');
             
-            // Toggle actions header buttons (only show in 'fuerza')
             document.getElementById('com-actions').style.display = (tabId === 'tab-com-fuerza') ? 'flex' : 'none';
 
             let buttons = document.getElementById('nav-com').querySelectorAll('button');
-            buttons.forEach(b => { b.classList.remove('nav-active'); b.classList.add('nav-inactive'); });
-            btnElement.classList.remove('nav-inactive'); btnElement.classList.add('nav-active');
+            buttons.forEach(b => { 
+                b.classList.remove('nav-active'); b.classList.add('nav-inactive');
+                let icon = b.querySelector('i');
+                if(icon) icon.classList.remove('text-blue-400');
+            });
+            btnElement.classList.remove('nav-inactive'); 
+            btnElement.classList.add('nav-active');
+            let activeIcon = btnElement.querySelector('i');
+            if(activeIcon) activeIcon.classList.add('text-blue-400');
         }
 
         function switchTabAdm(tabId, btnElement) {
@@ -442,33 +655,55 @@
             document.getElementById(tabId).classList.remove('hidden');
 
             let buttons = document.getElementById('nav-adm').querySelectorAll('button');
-            buttons.forEach(b => { b.classList.remove('nav-active'); b.classList.add('nav-inactive'); });
-            btnElement.classList.remove('nav-inactive'); btnElement.classList.add('nav-active');
+            buttons.forEach(b => { 
+                b.classList.remove('nav-active'); b.classList.add('nav-inactive');
+                let icon = b.querySelector('i');
+                if(icon) icon.classList.remove('text-blue-400');
+            });
+            btnElement.classList.remove('nav-inactive'); 
+            btnElement.classList.add('nav-active');
+            let activeIcon = btnElement.querySelector('i');
+            if(activeIcon) activeIcon.classList.add('text-blue-400');
             
             if(tabId === 'tab-adm-dashboard') initCharts();
         }
 
-        // --- AUTENTICACIÓN ---
+        // --- AUTENTICACIÓN (Restaurada) ---
         function handleLogin(event) {
             event.preventDefault();
             const user = document.getElementById('username').value.trim();
-            if (user === 'comisaria_apetatitlan') {
+            const pass = document.getElementById('password').value;
+
+            if (user === 'comisaria_apetatitlan' && pass === '12345') {
                 document.getElementById('login-view').classList.add('hidden');
                 document.getElementById('commissary-view').classList.remove('hidden');
                 initCommissaryPortal();
-            } else if (user === 'mando_estatal') {
+            } else if (user === 'mando_estatal' && pass === '12345') {
                 document.getElementById('login-view').classList.add('hidden');
                 document.getElementById('admin-view').classList.remove('hidden');
                 initCharts();
+            } else {
+                alert('Credenciales inválidas para la demostración del prototipo. Intente de nuevo.');
             }
         }
         function logout() { location.reload(); }
 
-        // --- LÓGICA COMISARÍA (DRAG & DROP) ---
+        // --- LÓGICA COMISARÍA ---
         function initCommissaryPortal() {
             renderPersonnelCards();
+            renderAlerts();
             updateKPIs();
             setupDragAndDrop();
+        }
+
+        function renderAlerts() {
+            const container = document.getElementById('alerts-container');
+            container.innerHTML = initialAlerts.map(alert => `
+                <div class="p-2 bg-slate-950 rounded border-l-2 border-amber-500 flex items-start space-x-2">
+                    <i class="fa-solid fa-circle-exclamation text-amber-500 mt-0.5 shrink-0 text-[10px]"></i>
+                    <span>${alert}</span>
+                </div>
+            `).join('');
         }
 
         function renderPersonnelCards() {
@@ -478,16 +713,22 @@
             statePersonnel.forEach(p => {
                 const card = document.createElement('div');
                 card.setAttribute('data-id', p.id);
-                card.className = "bg-slate-950 p-3 rounded-lg border border-slate-800 cursor-grab hover:border-slate-700 transition shadow-sm";
+                card.className = "bg-slate-950 p-3 rounded-lg border border-slate-800 cursor-grab active:cursor-grabbing hover:border-slate-700 transition shadow-sm space-y-1.5";
                 
-                let badge = "bg-slate-800 text-slate-300";
-                if(p.rank.includes("SUBOFICIAL") || p.rank.includes("MANDO")) badge = "bg-blue-900 text-blue-200 border border-blue-700";
-                if(p.status === 'novedad') badge = "bg-amber-950 text-amber-400 border border-amber-900";
+                let badgeColor = "bg-slate-800 text-slate-300";
+                if(p.rank.includes("SUBOFICIAL") || p.rank.includes("MANDO")) badgeColor = "bg-blue-900 text-blue-200 border border-blue-700";
+                if(p.status === 'novedad') badgeColor = "bg-amber-950 text-amber-400 border border-amber-900";
 
                 card.innerHTML = `
-                    <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded ${badge} mb-1.5 inline-block">${p.rank}</span>
-                    <p class="text-xs font-bold text-white uppercase truncate">${p.name}</p>
-                    <div class="flex items-center text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-briefcase mr-1"></i><span class="truncate">${p.function}</span></div>
+                    <div class="flex justify-between items-start">
+                        <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded ${badgeColor}">${p.rank}</span>
+                        <i class="fa-solid fa-ellipsis-vertical text-slate-600 text-xs"></i>
+                    </div>
+                    <p class="text-xs font-bold text-white tracking-wide uppercase truncate">${p.name}</p>
+                    <div class="flex items-center text-[10px] text-slate-400">
+                        <i class="fa-solid fa-briefcase mr-1 text-slate-500 text-[9px]"></i>
+                        <span class="truncate">${p.function}</span>
+                    </div>
                 `;
                 columns[p.status].appendChild(card);
             });
@@ -511,21 +752,32 @@
         function setupDragAndDrop() {
             ['col-administrativo', 'col-operativo', 'col-franco', 'col-novedad'].forEach(id => {
                 Sortable.create(document.getElementById(id), {
-                    group: 'board', animation: 150, ghostClass: 'sortable-ghost',
+                    group: 'board', animation: 180, ghostClass: 'sortable-ghost',
                     onEnd: function (evt) {
                         const id = parseInt(evt.item.getAttribute('data-id'));
                         const newStatus = evt.to.id.replace('col-', '');
-                        statePersonnel.find(p => p.id === id).status = newStatus;
-                        updateKPIs();
+                        
+                        const matchedElement = statePersonnel.find(p => p.id === id);
+                        if(matchedElement) {
+                            matchedElement.status = newStatus;
+                            if(newStatus === 'operativo' && matchedElement.function.includes("APOYO")) {
+                                matchedElement.function = "ASIGNADO A CUADRANTE VIAL";
+                            }
+                            updateKPIs();
+                        }
                     }
                 });
             });
         }
-        function copyPreviousDay() { alert("Estado de fuerza precargado."); initCommissaryPortal(); }
+        
+        function copyPreviousDay() { 
+            alert("SICP Inteligencia: Se han analizado los registros del 28-06-2026. No se detectaron discrepancias graves en la guardia saliente. El estado de fuerza ha sido precargado exitosamente.");
+            statePersonnel = [...initialPersonnel];
+            initCommissaryPortal();
+        }
 
-        // --- SOLUCIÓN DE GENERACIÓN DE PDF LIMPIO (SIN RECORTES, AHORRO DE TINTA) ---
+        // --- IMPRESIÓN MUNICIPAL LIMPIA ---
         function generateReportPDF() {
-            // 1. Calcular totales para el documento físico
             const counts = { administrativo: 0, operativo: 0, franco: 0, novedad: 0 };
             statePersonnel.forEach(p => counts[p.status]++);
             
@@ -534,8 +786,7 @@
             document.getElementById('pdf-kpi-admin').innerText = counts.administrativo;
             document.getElementById('pdf-kpi-ausencias').innerText = counts.franco + counts.novedad;
 
-            // 2. Construir la estructura de tablas limpias (HTML puro para imprimir)
-            const container = document.getElementById('pdf-tables-container');
+            const container = document.getElementById('pdf-tables-container-com');
             container.innerHTML = '';
             
             const sections = [
@@ -575,29 +826,45 @@
                 container.innerHTML += html;
             });
 
-            // 3. Renderizar el contenedor oculto con html2canvas
-            const printable = document.getElementById('pdf-export-container');
-            
-            // Hacerlo visible temporalmente para html2canvas (z-index negativo evita que tape la UI actual)
+            const printable = document.getElementById('pdf-export-container-com');
             printable.classList.remove('-left-[9999px]');
             printable.classList.add('left-0', 'top-0', 'opacity-100');
             
             setTimeout(() => {
                 html2canvas(printable, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
-                    // Restaurar el contenedor a oculto
                     printable.classList.add('-left-[9999px]');
                     printable.classList.remove('left-0', 'top-0', 'opacity-100');
                     
-                    // Abrir la imagen en una pestaña lista para imprimir
                     const imgData = canvas.toDataURL('image/jpeg', 1.0);
                     const win = window.open();
                     win.document.write(`
-                        <html>
-                        <head><title>Impresión Oficial SICP</title></head>
+                        <html><head><title>Impresión Oficial SICP - Comisaría</title></head>
                         <body style="margin:0; background:#e2e8f0; display:flex; justify-content:center; padding:20px;">
                             <img src="${imgData}" style="max-width:100%; height:auto; box-shadow:0px 10px 15px rgba(0,0,0,0.2); background:white;" onload="window.print()" />
-                        </body>
-                        </html>
+                        </body></html>
+                    `);
+                });
+            }, 300);
+        }
+
+        // --- IMPRESIÓN MANDO ESTATAL LIMPIA ---
+        function generateAdminPDF() {
+            const printable = document.getElementById('pdf-export-container-adm');
+            printable.classList.remove('-left-[9999px]');
+            printable.classList.add('left-0', 'top-0', 'opacity-100');
+            
+            setTimeout(() => {
+                html2canvas(printable, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+                    printable.classList.add('-left-[9999px]');
+                    printable.classList.remove('left-0', 'top-0', 'opacity-100');
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                    const win = window.open();
+                    win.document.write(`
+                        <html><head><title>Impresión Oficial SICP - Estatal</title></head>
+                        <body style="margin:0; background:#e2e8f0; display:flex; justify-content:center; padding:20px;">
+                            <img src="${imgData}" style="max-width:100%; height:auto; box-shadow:0px 10px 15px rgba(0,0,0,0.2); background:white;" onload="window.print()" />
+                        </body></html>
                     `);
                 });
             }, 300);
@@ -608,16 +875,33 @@
             if (stateCharts.status) stateCharts.status.destroy();
             if (stateCharts.muni) stateCharts.muni.destroy();
 
-            stateCharts.status = new Chart(document.getElementById('statusChart').getContext('2d'), {
+            const ctxStatus = document.getElementById('statusChart').getContext('2d');
+            stateCharts.status = new Chart(ctxStatus, {
                 type: 'doughnut',
-                data: { labels: ['Operativos', 'Estructura', 'Ausencias'], datasets: [{ data: [164, 52, 32], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'], borderColor: '#0f172a', borderWidth: 2 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
+                data: {
+                    labels: ['Operativos Activos', 'Estructura / Administrativos', 'Ausencias / Licencias / Francos'],
+                    datasets: [{
+                        data: [164, 52, 32],
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
+                        borderColor: '#0f172a',
+                        borderWidth: 2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 } } } } }
             });
 
-            stateCharts.muni = new Chart(document.getElementById('municipalityChart').getContext('2d'), {
+            const ctxMuni = document.getElementById('municipalityChart').getContext('2d');
+            stateCharts.muni = new Chart(ctxMuni, {
                 type: 'bar',
-                data: { labels: ['Faro 1', 'Faro 2', 'Faro 9'], datasets: [{ label: 'Elementos', data: [74, 11, 53], backgroundColor: '#3b82f6', borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' } }, y: { display: false } }, plugins: { legend: { display: false } } }
+                data: {
+                    labels: ['Faro 1 (Tlaxcala)', 'Faro 2 (Apetatitlán)', 'Faro 9 (Zacatelco)', 'Faro 10 (San Pablo mte.)'],
+                    datasets: [{ label: 'Elementos Desplegados', data: [74, 11, 53, 42], backgroundColor: '#3b82f6', borderRadius: 6 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }, y: { grid: { display: false }, ticks: { color: '#94a3b8' } } },
+                    plugins: { legend: { display: false } }
+                }
             });
         }
     </script>
