@@ -20,11 +20,9 @@
         .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
         .scroll-custom::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 10px; }
         .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ==========================================
-           ESTILOS ESTRICTOS PARA IMPRESIÓN DEL FORMATO
+           REGLAS DE IMPRESIÓN (CLON EXACTO FO-TF-49)
            ========================================== */
         @media print {
             @page { size: letter portrait; margin: 10mm; }
@@ -32,21 +30,25 @@
             nav, .no-print { display: none !important; }
             
             #zona-impresion { display: block !important; width: 100%; color: black; font-family: Arial, sans-serif; }
-            .print-page { break-after: always; page-break-after: always; width: 100%; }
+            .print-page { break-after: always; page-break-after: always; width: 100%; position: relative; }
             
-            .header-req { width: 100%; border-collapse: collapse; margin-bottom: 15px; text-align: center; }
-            .header-req td { border: 1px solid black; padding: 5px; font-size: 11px; }
-            .header-title { font-weight: bold; font-size: 14px; background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; }
+            .head-logo-container { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+            .lapi-title { font-size: 16px; font-weight: bold; text-align: center; flex-1; margin-top: 10px; }
+            .meta-table { border-collapse: collapse; font-size: 9px; text-align: left; }
+            .meta-table td { border: 1px solid #000; padding: 2px 4px; }
             
-            .info-grid { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px; }
-            .info-grid td { border: 1px solid black; padding: 5px; }
-            .bg-gray-req { background-color: #f3f4f6 !important; font-weight: bold; width: 15%; -webkit-print-color-adjust: exact; }
+            .info-grid { width: 100%; font-size: 10px; margin-bottom: 10px; border-collapse: collapse; }
+            .info-grid td { border-bottom: 1px solid #000; padding: 2px 5px; }
+            .info-grid .lbl { font-weight: bold; width: 20%; border: none; }
             
-            .table-req { width: 100%; border-collapse: collapse; font-size: 10px; }
-            .table-req th, .table-req td { border: 1px solid black; padding: 3px 5px; }
-            .table-req th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; text-align: left; }
-            .cat-header { background-color: #e5e7eb !important; font-weight: bold; text-align: center; -webkit-print-color-adjust: exact; }
-            .val-cell { width: 15%; text-align: center; font-weight: bold; }
+            .table-req { width: 100%; border-collapse: collapse; font-size: 9px; }
+            .table-req th, .table-req td { border: 1px solid black; padding: 2px 4px; }
+            .table-req th { font-weight: bold; background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; text-align: left; }
+            .val-cell { text-align: center; font-weight: bold; }
+            
+            .firmas-section { width: 100%; display: flex; justify-content: space-between; font-size: 10px; margin-top: 30px; text-align: center; }
+            .firma-box { width: 30%; border-top: 1px solid #000; padding-top: 5px; }
+            .page-footer { text-align: right; font-size: 9px; margin-top: 10px; width: 100%; font-weight: bold; }
         }
     </style>
 </head>
@@ -56,13 +58,11 @@
 
     <nav class="no-print fixed bottom-0 w-full glass z-50 md:relative md:w-24 md:h-screen md:border-r md:border-white/20 flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom">
         <div class="hidden md:flex mb-2 text-3xl"><i class="fa-solid fa-staff-snake text-white"></i></div>
-        
         <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-white/60 hover:text-white group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
         </a>
         <div class="hidden md:block w-10 border-b border-white/20 my-2"></div>
-
         <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-white/60 hover:text-white group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Monitor</span>
@@ -85,7 +85,7 @@
                 <h1 class="text-2xl font-black tracking-tight flex items-center gap-2 mb-1">
                     <i class="fa-solid fa-boxes-packing text-orange-400"></i> LOGÍSTICA
                 </h1>
-                <p class="opacity-80 text-[10px] font-bold uppercase tracking-widest mb-6">Generador de Requisiciones</p>
+                <p class="opacity-80 text-[10px] font-bold uppercase tracking-widest mb-6">Generador de Requisiciones FO-TF-49</p>
 
                 <div class="space-y-4 mb-6">
                     <div>
@@ -102,9 +102,15 @@
                             <input type="date" id="req-fecha-fin" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400">
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Cantidad de Médicos</label>
-                        <input type="number" id="req-medicos" min="1" value="1" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Folio Operativo</label>
+                            <input type="text" id="req-folio" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400 placeholder-white/30" placeholder="Opcional">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Personal (Nombres)</label>
+                            <input type="text" id="req-medicos" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400 placeholder-white/30" placeholder="Médicos y técnicos">
+                        </div>
                     </div>
                 </div>
 
@@ -148,11 +154,11 @@
             <div class="glass p-6 rounded-3xl shadow-xl flex-1 border border-white/30 flex flex-col">
                 <div class="flex justify-between items-end border-b border-white/30 pb-4 mb-4">
                     <div>
-                        <h2 class="text-2xl font-black text-white"><i class="fa-solid fa-clipboard-check text-emerald-300 mr-2"></i> Vista Previa (Editable)</h2>
+                        <h2 class="text-2xl font-black text-white"><i class="fa-solid fa-list-check text-emerald-300 mr-2"></i> FO-TF-49 (Lista Completa)</h2>
                         <p class="text-[11px] text-white/80 uppercase tracking-widest font-bold mt-1">Revisa y ajusta antes de imprimir</p>
                     </div>
                     <button onclick="generarPDF()" class="bg-white text-orange-600 font-black px-6 py-3 rounded-xl shadow-lg hover:bg-orange-50 active:scale-95 transition-all text-sm">
-                        <i class="fa-solid fa-file-pdf mr-1 text-red-500"></i> Crear PDF
+                        <i class="fa-solid fa-file-pdf mr-1 text-red-500"></i> Generar Formato
                     </button>
                 </div>
 
@@ -165,58 +171,131 @@
     <div id="zona-impresion" class="hidden"></div>
 
     <script>
-        // REGLAS MATEMÁTICAS ESTRICTAS SEGÚN ARCHIVO
+        // EL CATÁLOGO 100% FIEL AL FO-TF-49 V3.
+        const LAPI_FO_TF_49 = [
+            { id: "ABAT", desc: "ABATELENGUAS (1/100) ESTÉRILES", ud: "PIEZA" },
+            { id: "ABAT", desc: "ABATELENGUAS (1/100) NO ESTÉRILES", ud: "PIEZA" },
+            { id: "360211", desc: "AGUJA NEGRA BD VACUTAINER (1/100)", ud: "PIEZA" },
+            { id: "360213", desc: "AGUJA VERDE BD VACUTAINER (1/100)", ud: "PIEZA" },
+            { id: "ALC1", desc: "ALCOHOL 1 LTS (1/1000)", ud: "ML" },
+            { id: "BANNERS", desc: "BANNERS", ud: "PIEZA" },
+            { id: "SMS-35", desc: "BATA PAQ, SMS-35 AZUL (1/10)", ud: "PIEZA" },
+            { id: "BIOMBOS", desc: "BIOMBOS", ud: "PIEZA" },
+            { id: "AUT-013", desc: "BLOCKS AUTORIZO ESTUDIOS LAPI", ud: "PIEZA" },
+            { id: "BOL-LAPI", desc: "BOLSA LAPI", ud: "PIEZA" },
+            { id: "B60x60", desc: "BOLSA ROJA 60X60 (1/100)", ud: "PIEZA" },
+            { id: "BOTE", desc: "BOTE DE BASURA NEGRO", ud: "PIEZA" },
+            { id: "CALEFACTORES", desc: "CALEFACTOR", ud: "PIEZA" },
+            { id: "CAMA-EXPLO", desc: "CAMA DE EXPLORACION CON PIERNERAS", ud: "PIEZA" },
+            { id: "CAMA-EXPLOSIN", desc: "CAMA DE EXPLORACION SIN PIERNERAS", ud: "PIEZA" },
+            { id: "CARPA", desc: "CARPA", ud: "PIEZA" },
+            { id: "CARRITO", desc: "CARRITO", ud: "PIEZA" },
+            { id: "N-60", desc: "CARTILLA DE VACUNACION", ud: "PIEZA" },
+            { id: "CENTRIFUGA", desc: "CENTRIFUGA", ud: "PIEZA" },
+            { id: "CITO", desc: "CITOSPRAY", ud: "PIEZA" },
+            { id: "PC-1", desc: "CONTENEDOR ROJO 1.7 LT", ud: "PIEZA" },
+            { id: "CU1", desc: "CORTA UÑAS", ud: "PIEZA" },
+            { id: "CBOCA", desc: "CUBRE BOCAS (1/100)", ud: "PIEZA" },
+            { id: "KN-95", desc: "CUBREBOCAS MODE KN-95", ud: "PIEZA" },
+            { id: "LAR2022012", desc: "CURITA REDONDO MCA. LATEX (1/100)", ud: "PIEZA" },
+            { id: "S-DISPENDRX", desc: "DISPENSADOR DE DIUREX", ud: "PIEZA" },
+            { id: "367292", desc: "EQUIPO ALADO AGUJA AZUL BD VACUTAINER (1/50)", ud: "PIEZA" },
+            { id: "E06", desc: "ESPEJO VAGINAL P/LUZ KIT CHICO", ud: "PIEZA" },
+            { id: "E14", desc: "ESPEJO VAGINAL P/LUZ KIT MEDIANO", ud: "PIEZA" },
+            { id: "ETIQ39174", desc: "ETIQ.AUTOADH.TRASNF.BCO MATE 39*174 2000", ud: "PIEZA" },
+            { id: "R-27", desc: "ETIQUETAS ADHESIVAS LAPI MUESTRA", ud: "PIEZA" },
+            { id: "EXTENSION", desc: "EXTENSION", ud: "PIEZA" },
+            { id: "FOCO", desc: "FOCO", ud: "PIEZA" },
+            { id: "GEL-ANTI", desc: "GEL ANTIBACTERIAL GALON", ud: "PIEZA" },
+            { id: "GELULTRA", desc: "GEL PARA ULTRASONIDO AGUAGEL 4.2 LT (1/4)", ud: "GALON" },
+            { id: "M19564", desc: "GRADILLA P/90 TUBOS (1/4)", ud: "PIEZA" },
+            { id: "DGVCH", desc: "GUANTE VINIL CHICO (1/100)", ud: "PIEZA" },
+            { id: "DGVME", desc: "GUANTE VINIL MEDIANO (1/100)", ud: "PIEZA" },
+            { id: "DGVGR", desc: "GUANTE VINYL GRANDE (1/100)", ud: "PIEZA" },
+            { id: "HRIB-01", desc: "HOJA DE RESULTADOS IN BODY", ud: "PIEZA" },
+            { id: "368872", desc: "HOLDER AUTOMATICO BD (1/20)", ud: "PIEZA" },
+            { id: "ISOP300", desc: "ISOPOS ESTERILES (1/100)", ud: "PIEZA" },
+            { id: "DJE01", desc: "JERINGA DESECHABLE 1 ML (1/100)", ud: "PIEZA" },
+            { id: "DJE10", desc: "JERINGA DESECHABLE 10 ML (1/100)", ud: "PIEZA" },
+            { id: "KIT-LIM", desc: "KIT DE LIMPIEZA DE REMOLQUE", ud: "PIEZA" },
+            { id: "LAMPARA", desc: "LAMPARA ACCUVEIN", ud: "PIEZA" },
+            { id: "LPIZ", desc: "LAPIZ CON PUNTA DIAMANTE", ud: "PIEZA" },
+            { id: "MALETA", desc: "MALETA", ud: "PIEZA" },
+            { id: "MEDTRA", desc: "MEDIO DE TRANSPORTE PZA", ud: "PIEZA" },
+            { id: "MESA", desc: "MESA", ud: "PIEZA" },
+            { id: "MULTICONTACTO", desc: "MULTICONTACTO", ud: "PIEZA" },
+            { id: "PAP-216", desc: "PAPEL BIONET DE 216 MM (ROLLO)", ud: "PIEZA" },
+            { id: "PM-992", desc: "PAPEL PARA FILM", ud: "PIEZA" },
+            { id: "PRO1002439", desc: "PORTA OBJETOS 25,4 X 76,2 mm DIAMANTADO", ud: "PIEZA" },
+            { id: "PMAD", desc: "PORTA OBJETOS CON PANTALLA", ud: "CAJA" }, // AQUÍ ACABA LA PÁGINA 1
+            { id: "364999", desc: "RECOLECTOR DE ORINA DE 24 HRS. COLOR AMBAR", ud: "PIEZA" },
+            { id: "DSA", desc: "SABANA (CAMPO PELLON AZUL DE 2X1 MTS) (1/10)", ud: "PIEZA" },
+            { id: "SILLAS", desc: "SILLAS", ud: "PIEZA" },
+            { id: "S-AEROSOL", desc: "SUCURSALES AROMATIZANTE EN AEROSOL", ud: "PIEZA" },
+            { id: "S-BLOGR-A", desc: "SUCURSALES BOLIGRAFOS AZUL", ud: "PIEZA" },
+            { id: "S-BLOGR-N", desc: "SUCURSALES BOLIGRAFOS NEGRO", ud: "PIEZA" },
+            { id: "S-DIUREX", desc: "SUCURSALES CINTA DIUREX 18 X 65", ud: "PIEZA" },
+            { id: "S-CINTGRIS-", desc: "SUCURSALES CINTA GRIS DE SEGURIDAD", ud: "PIEZA" },
+            { id: "S-MASKIN", desc: "SUCURSALES CINTA MASKIN TAPE", ud: "PIEZA" },
+            { id: "S-CLIP", desc: "SUCURSALES CLIP CUADRITO No 1", ud: "PIEZA" },
+            { id: "S-COJIN", desc: "SUCURSALES COJIN PARA SELLO", ud: "PIEZA" },
+            { id: "SLYSOL-", desc: "SUCURSALES DESINFECTANTE EN AEROSOL LYSOL", ud: "PIEZA" },
+            { id: "S-TABLA", desc: "SUCURSALES TABLA DE APOYO CARTA", ud: "PIEZA" },
+            { id: "S-TINTA", desc: "SUCURSALES TINTA PARA SELLO", ud: "PIEZA" },
+            { id: "S-TOALLHUME", desc: "SUCURSALES TOALLA HUMEDA DESINFECTANTE", ud: "PIEZA" },
+            { id: "S-TOALLINT", desc: "SUCURSALES TOALLA INTERDOBLADA", ud: "PIEZA" },
+            { id: "5750", desc: "TOALLAS C/ALCOHOL (1/200)", ud: "PIEZA" },
+            { id: "367203", desc: "TORNIQUETE STRETCH LATEX COLOR AZUL BD (1/25)", ud: "PIEZA" },
+            { id: "10.253", desc: "TUBO DE ORINA MONOVETTE 10 ML 102X15.3 MM-VERDE", ud: "PIEZA" },
+            { id: "363083", desc: "TUBO TAPON AZUL 2.7 ML (1/100)", ud: "PIEZA" },
+            { id: "368171", desc: "TUBO TAPON LILA 5 ML (1/100)", ud: "PIEZA" },
+            { id: "368159", desc: "TUBO TAPON ORO 6 ML (1/100)", ud: "PIEZA" },
+            { id: "368175", desc: "TUBO TAPON ROJO 8 ML (1/100)", ud: "PIEZA" },
+            { id: "367871", desc: "TUBO TAPON VERDE DE 5 ML (1/100)", ud: "PIEZA" },
+            { id: "VASOEGO4", desc: "VASO DE PLASTICO PARA EGO No 4", ud: "PIEZA" },
+            { id: "H-1974-", desc: "VASO RECOLECTOR ESTERIL, 80 ML", ud: "PIEZA" },
+            { id: "VAROSEST-30", desc: "VASO ROSCADO ESTERIL 30 ML", ud: "PIEZA" },
+            { id: "997", desc: "VASO ROSCADO ESTERIL CON TERMO 125 ML.", ud: "PIEZA" },
+            { id: "VENTILADORES", desc: "VENTILADORES", ud: "PIEZA" },
+            { id: "CASCO", desc: "CASCO", ud: "PIEZA" },
+            { id: "CHALECO", desc: "CHALECO", ud: "PIEZA" }
+        ];
+
+        // MAPEO MATEMÁTICO DIRECTO CON LAS DESCRIPCIONES OFICIALES
         const REGLAS = {
             hc_papel: {
-                inst: { 'Mesa': 1, 'Silla de visita': 2, 'Sabanas': 6, 'Gel antibacterial': 1, 'Desinfectante Lysol': 1, 'Tabla de apoyo': 1, 'Toallas humedas desinfectantes': 1, 'Toalla interdoblada': 1, 'Masking tape': 1, 'Bote de basura': 1, 'Biombo': 2, 'Cama de exploración': 1, 'Bolsa blanca': 2 },
-                inst_diario: { 'Cubrebocas KN-95': 1 },
-                est: { 'Abatelenguas': 1, 'Formatos HC': 1 }
+                inst: { 'MESA': 1, 'SILLAS': 2, 'SABANA (CAMPO PELLON AZUL DE 2X1 MTS) (1/10)': 6, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'SUCURSALES TABLA DE APOYO CARTA': 1, 'SUCURSALES TOALLA HUMEDA DESINFECTANTE': 1, 'SUCURSALES TOALLA INTERDOBLADA': 1, 'SUCURSALES CINTA MASKIN TAPE': 1, 'BOTE DE BASURA NEGRO': 1, 'BIOMBOS': 2, 'CAMA DE EXPLORACION CON PIERNERAS': 1 },
+                inst_diario: { 'CUBREBOCAS MODE KN-95': 1 },
+                est: { 'ABATELENGUAS (1/100) NO ESTÉRILES': 1 }
             },
             hc_web: {
-                inst: { 'Mesa': 1, 'Silla de visita': 2, 'Sabanas': 6, 'Gel antibacterial': 1, 'Desinfectante Lysol': 1, 'Tabla de apoyo': 1, 'Toallas humedas desinfectantes': 1, 'Toalla interdoblada': 1, 'Masking tape': 1, 'Bote de basura': 1, 'Biombo': 2, 'Cama de exploración': 1, 'Bolsa blanca': 2 },
-                inst_diario: { 'Cubrebocas KN-95': 1 },
-                est: { 'Abatelenguas': 1 }
+                inst: { 'MESA': 1, 'SILLAS': 2, 'SABANA (CAMPO PELLON AZUL DE 2X1 MTS) (1/10)': 6, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'SUCURSALES TABLA DE APOYO CARTA': 1, 'SUCURSALES TOALLA HUMEDA DESINFECTANTE': 1, 'SUCURSALES TOALLA INTERDOBLADA': 1, 'SUCURSALES CINTA MASKIN TAPE': 1, 'BOTE DE BASURA NEGRO': 1, 'BIOMBOS': 2, 'CAMA DE EXPLORACION CON PIERNERAS': 1 },
+                inst_diario: { 'CUBREBOCAS MODE KN-95': 1 },
+                est: { 'ABATELENGUAS (1/100) NO ESTÉRILES': 1 }
             },
             espiro: {
-                inst: { 'Mesa': 2, 'Silla de visita': 2, 'Sabanas': 6, 'Gel antibacterial': 1, 'Desinfectante Lysol': 1, 'Tabla de apoyo': 1, 'Toallas humedas desinfectantes': 1, 'Toalla interdoblada': 1, 'Masking tape': 1, 'Bote de basura': 1, 'Biombo': 2, 'Bolsa blanca': 2, 'Guantes de vinil': 1 },
-                inst_diario: { 'Cubrebocas KN-95': 1, 'Equipo de protección personal': 1 },
-                est: { 'Abatelenguas': 1, 'Formatos Espirometria': 1 }
+                inst: { 'MESA': 2, 'SILLAS': 2, 'SABANA (CAMPO PELLON AZUL DE 2X1 MTS) (1/10)': 6, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'SUCURSALES TABLA DE APOYO CARTA': 1, 'SUCURSALES TOALLA HUMEDA DESINFECTANTE': 1, 'SUCURSALES TOALLA INTERDOBLADA': 1, 'SUCURSALES CINTA MASKIN TAPE': 1, 'BOTE DE BASURA NEGRO': 1, 'BIOMBOS': 2, 'GUANTE VINIL MEDIANO (1/100)': 1 },
+                inst_diario: { 'CUBREBOCAS MODE KN-95': 1 },
+                est: { 'ABATELENGUAS (1/100) NO ESTÉRILES': 1 }
             },
             audio: {
-                inst: { 'Mesa': 2, 'Silla de visita': 2, 'Sabanas': 6, 'Gel antibacterial': 1, 'Desinfectante Lysol': 1, 'Tabla de apoyo': 1, 'Toallas humedas desinfectantes': 1, 'Toalla interdoblada': 1, 'Masking tape': 1, 'Bote de basura': 1, 'Bolsa blanca': 2, 'Bolsa LAPI': 2, 'Extensiones': 1 },
+                inst: { 'MESA': 2, 'SILLAS': 2, 'SABANA (CAMPO PELLON AZUL DE 2X1 MTS) (1/10)': 6, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'SUCURSALES TABLA DE APOYO CARTA': 1, 'SUCURSALES TOALLA HUMEDA DESINFECTANTE': 1, 'SUCURSALES TOALLA INTERDOBLADA': 1, 'SUCURSALES CINTA MASKIN TAPE': 1, 'BOTE DE BASURA NEGRO': 1, 'BOLSA LAPI': 2, 'EXTENSION': 1 },
                 inst_diario: {},
-                est: { 'Abatelenguas': 1, 'Formatos Audiometria': 1 }
+                est: { 'ABATELENGUAS (1/100) NO ESTÉRILES': 1 }
             },
             visual: {
-                inst: { 'Mesa': 1, 'Silla de visita': 2, 'Gel antibacterial': 1, 'Desinfectante Lysol': 1, 'Bote de basura': 1 },
+                inst: { 'MESA': 1, 'SILLAS': 2, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'BOTE DE BASURA NEGRO': 1 },
                 inst_diario: {},
-                est: { 'Formatos Visual': 1 }
+                est: {}
             }
         };
-
-        // ESTRUCTURA DEL FORMATO FÍSICO
-        const CATALOGO_FORMATO = [
-            { cat: "I. MATERIAL DE OFICINA", items: ["Boligrafos", "Engrapadora", "Grapas", "Quitagrapas", "Tijeras", "Perforadora", "Cinta adhesiva", "Masking tape", "Cuaderno", "Tabla de apoyo", "Marcatextos", "Marcador", "Corrector", "Post it", "Goma", "Clips", "Regla", "Broches"] },
-            { cat: "II. UNIFORMES", items: [] },
-            { cat: "III. PROMOCIONALES", items: ["Tazas", "Vasos", "Plumas", "Bolsa LAPI", "Libretas", "USB"] },
-            { cat: "IV. PAPELERIA INSTITUCIONAL", items: [] },
-            { cat: "V. FORMATOS DE CALIDAD (F-...)", items: ["Formatos HC", "Formatos Audiometria", "Formatos Espirometria", "Formatos Visual"] },
-            { cat: "VI. CONSUMIBLES DE CAFETERIA", items: [] },
-            { cat: "VII. OTROS", items: [] },
-            { pageBreak: true },
-            { cat: "VIII. INSUMOS MEDICOS", items: ["Abatelenguas", "Guantes de Latex", "Guantes de vinil", "Sanitas", "Jeringas", "Agujas", "Torundas", "Alcohol", "Cubrebocas KN-95", "Cubrebocas Tricapa"] },
-            { cat: "IX. MEDICAMENTOS DE URGENCIA", items: [] },
-            { cat: "X. MATERIAL SANITIZANTE Y LIMPIEZA", items: ["Gel antibacterial", "Desinfectante Lysol", "Toallas humedas desinfectantes", "Toalla interdoblada", "Papel higienico", "Jabon", "Escoba", "Trapeador"] },
-            { cat: "XI. MOBILIARIO Y EQUIPO", items: ["Bote de basura", "Mesa", "Silla de visita", "Biombo", "Cama de exploración", "Sabanas", "Extensiones"] }
-        ];
 
         let resultadosActuales = {};
 
         function calcularDias(ini, fin) {
             if(!ini || !fin) return 1;
             const d1 = new Date(ini); const d2 = new Date(fin);
-            const diffTime = Math.abs(d2 - d1);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            const diffDays = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)); 
             return diffDays + 1;
         }
 
@@ -234,20 +313,16 @@
                 visual:   { inst: parseInt(document.getElementById('visual_inst').value)||0, est: parseInt(document.getElementById('visual_est').value)||0 }
             };
 
-            // Ejecutar sumatorias
             for(const [tipo, vals] of Object.entries(inputs)) {
                 if(vals.inst > 0) {
-                    // Por Instalacion
                     for(const [item, cant] of Object.entries(REGLAS[tipo].inst)) {
                         resultadosActuales[item] = (resultadosActuales[item] || 0) + (cant * vals.inst);
                     }
-                    // Por Instalacion * Días
                     for(const [item, cant] of Object.entries(REGLAS[tipo].inst_diario)) {
                         resultadosActuales[item] = (resultadosActuales[item] || 0) + (cant * vals.inst * dias);
                     }
                 }
                 if(vals.est > 0) {
-                    // Por Estudio
                     for(const [item, cant] of Object.entries(REGLAS[tipo].est)) {
                         resultadosActuales[item] = (resultadosActuales[item] || 0) + (cant * vals.est);
                     }
@@ -259,129 +334,178 @@
         };
 
         function renderizarPreviewEditable() {
-            let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+            let html = '<div class="space-y-1 pb-4">';
             
-            CATALOGO_FORMATO.forEach(grupo => {
-                if(grupo.pageBreak) return;
-                html += `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm">
-                            <h4 class="font-black text-[10px] text-slate-500 uppercase tracking-widest border-b border-slate-200 pb-1 mb-2">${grupo.cat}</h4>
-                            <div class="space-y-1">`;
+            // Renderizamos la lista completa del formato
+            LAPI_FO_TF_49.forEach((item, index) => {
+                const cant = resultadosActuales[item.desc] || '';
+                const hasVal = cant > 0 ? 'bg-orange-100 border-orange-400 shadow-sm' : 'bg-white border-slate-200 opacity-60 hover:opacity-100';
                 
-                grupo.items.forEach(item => {
-                    const cant = resultadosActuales[item] || '';
-                    const hasVal = cant > 0 ? 'bg-orange-100 border-orange-300' : 'bg-white border-slate-200';
-                    html += `<div class="flex justify-between items-center text-xs">
-                                <span class="text-slate-600 font-bold">${item}</span>
-                                <input type="number" id="edit_${item}" value="${cant}" class="w-16 p-1 text-center font-black text-slate-800 rounded outline-none border ${hasVal} focus:border-orange-500 transition">
-                             </div>`;
-                });
-                html += `</div></div>`;
+                // Divisor visual para saber donde acaba la pag 1
+                if (index === 55) {
+                    html += `<div class="w-full border-t-2 border-dashed border-red-300 my-4 text-center text-[10px] text-red-500 font-bold">--- CORTE DE PÁGINA 1 ---</div>`;
+                }
+
+                html += `
+                    <div class="flex justify-between items-center text-xs p-1.5 rounded transition-all ${hasVal}">
+                        <div class="w-2/3 truncate" title="${item.desc}"><span class="text-slate-400 font-mono text-[9px] mr-2">${item.id}</span> <span class="text-slate-700 font-bold">${item.desc}</span></div>
+                        <div class="w-1/3 text-right">
+                            <input type="number" id="edit_${index}" value="${cant}" class="w-16 p-1 text-center font-black text-slate-800 rounded outline-none border focus:border-orange-500 transition-colors" placeholder="0">
+                        </div>
+                    </div>
+                `;
             });
 
-            // Los fijos manuales al final
-            html += `<div class="bg-red-50 border border-red-200 rounded-xl p-3 shadow-sm md:col-span-2">
-                        <h4 class="font-black text-[10px] text-red-500 uppercase tracking-widest border-b border-red-200 pb-1 mb-2">AGREGADOS MANUALMENTE (AL FINAL)</h4>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="flex justify-between items-center text-xs">
-                                <span class="text-red-700 font-bold">Bolsa blanca</span>
-                                <input type="number" id="edit_Bolsa blanca" value="${resultadosActuales['Bolsa blanca'] || ''}" class="w-16 p-1 text-center font-black rounded outline-none border border-red-300">
-                            </div>
-                            <div class="flex justify-between items-center text-xs">
-                                <span class="text-red-700 font-bold">Equipo de protección personal</span>
-                                <input type="number" id="edit_Equipo de protección personal" value="${resultadosActuales['Equipo de protección personal'] || ''}" class="w-16 p-1 text-center font-black rounded outline-none border border-red-300">
-                            </div>
-                        </div>
-                     </div>`;
-
+            // Agregados a mano (No existen en el catálogo original, se apendizan al final del PDF)
+            html += `<div class="w-full border-t-2 border-slate-300 my-6"></div>`;
+            html += `<h4 class="font-black text-[10px] text-slate-500 uppercase tracking-widest mb-2">Sección Manual (Impresos al final del Formato)</h4>`;
+            
+            const vBol = resultadosActuales['Bolsa blanca'] || '';
+            const vEpp = resultadosActuales['Equipo de protección personal'] || '';
+            
+            html += `
+                <div class="flex justify-between items-center text-xs p-1.5 rounded bg-white border border-slate-300 mb-1 shadow-sm">
+                    <span class="text-slate-700 font-bold ml-1">Bolsa Blanca</span>
+                    <input type="number" id="manual_bolsa" value="${vBol}" class="w-16 p-1 text-center font-black text-slate-800 rounded outline-none border focus:border-orange-500">
+                </div>
+                <div class="flex justify-between items-center text-xs p-1.5 rounded bg-white border border-slate-300 shadow-sm">
+                    <span class="text-slate-700 font-bold ml-1">Equipo de protección personal</span>
+                    <input type="number" id="manual_epp" value="${vEpp}" class="w-16 p-1 text-center font-black text-slate-800 rounded outline-none border focus:border-orange-500">
+                </div>
+            `;
             html += '</div>';
+
             document.getElementById('tabla-editable-container').innerHTML = html;
         }
 
         window.generarPDF = function() {
-            // Guardar cambios manuales
-            CATALOGO_FORMATO.forEach(g => {
-                if(g.pageBreak) return;
-                g.items.forEach(i => {
-                    let val = parseInt(document.getElementById(`edit_${i}`).value);
-                    resultadosActuales[i] = isNaN(val) ? 0 : val;
-                });
+            // Recoger valores modificados
+            LAPI_FO_TF_49.forEach((item, index) => {
+                let val = parseInt(document.getElementById(`edit_${index}`).value);
+                resultadosActuales[item.desc] = isNaN(val) ? 0 : val;
             });
-            resultadosActuales['Bolsa blanca'] = parseInt(document.getElementById('edit_Bolsa blanca').value) || 0;
-            resultadosActuales['Equipo de protección personal'] = parseInt(document.getElementById('edit_Equipo de protección personal').value) || 0;
+            
+            const valBolsa = parseInt(document.getElementById('manual_bolsa').value) || '';
+            const valEpp = parseInt(document.getElementById('manual_epp').value) || '';
 
-            const empresa = document.getElementById('req-empresa').value || 'NO ESPECIFICADA';
-            const ini = document.getElementById('req-fecha-ini').value;
-            const fin = document.getElementById('req-fecha-fin').value;
-            const periodo = ini && fin ? `${ini} AL ${fin}` : '---';
+            // Datos Cabecera
+            const empresa = document.getElementById('req-empresa').value || '_______________________';
+            const medicosText = document.getElementById('req-medicos').value || '_______________________';
+            const folioText = document.getElementById('req-folio').value || '_______________________';
+            
+            let numPacientesTotales = 0;
+            ['hc_papel_est', 'hc_web_est', 'audio_est', 'espiro_est', 'visual_est'].forEach(id => {
+                numPacientesTotales += (parseInt(document.getElementById(id).value) || 0);
+            });
+            const pacientesStr = numPacientesTotales > 0 ? numPacientesTotales : '_________________';
+
+            const hoy = new Date().toLocaleDateString('es-MX');
 
             const zona = document.getElementById('zona-impresion');
             zona.innerHTML = '';
 
+            // ================= PÁGINA 1 =================
             let htmlPDF = `<div class="print-page">
-                ${generarEncabezadoPDF(empresa, periodo)}
+                <div class="head-logo-container">
+                    <div style="width: 25%;"><img src="logoLAPI.png" style="width: 90px;"></div>
+                    <div class="lapi-title">Lapi<br><span style="font-size:12px; font-weight:normal;">Laboratorio Medico</span><br><br><span style="font-size:14px; text-decoration:underline;">MATERIAL DE SALIDA DE EMPRESAS</span></div>
+                    <div style="width: 25%;">
+                        <table class="meta-table" style="float: right;">
+                            <tr><td>Código</td><td>FO-TF-49</td></tr>
+                            <tr><td>Version:</td><td>3</td></tr>
+                            <tr><td>Fecha de autorización</td><td>25-feb-24</td></tr>
+                            <tr><td>Página</td><td>1 de 2</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <table class="info-grid">
+                    <tr><td class="lbl">Empresa:</td><td colspan="3">${empresa}</td></tr>
+                    <tr><td class="lbl">Responsable de la toma:</td><td colspan="3">Dra Gloria Abarca</td></tr>
+                    <tr><td class="lbl">Personal involucrado:</td><td colspan="3">${medicosText}</td></tr>
+                    <tr><td class="lbl">No. de pacientes:</td><td>${pacientesStr}</td><td class="lbl">Folio de la toma:</td><td>${folioText}</td></tr>
+                    <tr><td class="lbl">Fecha:</td><td colspan="3">${hoy}</td></tr>
+                </table>
+
                 <table class="table-req">
-                    <tr><th>CONCEPTO</th><th class="val-cell">CANTIDAD</th></tr>`;
+                    <tr>
+                        <th style="width: 15%;">Número de articulo</th>
+                        <th style="width: 45%;">Descripción articulo</th>
+                        <th style="width: 10%; text-align:center;">Ud. de medida</th>
+                        <th style="width: 15%; text-align:center;">Cantidad solicitada</th>
+                        <th style="width: 15%;">Observaciones</th>
+                    </tr>`;
 
-            let isPage2 = false;
+            // Imprimir primeros 55 items
+            for(let i=0; i<55; i++) {
+                let it = LAPI_FO_TF_49[i];
+                let val = resultadosActuales[it.desc] > 0 ? resultadosActuales[it.desc] : '';
+                htmlPDF += `<tr><td>${it.id}</td><td>${it.desc}</td><td style="text-align:center;">${it.ud}</td><td class="val-cell">${val}</td><td></td></tr>`;
+            }
 
-            CATALOGO_FORMATO.forEach(grupo => {
-                if(grupo.pageBreak) {
-                    htmlPDF += `</table></div><div class="print-page">${generarEncabezadoPDF(empresa, periodo)}<table class="table-req"><tr><th>CONCEPTO</th><th class="val-cell">CANTIDAD</th></tr>`;
-                    isPage2 = true;
-                    return;
-                }
+            htmlPDF += `</table><div class="page-footer">Página 1</div></div>`;
 
-                htmlPDF += `<tr><td colspan="2" class="cat-header">${grupo.cat}</td></tr>`;
-                
-                // Mostrar 5 filas fijas incluso si el catálogo está vacío para imitar el formato
-                let maxRows = Math.max(grupo.items.length, 3);
-                for(let i=0; i<maxRows; i++) {
-                    if(i < grupo.items.length) {
-                        let item = grupo.items[i];
-                        let val = resultadosActuales[item] > 0 ? resultadosActuales[item] : '';
-                        htmlPDF += `<tr><td>${item}</td><td class="val-cell">${val}</td></tr>`;
-                    } else {
-                        htmlPDF += `<tr><td style="color:white;">.</td><td class="val-cell"></td></tr>`;
-                    }
-                }
-            });
+            // ================= PÁGINA 2 =================
+            htmlPDF += `<div class="print-page">
+                <div class="head-logo-container">
+                    <div style="width: 25%;"><img src="logoLAPI.png" style="width: 90px;"></div>
+                    <div class="lapi-title">Lapi<br><span style="font-size:12px; font-weight:normal;">Laboratorio Medico</span><br><br><span style="font-size:14px; text-decoration:underline;">MATERIAL DE SALIDA DE EMPRESAS</span></div>
+                    <div style="width: 25%;">
+                        <table class="meta-table" style="float: right;">
+                            <tr><td>Código</td><td>FO-TF-49</td></tr>
+                            <tr><td>Versión</td><td>3</td></tr>
+                            <tr><td>Fecha de autorización:</td><td>25-feb-24</td></tr>
+                            <tr><td>Páginas</td><td>2 de 2</td></tr>
+                        </table>
+                    </div>
+                </div>
 
-            // Agregados manuales al final de la página 2
-            let vBol = resultadosActuales['Bolsa blanca'] > 0 ? resultadosActuales['Bolsa blanca'] : '';
-            let vEpp = resultadosActuales['Equipo de protección personal'] > 0 ? resultadosActuales['Equipo de protección personal'] : '';
-            
-            htmlPDF += `<tr><td>Bolsa blanca</td><td class="val-cell">${vBol}</td></tr>`;
-            htmlPDF += `<tr><td>Equipo de protección personal</td><td class="val-cell">${vEpp}</td></tr>`;
+                <table class="table-req" style="margin-top: 10px;">
+                    <tr>
+                        <th style="width: 15%;">Número de articulo</th>
+                        <th style="width: 45%;">Descripción articulo</th>
+                        <th style="width: 10%; text-align:center;">Ud. de medida</th>
+                        <th style="width: 15%; text-align:center;">Cantidad solicitada</th>
+                        <th style="width: 15%;">Observaciones</th>
+                    </tr>`;
 
-            htmlPDF += `</table></div>`;
+            // Imprimir el resto (del 55 al 87)
+            for(let i=55; i<LAPI_FO_TF_49.length; i++) {
+                let it = LAPI_FO_TF_49[i];
+                let val = resultadosActuales[it.desc] > 0 ? resultadosActuales[it.desc] : '';
+                htmlPDF += `<tr><td>${it.id || ''}</td><td>${it.desc}</td><td style="text-align:center;">${it.ud || ''}</td><td class="val-cell">${val}</td><td></td></tr>`;
+            }
+
+            // Agregados a mano
+            htmlPDF += `<tr><td></td><td>BOLSA BLANCA</td><td style="text-align:center;">PIEZA</td><td class="val-cell">${valBolsa}</td><td></td></tr>`;
+            htmlPDF += `<tr><td></td><td>EQUIPO DE PROTECCIÓN PERSONAL</td><td style="text-align:center;">PIEZA</td><td class="val-cell">${valEpp}</td><td></td></tr>`;
+
+            htmlPDF += `</table>`;
+
+            // Firmas al final de la pag 2
+            htmlPDF += `
+                <div class="firmas-section">
+                    <div class="firma-box">
+                        <p style="margin-bottom: 25px;">Entrego:</p>
+                        <p>Nombre completo y firma</p>
+                    </div>
+                    <div class="firma-box">
+                        <p style="margin-bottom: 25px;">Seguridad Vigilancia:</p>
+                        <p>Nombre completo y firma.</p>
+                    </div>
+                    <div class="firma-box">
+                        <p style="margin-bottom: 25px;">Reviso:</p>
+                        <p>Nombre completo y firma</p>
+                    </div>
+                </div>
+                <div class="page-footer" style="text-align:left; margin-top:20px;">Folio: __________________ <span style="float:right;">Página 2</span></div>
+            </div>`;
+
             zona.innerHTML = htmlPDF;
             
             zona.classList.remove('hidden');
             setTimeout(() => { window.print(); zona.classList.add('hidden'); }, 500);
         };
-
-        function generarEncabezadoPDF(empresa, periodo) {
-            const hoy = new Date().toLocaleDateString('es-MX');
-            return `
-                <table class="header-req">
-                    <tr>
-                        <td style="width: 20%;"><img src="logoLAPI.png" style="max-width: 100px; max-height: 50px;"></td>
-                        <td style="width: 60%;" class="header-title">REQUISICIÓN DE COMPRAS Y SUMINISTROS</td>
-                        <td style="width: 20%; padding:0;">
-                            <table style="width:100%; border:none; border-collapse:collapse;">
-                                <tr><td style="border:none; border-bottom:1px solid black; font-size:9px; text-align:left;">CÓDIGO: F-34-P04</td></tr>
-                                <tr><td style="border:none; border-bottom:1px solid black; font-size:9px; text-align:left;">VERSIÓN: 00</td></tr>
-                                <tr><td style="border:none; font-size:9px; text-align:left;">FECHA ACT: 18/FEB/21</td></tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-                <table class="info-grid">
-                    <tr><td class="bg-gray-req">FECHA:</td><td>${hoy}</td><td class="bg-gray-req">SOLICITANTE:</td><td>Dra Gloria Abarca</td></tr>
-                    <tr><td class="bg-gray-req">EMPRESA:</td><td>${empresa}</td><td class="bg-gray-req">PERIODO:</td><td>${periodo}</td></tr>
-                </table>
-            `;
-        }
     </script>
 </body>
 </html>
