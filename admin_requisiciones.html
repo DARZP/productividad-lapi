@@ -408,7 +408,7 @@
             const empresa = document.getElementById('req-empresa').value || '';
             const numMedicos = document.getElementById('req-medicos').value || '';
             const medicosText = numMedicos ? `${numMedicos} Médicos` : '';
-            const folioText = document.getElementById('req-folio').value || '';
+            const folioText = ''; // Se deja en blanco según indicaciones
             
             let desglosePacientes = [];
             let hcTot = (parseInt(document.getElementById('hc_papel_est').value)||0) + (parseInt(document.getElementById('hc_web_est').value)||0);
