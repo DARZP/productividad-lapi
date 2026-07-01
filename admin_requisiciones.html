@@ -13,161 +13,168 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .bg-animated { background: linear-gradient(-45deg, #f97316, #ea580c, #f59e0b, #ec4899); background-size: 400% 400%; animation: gradientBG 15s ease infinite; }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(254, 215, 170, 0.5); }
         .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
-        .scroll-custom::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+        .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ==========================================
            REGLAS DE IMPRESIÓN (CLON EXACTO FO-TF-49)
            ========================================== */
         @media print {
-            @page { size: letter portrait; margin: 10mm; }
+            @page { size: letter portrait; margin: 8mm 10mm; }
             body, html { background: white !important; height: auto !important; display: block !important; }
             nav, .no-print { display: none !important; }
             
             #zona-impresion { display: block !important; width: 100%; color: black; font-family: Arial, sans-serif; }
             .print-page { break-after: always; page-break-after: always; width: 100%; position: relative; }
             
-            .head-logo-container { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-            .lapi-title { font-size: 16px; font-weight: bold; text-align: center; flex-1; margin-top: 10px; }
-            .meta-table { border-collapse: collapse; font-size: 9px; text-align: left; }
-            .meta-table td { border: 1px solid #000; padding: 2px 4px; }
+            .head-logo-container { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
+            .head-logo-container td { border: 1px solid #000; padding: 2px; text-align: center; }
+            .lapi-title { font-size: 14px; font-weight: bold; }
             
-            .info-grid { width: 100%; font-size: 10px; margin-bottom: 10px; border-collapse: collapse; }
-            .info-grid td { border-bottom: 1px solid #000; padding: 2px 5px; }
-            .info-grid .lbl { font-weight: bold; width: 20%; border: none; }
+            .info-grid { width: 100%; font-size: 10px; margin-bottom: 5px; border-collapse: collapse; border: none; }
+            .info-grid td { padding: 2px 5px; border: none; }
+            .info-grid .lbl { font-weight: bold; width: 22%; }
+            .info-grid .val { width: 28%; }
             
             .table-req { width: 100%; border-collapse: collapse; font-size: 9px; }
             .table-req th, .table-req td { border: 1px solid black; padding: 2px 4px; }
-            .table-req th { font-weight: bold; background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; text-align: left; }
-            .val-cell { text-align: center; font-weight: bold; }
+            .table-req th { font-weight: bold; text-align: center; background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; }
+            .table-req td:nth-child(1) { text-align: center; width: 15%; }
+            .table-req td:nth-child(2) { width: 44%; }
+            .table-req td:nth-child(3) { text-align: center; width: 13%; }
+            .table-req td:nth-child(4) { text-align: center; width: 13%; font-weight: bold; }
+            .table-req td:nth-child(5) { width: 15%; }
             
-            .firmas-section { width: 100%; display: flex; justify-content: space-between; font-size: 10px; margin-top: 30px; text-align: center; }
-            .firma-box { width: 30%; border-top: 1px solid #000; padding-top: 5px; }
-            .page-footer { text-align: right; font-size: 9px; margin-top: 10px; width: 100%; font-weight: bold; }
+            .firmas-section { width: 100%; margin-top: 15px; font-size: 10px; border-collapse: separate; border-spacing: 40px 15px; }
+            .firmas-section td { vertical-align: bottom; width: 50%; }
+            .firma-line { border-top: 1px solid #000; text-align: center; padding-top: 2px; margin-top: 25px; }
+            .page-footer { text-align: right; font-size: 9px; margin-top: 5px; width: 100%; font-weight: bold; }
         }
     </style>
 </head>
-<body class="bg-animated min-h-screen flex flex-col md:flex-row relative overflow-hidden">
+<body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
-
-    <nav class="no-print fixed bottom-0 w-full glass z-50 md:relative md:w-24 md:h-screen md:border-r md:border-white/20 flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom">
-        <div class="hidden md:flex mb-2 text-3xl"><i class="fa-solid fa-staff-snake text-white"></i></div>
-        <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-white/60 hover:text-white group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div>
+    <!-- NAVEGACIÓN LATERAL UNIFICADA -->
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom no-print">
+        <div class="hidden md:flex mb-2 text-3xl"><i class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i></div>
+        
+        <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
         </a>
-        <div class="hidden md:block w-10 border-b border-white/20 my-2"></div>
-        <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-white/60 hover:text-white group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
+        <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
+        <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Monitor</span>
         </a>
-        <a href="admin_requisiciones.html" class="flex flex-col items-center p-1 md:p-2 text-white group">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-white/20 shadow-inner border border-white/30"><i class="fa-solid fa-box-open text-base md:text-xl"></i></div>
-            <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Insumos</span>
+        <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Control<br>Biol.</span>
         </a>
-        <a href="portal.html" class="flex flex-col items-center p-1 md:p-2 text-white/60 hover:text-white group transition-all mt-auto">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-all"><i class="fa-solid fa-house-medical text-base md:text-xl"></i></div>
-            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Operativo</span>
+        <a href="admin_requisiciones.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-box-open text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Insumos</span>
         </a>
     </nav>
 
-    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 flex flex-col xl:flex-row gap-6 items-start relative z-10 no-print pb-24">
+    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 flex flex-col xl:flex-row gap-6 items-start relative z-10 no-print">
         
+        <!-- COLUMNA IZQUIERDA: CONFIGURADOR -->
         <div class="w-full xl:w-[450px] shrink-0 flex flex-col gap-4">
             
-            <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-3xl shadow-2xl text-white border border-slate-700">
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-3xl shadow-md text-white">
                 <h1 class="text-2xl font-black tracking-tight flex items-center gap-2 mb-1">
-                    <i class="fa-solid fa-boxes-packing text-orange-400"></i> LOGÍSTICA
+                    <i class="fa-solid fa-boxes-packing text-orange-200"></i> REQUISICIONES
                 </h1>
-                <p class="opacity-80 text-[10px] font-bold uppercase tracking-widest mb-6">Generador de Requisiciones FO-TF-49</p>
+                <p class="opacity-90 text-[10px] font-medium uppercase tracking-widest">Generador de Insumos FO-TF-49</p>
+            </div>
 
+            <div class="glass p-6 rounded-3xl shadow-sm border-l-4 border-orange-500">
                 <div class="space-y-4 mb-6">
                     <div>
-                        <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Empresa Destino</label>
-                        <input type="text" id="req-empresa" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400 uppercase placeholder-white/30" placeholder="Ej. BIMBO">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Empresa Destino</label>
+                        <input type="text" id="req-empresa" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase" placeholder="Ej. BIMBO">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Fecha Inicio</label>
-                            <input type="date" id="req-fecha-ini" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Inicio</label>
+                            <input type="date" id="req-fecha-ini" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Fecha Fin</label>
-                            <input type="date" id="req-fecha-fin" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Fin</label>
+                            <input type="date" id="req-fecha-fin" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Folio Operativo</label>
-                            <input type="text" id="req-folio" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400 placeholder-white/30" placeholder="Opcional">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Personal (Nombres)</label>
-                            <input type="text" id="req-medicos" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400 placeholder-white/30" placeholder="Médicos y técnicos">
-                        </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">N° de Médicos</label>
+                        <input type="number" id="req-medicos" min="1" value="1" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
                     </div>
                 </div>
 
-                <h3 class="text-xs font-black text-white uppercase tracking-widest border-b border-white/20 pb-2 mb-4">Servicios a Instalar</h3>
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest border-b border-slate-200 pb-2 mb-4">Servicios a Instalar</h3>
                 
+                <!-- GRID DE SERVICIOS -->
                 <div class="space-y-3">
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex justify-between items-center gap-2">
-                        <span class="text-[11px] font-bold w-1/3 leading-tight text-white/90">Hist. Clínica<br><span class="text-orange-300 text-[9px]">(Papel)</span></span>
-                        <input type="number" id="hc_papel_inst" min="0" placeholder="Instalaciones" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
-                        <input type="number" id="hc_papel_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <span class="text-[11px] font-bold w-1/3 leading-tight text-slate-600">Hist. Clínica<br><span class="text-orange-500 text-[9px]">(Papel)</span></span>
+                        <input type="number" id="hc_papel_inst" min="0" placeholder="Inst." class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
+                        <input type="number" id="hc_papel_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
                     </div>
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex justify-between items-center gap-2">
-                        <span class="text-[11px] font-bold w-1/3 leading-tight text-white/90">Hist. Clínica<br><span class="text-sky-300 text-[9px]">(LAPIWEB)</span></span>
-                        <input type="number" id="hc_web_inst" min="0" placeholder="Instalaciones" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
-                        <input type="number" id="hc_web_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <span class="text-[11px] font-bold w-1/3 leading-tight text-slate-600">Hist. Clínica<br><span class="text-sky-500 text-[9px]">(LAPIWEB)</span></span>
+                        <input type="number" id="hc_web_inst" min="0" placeholder="Inst." class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
+                        <input type="number" id="hc_web_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
                     </div>
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex justify-between items-center gap-2">
-                        <span class="text-[11px] font-bold w-1/3 leading-tight text-white/90">Audiometría</span>
-                        <input type="number" id="audio_inst" min="0" placeholder="Instalaciones" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
-                        <input type="number" id="audio_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <span class="text-[11px] font-bold w-1/3 leading-tight text-slate-600">Audiometría</span>
+                        <input type="number" id="audio_inst" min="0" placeholder="Inst." class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
+                        <input type="number" id="audio_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
                     </div>
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex justify-between items-center gap-2">
-                        <span class="text-[11px] font-bold w-1/3 leading-tight text-white/90">Espirometría</span>
-                        <input type="number" id="espiro_inst" min="0" placeholder="Instalaciones" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
-                        <input type="number" id="espiro_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <span class="text-[11px] font-bold w-1/3 leading-tight text-slate-600">Espirometría</span>
+                        <input type="number" id="espiro_inst" min="0" placeholder="Inst." class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
+                        <input type="number" id="espiro_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
                     </div>
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex justify-between items-center gap-2">
-                        <span class="text-[11px] font-bold w-1/3 leading-tight text-white/90">Cap. Visual</span>
-                        <input type="number" id="visual_inst" min="0" placeholder="Instalaciones" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
-                        <input type="number" id="visual_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <span class="text-[11px] font-bold w-1/3 leading-tight text-slate-600">Cap. Visual</span>
+                        <input type="number" id="visual_inst" min="0" placeholder="Inst." class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
+                        <input type="number" id="visual_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
                     </div>
                 </div>
 
-                <button onclick="calcularRequisicion()" class="w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white font-black py-3.5 rounded-xl transition-all shadow-lg active:scale-95">
+                <button onclick="calcularRequisicion()" class="w-full mt-6 bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs">
                     <i class="fa-solid fa-calculator mr-2"></i> Calcular Insumos
                 </button>
             </div>
         </div>
 
-        <div class="w-full flex-1 flex flex-col gap-4 hidden animate-fade-in" id="panel-preview">
-            <div class="glass p-6 rounded-3xl shadow-xl flex-1 border border-white/30 flex flex-col">
-                <div class="flex justify-between items-end border-b border-white/30 pb-4 mb-4">
+        <!-- COLUMNA DERECHA: VISTA PREVIA EDITABLE -->
+        <div class="w-full xl:w-[600px] flex-1 flex flex-col gap-4 hidden animate-fade-in h-[calc(100vh-60px)]" id="panel-preview">
+            <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col h-full">
+                <div class="flex justify-between items-end border-b border-slate-200 pb-4 mb-4 shrink-0">
                     <div>
-                        <h2 class="text-2xl font-black text-white"><i class="fa-solid fa-list-check text-emerald-300 mr-2"></i> FO-TF-49 (Lista Completa)</h2>
-                        <p class="text-[11px] text-white/80 uppercase tracking-widest font-bold mt-1">Revisa y ajusta antes de imprimir</p>
+                        <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-list-check text-orange-500 mr-2"></i> FO-TF-49 (Vista Previa)</h2>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Revisa y ajusta antes de imprimir</p>
                     </div>
-                    <button onclick="generarPDF()" class="bg-white text-orange-600 font-black px-6 py-3 rounded-xl shadow-lg hover:bg-orange-50 active:scale-95 transition-all text-sm">
-                        <i class="fa-solid fa-file-pdf mr-1 text-red-500"></i> Generar Formato
+                    <button onclick="generarPDF()" class="bg-emerald-600 text-white font-black px-5 py-2.5 rounded-xl shadow-sm hover:bg-emerald-700 active:scale-95 transition-all text-xs">
+                        <i class="fa-solid fa-file-pdf mr-1"></i> Generar Formato
                     </button>
                 </div>
 
-                <div class="bg-white/90 rounded-2xl p-4 overflow-y-auto scroll-custom flex-1 shadow-inner text-slate-800" id="tabla-editable-container">
-                    </div>
+                <!-- Contenedor con scroll -->
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 overflow-y-auto scroll-custom flex-1 shadow-inner text-slate-800" id="tabla-editable-container">
+                    <!-- Se llena con JS -->
+                </div>
             </div>
         </div>
     </main>
 
+    <!-- ZONA OCULTA PARA HTML DE IMPRESIÓN (PDF) -->
     <div id="zona-impresion" class="hidden"></div>
 
     <script>
@@ -389,120 +396,134 @@
             const valEpp = parseInt(document.getElementById('manual_epp').value) || '';
 
             // Datos Cabecera
-            const empresa = document.getElementById('req-empresa').value || '_______________________';
-            const medicosText = document.getElementById('req-medicos').value || '_______________________';
-            const folioText = document.getElementById('req-folio').value || '_______________________';
+            const empresa = document.getElementById('req-empresa').value || '';
+            const numMedicos = document.getElementById('req-medicos').value || '';
             
-            let numPacientesTotales = 0;
-            ['hc_papel_est', 'hc_web_est', 'audio_est', 'espiro_est', 'visual_est'].forEach(id => {
-                numPacientesTotales += (parseInt(document.getElementById(id).value) || 0);
-            });
-            const pacientesStr = numPacientesTotales > 0 ? numPacientesTotales : '_________________';
+            let desglosePacientes = [];
+            let hcTot = (parseInt(document.getElementById('hc_papel_est').value)||0) + (parseInt(document.getElementById('hc_web_est').value)||0);
+            if(hcTot > 0) desglosePacientes.push(`${hcTot} HC`);
+            let audTot = parseInt(document.getElementById('audio_est').value)||0;
+            if(audTot > 0) desglosePacientes.push(`${audTot} Audios`);
+            let espTot = parseInt(document.getElementById('espiro_est').value)||0;
+            if(espTot > 0) desglosePacientes.push(`${espTot} Espiros`);
+            let visTot = parseInt(document.getElementById('visual_est').value)||0;
+            if(visTot > 0) desglosePacientes.push(`${visTot} Visuales`);
 
-            const hoy = new Date().toLocaleDateString('es-MX');
+            const pacientesStr = desglosePacientes.length > 0 ? desglosePacientes.join(', ') : '';
+
+            const ini = document.getElementById('req-fecha-ini').value;
+            const fin = document.getElementById('req-fecha-fin').value;
+            let periodoStr = '';
+            if(ini && fin) {
+                const dIni = new Date(ini + "T12:00:00");
+                const dFin = new Date(fin + "T12:00:00");
+                const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+                if(dIni.getMonth() === dFin.getMonth()) {
+                    periodoStr = `${dIni.getDate()} - ${dFin.getDate()} ${meses[dIni.getMonth()]} ${String(dFin.getFullYear()).slice(-2)}`;
+                } else {
+                    periodoStr = `${dIni.getDate()} ${meses[dIni.getMonth()]} - ${dFin.getDate()} ${meses[dFin.getMonth()]} ${String(dFin.getFullYear()).slice(-2)}`;
+                }
+            }
 
             const zona = document.getElementById('zona-impresion');
             zona.innerHTML = '';
 
-            // ================= PÁGINA 1 =================
-            let htmlPDF = `<div class="print-page">
-                <div class="head-logo-container">
-                    <div style="width: 25%;"><img src="logoLAPI.png" style="width: 90px;"></div>
-                    <div class="lapi-title">Lapi<br><span style="font-size:12px; font-weight:normal;">Laboratorio Medico</span><br><br><span style="font-size:14px; text-decoration:underline;">MATERIAL DE SALIDA DE EMPRESAS</span></div>
-                    <div style="width: 25%;">
-                        <table class="meta-table" style="float: right;">
-                            <tr><td>Código</td><td>FO-TF-49</td></tr>
-                            <tr><td>Version:</td><td>3</td></tr>
-                            <tr><td>Fecha de autorización</td><td>25-feb-24</td></tr>
-                            <tr><td>Página</td><td>1 de 2</td></tr>
-                        </table>
-                    </div>
-                </div>
-
-                <table class="info-grid">
-                    <tr><td class="lbl">Empresa:</td><td colspan="3">${empresa}</td></tr>
-                    <tr><td class="lbl">Responsable de la toma:</td><td colspan="3">Dra Gloria Abarca</td></tr>
-                    <tr><td class="lbl">Personal involucrado:</td><td colspan="3">${medicosText}</td></tr>
-                    <tr><td class="lbl">No. de pacientes:</td><td>${pacientesStr}</td><td class="lbl">Folio de la toma:</td><td>${folioText}</td></tr>
-                    <tr><td class="lbl">Fecha:</td><td colspan="3">${hoy}</td></tr>
+            function getEncabezado(pageStr) {
+                return `
+                <table class="head-logo-container">
+                    <tr>
+                        <td style="width: 25%; border-right: none; vertical-align: middle;">
+                            <img src="logoLAPI.png" style="width: 100px; display: block; margin: 0 auto;">
+                        </td>
+                        <td style="width: 50%; text-align: center; border-left: none; border-right: none; vertical-align: middle;">
+                            <div class="lapi-title">MATERIAL DE SALIDA DE EMPRESAS</div>
+                        </td>
+                        <td style="width: 25%; padding: 0; border: none;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 9px; text-align: center;">
+                                <tr><td style="border: 1px solid #000; border-top: none; border-right: none; font-weight: bold; width: 40%;">Código</td><td style="border: 1px solid #000; border-top: none; border-right: none;">FO-TF-49</td></tr>
+                                <tr><td style="border: 1px solid #000; border-right: none; font-weight: bold;">Versión</td><td style="border: 1px solid #000; border-right: none;">3</td></tr>
+                                <tr><td style="border: 1px solid #000; border-right: none; font-weight: bold;">Fecha de autorización</td><td style="border: 1px solid #000; border-right: none;">25-feb-24</td></tr>
+                                <tr><td style="border: 1px solid #000; border-bottom: none; border-right: none; font-weight: bold;">Página</td><td style="border: 1px solid #000; border-bottom: none; border-right: none;">${pageStr}</td></tr>
+                            </table>
+                        </td>
+                    </tr>
                 </table>
 
+                <table class="info-grid">
+                    <tr>
+                        <td class="lbl">Empresa:</td><td class="val">${empresa}</td>
+                        <td class="lbl">No. de pacientes:</td><td class="val">${pacientesStr}</td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">Responsable de la toma:</td><td class="val">Dra Gloria Abarca</td>
+                        <td class="lbl">Folio de la toma:</td><td class="val"></td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">Personal Involucrado:</td><td class="val">${numMedicos ? numMedicos + ' Médicos' : ''}</td>
+                        <td class="lbl">Fecha:</td><td class="val">${periodoStr}</td>
+                    </tr>
+                </table>
                 <table class="table-req">
                     <tr>
-                        <th style="width: 15%;">Número de articulo</th>
-                        <th style="width: 45%;">Descripción articulo</th>
-                        <th style="width: 10%; text-align:center;">Ud. de medida</th>
-                        <th style="width: 15%; text-align:center;">Cantidad solicitada</th>
-                        <th style="width: 15%;">Observaciones</th>
-                    </tr>`;
+                        <th>Número de articulo</th>
+                        <th>Descripción articulo</th>
+                        <th>Ud. de medida</th>
+                        <th>Cantidad solicitada</th>
+                        <th>Observaciones</th>
+                    </tr>
+                `;
+            }
 
-            // Imprimir primeros 55 items
+            let htmlPDF = `<div class="print-page">${getEncabezado('1 de 2')}`;
+
+            // Pág 1: Elementos 0 a 54
             for(let i=0; i<55; i++) {
                 let it = LAPI_FO_TF_49[i];
                 let val = resultadosActuales[it.desc] > 0 ? resultadosActuales[it.desc] : '';
-                htmlPDF += `<tr><td>${it.id}</td><td>${it.desc}</td><td style="text-align:center;">${it.ud}</td><td class="val-cell">${val}</td><td></td></tr>`;
+                htmlPDF += `<tr><td>${it.id}</td><td>${it.desc}</td><td>${it.ud}</td><td class="val-cell">${val}</td><td></td></tr>`;
             }
-
             htmlPDF += `</table><div class="page-footer">Página 1</div></div>`;
 
-            // ================= PÁGINA 2 =================
-            htmlPDF += `<div class="print-page">
-                <div class="head-logo-container">
-                    <div style="width: 25%;"><img src="logoLAPI.png" style="width: 90px;"></div>
-                    <div class="lapi-title">Lapi<br><span style="font-size:12px; font-weight:normal;">Laboratorio Medico</span><br><br><span style="font-size:14px; text-decoration:underline;">MATERIAL DE SALIDA DE EMPRESAS</span></div>
-                    <div style="width: 25%;">
-                        <table class="meta-table" style="float: right;">
-                            <tr><td>Código</td><td>FO-TF-49</td></tr>
-                            <tr><td>Versión</td><td>3</td></tr>
-                            <tr><td>Fecha de autorización:</td><td>25-feb-24</td></tr>
-                            <tr><td>Páginas</td><td>2 de 2</td></tr>
-                        </table>
-                    </div>
-                </div>
-
-                <table class="table-req" style="margin-top: 10px;">
-                    <tr>
-                        <th style="width: 15%;">Número de articulo</th>
-                        <th style="width: 45%;">Descripción articulo</th>
-                        <th style="width: 10%; text-align:center;">Ud. de medida</th>
-                        <th style="width: 15%; text-align:center;">Cantidad solicitada</th>
-                        <th style="width: 15%;">Observaciones</th>
-                    </tr>`;
-
-            // Imprimir el resto (del 55 al 87)
+            // Pág 2: Elementos 55 al final + Manuales
+            htmlPDF += `<div class="print-page">${getEncabezado('2 de 2')}`;
             for(let i=55; i<LAPI_FO_TF_49.length; i++) {
                 let it = LAPI_FO_TF_49[i];
                 let val = resultadosActuales[it.desc] > 0 ? resultadosActuales[it.desc] : '';
-                htmlPDF += `<tr><td>${it.id || ''}</td><td>${it.desc}</td><td style="text-align:center;">${it.ud || ''}</td><td class="val-cell">${val}</td><td></td></tr>`;
+                htmlPDF += `<tr><td>${it.id || ''}</td><td>${it.desc}</td><td>${it.ud || ''}</td><td class="val-cell">${val}</td><td></td></tr>`;
             }
-
-            // Agregados a mano
-            htmlPDF += `<tr><td></td><td>BOLSA BLANCA</td><td style="text-align:center;">PIEZA</td><td class="val-cell">${valBolsa}</td><td></td></tr>`;
-            htmlPDF += `<tr><td></td><td>EQUIPO DE PROTECCIÓN PERSONAL</td><td style="text-align:center;">PIEZA</td><td class="val-cell">${valEpp}</td><td></td></tr>`;
-
+            
+            htmlPDF += `<tr><td></td><td>EQUIPO DE PROTECCIÓN PERSONAL</td><td>PIEZA</td><td class="val-cell">${valEpp}</td><td></td></tr>`;
+            htmlPDF += `<tr><td></td><td>BOLSA BLANCA</td><td>PIEZA</td><td class="val-cell">${valBolsa}</td><td></td></tr>`;
             htmlPDF += `</table>`;
 
-            // Firmas al final de la pag 2
+            // SECCIÓN DE FIRMAS EN 2 COLUMNAS (Alineación perfecta)
             htmlPDF += `
-                <div class="firmas-section">
-                    <div class="firma-box">
-                        <p style="margin-bottom: 25px;">Entrego:</p>
-                        <p>Nombre completo y firma</p>
-                    </div>
-                    <div class="firma-box">
-                        <p style="margin-bottom: 25px;">Seguridad Vigilancia:</p>
-                        <p>Nombre completo y firma.</p>
-                    </div>
-                    <div class="firma-box">
-                        <p style="margin-bottom: 25px;">Reviso:</p>
-                        <p>Nombre completo y firma</p>
-                    </div>
-                </div>
-                <div class="page-footer" style="text-align:left; margin-top:20px;">Folio: __________________ <span style="float:right;">Página 2</span></div>
+                <table class="firmas-section">
+                    <tr>
+                        <td>
+                            <div style="text-align:left; margin-bottom: 25px;">Entrego:</div>
+                            <div class="firma-line">Nombre completo y firma</div>
+                        </td>
+                        <td>
+                            <div style="text-align:left; margin-bottom: 25px;">Seguridad Vigilancia:</div>
+                            <div class="firma-line">Nombre completo y firma</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div style="text-align:left; margin-bottom: 25px;">Reviso:</div>
+                            <div class="firma-line">Nombre completo y firma</div>
+                        </td>
+                        <td>
+                            <div style="text-align:left; margin-bottom: 25px;">Folio:</div>
+                            <div style="border-top: 1px solid #000; margin-top: 25px;">&nbsp;</div>
+                        </td>
+                    </tr>
+                </table>
+                <div class="page-footer" style="margin-top:10px;">Página 2</div>
             </div>`;
 
             zona.innerHTML = htmlPDF;
-            
             zona.classList.remove('hidden');
             setTimeout(() => { window.print(); zona.classList.add('hidden'); }, 500);
         };
