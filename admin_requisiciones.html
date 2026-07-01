@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisiciones - LAPI Admin</title>
+    
+    <link rel="manifest" href="manifest_admin.json">
+    <meta name="theme-color" content="#ea580c">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .bg-animated { background: linear-gradient(-45deg, #f97316, #ea580c, #f59e0b, #ec4899); background-size: 400% 400%; animation: gradientBG 15s ease infinite; }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ==========================================
+           ESTILOS ESTRICTOS PARA IMPRESIÓN DEL FORMATO
+           ========================================== */
+        @media print {
+            @page { size: letter portrait; margin: 10mm; }
+            body, html { background: white !important; height: auto !important; display: block !important; }
+            nav, .no-print { display: none !important; }
+            
+            #zona-impresion { display: block !important; width: 100%; color: black; font-family: Arial, sans-serif; }
+            .print-page { break-after: always; page-break-after: always; width: 100%; }
+            
+            .header-req { width: 100%; border-collapse: collapse; margin-bottom: 15px; text-align: center; }
+            .header-req td { border: 1px solid black; padding: 5px; font-size: 11px; }
+            .header-title { font-weight: bold; font-size: 14px; background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; }
+            
+            .info-grid { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px; }
+            .info-grid td { border: 1px solid black; padding: 5px; }
+            .bg-gray-req { background-color: #f3f4f6 !important; font-weight: bold; width: 15%; -webkit-print-color-adjust: exact; }
+            
+            .table-req { width: 100%; border-collapse: collapse; font-size: 10px; }
+            .table-req th, .table-req td { border: 1px solid black; padding: 3px 5px; }
+            .table-req th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; text-align: left; }
+            .cat-header { background-color: #e5e7eb !important; font-weight: bold; text-align: center; -webkit-print-color-adjust: exact; }
+            .val-cell { width: 15%; text-align: center; font-weight: bold; }
+        }
+    </style>
+</head>
+<body class="bg-animated min-h-screen flex flex-col md:flex-row relative overflow-hidden">
+
+    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
+
+    <nav class="no-print fixed bottom-0 w-full glass z-50 md:relative md:w-24 md:h-screen md:border-r md:border-white/20 flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom">
+        <div class="hidden md:flex mb-2 text-3xl"><i class="fa-solid fa-staff-snake text-white"></i></div>
+        
+        <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-white/60 hover:text-white group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
+        </a>
+        <div class="hidden md:block w-10 border-b border-white/20 my-2"></div>
+
+        <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-white/60 hover:text-white group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Monitor</span>
+        </a>
+        <a href="admin_requisiciones.html" class="flex flex-col items-center p-1 md:p-2 text-white group">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-white/20 shadow-inner border border-white/30"><i class="fa-solid fa-box-open text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Insumos</span>
+        </a>
+        <a href="portal.html" class="flex flex-col items-center p-1 md:p-2 text-white/60 hover:text-white group transition-all mt-auto">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-all"><i class="fa-solid fa-house-medical text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Operativo</span>
+        </a>
+    </nav>
+
+    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 flex flex-col xl:flex-row gap-6 items-start relative z-10 no-print pb-24">
+        
+        <div class="w-full xl:w-[450px] shrink-0 flex flex-col gap-4">
+            
+            <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-3xl shadow-2xl text-white border border-slate-700">
+                <h1 class="text-2xl font-black tracking-tight flex items-center gap-2 mb-1">
+                    <i class="fa-solid fa-boxes-packing text-orange-400"></i> LOGÍSTICA
+                </h1>
+                <p class="opacity-80 text-[10px] font-bold uppercase tracking-widest mb-6">Generador de Requisiciones</p>
+
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Empresa Destino</label>
+                        <input type="text" id="req-empresa" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400 uppercase placeholder-white/30" placeholder="Ej. BIMBO">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Fecha Inicio</label>
+                            <input type="date" id="req-fecha-ini" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Fecha Fin</label>
+                            <input type="date" id="req-fecha-fin" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-orange-300 uppercase mb-1">Cantidad de Médicos</label>
+                        <input type="number" id="req-medicos" min="1" value="1" class="w-full p-2.5 bg-white/10 border border-white/20 rounded-xl text-xs font-bold outline-none text-white focus:border-orange-400">
+                    </div>
+                </div>
+
+                <h3 class="text-xs font-black text-white uppercase tracking-widest border-b border-white/20 pb-2 mb-4">Servicios a Instalar</h3>
+                
+                <div class="space-y-3">
+                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex justify-between items-center gap-2">
+                        <span class="text-[11px] font-bold w-1/3 leading-tight text-white/90">Hist. Clínica<br><span class="text-orange-300 text-[9px]">(Papel)</span></span>
+                        <input type="number" id="hc_papel_inst" min="0" placeholder="Instalaciones" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                        <input type="number" id="hc_papel_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                    </div>
+                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex justify-between items-center gap-2">
+                        <span class="text-[11px] font-bold w-1/3 leading-tight text-white/90">Hist. Clínica<br><span class="text-sky-300 text-[9px]">(LAPIWEB)</span></span>
+                        <input type="number" id="hc_web_inst" min="0" placeholder="Instalaciones" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                        <input type="number" id="hc_web_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                    </div>
+                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex justify-between items-center gap-2">
+                        <span class="text-[11px] font-bold w-1/3 leading-tight text-white/90">Audiometría</span>
+                        <input type="number" id="audio_inst" min="0" placeholder="Instalaciones" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                        <input type="number" id="audio_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                    </div>
+                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex justify-between items-center gap-2">
+                        <span class="text-[11px] font-bold w-1/3 leading-tight text-white/90">Espirometría</span>
+                        <input type="number" id="espiro_inst" min="0" placeholder="Instalaciones" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                        <input type="number" id="espiro_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                    </div>
+                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 flex justify-between items-center gap-2">
+                        <span class="text-[11px] font-bold w-1/3 leading-tight text-white/90">Cap. Visual</span>
+                        <input type="number" id="visual_inst" min="0" placeholder="Instalaciones" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                        <input type="number" id="visual_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-black/30 rounded-lg text-xs font-bold text-center outline-none border border-transparent focus:border-white/30">
+                    </div>
+                </div>
+
+                <button onclick="calcularRequisicion()" class="w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white font-black py-3.5 rounded-xl transition-all shadow-lg active:scale-95">
+                    <i class="fa-solid fa-calculator mr-2"></i> Calcular Insumos
+                </button>
+            </div>
+        </div>
+
+        <div class="w-full flex-1 flex flex-col gap-4 hidden animate-fade-in" id="panel-preview">
+            <div class="glass p-6 rounded-3xl shadow-xl flex-1 border border-white/30 flex flex-col">
+                <div class="flex justify-between items-end border-b border-white/30 pb-4 mb-4">
+                    <div>
+                        <h2 class="text-2xl font-black text-white"><i class="fa-solid fa-clipboard-check text-emerald-300 mr-2"></i> Vista Previa (Editable)</h2>
+                        <p class="text-[11px] text-white/80 uppercase tracking-widest font-bold mt-1">Revisa y ajusta antes de imprimir</p>
+                    </div>
+                    <button onclick="generarPDF()" class="bg-white text-orange-600 font-black px-6 py-3 rounded-xl shadow-lg hover:bg-orange-50 active:scale-95 transition-all text-sm">
+                        <i class="fa-solid fa-file-pdf mr-1 text-red-500"></i> Crear PDF
+                    </button>
+                </div>
+
+                <div class="bg-white/90 rounded-2xl p-4 overflow-y-auto scroll-custom flex-1 shadow-inner text-slate-800" id="tabla-editable-container">
+                    </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="zona-impresion" class="hidden"></div>
+
+    <script>
+        // REGLAS MATEMÁTICAS ESTRICTAS SEGÚN ARCHIVO
+        const REGLAS = {
+            hc_papel: {
+                inst: { 'Mesa': 1, 'Silla de visita': 2, 'Sabanas': 6, 'Gel antibacterial': 1, 'Desinfectante Lysol': 1, 'Tabla de apoyo': 1, 'Toallas humedas desinfectantes': 1, 'Toalla interdoblada': 1, 'Masking tape': 1, 'Bote de basura': 1, 'Biombo': 2, 'Cama de exploración': 1, 'Bolsa blanca': 2 },
+                inst_diario: { 'Cubrebocas KN-95': 1 },
+                est: { 'Abatelenguas': 1, 'Formatos HC': 1 }
+            },
+            hc_web: {
+                inst: { 'Mesa': 1, 'Silla de visita': 2, 'Sabanas': 6, 'Gel antibacterial': 1, 'Desinfectante Lysol': 1, 'Tabla de apoyo': 1, 'Toallas humedas desinfectantes': 1, 'Toalla interdoblada': 1, 'Masking tape': 1, 'Bote de basura': 1, 'Biombo': 2, 'Cama de exploración': 1, 'Bolsa blanca': 2 },
+                inst_diario: { 'Cubrebocas KN-95': 1 },
+                est: { 'Abatelenguas': 1 }
+            },
+            espiro: {
+                inst: { 'Mesa': 2, 'Silla de visita': 2, 'Sabanas': 6, 'Gel antibacterial': 1, 'Desinfectante Lysol': 1, 'Tabla de apoyo': 1, 'Toallas humedas desinfectantes': 1, 'Toalla interdoblada': 1, 'Masking tape': 1, 'Bote de basura': 1, 'Biombo': 2, 'Bolsa blanca': 2, 'Guantes de vinil': 1 },
+                inst_diario: { 'Cubrebocas KN-95': 1, 'Equipo de protección personal': 1 },
+                est: { 'Abatelenguas': 1, 'Formatos Espirometria': 1 }
+            },
+            audio: {
+                inst: { 'Mesa': 2, 'Silla de visita': 2, 'Sabanas': 6, 'Gel antibacterial': 1, 'Desinfectante Lysol': 1, 'Tabla de apoyo': 1, 'Toallas humedas desinfectantes': 1, 'Toalla interdoblada': 1, 'Masking tape': 1, 'Bote de basura': 1, 'Bolsa blanca': 2, 'Bolsa LAPI': 2, 'Extensiones': 1 },
+                inst_diario: {},
+                est: { 'Abatelenguas': 1, 'Formatos Audiometria': 1 }
+            },
+            visual: {
+                inst: { 'Mesa': 1, 'Silla de visita': 2, 'Gel antibacterial': 1, 'Desinfectante Lysol': 1, 'Bote de basura': 1 },
+                inst_diario: {},
+                est: { 'Formatos Visual': 1 }
+            }
+        };
+
+        // ESTRUCTURA DEL FORMATO FÍSICO
+        const CATALOGO_FORMATO = [
+            { cat: "I. MATERIAL DE OFICINA", items: ["Boligrafos", "Engrapadora", "Grapas", "Quitagrapas", "Tijeras", "Perforadora", "Cinta adhesiva", "Masking tape", "Cuaderno", "Tabla de apoyo", "Marcatextos", "Marcador", "Corrector", "Post it", "Goma", "Clips", "Regla", "Broches"] },
+            { cat: "II. UNIFORMES", items: [] },
+            { cat: "III. PROMOCIONALES", items: ["Tazas", "Vasos", "Plumas", "Bolsa LAPI", "Libretas", "USB"] },
+            { cat: "IV. PAPELERIA INSTITUCIONAL", items: [] },
+            { cat: "V. FORMATOS DE CALIDAD (F-...)", items: ["Formatos HC", "Formatos Audiometria", "Formatos Espirometria", "Formatos Visual"] },
+            { cat: "VI. CONSUMIBLES DE CAFETERIA", items: [] },
+            { cat: "VII. OTROS", items: [] },
+            { pageBreak: true },
+            { cat: "VIII. INSUMOS MEDICOS", items: ["Abatelenguas", "Guantes de Latex", "Guantes de vinil", "Sanitas", "Jeringas", "Agujas", "Torundas", "Alcohol", "Cubrebocas KN-95", "Cubrebocas Tricapa"] },
+            { cat: "IX. MEDICAMENTOS DE URGENCIA", items: [] },
+            { cat: "X. MATERIAL SANITIZANTE Y LIMPIEZA", items: ["Gel antibacterial", "Desinfectante Lysol", "Toallas humedas desinfectantes", "Toalla interdoblada", "Papel higienico", "Jabon", "Escoba", "Trapeador"] },
+            { cat: "XI. MOBILIARIO Y EQUIPO", items: ["Bote de basura", "Mesa", "Silla de visita", "Biombo", "Cama de exploración", "Sabanas", "Extensiones"] }
+        ];
+
+        let resultadosActuales = {};
+
+        function calcularDias(ini, fin) {
+            if(!ini || !fin) return 1;
+            const d1 = new Date(ini); const d2 = new Date(fin);
+            const diffTime = Math.abs(d2 - d1);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            return diffDays + 1;
+        }
+
+        window.calcularRequisicion = function() {
+            resultadosActuales = {};
+            const ini = document.getElementById('req-fecha-ini').value;
+            const fin = document.getElementById('req-fecha-fin').value;
+            const dias = calcularDias(ini, fin);
+
+            const inputs = {
+                hc_papel: { inst: parseInt(document.getElementById('hc_papel_inst').value)||0, est: parseInt(document.getElementById('hc_papel_est').value)||0 },
+                hc_web:   { inst: parseInt(document.getElementById('hc_web_inst').value)||0, est: parseInt(document.getElementById('hc_web_est').value)||0 },
+                espiro:   { inst: parseInt(document.getElementById('espiro_inst').value)||0, est: parseInt(document.getElementById('espiro_est').value)||0 },
+                audio:    { inst: parseInt(document.getElementById('audio_inst').value)||0, est: parseInt(document.getElementById('audio_est').value)||0 },
+                visual:   { inst: parseInt(document.getElementById('visual_inst').value)||0, est: parseInt(document.getElementById('visual_est').value)||0 }
+            };
+
+            // Ejecutar sumatorias
+            for(const [tipo, vals] of Object.entries(inputs)) {
+                if(vals.inst > 0) {
+                    // Por Instalacion
+                    for(const [item, cant] of Object.entries(REGLAS[tipo].inst)) {
+                        resultadosActuales[item] = (resultadosActuales[item] || 0) + (cant * vals.inst);
+                    }
+                    // Por Instalacion * Días
+                    for(const [item, cant] of Object.entries(REGLAS[tipo].inst_diario)) {
+                        resultadosActuales[item] = (resultadosActuales[item] || 0) + (cant * vals.inst * dias);
+                    }
+                }
+                if(vals.est > 0) {
+                    // Por Estudio
+                    for(const [item, cant] of Object.entries(REGLAS[tipo].est)) {
+                        resultadosActuales[item] = (resultadosActuales[item] || 0) + (cant * vals.est);
+                    }
+                }
+            }
+
+            renderizarPreviewEditable();
+            document.getElementById('panel-preview').classList.remove('hidden');
+        };
+
+        function renderizarPreviewEditable() {
+            let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+            
+            CATALOGO_FORMATO.forEach(grupo => {
+                if(grupo.pageBreak) return;
+                html += `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm">
+                            <h4 class="font-black text-[10px] text-slate-500 uppercase tracking-widest border-b border-slate-200 pb-1 mb-2">${grupo.cat}</h4>
+                            <div class="space-y-1">`;
+                
+                grupo.items.forEach(item => {
+                    const cant = resultadosActuales[item] || '';
+                    const hasVal = cant > 0 ? 'bg-orange-100 border-orange-300' : 'bg-white border-slate-200';
+                    html += `<div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-600 font-bold">${item}</span>
+                                <input type="number" id="edit_${item}" value="${cant}" class="w-16 p-1 text-center font-black text-slate-800 rounded outline-none border ${hasVal} focus:border-orange-500 transition">
+                             </div>`;
+                });
+                html += `</div></div>`;
+            });
+
+            // Los fijos manuales al final
+            html += `<div class="bg-red-50 border border-red-200 rounded-xl p-3 shadow-sm md:col-span-2">
+                        <h4 class="font-black text-[10px] text-red-500 uppercase tracking-widest border-b border-red-200 pb-1 mb-2">AGREGADOS MANUALMENTE (AL FINAL)</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-red-700 font-bold">Bolsa blanca</span>
+                                <input type="number" id="edit_Bolsa blanca" value="${resultadosActuales['Bolsa blanca'] || ''}" class="w-16 p-1 text-center font-black rounded outline-none border border-red-300">
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-red-700 font-bold">Equipo de protección personal</span>
+                                <input type="number" id="edit_Equipo de protección personal" value="${resultadosActuales['Equipo de protección personal'] || ''}" class="w-16 p-1 text-center font-black rounded outline-none border border-red-300">
+                            </div>
+                        </div>
+                     </div>`;
+
+            html += '</div>';
+            document.getElementById('tabla-editable-container').innerHTML = html;
+        }
+
+        window.generarPDF = function() {
+            // Guardar cambios manuales
+            CATALOGO_FORMATO.forEach(g => {
+                if(g.pageBreak) return;
+                g.items.forEach(i => {
+                    let val = parseInt(document.getElementById(`edit_${i}`).value);
+                    resultadosActuales[i] = isNaN(val) ? 0 : val;
+                });
+            });
+            resultadosActuales['Bolsa blanca'] = parseInt(document.getElementById('edit_Bolsa blanca').value) || 0;
+            resultadosActuales['Equipo de protección personal'] = parseInt(document.getElementById('edit_Equipo de protección personal').value) || 0;
+
+            const empresa = document.getElementById('req-empresa').value || 'NO ESPECIFICADA';
+            const ini = document.getElementById('req-fecha-ini').value;
+            const fin = document.getElementById('req-fecha-fin').value;
+            const periodo = ini && fin ? `${ini} AL ${fin}` : '---';
+
+            const zona = document.getElementById('zona-impresion');
+            zona.innerHTML = '';
+
+            let htmlPDF = `<div class="print-page">
+                ${generarEncabezadoPDF(empresa, periodo)}
+                <table class="table-req">
+                    <tr><th>CONCEPTO</th><th class="val-cell">CANTIDAD</th></tr>`;
+
+            let isPage2 = false;
+
+            CATALOGO_FORMATO.forEach(grupo => {
+                if(grupo.pageBreak) {
+                    htmlPDF += `</table></div><div class="print-page">${generarEncabezadoPDF(empresa, periodo)}<table class="table-req"><tr><th>CONCEPTO</th><th class="val-cell">CANTIDAD</th></tr>`;
+                    isPage2 = true;
+                    return;
+                }
+
+                htmlPDF += `<tr><td colspan="2" class="cat-header">${grupo.cat}</td></tr>`;
+                
+                // Mostrar 5 filas fijas incluso si el catálogo está vacío para imitar el formato
+                let maxRows = Math.max(grupo.items.length, 3);
+                for(let i=0; i<maxRows; i++) {
+                    if(i < grupo.items.length) {
+                        let item = grupo.items[i];
+                        let val = resultadosActuales[item] > 0 ? resultadosActuales[item] : '';
+                        htmlPDF += `<tr><td>${item}</td><td class="val-cell">${val}</td></tr>`;
+                    } else {
+                        htmlPDF += `<tr><td style="color:white;">.</td><td class="val-cell"></td></tr>`;
+                    }
+                }
+            });
+
+            // Agregados manuales al final de la página 2
+            let vBol = resultadosActuales['Bolsa blanca'] > 0 ? resultadosActuales['Bolsa blanca'] : '';
+            let vEpp = resultadosActuales['Equipo de protección personal'] > 0 ? resultadosActuales['Equipo de protección personal'] : '';
+            
+            htmlPDF += `<tr><td>Bolsa blanca</td><td class="val-cell">${vBol}</td></tr>`;
+            htmlPDF += `<tr><td>Equipo de protección personal</td><td class="val-cell">${vEpp}</td></tr>`;
+
+            htmlPDF += `</table></div>`;
+            zona.innerHTML = htmlPDF;
+            
+            zona.classList.remove('hidden');
+            setTimeout(() => { window.print(); zona.classList.add('hidden'); }, 500);
+        };
+
+        function generarEncabezadoPDF(empresa, periodo) {
+            const hoy = new Date().toLocaleDateString('es-MX');
+            return `
+                <table class="header-req">
+                    <tr>
+                        <td style="width: 20%;"><img src="logoLAPI.png" style="max-width: 100px; max-height: 50px;"></td>
+                        <td style="width: 60%;" class="header-title">REQUISICIÓN DE COMPRAS Y SUMINISTROS</td>
+                        <td style="width: 20%; padding:0;">
+                            <table style="width:100%; border:none; border-collapse:collapse;">
+                                <tr><td style="border:none; border-bottom:1px solid black; font-size:9px; text-align:left;">CÓDIGO: F-34-P04</td></tr>
+                                <tr><td style="border:none; border-bottom:1px solid black; font-size:9px; text-align:left;">VERSIÓN: 00</td></tr>
+                                <tr><td style="border:none; font-size:9px; text-align:left;">FECHA ACT: 18/FEB/21</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <table class="info-grid">
+                    <tr><td class="bg-gray-req">FECHA:</td><td>${hoy}</td><td class="bg-gray-req">SOLICITANTE:</td><td>Dra Gloria Abarca</td></tr>
+                    <tr><td class="bg-gray-req">EMPRESA:</td><td>${empresa}</td><td class="bg-gray-req">PERIODO:</td><td>${periodo}</td></tr>
+                </table>
+            `;
+        }
+    </script>
+</body>
+</html>
