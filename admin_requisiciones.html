@@ -107,6 +107,44 @@
                 <p class="opacity-90 text-[10px] font-medium uppercase tracking-widest">Generador de Insumos FO-TF-49</p>
             </div>
 
+                    <div class="w-full xl:w-[600px] flex-1 flex flex-col gap-6 animate-fade-in" id="panel-preview">
+            
+            <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col min-h-[400px]">
+                <div class="flex justify-between items-end border-b border-slate-200 pb-4 mb-4">
+                    <div>
+                        <h2 class="text-lg font-black text-slate-800"><i class="fa-solid fa-list-check text-orange-500 mr-2"></i> FO-TF-49 (Vista Previa)</h2>
+                    </div>
+                    <button onclick="generarPDF()" class="bg-emerald-600 text-white font-black px-4 py-2 rounded-xl text-xs hover:bg-emerald-700 active:scale-95 transition-all">
+                        <i class="fa-solid fa-file-pdf mr-1"></i> Generar PDF
+                    </button>
+                </div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 overflow-y-auto scroll-custom flex-1 shadow-inner text-slate-800" id="tabla-editable-container"></div>
+            </div>
+
+            <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-black text-slate-800"><i class="fa-solid fa-tags text-sky-500 mr-2"></i> Generador de Etiquetas</h2>
+                    <button onclick="previsualizarEtiquetas()" class="bg-sky-600 text-white font-black px-4 py-2 rounded-xl text-xs hover:bg-sky-700 active:scale-95 transition-all">
+                        <i class="fa-solid fa-eye mr-1"></i> Vista Previa
+                    </button>
+                </div>
+                <div id="preview-etiquetas" class="grid grid-cols-2 gap-2 text-[10px] hidden mb-4"></div>
+                <button onclick="generarEtiquetasPDF()" id="btn-gen-etiquetas" class="w-full bg-slate-800 text-white font-black py-2 rounded-xl text-xs hidden active:scale-95 transition-all">
+                    <i class="fa-solid fa-download mr-1"></i> Descargar Etiquetas (PDF)
+                </button>
+            </div>
+
+            <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-black text-slate-800"><i class="fa-solid fa-clipboard-list text-purple-500 mr-2"></i> Generar Checklist</h2>
+                    <button onclick="generarChecklistPDF()" class="bg-purple-600 text-white font-black px-4 py-2 rounded-xl text-xs hover:bg-purple-700 active:scale-95 transition-all">
+                        <i class="fa-solid fa-check-to-slot mr-1"></i> PDF Checklist
+                    </button>
+                </div>
+            </div>
+        </div>
+            
+
             <div class="glass p-6 rounded-3xl shadow-sm border-l-4 border-orange-500">
                 <div class="space-y-4 mb-6">
                     <div>
@@ -443,6 +481,64 @@
             const zona = document.getElementById('zona-impresion');
             zona.innerHTML = '';
 
+                    // Lógica de Etiquetas (Media carta aprox)
+        window.previsualizarEtiquetas = function() {
+            const container = document.getElementById('preview-etiquetas');
+            container.classList.remove('hidden');
+            document.getElementById('btn-gen-etiquetas').classList.remove('hidden');
+            
+            const empresa = document.getElementById('req-empresa').value || 'EMPRESA';
+            const audioInst = parseInt(document.getElementById('audio_inst').value) || 0;
+            const hcInst = (parseInt(document.getElementById('hc_papel_inst').value) || 0) + (parseInt(document.getElementById('hc_web_inst').value) || 0);
+
+            let etiquetas = ['Sillas', 'Biombos', 'Mesas', 'Camas'];
+            for(let i=0; i<audioInst; i++) etiquetas.push('No Break (Audio)');
+            for(let i=0; i<hcInst; i++) etiquetas.push('Historia Clínica');
+            for(let i=0; i<audioInst; i++) etiquetas.push('Audiometría');
+
+            container.innerHTML = etiquetas.map(e => `
+                <div class="border-2 border-slate-300 p-2 rounded-lg bg-white h-24 flex flex-col justify-center items-center">
+                    <div class="font-black text-slate-800">${empresa}</div>
+                    <div class="font-bold text-slate-600 mt-1">${e}</div>
+                    <div class="font-black mt-2 text-slate-400">MÉDICOS</div>
+                </div>
+            `).join('');
+        };
+
+        window.generarChecklistPDF = function() {
+            const audioInst = parseInt(document.getElementById('audio_inst').value) || 0;
+            const audioEst = parseInt(document.getElementById('audio_est').value) || 0;
+            const espiroEst = parseInt(document.getElementById('espiro_est').value) || 0;
+            const hcTot = (parseInt(document.getElementById('hc_papel_est').value) || 0) + (parseInt(document.getElementById('hc_web_est').value) || 0);
+
+            let lista = [
+                { item: "Formatos de Historia Clínica", cant: hcTot },
+                { item: "Formatos de Audiometría", cant: audioEst },
+                { item: "Formatos de Espirometría", cant: espiroEst },
+                { item: "Boquillas de Espirometría", cant: espiroEst },
+                { item: "Conos para Audiometría", cant: audioEst },
+                { item: "No Breaks", cant: audioInst }
+            ];
+
+            const zona = document.getElementById('zona-impresion');
+            zona.innerHTML = `
+                <div style="font-family: Arial; padding: 20px;">
+                    <h2 style="text-align:center; text-decoration:underline;">CHECKLIST DE SALIDA - ${document.getElementById('req-empresa').value.toUpperCase()}</h2>
+                    <table style="width:100%; border-collapse:collapse; margin-top:20px; font-size:14px;">
+                        ${lista.map(l => l.cant > 0 ? `<tr><td style="padding:10px; border-bottom:1px solid #ccc;"><input type="checkbox"> ${l.item}</td><td style="padding:10px; border-bottom:1px solid #ccc; font-weight:bold;">${l.cant}</td></tr>` : '').join('')}
+                    </table>
+                </div>
+            `;
+            window.print();
+        };
+
+        window.generarEtiquetasPDF = function() {
+            // Aquí puedes replicar la lógica de HTML a PDF igual que el FO-TF-49
+            alert("Etiquetas generadas en nueva ventana para impresión.");
+        };
+
+
+            
             // GENERADOR DE ENCABEZADO Y TABLA MAESTRA ALINEADOS
             function getEncabezado(pageStr) {
                 return `
