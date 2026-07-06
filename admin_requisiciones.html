@@ -72,7 +72,6 @@
             .chk-box { width: 22px; height: 22px; border: 2px solid #000; margin: 0 auto; }
         }
     </style>
-    
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
@@ -170,8 +169,10 @@
             </div>
         </div>
 
+        <!-- COLUMNA DERECHA: VISTA PREVIA Y HERRAMIENTAS -->
         <div class="w-full xl:w-[600px] flex-1 flex flex-col gap-6 hidden animate-fade-in h-[calc(100vh-60px)] overflow-y-auto scroll-custom pb-10" id="panel-preview">
             
+            <!-- RECUADRO 1: FO-TF-49 (Lista Completa) -->
             <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col shrink-0">
                 <div class="flex justify-between items-end border-b border-slate-200 pb-4 mb-4 shrink-0">
                     <div>
@@ -183,9 +184,11 @@
                     </button>
                 </div>
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 overflow-y-auto scroll-custom max-h-80 shadow-inner text-slate-800" id="tabla-editable-container">
-                    </div>
+                    <!-- Se llena con JS -->
+                </div>
             </div>
 
+            <!-- RECUADRO 2: ETIQUETAS DE IDENTIFICACIÓN -->
             <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col shrink-0">
                 <div class="flex justify-between items-end border-b border-slate-200 pb-4 mb-4">
                     <div>
@@ -197,9 +200,11 @@
                     </button>
                 </div>
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-inner text-slate-800" id="tabla-etiquetas-container">
-                    </div>
+                    <!-- JS llena esta vista previa -->
+                </div>
             </div>
 
+            <!-- RECUADRO 3: CHECKLIST OPERATIVO -->
             <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col shrink-0">
                 <div class="flex justify-between items-end border-b border-slate-200 pb-4 mb-4">
                     <div>
@@ -211,7 +216,8 @@
                     </button>
                 </div>
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-inner text-slate-800" id="tabla-checklist-container">
-                    </div>
+                    <!-- JS llena esta vista previa -->
+                </div>
             </div>
 
         </div>
@@ -311,7 +317,6 @@
             { id: "CHALECO", desc: "CHALECO", ud: "PIEZA" }
         ];
 
-        // MAPEO MATEMÁTICO DIRECTO CON LAS DESCRIPCIONES OFICIALES
         const REGLAS = {
             hc_papel: {
                 inst: { 'MESA': 1, 'SILLAS': 2, 'SABANA (CAMPO PELLON AZUL DE 2X1 MTS) (1/10)': 6, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'SUCURSALES TABLA DE APOYO CARTA': 1, 'SUCURSALES TOALLA HUMEDA DESINFECTANTE': 1, 'SUCURSALES TOALLA INTERDOBLADA': 1, 'SUCURSALES CINTA MASKIN TAPE': 1, 'BOTE DE BASURA NEGRO': 1, 'BIOMBOS': 2, 'CAMA DE EXPLORACION CON PIERNERAS': 1 },
@@ -341,6 +346,8 @@
         };
 
         let resultadosActuales = {};
+        let listaEtiquetas = [];
+        let listaChecklist = [];
 
         function calcularDias(ini, fin) {
             if(!ini || !fin) return 1;
@@ -348,9 +355,6 @@
             const diffDays = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)); 
             return diffDays + 1;
         }
-
-        let listaEtiquetas = [];
-        let listaChecklist = [];
 
         window.calcularRequisicion = function() {
             resultadosActuales = {};
@@ -392,13 +396,11 @@
         window.renderizarEtiquetas = function() {
             listaEtiquetas = [];
             
-            // Etiquetas Generales
             if(resultadosActuales['MESA'] > 0) listaEtiquetas.push("MESAS DE TRABAJO");
             if(resultadosActuales['SILLAS'] > 0) listaEtiquetas.push("SILLAS");
             if(resultadosActuales['BIOMBOS'] > 0) listaEtiquetas.push("BIOMBOS");
             if(resultadosActuales['CAMA DE EXPLORACION CON PIERNERAS'] > 0) listaEtiquetas.push("CAMA DE EXPLORACIÓN");
 
-            // Etiquetas por Instalación
             let hcInst = (parseInt(document.getElementById('hc_papel_inst').value)||0) + (parseInt(document.getElementById('hc_web_inst').value)||0);
             for(let i=1; i<=hcInst; i++) listaEtiquetas.push(`HISTORIA CLÍNICA ${i}`);
             
@@ -414,7 +416,6 @@
             let visualInst = parseInt(document.getElementById('visual_inst').value)||0;
             for(let i=1; i<=visualInst; i++) listaEtiquetas.push(`CAPACIDAD VISUAL ${i}`);
 
-            // Mostrar Vista Previa
             let html = '<div class="grid grid-cols-2 md:grid-cols-3 gap-2">';
             listaEtiquetas.forEach(etq => {
                 html += `<div class="bg-white border border-slate-300 p-2 rounded-lg text-[10px] font-bold text-center shadow-sm text-sky-700">${etq}</div>`;
@@ -431,7 +432,6 @@
             zona.innerHTML = '';
             let htmlPDF = '';
 
-            // Agrupar de a 2 etiquetas por página
             for(let i=0; i<listaEtiquetas.length; i+=2) {
                 htmlPDF += `<div class="etiqueta-page">`;
                 
@@ -480,7 +480,6 @@
             let audioInst = parseInt(document.getElementById('audio_inst').value)||0;
             if(audioInst > 0) listaChecklist.push({ cant: audioInst, desc: "Equipos 'No Break' (P/Audiometría)" });
 
-            // Mostrar Vista Previa
             let html = '<table class="w-full text-left text-xs border-collapse">';
             html += '<thead><tr class="border-b border-slate-300"><th class="pb-2 text-center w-1/4">CANTIDAD</th><th class="pb-2">INSUMO EXTRA</th></tr></thead><tbody>';
             listaChecklist.forEach(chk => {
@@ -519,17 +518,15 @@
             zona.classList.remove('hidden');
             setTimeout(() => { window.print(); zona.classList.add('hidden'); }, 500);
         };
-            
 
+        // --- FASE 1: GENERADOR FO-TF-49 ---
         function renderizarPreviewEditable() {
             let html = '<div class="space-y-1 pb-4">';
             
-            // Renderizamos la lista completa del formato
             LAPI_FO_TF_49.forEach((item, index) => {
                 const cant = resultadosActuales[item.desc] || '';
                 const hasVal = cant > 0 ? 'bg-orange-100 border-orange-400 shadow-sm' : 'bg-white border-slate-200 opacity-60 hover:opacity-100';
                 
-                // Divisor visual para saber donde acaba la pag 1
                 if (index === 55) {
                     html += `<div class="w-full border-t-2 border-dashed border-red-300 my-4 text-center text-[10px] text-red-500 font-bold">--- CORTE DE PÁGINA 1 ---</div>`;
                 }
@@ -544,7 +541,6 @@
                 `;
             });
 
-            // Agregados a mano (No existen en el catálogo original, se apendizan al final del PDF)
             html += `<div class="w-full border-t-2 border-slate-300 my-6"></div>`;
             html += `<h4 class="font-black text-[10px] text-slate-500 uppercase tracking-widest mb-2">Sección Manual (Impresos al final del Formato)</h4>`;
             
@@ -567,7 +563,6 @@
         }
 
         window.generarPDF = function() {
-            // Recoger valores modificados
             LAPI_FO_TF_49.forEach((item, index) => {
                 let val = parseInt(document.getElementById(`edit_${index}`).value);
                 resultadosActuales[item.desc] = isNaN(val) ? 0 : val;
@@ -576,7 +571,6 @@
             const valBolsa = parseInt(document.getElementById('manual_bolsa').value) || '';
             const valEpp = parseInt(document.getElementById('manual_epp').value) || '';
 
-            // Datos Cabecera
             const empresa = document.getElementById('req-empresa').value || '';
             const numMedicos = document.getElementById('req-medicos').value || '';
             const medicosText = numMedicos ? `${numMedicos} Médicos` : '';
@@ -611,7 +605,6 @@
             const zona = document.getElementById('zona-impresion');
             zona.innerHTML = '';
 
-            // GENERADOR DE ENCABEZADO Y TABLA MAESTRA ALINEADOS
             function getEncabezado(pageStr) {
                 return `
                 <table class="header-master">
@@ -673,7 +666,6 @@
 
             let htmlPDF = `<div class="print-page">${getEncabezado('1 de 2')}`;
 
-            // Pág 1: Elementos 0 a 54
             for(let i=0; i<55; i++) {
                 let it = LAPI_FO_TF_49[i];
                 let val = resultadosActuales[it.desc] > 0 ? resultadosActuales[it.desc] : '';
@@ -681,7 +673,6 @@
             }
             htmlPDF += `</table><div class="page-footer">Página 1</div></div>`;
 
-            // Pág 2: Elementos 55 al final + Manuales
             htmlPDF += `<div class="print-page">${getEncabezado('2 de 2')}`;
             for(let i=55; i<LAPI_FO_TF_49.length; i++) {
                 let it = LAPI_FO_TF_49[i];
@@ -693,7 +684,6 @@
             htmlPDF += `<tr><td></td><td>EQUIPO DE PROTECCIÓN PERSONAL</td><td>PIEZA</td><td class="val-cell">${valEpp}</td><td></td></tr>`;
             htmlPDF += `</table>`;
 
-            // SECCIÓN DE FIRMAS EN 2 COLUMNAS
             htmlPDF += `
                 <table class="firmas-section">
                     <tr>
