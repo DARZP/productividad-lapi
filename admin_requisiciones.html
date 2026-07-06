@@ -389,6 +389,18 @@
                 }
             }
 
+            let totalInstHC = inputs.hc_papel.inst + inputs.hc_web.inst;
+            let totalInstEspiro = inputs.espiro.inst;
+            let totalInstAudio = inputs.audio.inst;
+
+            // Bolsa Blanca: 2 por HC + 2 por Espiro + 2 por Audio
+            let cantBolsaBlanca = (totalInstHC * 2) + (totalInstEspiro * 2) + (totalInstAudio * 2);
+            if (cantBolsaBlanca > 0) resultadosActuales['BOLSA BLANCA'] = cantBolsaBlanca;
+
+            // EPP: 1 por instalación de Espirometría por cada día de servicio
+            let cantEpp = totalInstEspiro * dias;
+            if (cantEpp > 0) resultadosActuales['EQUIPO DE PROTECCIÓN PERSONAL'] = cantEpp;
+
             renderizarPreviewEditable();
             renderizarEtiquetas();
             renderizarChecklist();
@@ -548,10 +560,12 @@
         function renderizarPreviewEditable() {
             let html = '<div class="space-y-1 pb-4">';
             
+            // Renderizamos la lista completa del formato
             LAPI_FO_TF_49.forEach((item, index) => {
                 const cant = resultadosActuales[item.desc] || '';
                 const hasVal = cant > 0 ? 'bg-orange-100 border-orange-400 shadow-sm' : 'bg-white border-slate-200 opacity-60 hover:opacity-100';
                 
+                // Divisor visual para saber donde acaba la pag 1
                 if (index === 55) {
                     html += `<div class="w-full border-t-2 border-dashed border-red-300 my-4 text-center text-[10px] text-red-500 font-bold">--- CORTE DE PÁGINA 1 ---</div>`;
                 }
@@ -566,11 +580,12 @@
                 `;
             });
 
+            // Agregados a mano (Capturan el valor automático pero permiten edición)
             html += `<div class="w-full border-t-2 border-slate-300 my-6"></div>`;
             html += `<h4 class="font-black text-[10px] text-slate-500 uppercase tracking-widest mb-2">Sección Manual (Impresos al final del Formato)</h4>`;
             
-            const vBol = resultadosActuales['Bolsa blanca'] || '';
-            const vEpp = resultadosActuales['Equipo de protección personal'] || '';
+            const vBol = resultadosActuales['BOLSA BLANCA'] || '';
+            const vEpp = resultadosActuales['EQUIPO DE PROTECCIÓN PERSONAL'] || '';
             
             html += `
                 <div class="flex justify-between items-center text-xs p-1.5 rounded bg-white border border-slate-300 mb-1 shadow-sm">
