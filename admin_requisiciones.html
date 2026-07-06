@@ -57,8 +57,11 @@
 
             /* --- ETIQUETAS (Media Carta) --- */
             .etiqueta-page { width: 100%; height: 260mm; display: flex; flex-direction: column; justify-content: space-between; align-items: center; page-break-after: always; }
-            .etiqueta-box { width: 100%; height: 48%; border: 4px dashed #000; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-sizing: border-box; }
-            .etq-empresa { font-size: 30px; font-weight: bold; margin-bottom: 25px; text-transform: uppercase; }
+            .etiqueta-box { width: 100%; height: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-sizing: border-box; }
+            /* Se quitó el perímetro, solo queda la línea central de corte */
+            .etiqueta-box:first-child { border-bottom: 2px dashed #000; } 
+            
+            .etq-empresa { font-size: 45px; font-weight: 900; margin-bottom: 25px; text-transform: uppercase; }
             .etq-titulo { font-size: 45px; font-weight: 900; margin-bottom: 25px; text-transform: uppercase; text-decoration: underline; }
             .etq-medicos { font-size: 25px; font-weight: bold; border-top: 2px solid #000; padding-top: 10px; width: 60%; }
 
@@ -396,11 +399,24 @@
         window.renderizarEtiquetas = function() {
             listaEtiquetas = [];
             
-            if(resultadosActuales['MESA'] > 0) listaEtiquetas.push("MESAS DE TRABAJO");
-            if(resultadosActuales['SILLAS'] > 0) listaEtiquetas.push("SILLAS");
-            if(resultadosActuales['BIOMBOS'] > 0) listaEtiquetas.push("BIOMBOS");
-            if(resultadosActuales['CAMA DE EXPLORACION CON PIERNERAS'] > 0) listaEtiquetas.push("CAMA DE EXPLORACIÓN");
+            // 1. Etiquetas de Material en Bolsas (Siempre van 2)
+            listaEtiquetas.push("MATERIAL_BOLSA");
+            listaEtiquetas.push("MATERIAL_BOLSA");
 
+            // 2. Etiquetas Generales de Mobiliario (Con cantidades en paréntesis)
+            let qMesas = resultadosActuales['MESA'] || 0;
+            if(qMesas > 0) listaEtiquetas.push(`MESAS (${qMesas})`);
+            
+            let qSillas = resultadosActuales['SILLAS'] || 0;
+            if(qSillas > 0) listaEtiquetas.push(`SILLAS (${qSillas})`);
+            
+            let qBiombos = resultadosActuales['BIOMBOS'] || 0;
+            if(qBiombos > 0) listaEtiquetas.push(`BIOMBOS (${qBiombos})`);
+            
+            let qCamas = resultadosActuales['CAMA DE EXPLORACION CON PIERNERAS'] || 0;
+            if(qCamas > 0) listaEtiquetas.push(`CAMAS (${qCamas})`);
+
+            // 3. Etiquetas individuales por Instalación
             let hcInst = (parseInt(document.getElementById('hc_papel_inst').value)||0) + (parseInt(document.getElementById('hc_web_inst').value)||0);
             for(let i=1; i<=hcInst; i++) listaEtiquetas.push(`HISTORIA CLÍNICA ${i}`);
             
@@ -416,11 +432,15 @@
             let visualInst = parseInt(document.getElementById('visual_inst').value)||0;
             for(let i=1; i<=visualInst; i++) listaEtiquetas.push(`CAPACIDAD VISUAL ${i}`);
 
+            // Mostrar Vista Previa
             let html = '<div class="grid grid-cols-2 md:grid-cols-3 gap-2">';
             listaEtiquetas.forEach(etq => {
-                html += `<div class="bg-white border border-slate-300 p-2 rounded-lg text-[10px] font-bold text-center shadow-sm text-sky-700">${etq}</div>`;
+                let txtPreview = etq === "MATERIAL_BOLSA" ? "MATERIAL (Bolsas)" : etq;
+                let bgStyle = etq === "MATERIAL_BOLSA" ? "bg-orange-50 text-orange-700" : "bg-white text-sky-700";
+                html += `<div class="${bgStyle} border border-slate-300 p-2 rounded-lg text-[10px] font-bold text-center shadow-sm">${txtPreview}</div>`;
             });
             html += '</div>';
+            
             if(listaEtiquetas.length === 0) html = '<p class="text-xs text-slate-400 text-center">No se requieren etiquetas.</p>';
             document.getElementById('tabla-etiquetas-container').innerHTML = html;
         };
@@ -432,19 +452,24 @@
             zona.innerHTML = '';
             let htmlPDF = '';
 
+            // Agrupar de a 2 etiquetas por página
             for(let i=0; i<listaEtiquetas.length; i+=2) {
                 htmlPDF += `<div class="etiqueta-page">`;
                 
+                // Etiqueta Superior (Lleva línea de corte punteada abajo)
+                let renderTitulo1 = listaEtiquetas[i] === "MATERIAL_BOLSA" ? "" : `<div class="etq-titulo">${listaEtiquetas[i]}</div>`;
                 htmlPDF += `<div class="etiqueta-box">
                     <div class="etq-empresa">${empresa}</div>
-                    <div class="etq-titulo">${listaEtiquetas[i]}</div>
+                    ${renderTitulo1}
                     <div class="etq-medicos">MÉDICOS</div>
                 </div>`;
 
+                // Etiqueta Inferior
                 if(listaEtiquetas[i+1]) {
-                    htmlPDF += `<div class="etiqueta-box" style="margin-top:20px;">
+                    let renderTitulo2 = listaEtiquetas[i+1] === "MATERIAL_BOLSA" ? "" : `<div class="etq-titulo">${listaEtiquetas[i+1]}</div>`;
+                    htmlPDF += `<div class="etiqueta-box">
                         <div class="etq-empresa">${empresa}</div>
-                        <div class="etq-titulo">${listaEtiquetas[i+1]}</div>
+                        ${renderTitulo2}
                         <div class="etq-medicos">MÉDICOS</div>
                     </div>`;
                 }
