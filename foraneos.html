@@ -525,9 +525,9 @@
                                 await navigator.share({
                                     files: [file],
                                     title: `LAPI - Resumen Folio ${datos.folio}`,
-                                    text: `Resumen de servicio Foráneo de (${datos.empresaF})`
+                                    text: `Resumen de servicio foráneo. ${datos.empresaF}`
                                 });
-                                mostrarToast("¡Imagen compartida!", "exito");
+                                mostrarToast("¡Reporte compartido!", "exito");
                             } catch (err) {
                                 console.log("Compartir cancelado o fallido:", err);
                                 if(err.name !== 'AbortError') forzarDescarga(canvas, datos.folio);
@@ -541,7 +541,7 @@
                 }
             } catch(e) {
                 console.error("Error captura:", e);
-                mostrarToast("Falló la generación de imagen.", "error");
+                mostrarToast("Falló la generación de Reporte.", "error");
             }
 
             btn.innerHTML = originalHTML;
