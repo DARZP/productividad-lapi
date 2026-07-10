@@ -75,6 +75,7 @@ window.LAPI_CONFIG = {
         "Pineda Lopez Patricia",
         "Pichardo Nava Paula Fernanda",
         "Ramirez Ramirez Carlos Antonio",
+        "Raul Alejandro Hidalgo Villegas",
         "Reyes Perez Victor",
         "Rodriguez Peña Dolores Berenice",
         "Rueda Pedraza Sabine Shecid",
