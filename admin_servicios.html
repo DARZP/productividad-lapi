@@ -61,21 +61,35 @@
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
         </a>
         <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
+        
         <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Monitor</span>
         </a>
+        
+        <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Reportes</span>
+        </a>
+
+        <a href="admin_servicios.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-building text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Servicios</span>
+        </a>
+        
+        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span>
+        </a>
+        
         <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Control<br>Biol.</span>
         </a>
+        
         <a href="admin_requisiciones.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-box-open text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Insumos</span>
-        </a>
-        <a href="admin_servicios.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-building text-base md:text-xl"></i></div>
-            <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Servicios</span>
         </a>
     </nav>
 
@@ -96,36 +110,39 @@
                 
                 <div class="space-y-4 mb-6">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Nombre Comercial (Visible en App)</label>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Nombre del Servicio <span class="text-red-500">*</span></label>
                         <input type="text" id="s-comercial" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase" placeholder="Ej. BIMBO PLANTA TOLUCA">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Razón Social (Para Reportes)</label>
-                        <input type="text" id="s-razon" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase" placeholder="Opcional">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Dirección Exacta</label>
-                        <textarea id="s-direccion" rows="2" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase resize-none" placeholder="Calle, Número, Colonia..."></textarea>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Inicio</label>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Folio del Proyecto</label>
+                            <input type="text" id="s-folio" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase" placeholder="Opcional">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Razón Social</label>
+                            <input type="text" id="s-razon" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase" placeholder="Opcional">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Inicio <span class="text-red-500">*</span></label>
                             <input type="date" id="s-fecha-ini" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Fin</label>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Fin <span class="text-red-500">*</span></label>
                             <input type="date" id="s-fecha-fin" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Hora Entrada</label>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Hora Entrada <span class="text-red-500">*</span></label>
                             <input type="time" id="s-hora-ini" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Hora Salida</label>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Hora Salida <span class="text-red-500">*</span></label>
                             <input type="time" id="s-hora-fin" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
                         </div>
                     </div>
@@ -170,8 +187,8 @@
 
             const payload = {
                 nombreComercial: document.getElementById('s-comercial').value.toUpperCase().trim(),
+                folio: document.getElementById('s-folio').value.toUpperCase().trim() || 'S/F',
                 razonSocial: document.getElementById('s-razon').value.toUpperCase().trim() || 'NO ESPECIFICADA',
-                direccion: document.getElementById('s-direccion').value.toUpperCase().trim() || 'NO ESPECIFICADA',
                 fechaInicio: document.getElementById('s-fecha-ini').value,
                 fechaFin: document.getElementById('s-fecha-fin').value,
                 horaInicio: document.getElementById('s-hora-ini').value,
@@ -226,7 +243,7 @@
                             </span>
                         </div>
                         
-                        <p class="text-[10px] text-slate-500 font-bold mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${data.direccion}</p>
+                        <p class="text-[10px] text-slate-500 font-bold mb-3">Folio: <span class="text-slate-700">${data.folio}</span> | Razón Social: <span class="text-slate-700">${data.razonSocial}</span></p>
                         
                         <div class="flex flex-wrap gap-2 text-[10px] font-bold text-slate-600 mb-4 bg-slate-50 p-2 rounded-lg border border-slate-100">
                             <span><i class="fa-solid fa-calendar-day text-orange-400 mr-1"></i> ${data.fechaInicio} al ${data.fechaFin}</span>
@@ -258,7 +275,7 @@
                     estado: nuevoEstado,
                     ultimaModificacion: new Date()
                 });
-                window.cargarServicios(); // Recarga visual rápida
+                window.cargarServicios(); 
             } catch (error) {
                 console.error("Error actualizando estado:", error);
                 alert("No se pudo actualizar el estado.");
