@@ -72,49 +72,44 @@
                 </button>
             </div>
 
+            <!-- PASO 0: SERVICIO Y HORARIO -->
             <div id="paso-0" class="paso">
-                <label class="block mb-2 font-medium">Fecha de Servicio</label>
-                <input type="date" id="input-fecha" class="w-full p-3 mb-4 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
-                
-                <div class="flex gap-4 mb-4">
+                <label class="block mb-2 font-medium">1. Servicio o Campaña Activa</label>
+                <select id="input-servicio" class="w-full p-3 mb-4 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
+                    <option value="" disabled selected class="text-black">Cargando servicios disponibles...</option>
+                </select>
+                <input type="hidden" id="input-empresa-nombre">
+                <input type="hidden" id="input-fecha"> <!-- Guarda la fecha del día en curso por debajo del agua -->
+
+                <div class="flex gap-4 mb-6 mt-2">
                     <div class="w-1/2">
-                        <label class="block mb-2 font-medium text-sm">Hora Inicio</label>
+                        <label class="block mb-2 font-medium text-sm">Hora Inicio Real</label>
                         <input type="time" id="input-hora-inicio" class="w-full p-3 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
                     </div>
                     <div class="w-1/2">
-                        <label class="block mb-2 font-medium text-sm">Hora Fin</label>
+                        <label class="block mb-2 font-medium text-sm">Hora Fin Real</label>
                         <input type="time" id="input-hora-fin" class="w-full p-3 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
                     </div>
                 </div>
 
-                <label class="block mb-2 font-medium">Turno</label>
-                <select id="input-turno" class="w-full p-3 mb-6 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
-                    <option value="Matutino" class="text-black">Matutino</option>
-                    <option value="Vespertino" class="text-black">Vespertino</option>
-                </select>
                 <button onclick="verificarRegistro()" class="w-full bg-white text-orange-600 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
                     Siguiente <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
 
-            <div id="paso-1" class="paso hidden">
-                <label class="block mb-2 font-medium">1. Empresa</label>
-                <input id="input-empresa" list="lista-empresas" class="w-full p-3 rounded-xl bg-white/20 border-none outline-none placeholder-white/70 uppercase" placeholder="Escribe la empresa...">
-                <button onclick="irAPaso2()" class="mt-6 w-full bg-white text-orange-600 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
-                    Siguiente <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
-
+            <!-- PASO 2: SELECCIÓN DE ESTUDIOS -->
             <div id="paso-2" class="paso hidden">
                 <label class="block mb-4 font-medium">2. ¿Qué estudios se hicieron?</label>
                 <div id="lista-checkbox-estudios" class="space-y-2 mb-4"></div>
                 <button onclick="iniciarCapturaDetalle()" class="mt-4 w-full bg-white text-orange-600 font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95">Continuar</button>
             </div>
 
+            <!-- PASO 3: DETALLE MÉDICOS -->
             <div id="paso-3" class="paso hidden">
                 <div id="detalle-estudio-actual"></div>
             </div>
 
+            <!-- PASO 4: RESUMEN FINAL -->
             <div id="paso-4" class="paso hidden">
                 <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-xl">
                     <i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Resumen Final
@@ -132,6 +127,7 @@
                 </div>
             </div>
 
+            <!-- CONFIRMACIÓN Y COMPARTIR -->
             <div id="paso-post-confirmacion" class="paso hidden text-center">
                 <div class="glass p-6 rounded-2xl mb-6 border-l-4 border-emerald-500">
                     <i class="fa-solid fa-circle-check text-5xl text-emerald-300 mb-4 block"></i>
@@ -153,12 +149,13 @@
                 </div>
             </div>
 
+            <!-- MÓDULO DE EDICIÓN LEGACY -->
             <div id="paso-edicion" class="paso hidden">
                 <h2 class="text-xl font-bold mb-4 text-center">Modificando Folio: <span id="edit-folio-text" class="text-orange-200"></span></h2>
                 
                 <div class="space-y-4 text-sm">
                     <div class="bg-black/10 p-4 rounded-xl">
-                        <label class="block mb-1 font-bold">Empresa:</label> 
+                        <label class="block mb-1 font-bold">Empresa (Edición Manual):</label> 
                         <input id="edit-empresa" list="lista-empresas" class="w-full p-2 mb-3 rounded-lg bg-white/20 uppercase text-white outline-none">
                         
                         <label class="block mb-1 font-bold">Fecha:</label> 
@@ -174,12 +171,6 @@
                                 <input type="time" id="edit-hora-fin" class="w-full p-2 rounded-lg bg-white/20 text-white outline-none">
                             </div>
                         </div>
-                        
-                        <label class="block mb-1 font-bold">Turno:</label>
-                        <select id="edit-turno" class="w-full p-2 rounded-lg bg-white/20 text-white outline-none">
-                            <option value="Matutino" class="text-black">Matutino</option>
-                            <option value="Vespertino" class="text-black">Vespertino</option>
-                        </select>
                     </div>
 
                     <div class="bg-black/10 p-4 rounded-xl">
@@ -226,6 +217,7 @@
         </div>
     </div>
 
+    <!-- PWA MODAL -->
     <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-pwa-card" class="glass bg-orange-600/90 p-6 rounded-3xl shadow-2xl max-w-sm w-full text-white transform scale-95 transition-transform duration-300">
             <h3 class="text-xl font-black mb-5 text-center"><i class="fa-solid fa-download mr-2"></i> Instalar Aplicación</h3>
@@ -252,6 +244,7 @@
         </div>
     </div>
 
+    <!-- TPL CAPTURA IMAGEN -->
     <div id="captura-temp" class="fixed -top-[3000px] -left-[3000px] w-[550px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
         <div class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-8 rounded-[2rem]">
             
@@ -283,6 +276,7 @@
     </div>
 
     <script>
+        // CONFIGURACIONES GLOBALES
         const empresas = window.LAPI_CONFIG.empresas;
         const medicos = window.LAPI_CONFIG.medicos;
         const estudios = window.LAPI_CONFIG.estudiosForaneos;
@@ -291,13 +285,8 @@
         let horasCalculadas = 0;
         let editDocId = null; 
 
-        window.addEventListener('offline', () => {
-            mostrarToast("Sin conexión a Internet. Modo Offline activado. Puedes seguir trabajando.", "info", 5000);
-        });
-
-        window.addEventListener('online', () => {
-            mostrarToast("Conexión restaurada. Sincronizando datos a la nube...", "exito", 4000);
-        });
+        window.addEventListener('offline', () => { mostrarToast("Sin conexión a Internet. Modo Offline activado. Puedes seguir trabajando.", "info", 5000); });
+        window.addEventListener('online', () => { mostrarToast("Conexión restaurada. Sincronizando datos a la nube...", "exito", 4000); });
 
         function mostrarToast(mensaje, tipo = 'error', duracion = 3500) {
             const toast = document.createElement('div');
@@ -313,23 +302,30 @@
             }
         }
 
-        function abrirModalPWA() {
-            const modal = document.getElementById('modal-pwa');
-            const card = document.getElementById('modal-pwa-card');
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
-        }
+        // CARGA INTELIGENTE DE SERVICIOS ACTIVO
+        async function cargarServiciosActivos() {
+            const select = document.getElementById('input-servicio');
+            try {
+                const q = window.query(window.collection(window.db, "directorio_servicios"), window.where("estado", "==", "activo"));
+                const querySnapshot = await window.getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    select.innerHTML = '<option value="" disabled selected class="text-black">No hay servicios activos asignados.</option>';
+                    return;
+                }
 
-        function cerrarModalPWA() {
-            const modal = document.getElementById('modal-pwa');
-            const card = document.getElementById('modal-pwa-card');
-            modal.classList.add('opacity-0'); card.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+                let html = '<option value="" disabled selected class="text-black">Selecciona la empresa / campaña...</option>';
+                querySnapshot.forEach(doc => {
+                    const d = doc.data();
+                    // Mostramos nombreComercial en la App
+                    html += `<option value="${doc.id}" class="text-black">${d.nombreComercial}</option>`;
+                });
+                select.innerHTML = html;
+            } catch (error) {
+                console.error("Error al cargar servicios:", error);
+                select.innerHTML = '<option value="" disabled selected class="text-black">Modo Offline: No se pudieron cargar los servicios.</option>';
+            }
         }
-
-        document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join('');
-        document.getElementById('lista-medicos').innerHTML = medicos.map(m => `<option value="${m}">`).join('');
-        document.getElementById('lista-checkbox-estudios').innerHTML = estudios.map(e => `<label class="flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 transition rounded-xl cursor-pointer text-white"><input type="checkbox" value="${e}" class="w-5 h-5 accent-orange-500 cursor-pointer"> ${e}</label>`).join('');
 
         function calcularHoras(inicio, fin) {
             if(!inicio || !fin) return 0;
@@ -340,28 +336,25 @@
             return parseFloat(diff.toFixed(2));
         }
 
+        // SE ELIMINÓ EL PASO 1. DE CERO PASAMOS DIRECTO AL 2.
         function verificarRegistro() { 
-            const fecha = document.getElementById('input-fecha').value;
+            const select = document.getElementById('input-servicio');
+            if(!select.value) return mostrarToast("Debes seleccionar una empresa o campaña de la lista.", "error");
+
             const hIni = document.getElementById('input-hora-inicio').value;
             const hFin = document.getElementById('input-hora-fin').value;
-            if(!fecha || !hIni || !hFin) return mostrarToast("Completa la fecha y los horarios de inicio y fin.", "error");
+            if(!hIni || !hFin) return mostrarToast("Registra la hora de inicio y término del servicio.", "error");
             
+            // Guardamos el texto seleccionado para compatibilidad con la BD antigua
+            document.getElementById('input-empresa-nombre').value = select.options[select.selectedIndex].text;
+
             horasCalculadas = calcularHoras(hIni, hFin);
             document.getElementById('paso-0').classList.add('hidden'); 
-            document.getElementById('paso-1').classList.remove('hidden'); 
+            document.getElementById('paso-2').classList.remove('hidden'); 
             
             const zonaExtra = document.getElementById('seccion-botones-extra');
             zonaExtra.classList.add('opacity-0');
             setTimeout(() => zonaExtra.classList.add('hidden'), 500);
-        }
-        
-        function irAPaso2() { 
-            if(document.getElementById('input-empresa').value) { 
-                document.getElementById('paso-1').classList.add('hidden'); 
-                document.getElementById('paso-2').classList.remove('hidden'); 
-            } else {
-                mostrarToast("Por favor selecciona o escribe una empresa.", "error");
-            } 
         }
         
         function iniciarCapturaDetalle() {
@@ -424,9 +417,13 @@
         function mostrarResumen() {
             document.getElementById('paso-3').classList.add('hidden');
             document.getElementById('paso-4').classList.remove('hidden');
+            
+            // Reutilizamos empresa nombre para compatibilidad
+            const empresaF = document.getElementById('input-empresa-nombre').value.toUpperCase();
+
             let html = `<p class="mb-1"><b class="opacity-70 text-white">Fecha:</b> ${document.getElementById('input-fecha').value}</p>
                         <p class="mb-1"><b class="opacity-70 text-white">Jornada:</b> ${horasCalculadas} hrs</p>
-                        <p class="mb-3"><b class="opacity-70 text-white">Empresa:</b> ${document.getElementById('input-empresa').value.toUpperCase()}</p>`;
+                        <p class="mb-3"><b class="opacity-70 text-white">Servicio:</b> ${empresaF}</p>`;
             
             registroFinal.forEach(item => {
                 html += `<div class="border-t border-white/20 pt-2 mt-2 flex justify-between items-center text-white">
@@ -446,15 +443,13 @@
             const hIni = document.getElementById('input-hora-inicio').value;
             const hFin = document.getElementById('input-hora-fin').value;
             const numAleatorio = Math.floor(1000 + Math.random() * 9000); 
-            const folio = numAleatorio + document.getElementById('input-turno').value[0].toUpperCase();
-            const empresaF = document.getElementById('input-empresa').value.toUpperCase();
+            // Inyectamos un valor fijo porque eliminamos el turno
+            const folio = numAleatorio + "X"; 
+            const empresaF = document.getElementById('input-empresa-nombre').value.toUpperCase();
+            const idServicioDb = document.getElementById('input-servicio').value;
             const observaciones = document.getElementById('input-observaciones').value;
 
-            window.datosParaCaptura = {
-                folio,
-                empresaF,
-                observaciones
-            };
+            window.datosParaCaptura = { folio, empresaF, observaciones };
 
             try {
                 await window.addDoc(window.collection(window.db, "registros"), {
@@ -463,8 +458,9 @@
                     horaInicio: hIni,
                     horaFin: hFin,
                     horasLaboradas: horasCalculadas,
-                    turno: document.getElementById('input-turno').value,
+                    turno: "N/A", // Compatibilidad estructural
                     empresa: empresaF, 
+                    idServicio: idServicioDb, // Relación con el directorio de servicios
                     detalles: registroFinal, 
                     observaciones: observaciones,
                     timestamp: new Date()
@@ -507,10 +503,7 @@
             
             try {
                 const canvas = await html2canvas(target, {
-                    scale: 2, 
-                    useCORS: true, 
-                    logging: false,
-                    backgroundColor: null, 
+                    scale: 2, useCORS: true, logging: false, backgroundColor: null, 
                     onclone: (clonedDoc) => {
                         clonedDoc.getElementById('captura-temp').style.position = 'static';
                         clonedDoc.getElementById('captura-temp').style.display = 'block';
@@ -523,29 +516,18 @@
                         if (navigator.canShare({ files: [file] })) {
                             try {
                                 await navigator.share({
-                                    files: [file],
-                                    title: `LAPI - Resumen Folio ${datos.folio}`,
-                                    text: `Resumen de servicio foráneo. ${datos.empresaF}`
+                                    files: [file], title: `LAPI - Resumen Folio ${datos.folio}`, text: `Resumen de servicio foráneo. ${datos.empresaF}`
                                 });
                                 mostrarToast("¡Reporte compartido!", "exito");
                             } catch (err) {
-                                console.log("Compartir cancelado o fallido:", err);
                                 if(err.name !== 'AbortError') forzarDescarga(canvas, datos.folio);
                             }
-                        } else {
-                            forzarDescarga(canvas, datos.folio);
-                        }
+                        } else { forzarDescarga(canvas, datos.folio); }
                     });
-                } else {
-                    forzarDescarga(canvas, datos.folio);
-                }
-            } catch(e) {
-                console.error("Error captura:", e);
-                mostrarToast("Falló la generación de Reporte.", "error");
-            }
+                } else { forzarDescarga(canvas, datos.folio); }
+            } catch(e) { console.error(e); mostrarToast("Falló la generación de Reporte.", "error"); }
 
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
+            btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
         function forzarDescarga(canvas, folio) {
@@ -556,14 +538,14 @@
             mostrarToast("Descarga iniciada (El navegador no soporta compartir nativo).", "info");
         }
 
+        // ================= EDICIÓN (LEGACY) ==================
         async function buscarRegistro() { 
             const folioInput = document.getElementById('input-edit-id').value.trim().toUpperCase();
             if(!folioInput) return mostrarToast("Ingresa un número de folio primero.", "error");
             if(!navigator.onLine) return mostrarToast("No se pueden buscar folios sin conexión a Internet.", "error");
             
             const btn = document.getElementById('btn-buscar-folio');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
 
             try {
                 const q = window.query(window.collection(window.db, "registros"), window.where("folio", "==", folioInput));
@@ -571,22 +553,15 @@
                 
                 if(qs.empty) {
                     mostrarToast(`No existe el folio: ${folioInput}`, "error");
-                    btn.innerHTML = 'Buscar';
-                    btn.disabled = false;
-                    return;
+                    btn.innerHTML = 'Buscar'; btn.disabled = false; return;
                 }
                 
                 let dataExtraida;
-                qs.forEach(doc => { 
-                    editDocId = doc.id; 
-                    dataExtraida = doc.data(); 
-                });
-                
+                qs.forEach(doc => { editDocId = doc.id; dataExtraida = doc.data(); });
                 abrirEditor(dataExtraida);
             } catch(e) {
                 mostrarToast("Error conectando a la base de datos.", "error");
-                btn.innerHTML = 'Buscar';
-                btn.disabled = false;
+                btn.innerHTML = 'Buscar'; btn.disabled = false;
             }
         }
 
@@ -596,19 +571,16 @@
             document.getElementById('paso-edicion').classList.remove('hidden');
 
             document.getElementById('edit-folio-text').innerText = data.folio;
-            document.getElementById('edit-empresa').value = data.empresa;
+            document.getElementById('edit-empresa').value = data.empresa; // Mantiene el input texto manual para legados
             document.getElementById('edit-fecha').value = data.fecha;
             document.getElementById('edit-hora-inicio').value = data.horaInicio;
             document.getElementById('edit-hora-fin').value = data.horaFin;
-            document.getElementById('edit-turno').value = data.turno;
             document.getElementById('edit-observaciones').value = data.observaciones || '';
 
             document.getElementById('edit-detalles-container').innerHTML = '';
             if(data.detalles && data.detalles.length > 0){
                 data.detalles.forEach(d => agregarFilaEdicion(d.estudio, d.medico, d.cant));
-            } else {
-                agregarFilaEdicion(); 
-            }
+            } else { agregarFilaEdicion(); }
             mostrarToast("Registro cargado. Puedes editar la información.", "info");
         }
 
@@ -635,13 +607,11 @@
             const fecha = document.getElementById('edit-fecha').value;
             const horaInicio = document.getElementById('edit-hora-inicio').value;
             const horaFin = document.getElementById('edit-hora-fin').value;
-            const turno = document.getElementById('edit-turno').value;
             const observaciones = document.getElementById('edit-observaciones').value;
 
             if(!empresa || !fecha || !horaInicio || !horaFin) return mostrarToast("Completa los datos generales del encabezado.", "error");
 
-            let detallesNuevos = [];
-            let hayErrorDetalles = false;
+            let detallesNuevos = []; let hayErrorDetalles = false;
 
             document.querySelectorAll('.edit-fila').forEach(fila => {
                 const est = fila.querySelector('.edit-est').value;
@@ -652,13 +622,10 @@
                 else detallesNuevos.push({ estudio: est, medico: med, cant: cant });
             });
 
-            if(hayErrorDetalles || detallesNuevos.length === 0) {
-                return mostrarToast("Todos los estudios deben tener Tipo, Personal y Cantidad válida.", "error");
-            }
+            if(hayErrorDetalles || detallesNuevos.length === 0) return mostrarToast("Todos los estudios deben tener Tipo, Personal y Cantidad.", "error");
 
             const btn = document.getElementById('btn-guardar-cambios');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Actualizando...';
-            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Actualizando...'; btn.disabled = true;
 
             const horasCalculadasNuevas = calcularHoras(horaInicio, horaFin);
 
@@ -669,7 +636,6 @@
                     fecha: fecha, 
                     horaInicio: horaInicio, 
                     horaFin: horaFin, 
-                    turno: turno, 
                     observaciones: observaciones,
                     horasLaboradas: horasCalculadasNuevas,
                     detalles: detallesNuevos
@@ -679,15 +645,24 @@
                 setTimeout(() => location.reload(), 2000);
             } catch(e) {
                 mostrarToast("Fallo al actualizar el registro.", "error");
-                btn.innerHTML = 'Guardar Cambios';
-                btn.disabled = false;
+                btn.innerHTML = 'Guardar Cambios'; btn.disabled = false;
             }
+        }
+
+        function abrirModalPWA() {
+            const modal = document.getElementById('modal-pwa'); const card = document.getElementById('modal-pwa-card');
+            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
+        }
+
+        function cerrarModalPWA() {
+            const modal = document.getElementById('modal-pwa'); const card = document.getElementById('modal-pwa-card');
+            modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('PWA: Actualización silenciosa lista'))
+                    .then(reg => console.log('PWA lista'))
                     .catch(err => console.log('Error PWA: ', err));
             });
         }
@@ -698,10 +673,9 @@
             versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
             document.body.appendChild(versionDiv);
 
+            // Cargar fecha oculta y horas
             const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
+            const year = now.getFullYear(); const month = String(now.getMonth() + 1).padStart(2, '0'); const day = String(now.getDate()).padStart(2, '0');
             
             const dateInput = document.getElementById('input-fecha');
             if(dateInput) dateInput.value = `${year}-${month}-${day}`;
@@ -710,6 +684,14 @@
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const horaFinInput = document.getElementById('input-hora-fin');
             if(horaFinInput) horaFinInput.value = `${hours}:${minutes}`;
+
+            // Listas auxiliares (médicos y estudios)
+            document.getElementById('lista-medicos').innerHTML = medicos.map(m => `<option value="${m}">`).join('');
+            document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join(''); // Solo se mantiene para la vista de Edición Legada
+            document.getElementById('lista-checkbox-estudios').innerHTML = estudios.map(e => `<label class="flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 transition rounded-xl cursor-pointer text-white"><input type="checkbox" value="${e}" class="w-5 h-5 accent-orange-500 cursor-pointer"> ${e}</label>`).join('');
+
+            // Disparar carga de servicios de Firebase
+            cargarServiciosActivos();
         });
     </script>
 </body>
