@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servicios Activos - LAPI Admin</title>
+    <title>Servicios y Campañas - LAPI Admin</title>
     
     <link rel="manifest" href="manifest_admin.json">
     <meta name="theme-color" content="#ea580c">
@@ -11,10 +11,12 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Librería para las gráficas del PDF -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -34,6 +36,7 @@
         window.collection = collection;
         window.query = query;
         window.orderBy = orderBy;
+        window.where = where;
 
         document.addEventListener("DOMContentLoaded", () => {
             window.cargarServicios();
@@ -48,6 +51,39 @@
         .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .tab-btn.active { border-bottom-color: #ea580c; color: #ea580c; font-weight: 900; }
+
+        /* REGLAS DE IMPRESIÓN DEL PDF */
+        @media print {
+            @page { size: letter portrait; margin: 12mm 15mm; } 
+            body, html { background: white !important; height: auto !important; display: block !important; }
+            nav, main, .no-print, .modales { display: none !important; }
+            
+            #zona-impresion { display: block !important; width: 100%; color: black; font-family: Arial, sans-serif; }
+            .print-page { break-after: always; page-break-after: always; width: 100%; position: relative; }
+            
+            /* Encabezado */
+            .header-reporte { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
+            .header-reporte td { padding: 4px; vertical-align: top; }
+            .h-logo { width: 30%; text-align: left; }
+            .h-title { width: 70%; text-align: right; }
+            
+            .info-grid { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 10px; border: 1px solid #ccc; }
+            .info-grid td, .info-grid th { border: 1px solid #ccc; padding: 6px; text-align: left; }
+            .info-grid th { background-color: #f8fafc !important; -webkit-print-color-adjust: exact; width: 25%; font-weight: bold; }
+
+            /* Tablas Formales */
+            .seccion-titulo { font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #333; border-bottom: 2px solid #ea580c; padding-bottom: 2px; text-transform: uppercase; }
+            .table-formal { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 20px; }
+            .table-formal th, .table-formal td { border: 1px solid #333; padding: 5px; text-align: center; }
+            .table-formal th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; font-weight: bold; text-transform: uppercase; }
+            .table-formal .text-left { text-align: left; }
+            
+            /* Gráficas */
+            .grafica-container { width: 100%; max-height: 250px; margin-bottom: 20px; text-align: center; page-break-inside: avoid; }
+            canvas { max-width: 100%; height: auto !important; }
+        }
     </style>
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
@@ -61,32 +97,26 @@
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
         </a>
         <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
-        
         <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Monitor</span>
         </a>
-        
         <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Reportes</span>
         </a>
-
         <a href="admin_servicios.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-building text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Servicios</span>
         </a>
-        
         <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span>
         </a>
-        
         <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Control<br>Biol.</span>
         </a>
-        
         <a href="admin_requisiciones.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-box-open text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Insumos</span>
@@ -97,7 +127,6 @@
         
         <!-- COLUMNA IZQUIERDA: FORMULARIO DE ALTA -->
         <div class="w-full xl:w-[450px] shrink-0 flex flex-col gap-4">
-            
             <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-3xl shadow-md text-white">
                 <h1 class="text-2xl font-black tracking-tight flex items-center gap-2 mb-1">
                     <i class="fa-solid fa-building-circle-check text-orange-200"></i> DIRECTORIO
@@ -148,42 +177,142 @@
                     </div>
                 </div>
 
-                <button type="submit" id="btn-guardar" class="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs">
+                <button type="submit" id="btn-guardar" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs">
                     <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Activar y Guardar Servicio
                 </button>
             </form>
         </div>
 
-        <!-- COLUMNA DERECHA: LISTADO DE SERVICIOS -->
-        <div class="w-full xl:w-[600px] flex-1 flex flex-col gap-6 animate-fade-in h-[calc(100vh-60px)]">
-            
+        <!-- COLUMNA DERECHA: BANDEJA Y GESTIÓN -->
+        <div class="w-full xl:w-[600px] flex-1 flex flex-col gap-4 animate-fade-in h-[calc(100vh-60px)]">
             <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden">
-                <div class="flex justify-between items-end border-b border-slate-200 pb-4 mb-4 shrink-0">
+                
+                <div class="flex justify-between items-end border-b border-slate-200 pb-4 mb-2 shrink-0">
                     <div>
-                        <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-list-check text-orange-500 mr-2"></i> Base de Datos Operativa</h2>
-                        <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Control de Estados de Campaña</p>
+                        <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-layer-group text-orange-500 mr-2"></i> Operaciones</h2>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Control, Edición y Reportes</p>
                     </div>
-                    <button onclick="cargarServicios()" class="bg-white border border-slate-200 text-slate-600 font-black px-4 py-2.5 rounded-xl shadow-sm hover:bg-slate-50 active:scale-95 transition-all text-xs">
+                    <button onclick="cargarServicios()" class="bg-white border border-slate-200 text-slate-600 font-black px-4 py-2.5 rounded-xl shadow-sm hover:bg-slate-50 active:scale-95 transition-all text-xs" title="Actualizar">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
 
+                <!-- TABS DE FILTRO -->
+                <div class="flex gap-4 border-b border-slate-200 mb-4 px-2 shrink-0">
+                    <button onclick="filtrarVista('activo')" id="tab-activo" class="tab-btn active pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-2 border-transparent"><i class="fa-solid fa-circle-play text-emerald-500 mr-1"></i> Activos</button>
+                    <button onclick="filtrarVista('pausa')" id="tab-pausa" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-2 border-transparent"><i class="fa-solid fa-circle-pause text-amber-500 mr-1"></i> En Pausa</button>
+                    <button onclick="filtrarVista('finalizado')" id="tab-finalizado" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-2 border-transparent"><i class="fa-solid fa-box-archive text-slate-400 mr-1"></i> Finalizados</button>
+                </div>
+
+                <!-- LISTA DE SERVICIOS -->
                 <div class="overflow-y-auto scroll-custom flex-1 pr-2 flex flex-col gap-3" id="lista-servicios-container">
                     <div class="text-center py-20 text-slate-400 italic">
                         <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-orange-300 block"></i> Cargando base de datos...
                     </div>
                 </div>
             </div>
-
         </div>
     </main>
 
+    <!-- ZONA OCULTA PARA HTML DE IMPRESIÓN (PDF) -->
+    <div id="zona-impresion" class="hidden"></div>
+
+    <!-- MODALES -->
+    <div class="modales">
+        <!-- MODAL EDICIÓN -->
+        <div id="modal-editar" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+            <div id="modal-editar-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-orange-200">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                    <h3 class="text-lg font-black text-slate-800"><i class="fa-solid fa-pen-to-square text-orange-500 mr-2"></i> Editar Servicio</h3>
+                    <button onclick="cerrarModal('editar')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                
+                <input type="hidden" id="e-id">
+                <div class="space-y-3 mb-5">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Nombre Comercial</label>
+                        <input type="text" id="e-comercial" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 uppercase focus:border-orange-400">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Folio</label>
+                            <input type="text" id="e-folio" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 uppercase focus:border-orange-400">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Razón Social</label>
+                            <input type="text" id="e-razon" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 uppercase focus:border-orange-400">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Fin</label>
+                            <input type="date" id="e-fecha-fin" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Hora Salida</label>
+                            <input type="time" id="e-hora-fin" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="guardarEdicion()" id="btn-guardar-edicion" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-xs">Guardar Cambios</button>
+            </div>
+        </div>
+
+        <!-- MODAL REPORTE PDF -->
+        <div id="modal-reporte" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+            <div id="modal-reporte-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                    <h3 class="text-lg font-black text-slate-800"><i class="fa-solid fa-file-pdf text-red-500 mr-2"></i> Configurar Reporte</h3>
+                    <button onclick="cerrarModal('reporte')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                
+                <div class="mb-4">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3">Elementos a incluir en el PDF:</p>
+                    <div class="space-y-2 text-xs font-bold text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="chk-encabezado" checked disabled class="accent-orange-500 w-4 h-4"> Encabezado del Servicio (Fijo)</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="chk-totales" checked class="accent-orange-500 w-4 h-4"> Resumen de Totales por Estudio</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="chk-desglose" checked class="accent-orange-500 w-4 h-4"> Desglose por Día y Estudio</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="chk-personal" checked class="accent-orange-500 w-4 h-4"> Productividad del Personal</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="chk-graficas" checked class="accent-orange-500 w-4 h-4"> Anexo Visual (Gráficas)</label>
+                    </div>
+                </div>
+                
+                <button onclick="generarReportePDF()" id="btn-generar-pdf" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 text-xs flex justify-center items-center gap-2"><i class="fa-solid fa-print"></i> Consultar y Generar PDF</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        let serviciosGlobales = [];
+        let vistaActual = 'activo';
+        let servicioParaReporte = null; 
+
+        // 1. LÓGICA DE INTERFAZ Y PESTAÑAS
+        window.filtrarVista = function(estado) {
+            vistaActual = estado;
+            ['activo', 'pausa', 'finalizado'].forEach(e => document.getElementById(`tab-${e}`).classList.remove('active'));
+            document.getElementById(`tab-${estado}`).classList.add('active');
+            renderizarLista();
+        };
+
+        window.abrirModal = function(id) {
+            const modal = document.getElementById(`modal-${id}`);
+            const card = document.getElementById(`modal-${id}-card`);
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
+        };
+
+        window.cerrarModal = function(id) {
+            const modal = document.getElementById(`modal-${id}`);
+            const card = document.getElementById(`modal-${id}-card`);
+            modal.classList.add('opacity-0'); card.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        };
+
+        // 2. LÓGICA DE SERVICIOS Y AUTO-CIERRE
         window.guardarServicio = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-guardar');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...';
-            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...'; btn.disabled = true;
 
             const payload = {
                 nombreComercial: document.getElementById('s-comercial').value.toUpperCase().trim(),
@@ -193,7 +322,8 @@
                 fechaFin: document.getElementById('s-fecha-fin').value,
                 horaInicio: document.getElementById('s-hora-ini').value,
                 horaFin: document.getElementById('s-hora-fin').value,
-                estado: 'activo', // Por defecto inicia activo
+                estado: 'activo', 
+                excepcionCierre: false, // Flag para saber si se reactivó manual
                 timestamp: new Date()
             };
 
@@ -201,85 +331,307 @@
                 await window.addDoc(window.collection(window.db, "directorio_servicios"), payload);
                 document.getElementById('form-servicio').reset();
                 window.cargarServicios();
-            } catch (error) {
-                console.error("Error guardando:", error);
-                alert("Hubo un error al guardar el servicio en la nube.");
-            }
+            } catch (error) { alert("Error al guardar."); }
 
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-2"></i> Activar y Guardar Servicio';
-            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-2"></i> Activar y Guardar Servicio'; btn.disabled = false;
         };
 
         window.cargarServicios = async function() {
             const container = document.getElementById('lista-servicios-container');
+            container.innerHTML = '<div class="text-center py-20 text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-orange-300 block"></i></div>';
             
             try {
                 const q = window.query(window.collection(window.db, "directorio_servicios"), window.orderBy("timestamp", "desc"));
-                const querySnapshot = await window.getDocs(q);
+                const qs = await window.getDocs(q);
+                serviciosGlobales = [];
+                const hoy = new Date();
+
+                let promesasActualizacion = [];
+
+                qs.forEach((docSnap) => {
+                    let data = docSnap.data();
+                    data.id = docSnap.id;
+                    
+                    // Lógica de Auto-Cierre Inteligente (Ventana de 2 días)
+                    if (data.estado === 'activo' && !data.excepcionCierre) {
+                        let fFin = new Date(data.fechaFin + 'T23:59:59');
+                        let diasVencido = (hoy - fFin) / (1000 * 60 * 60 * 24);
+                        
+                        if (diasVencido > 2) {
+                            data.estado = 'finalizado'; // Actualizamos localmente para la vista
+                            // Agregamos a la cola para actualizar en Firebase
+                            promesasActualizacion.push( window.updateDoc(window.doc(window.db, "directorio_servicios", data.id), { estado: 'finalizado' }) );
+                        }
+                    }
+                    
+                    serviciosGlobales.push(data);
+                });
+
+                // Si hubo auto-cierres, los ejecutamos en segundo plano
+                if(promesasActualizacion.length > 0) Promise.all(promesasActualizacion).catch(e => console.log("Error auto-cierre", e));
+
+                renderizarLista();
+            } catch (error) { container.innerHTML = '<p class="text-center text-xs text-red-500 py-10 font-bold">Error de conexión.</p>'; }
+        };
+
+        function renderizarLista() {
+            const container = document.getElementById('lista-servicios-container');
+            let filtrados = serviciosGlobales.filter(s => s.estado === vistaActual);
+            
+            if(filtrados.length === 0) {
+                container.innerHTML = `<p class="text-center text-xs text-slate-400 py-10">No hay servicios en estado ${vistaActual}.</p>`;
+                return;
+            }
+
+            let html = '';
+            filtrados.forEach(data => {
+                let badgeStyle = data.estado === 'activo' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : (data.estado === 'pausa' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200');
                 
-                let html = '';
+                html += `
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative transition hover:shadow-md">
+                    <div class="flex justify-between items-start mb-1">
+                        <h4 class="font-black text-sm text-slate-800 w-3/4">${data.nombreComercial}</h4>
+                        <div class="flex gap-2">
+                            <button onclick="prepararEdicion('${data.id}')" class="text-slate-400 hover:text-orange-500 transition" title="Editar Servicio"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="prepararReporte('${data.id}')" class="text-slate-400 hover:text-red-500 transition" title="Generar Reporte PDF"><i class="fa-solid fa-file-pdf"></i></button>
+                        </div>
+                    </div>
+                    
+                    <p class="text-[9px] text-slate-400 font-bold uppercase mb-2">Folio: ${data.folio} | Razón: ${data.razonSocial}</p>
+                    
+                    <div class="flex flex-wrap gap-2 text-[10px] font-bold text-slate-600 mb-3 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                        <span><i class="fa-solid fa-calendar-day text-orange-400 mr-1"></i> ${data.fechaInicio} al ${data.fechaFin}</span> <span>|</span>
+                        <span><i class="fa-solid fa-clock text-sky-400 mr-1"></i> ${data.horaInicio} - ${data.horaFin}</span>
+                    </div>
+
+                    <div class="flex gap-2 items-center">
+                        <span class="${badgeStyle} border px-2 py-1 rounded text-[9px] font-black uppercase"><i class="fa-solid fa-circle text-[8px] mr-1"></i> ${data.estado}</span>
+                        <select onchange="cambiarEstado('${data.id}', this.value)" class="flex-1 p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none text-slate-600 focus:border-orange-400">
+                            <option value="activo" ${data.estado === 'activo' ? 'selected' : ''}>Marcar como ACTIVO</option>
+                            <option value="pausa" ${data.estado === 'pausa' ? 'selected' : ''}>Poner en PAUSA</option>
+                            <option value="finalizado" ${data.estado === 'finalizado' ? 'selected' : ''}>FINALIZAR</option>
+                        </select>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        window.cambiarEstado = async function(id, nuevoEstado) {
+            let data = serviciosGlobales.find(s => s.id === id);
+            let payload = { estado: nuevoEstado, ultimaModificacion: new Date() };
+            // Si el administrador lo reactiva manualmente, activamos la excepción para que no se auto-cierre
+            if(nuevoEstado === 'activo') payload.excepcionCierre = true; 
+            
+            try {
+                await window.updateDoc(window.doc(window.db, "directorio_servicios", id), payload);
+                window.cargarServicios(); 
+            } catch (error) { alert("No se pudo actualizar el estado."); }
+        };
+
+        // 3. EDICIÓN DE SERVICIOS
+        window.prepararEdicion = function(id) {
+            let data = serviciosGlobales.find(s => s.id === id);
+            document.getElementById('e-id').value = id;
+            document.getElementById('e-comercial').value = data.nombreComercial;
+            document.getElementById('e-folio').value = data.folio;
+            document.getElementById('e-razon').value = data.razonSocial;
+            document.getElementById('e-fecha-fin').value = data.fechaFin;
+            document.getElementById('e-hora-fin').value = data.horaFin;
+            abrirModal('editar');
+        };
+
+        window.guardarEdicion = async function() {
+            const id = document.getElementById('e-id').value;
+            const btn = document.getElementById('btn-guardar-edicion');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Guardando...'; btn.disabled = true;
+            
+            try {
+                await window.updateDoc(window.doc(window.db, "directorio_servicios", id), {
+                    nombreComercial: document.getElementById('e-comercial').value.toUpperCase(),
+                    folio: document.getElementById('e-folio').value.toUpperCase(),
+                    razonSocial: document.getElementById('e-razon').value.toUpperCase(),
+                    fechaFin: document.getElementById('e-fecha-fin').value,
+                    horaFin: document.getElementById('e-hora-fin').value
+                });
+                cerrarModal('editar');
+                window.cargarServicios();
+            } catch(e) { alert("Error al guardar."); }
+            btn.innerHTML = 'Guardar Cambios'; btn.disabled = false;
+        };
+
+        // 4. MOTOR DE REPORTES PDF
+        window.prepararReporte = function(id) {
+            servicioParaReporte = serviciosGlobales.find(s => s.id === id);
+            abrirModal('reporte');
+        };
+
+        window.generarReportePDF = async function() {
+            const btn = document.getElementById('btn-generar-pdf');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Consultando Registros...'; btn.disabled = true;
+
+            const chkTotales = document.getElementById('chk-totales').checked;
+            const chkDesglose = document.getElementById('chk-desglose').checked;
+            const chkPersonal = document.getElementById('chk-personal').checked;
+            const chkGraficas = document.getElementById('chk-graficas').checked;
+
+            try {
+                // 1. Consultar todos los registros de este servicio
+                const q = window.query(window.collection(window.db, "registros"), window.where("idServicio", "==", servicioParaReporte.id));
+                const qs = await window.getDocs(q);
                 
-                if(querySnapshot.empty) {
-                    container.innerHTML = '<p class="text-center text-xs text-slate-400 py-10">No hay servicios registrados aún.</p>';
+                let registros = [];
+                let diasLaboradosSet = new Set();
+                let hrsPorMedico = {};
+                let totalesEstudio = {};
+                let personalEstudios = {}; // { MedicoA: { HC: 5, Espiro: 2 } }
+                let diaEstudios = {}; // { '2026-07-15': { HC: 10 } }
+
+                qs.forEach(doc => {
+                    let d = doc.data();
+                    diasLaboradosSet.add(d.fecha);
+                    
+                    if(!hrsPorMedico[d.fecha]) hrsPorMedico[d.fecha] = {};
+                    // Para simplificar, asignamos las horas de la jornada a cada médico que participó en ese registro
+                    
+                    if(d.detalles) {
+                        d.detalles.forEach(det => {
+                            let med = det.medico;
+                            let est = det.estudio;
+                            let c = parseInt(det.cant) || 0;
+
+                            // Totales Generales
+                            totalesEstudio[est] = (totalesEstudio[est] || 0) + c;
+                            
+                            // Por Día
+                            if(!diaEstudios[d.fecha]) diaEstudios[d.fecha] = {};
+                            diaEstudios[d.fecha][est] = (diaEstudios[d.fecha][est] || 0) + c;
+
+                            // Por Personal
+                            if(!personalEstudios[med]) personalEstudios[med] = {};
+                            personalEstudios[med][est] = (personalEstudios[med][est] || 0) + c;
+                            
+                            // Horas (asumimos la hora del registro general para el personal)
+                            if(!hrsPorMedico[d.fecha][med]) hrsPorMedico[d.fecha][med] = parseFloat(d.horasLaboradas || 0);
+                        });
+                    }
+                });
+
+                // Calcular horas totales por médico sumando sus días
+                let horasTotalMedico = {};
+                for(let f in hrsPorMedico) {
+                    for(let m in hrsPorMedico[f]) {
+                        horasTotalMedico[m] = (horasTotalMedico[m] || 0) + hrsPorMedico[f][m];
+                    }
+                }
+
+                // 2. CONSTRUCCIÓN DEL HTML PARA IMPRESIÓN
+                const zona = document.getElementById('zona-impresion');
+                let htmlPDF = `<div class="print-page">`;
+                
+                // --- ENCABEZADO FIJO ---
+                htmlPDF += `
+                <table class="header-reporte">
+                    <tr>
+                        <td class="h-logo"><img src="logoLAPI.png" style="max-height: 45px;"></td>
+                        <td class="h-title"><h2 style="font-size: 16px; margin:0; text-transform:uppercase;">Reporte de Servicio Foráneo</h2><p style="margin:2px 0 0 0; color:#ea580c;">Folio: ${servicioParaReporte.folio}</p></td>
+                    </tr>
+                </table>
+                <table class="info-grid">
+                    <tr><th>Campaña / Servicio:</th><td colspan="3"><b>${servicioParaReporte.nombreComercial}</b></td></tr>
+                    <tr><th>Razón Social:</th><td colspan="3">${servicioParaReporte.razonSocial}</td></tr>
+                    <tr><th>Periodo Programado:</th><td>${servicioParaReporte.fechaInicio} al ${servicioParaReporte.fechaFin}</td><th>Horario Base:</th><td>${servicioParaReporte.horaInicio} - ${servicioParaReporte.horaFin}</td></tr>
+                    <tr><th>Días con Actividad Real:</th><td colspan="3">${diasLaboradosSet.size} días (Fechas: ${Array.from(diasLaboradosSet).sort().join(', ') || 'Ninguna'})</td></tr>
+                </table>`;
+
+                if(diasLaboradosSet.size === 0) {
+                    htmlPDF += `<p style="text-align:center; font-style:italic;">No hay registros operativos capturados para este servicio aún.</p></div>`;
+                    zona.innerHTML = htmlPDF;
+                    cerrarModal('reporte');
+                    setTimeout(() => { window.print(); }, 500);
+                    btn.innerHTML = '<i class="fa-solid fa-print"></i> Consultar y Generar PDF'; btn.disabled = false;
                     return;
                 }
 
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const id = doc.id;
-                    
-                    let bgBadge = data.estado === 'activo' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
-                                 (data.estado === 'pausa' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200');
-                    
-                    let iconBadge = data.estado === 'activo' ? 'fa-circle-play' : 
-                                   (data.estado === 'pausa' ? 'fa-circle-pause' : 'fa-circle-stop');
+                // --- TABLA: TOTALES ---
+                if(chkTotales) {
+                    htmlPDF += `<div class="seccion-titulo">Resumen General de Estudios Realizados</div><table class="table-formal"><tr><th class="text-left">Tipo de Estudio</th><th style="width:20%;">Total</th></tr>`;
+                    for(let e in totalesEstudio) htmlPDF += `<tr><td class="text-left">${e}</td><td><b>${totalesEstudio[e]}</b></td></tr>`;
+                    htmlPDF += `</table>`;
+                }
 
-                    html += `
-                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative transition hover:shadow-md">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="font-black text-sm text-slate-800 w-3/4">${data.nombreComercial}</h4>
-                            <span class="${bgBadge} border px-2 py-0.5 rounded text-[9px] font-black uppercase flex items-center gap-1">
-                                <i class="fa-solid ${iconBadge}"></i> ${data.estado}
-                            </span>
-                        </div>
+                // --- TABLA: DESGLOSE POR DÍA ---
+                if(chkDesglose) {
+                    htmlPDF += `<div class="seccion-titulo">Desglose Operativo por Día</div><table class="table-formal"><tr><th class="text-left">Fecha</th><th>Estudio</th><th style="width:20%;">Cantidad</th></tr>`;
+                    let fechasSort = Object.keys(diaEstudios).sort();
+                    fechasSort.forEach(f => {
+                        let estudiosDia = diaEstudios[f];
+                        let keys = Object.keys(estudiosDia);
+                        htmlPDF += `<tr><td rowspan="${keys.length}" class="text-left" style="vertical-align:top;"><b>${f}</b></td><td class="text-left">${keys[0]}</td><td>${estudiosDia[keys[0]]}</td></tr>`;
+                        for(let i=1; i<keys.length; i++) htmlPDF += `<tr><td class="text-left">${keys[i]}</td><td>${estudiosDia[keys[i]]}</td></tr>`;
+                    });
+                    htmlPDF += `</table>`;
+                }
+
+                // --- TABLA: PERSONAL ---
+                if(chkPersonal) {
+                    htmlPDF += `<div class="seccion-titulo">Productividad del Personal Designado</div><table class="table-formal"><tr><th class="text-left">Personal</th><th>Estudio Realizado</th><th style="width:15%;">Estudios Totales</th><th style="width:15%;">Horas Registradas</th></tr>`;
+                    let medSort = Object.keys(personalEstudios).sort();
+                    medSort.forEach(m => {
+                        let estMed = personalEstudios[m];
+                        let keys = Object.keys(estMed);
+                        htmlPDF += `<tr><td rowspan="${keys.length}" class="text-left" style="vertical-align:top; color:#4338ca;"><b>${m}</b></td><td class="text-left">${keys[0]}</td><td>${estMed[keys[0]]}</td><td rowspan="${keys.length}" style="vertical-align:middle;">${horasTotalMedico[m] || 0} h</td></tr>`;
+                        for(let i=1; i<keys.length; i++) htmlPDF += `<tr><td class="text-left">${keys[i]}</td><td>${estMed[keys[i]]}</td></tr>`;
+                    });
+                    htmlPDF += `</table>`;
+                }
+
+                htmlPDF += `</div>`; // Fin página 1 (Tablas)
+
+                // --- ANEXO VISUAL (GRÁFICAS) ---
+                if(chkGraficas) {
+                    htmlPDF += `<div class="print-page"><div class="seccion-titulo" style="margin-top:20px;">Anexo Gráfico del Servicio</div>`;
+                    htmlPDF += `<div class="grafica-container"><canvas id="chart-totales"></canvas></div>`;
+                    htmlPDF += `<div class="grafica-container"><canvas id="chart-personal"></canvas></div></div>`;
+                }
+
+                zona.innerHTML = htmlPDF;
+                
+                // RENDERIZAR GRÁFICAS (Si aplica)
+                if(chkGraficas) {
+                    setTimeout(() => {
+                        // Chart Totales
+                        new Chart(document.getElementById('chart-totales').getContext('2d'), {
+                            type: 'bar',
+                            data: { labels: Object.keys(totalesEstudio), datasets: [{ label: 'Total Realizado', data: Object.values(totalesEstudio), backgroundColor: '#f97316' }] },
+                            options: { plugins: { title: { display: true, text: 'Distribución de Estudios' } }, animation: false }
+                        });
                         
-                        <p class="text-[10px] text-slate-500 font-bold mb-3">Folio: <span class="text-slate-700">${data.folio}</span> | Razón Social: <span class="text-slate-700">${data.razonSocial}</span></p>
-                        
-                        <div class="flex flex-wrap gap-2 text-[10px] font-bold text-slate-600 mb-4 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                            <span><i class="fa-solid fa-calendar-day text-orange-400 mr-1"></i> ${data.fechaInicio} al ${data.fechaFin}</span>
-                            <span>|</span>
-                            <span><i class="fa-solid fa-clock text-sky-400 mr-1"></i> ${data.horaInicio} - ${data.horaFin}</span>
-                        </div>
+                        // Chart Productividad (Total estudios por persona)
+                        let labelsPers = Object.keys(personalEstudios);
+                        let dataPers = labelsPers.map(m => Object.values(personalEstudios[m]).reduce((a,b)=>a+b, 0));
+                        new Chart(document.getElementById('chart-personal').getContext('2d'), {
+                            type: 'doughnut',
+                            data: { labels: labelsPers, datasets: [{ data: dataPers, backgroundColor: ['#3b82f6','#10b981','#8b5cf6','#ef4444','#f59e0b'] }] },
+                            options: { plugins: { title: { display: true, text: 'Productividad Global por Personal' } }, animation: false, maintainAspectRatio: false }
+                        });
+                    }, 100);
+                }
 
-                        <div class="flex gap-2">
-                            <select onchange="cambiarEstado('${id}', this.value)" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600 focus:border-orange-400 cursor-pointer">
-                                <option value="activo" ${data.estado === 'activo' ? 'selected' : ''}>Marcar como ACTIVO</option>
-                                <option value="pausa" ${data.estado === 'pausa' ? 'selected' : ''}>Poner en PAUSA</option>
-                                <option value="finalizado" ${data.estado === 'finalizado' ? 'selected' : ''}>FINALIZAR Servicio</option>
-                            </select>
-                        </div>
-                    </div>`;
-                });
-
-                container.innerHTML = html;
+                cerrarModal('reporte');
+                
+                // Dar tiempo al DOM y canvas para renderizar antes de imprimir
+                setTimeout(() => { 
+                    window.print(); 
+                    zona.innerHTML = ''; // Limpiar tras imprimir
+                }, 800);
 
             } catch (error) {
-                console.error("Error consultando:", error);
-                container.innerHTML = '<p class="text-center text-xs text-red-500 py-10 font-bold">Error de conexión con Firebase.</p>';
+                console.error(error);
+                alert("Error al extraer los datos para el reporte.");
             }
-        };
-
-        window.cambiarEstado = async function(idDocumento, nuevoEstado) {
-            try {
-                await window.updateDoc(window.doc(window.db, "directorio_servicios", idDocumento), {
-                    estado: nuevoEstado,
-                    ultimaModificacion: new Date()
-                });
-                window.cargarServicios(); 
-            } catch (error) {
-                console.error("Error actualizando estado:", error);
-                alert("No se pudo actualizar el estado.");
-            }
+            
+            btn.innerHTML = '<i class="fa-solid fa-print"></i> Consultar y Generar PDF'; btn.disabled = false;
         };
     </script>
 </body>
