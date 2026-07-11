@@ -74,7 +74,7 @@
 
             <!-- PASO 0: SERVICIO Y HORARIO -->
             <div id="paso-0" class="paso">
-                <label class="block mb-2 font-medium">1. Servicio o Campaña Activa</label>
+                <label class="block mb-2 font-medium">1. Servicio Activo</label>
                 <select id="input-servicio" class="w-full p-3 mb-4 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
                     <option value="" disabled selected class="text-black">Cargando servicios disponibles...</option>
                 </select>
@@ -83,11 +83,11 @@
 
                 <div class="flex gap-4 mb-6 mt-2">
                     <div class="w-1/2">
-                        <label class="block mb-2 font-medium text-sm">Hora Inicio Real</label>
+                        <label class="block mb-2 font-medium text-sm">Hora Inicio</label>
                         <input type="time" id="input-hora-inicio" class="w-full p-3 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
                     </div>
                     <div class="w-1/2">
-                        <label class="block mb-2 font-medium text-sm">Hora Fin Real</label>
+                        <label class="block mb-2 font-medium text-sm">Hora Fin</label>
                         <input type="time" id="input-hora-fin" class="w-full p-3 rounded-xl bg-white/20 text-white font-bold outline-none border-none">
                     </div>
                 </div>
@@ -314,7 +314,7 @@
                     return;
                 }
 
-                let html = '<option value="" disabled selected class="text-black">Selecciona la empresa / campaña...</option>';
+                let html = '<option value="" disabled selected class="text-black">Selecciona la empresa ...</option>';
                 querySnapshot.forEach(doc => {
                     const d = doc.data();
                     // Mostramos nombreComercial en la App
@@ -339,7 +339,7 @@
         // SE ELIMINÓ EL PASO 1. DE CERO PASAMOS DIRECTO AL 2.
         function verificarRegistro() { 
             const select = document.getElementById('input-servicio');
-            if(!select.value) return mostrarToast("Debes seleccionar una empresa o campaña de la lista.", "error");
+            if(!select.value) return mostrarToast("Debes seleccionar una empresa de la lista.", "error");
 
             const hIni = document.getElementById('input-hora-inicio').value;
             const hFin = document.getElementById('input-hora-fin').value;
