@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios Activos - LAPI Admin</title>
+    
+    <link rel="manifest" href="manifest_admin.json">
+    <meta name="theme-color" content="#ea580c">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.getDocs = getDocs;
+        window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
+        window.doc = doc;
+        window.collection = collection;
+        window.query = query;
+        window.orderBy = orderBy;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            window.cargarServicios();
+        });
+    </script>
+    
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(254, 215, 170, 0.5); }
+        .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-slate-800 flex h-screen overflow-hidden">
+
+    <!-- NAVEGACIÓN LATERAL UNIFICADA -->
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom no-print">
+        <div class="hidden md:flex mb-2 text-3xl"><i class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i></div>
+        
+        <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
+        </a>
+        <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
+        <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Monitor</span>
+        </a>
+        <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-wave-square text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Control<br>Biol.</span>
+        </a>
+        <a href="admin_requisiciones.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-box-open text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Insumos</span>
+        </a>
+        <a href="admin_servicios.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-building text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Servicios</span>
+        </a>
+    </nav>
+
+    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 flex flex-col xl:flex-row gap-6 items-start relative z-10">
+        
+        <!-- COLUMNA IZQUIERDA: FORMULARIO DE ALTA -->
+        <div class="w-full xl:w-[450px] shrink-0 flex flex-col gap-4">
+            
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-3xl shadow-md text-white">
+                <h1 class="text-2xl font-black tracking-tight flex items-center gap-2 mb-1">
+                    <i class="fa-solid fa-building-circle-check text-orange-200"></i> DIRECTORIO
+                </h1>
+                <p class="opacity-90 text-[10px] font-medium uppercase tracking-widest">Gestión de Servicios y Campañas</p>
+            </div>
+
+            <form id="form-servicio" onsubmit="guardarServicio(event)" class="glass p-6 rounded-3xl shadow-sm border-l-4 border-orange-500">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest border-b border-slate-200 pb-2 mb-4">Alta de Nuevo Servicio</h3>
+                
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Nombre Comercial (Visible en App)</label>
+                        <input type="text" id="s-comercial" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase" placeholder="Ej. BIMBO PLANTA TOLUCA">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Razón Social (Para Reportes)</label>
+                        <input type="text" id="s-razon" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase" placeholder="Opcional">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Dirección Exacta</label>
+                        <textarea id="s-direccion" rows="2" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase resize-none" placeholder="Calle, Número, Colonia..."></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Inicio</label>
+                            <input type="date" id="s-fecha-ini" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Fin</label>
+                            <input type="date" id="s-fecha-fin" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Hora Entrada</label>
+                            <input type="time" id="s-hora-ini" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Hora Salida</label>
+                            <input type="time" id="s-hora-fin" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-guardar" class="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs">
+                    <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Activar y Guardar Servicio
+                </button>
+            </form>
+        </div>
+
+        <!-- COLUMNA DERECHA: LISTADO DE SERVICIOS -->
+        <div class="w-full xl:w-[600px] flex-1 flex flex-col gap-6 animate-fade-in h-[calc(100vh-60px)]">
+            
+            <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden">
+                <div class="flex justify-between items-end border-b border-slate-200 pb-4 mb-4 shrink-0">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-list-check text-orange-500 mr-2"></i> Base de Datos Operativa</h2>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Control de Estados de Campaña</p>
+                    </div>
+                    <button onclick="cargarServicios()" class="bg-white border border-slate-200 text-slate-600 font-black px-4 py-2.5 rounded-xl shadow-sm hover:bg-slate-50 active:scale-95 transition-all text-xs">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+
+                <div class="overflow-y-auto scroll-custom flex-1 pr-2 flex flex-col gap-3" id="lista-servicios-container">
+                    <div class="text-center py-20 text-slate-400 italic">
+                        <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-orange-300 block"></i> Cargando base de datos...
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        window.guardarServicio = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-guardar');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...';
+            btn.disabled = true;
+
+            const payload = {
+                nombreComercial: document.getElementById('s-comercial').value.toUpperCase().trim(),
+                razonSocial: document.getElementById('s-razon').value.toUpperCase().trim() || 'NO ESPECIFICADA',
+                direccion: document.getElementById('s-direccion').value.toUpperCase().trim() || 'NO ESPECIFICADA',
+                fechaInicio: document.getElementById('s-fecha-ini').value,
+                fechaFin: document.getElementById('s-fecha-fin').value,
+                horaInicio: document.getElementById('s-hora-ini').value,
+                horaFin: document.getElementById('s-hora-fin').value,
+                estado: 'activo', // Por defecto inicia activo
+                timestamp: new Date()
+            };
+
+            try {
+                await window.addDoc(window.collection(window.db, "directorio_servicios"), payload);
+                document.getElementById('form-servicio').reset();
+                window.cargarServicios();
+            } catch (error) {
+                console.error("Error guardando:", error);
+                alert("Hubo un error al guardar el servicio en la nube.");
+            }
+
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-2"></i> Activar y Guardar Servicio';
+            btn.disabled = false;
+        };
+
+        window.cargarServicios = async function() {
+            const container = document.getElementById('lista-servicios-container');
+            
+            try {
+                const q = window.query(window.collection(window.db, "directorio_servicios"), window.orderBy("timestamp", "desc"));
+                const querySnapshot = await window.getDocs(q);
+                
+                let html = '';
+                
+                if(querySnapshot.empty) {
+                    container.innerHTML = '<p class="text-center text-xs text-slate-400 py-10">No hay servicios registrados aún.</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const id = doc.id;
+                    
+                    let bgBadge = data.estado === 'activo' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
+                                 (data.estado === 'pausa' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200');
+                    
+                    let iconBadge = data.estado === 'activo' ? 'fa-circle-play' : 
+                                   (data.estado === 'pausa' ? 'fa-circle-pause' : 'fa-circle-stop');
+
+                    html += `
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative transition hover:shadow-md">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-black text-sm text-slate-800 w-3/4">${data.nombreComercial}</h4>
+                            <span class="${bgBadge} border px-2 py-0.5 rounded text-[9px] font-black uppercase flex items-center gap-1">
+                                <i class="fa-solid ${iconBadge}"></i> ${data.estado}
+                            </span>
+                        </div>
+                        
+                        <p class="text-[10px] text-slate-500 font-bold mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${data.direccion}</p>
+                        
+                        <div class="flex flex-wrap gap-2 text-[10px] font-bold text-slate-600 mb-4 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                            <span><i class="fa-solid fa-calendar-day text-orange-400 mr-1"></i> ${data.fechaInicio} al ${data.fechaFin}</span>
+                            <span>|</span>
+                            <span><i class="fa-solid fa-clock text-sky-400 mr-1"></i> ${data.horaInicio} - ${data.horaFin}</span>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <select onchange="cambiarEstado('${id}', this.value)" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600 focus:border-orange-400 cursor-pointer">
+                                <option value="activo" ${data.estado === 'activo' ? 'selected' : ''}>Marcar como ACTIVO</option>
+                                <option value="pausa" ${data.estado === 'pausa' ? 'selected' : ''}>Poner en PAUSA</option>
+                                <option value="finalizado" ${data.estado === 'finalizado' ? 'selected' : ''}>FINALIZAR Servicio</option>
+                            </select>
+                        </div>
+                    </div>`;
+                });
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error("Error consultando:", error);
+                container.innerHTML = '<p class="text-center text-xs text-red-500 py-10 font-bold">Error de conexión con Firebase.</p>';
+            }
+        };
+
+        window.cambiarEstado = async function(idDocumento, nuevoEstado) {
+            try {
+                await window.updateDoc(window.doc(window.db, "directorio_servicios", idDocumento), {
+                    estado: nuevoEstado,
+                    ultimaModificacion: new Date()
+                });
+                window.cargarServicios(); // Recarga visual rápida
+            } catch (error) {
+                console.error("Error actualizando estado:", error);
+                alert("No se pudo actualizar el estado.");
+            }
+        };
+    </script>
+</body>
+</html>
