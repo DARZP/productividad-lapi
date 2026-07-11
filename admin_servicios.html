@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servicios y Campañas - LAPI Admin</title>
+    <title>Servicios Foráneos- LAPI Admin</title>
     
     <link rel="manifest" href="manifest_admin.json">
     <meta name="theme-color" content="#ea580c">
@@ -538,7 +538,7 @@
                     </tr>
                 </table>
                 <table class="info-grid">
-                    <tr><th>Campaña / Servicio:</th><td colspan="3"><b>${servicioParaReporte.nombreComercial}</b></td></tr>
+                    <tr><th>Servicio Foráneo:</th><td colspan="3"><b>${servicioParaReporte.nombreComercial}</b></td></tr>
                     <tr><th>Razón Social:</th><td colspan="3">${servicioParaReporte.razonSocial}</td></tr>
                     <tr><th>Periodo Programado:</th><td>${servicioParaReporte.fechaInicio} al ${servicioParaReporte.fechaFin}</td><th>Horario Base:</th><td>${servicioParaReporte.horaInicio} - ${servicioParaReporte.horaFin}</td></tr>
                     <tr><th>Días con Actividad Real:</th><td colspan="3">${diasLaboradosSet.size} días (Fechas: ${Array.from(diasLaboradosSet).sort().join(', ') || 'Ninguna'})</td></tr>
