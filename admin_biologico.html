@@ -14,7 +14,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, orderBy, doc, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -31,6 +31,7 @@
         window.collection = collection;
         window.query = query;
         window.orderBy = orderBy;
+        window.where = where;
         window.doc = doc;
         window.updateDoc = updateDoc;
 
@@ -52,70 +53,50 @@
         .acordeon-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; }
         .acordeon-content.open { max-height: 2000px; padding-top: 1rem; padding-bottom: 1rem; }
 
-        /* ==========================================
-           REGLAS DE IMPRESIÓN BLINDADAS
-           ========================================== */
+        /* REGLAS DE IMPRESIÓN BLINDADAS */
         @media print {
             @page { size: landscape; margin: 10mm; } 
-            
             body, html { background-color: white !important; height: auto !important; }
-            nav, main, #modal-audio { display: none !important; }
-            
+            nav, main, #modal-audio, #modal-reporte-avanzado { display: none !important; }
             #zona-impresion { display: block !important; position: relative !important; width: 100% !important; background: white !important; color: black !important; }
-            
             .servicio-print-block { break-after: always; page-break-after: always; margin-bottom: 20px; width: 100%; }
             .header-box, .info-grid { break-inside: avoid; page-break-inside: avoid; }
-            
             .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; font-family: Arial, sans-serif; text-align: center; }
             .print-table th, .print-table td { border: 1px solid #000; padding: 4px; }
             .print-table tr { break-inside: avoid; page-break-inside: avoid; }
-            
             .print-table th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; color-adjust: exact; font-weight: bold; }
             .bg-verde-lapi { background-color: #a3e635 !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
             .bg-rojo-lapi { background-color: #fca5a5 !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
-            
             .header-box { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-family: Arial, sans-serif; font-size: 12px; }
             .header-box td { border: 1px solid #000; padding: 5px; }
             .header-title { font-weight: bold; font-size: 16px; text-align: center; }
-            .info-grid { display: flex; justify-content: space-between; font-family: Arial, sans-serif; font-size: 12px; margin-bottom: 10px; }
-            .info-col { width: 48%; }
-            .line-field { border-bottom: 1px solid #000; display: inline-block; min-width: 150px; padding-left: 5px; font-weight: bold; }
-            
             .firma-img { max-height: 30px; vertical-align: middle; display: block; margin: 0 auto; }
         }
     </style>
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <!-- NAVEGACIÓN LATERAL LAPI -->
-    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom">
+    <!-- NAVEGACIÓN LATERAL UNIFICADA -->
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom no-print">
+        <div class="hidden md:flex mb-2 text-3xl"><i class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i></div>
         
-        <div class="hidden md:flex mb-2 text-3xl">
-            <i id="logo-snake" class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i>
-        </div>
-
-        <!-- BOTÓN PANEL (INICIO) -->
         <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
         </a>
-
         <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
-
         <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
-            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Global</span>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Monitor</span>
         </a>
         <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Reportes</span>
         </a>
-
         <a href="admin_servicios.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-building text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Servicios</span>
         </a>
-        
         <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span>
@@ -128,7 +109,6 @@
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-box-open text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Insumos</span>
         </a>
-        
     </nav>
 
     <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8">
@@ -182,8 +162,8 @@
         <!-- LISTADOS Y PDF HEADER -->
         <div class="flex justify-between items-end mb-6 border-b border-orange-200 pb-4">
             <h2 id="titulo-resultados" class="text-2xl font-black tracking-tight text-slate-800"><i class="fa-solid fa-tower-cell text-orange-500 mr-2"></i> Equipos Activos (<span id="lbl-resultados">0</span>)</h2>
-            <button onclick="generarPDFGlobal()" class="bg-slate-800 hover:bg-slate-700 text-white font-black py-2 px-4 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-xs border-b-4 border-slate-900">
-                <i class="fa-solid fa-file-pdf text-red-400 text-lg"></i> Imprimir Reportes
+            <button onclick="abrirModalReporte()" class="bg-slate-800 hover:bg-slate-700 text-white font-black py-2 px-4 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-xs border-b-4 border-slate-900">
+                <i class="fa-solid fa-file-pdf text-red-400 text-lg"></i> Configurar Reportes PDF
             </button>
         </div>
 
@@ -199,11 +179,11 @@
     </main>
 
     <!-- ZONA OCULTA PARA GENERACIÓN DE PDF -->
-    <div id="zona-impresion" class="hidden">
-        <!-- Se inyecta la réplica de los formatos -->
-    </div>
+    <div id="zona-impresion" class="hidden"></div>
 
-    <!-- 👇 MODAL PARA VER AUDIOMETRÍA 👇 -->
+    <!-- MODALES -->
+    
+    <!-- MODAL PARA VER AUDIOMETRÍA -->
     <div id="modal-audio" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-audio-card" class="bg-white border border-slate-200 p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
@@ -227,8 +207,56 @@
         </div>
     </div>
 
+    <!-- MODAL GENERADOR DE REPORTE AVANZADO -->
+    <div id="modal-reporte-avanzado" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-reporte-avanzado-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                <h3 class="text-lg font-black text-slate-800"><i class="fa-solid fa-file-pdf text-red-500 mr-2"></i> Creador de Reportes</h3>
+                <button onclick="cerrarModalReporte()" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="space-y-4 mb-6 text-left">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Tipo de Consulta</label>
+                    <select id="rep-modo" onchange="cambiarModoReporte()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 cursor-pointer">
+                        <option value="estudio">Por Tipo de Estudio</option>
+                        <option value="ns">Historial por N/S de Equipo</option>
+                    </select>
+                </div>
+                
+                <div id="rep-box-estudio">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Seleccionar Control</label>
+                    <select id="rep-estudio-val" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                        <option value="audiometria">Audiometría (General)</option>
+                        <option value="espirometria">Espirometría (General)</option>
+                    </select>
+                </div>
+
+                <div id="rep-box-ns" class="hidden">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">N/S Exacto del Equipo</label>
+                    <input type="text" id="rep-ns-val" placeholder="Ej. SN-4920" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 uppercase focus:border-orange-400">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Desde</label>
+                        <input type="date" id="rep-f-ini" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Hasta</label>
+                        <input type="date" id="rep-f-fin" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="ejecutarReportePersonalizado()" id="btn-generar-pdf-avanzado" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 text-xs flex justify-center items-center gap-2">
+                <i class="fa-solid fa-print"></i> Consultar e Imprimir
+            </button>
+        </div>
+    </div>
+
     <script>
-        let serviciosGlobales = []; // Guarda en memoria lo de Firebase
+        let serviciosGlobales = []; 
 
         window.aplicarFiltroRapido = function(tipo) {
             document.querySelectorAll('.btn-filtro-rapido').forEach(btn => {
@@ -263,22 +291,26 @@
             const fFin = document.getElementById('f-fin').value;
             const fEmp = document.getElementById('f-empresa').value.trim().toUpperCase();
 
-            // Configurar Título UI
             const titulo = document.getElementById('titulo-resultados');
             if(soloActivosPorDefecto) {
                 titulo.innerHTML = `<i class="fa-solid fa-tower-cell text-orange-500 mr-2"></i> Equipos Activos (<span id="lbl-resultados">0</span>)`;
                 document.getElementById('f-inicio').value = ''; document.getElementById('f-fin').value = ''; document.getElementById('f-empresa').value = '';
-                // Limpiar estilo botones
                 document.querySelectorAll('.btn-filtro-rapido').forEach(btn => {
                     btn.classList.remove('bg-orange-100', 'text-orange-700');
                     btn.classList.add('bg-slate-100', 'text-slate-600');
                 });
             } else {
-                titulo.innerHTML = `<i class="fa-solid fa-folder-open text-orange-500 mr-2"></i> Historial de Servicios (<span id="lbl-resultados">0</span>)`;
+                titulo.innerHTML = `<i class="fa-solid fa-folder-open text-orange-500 mr-2"></i> Historial de Equipos (<span id="lbl-resultados">0</span>)`;
             }
 
             try {
-                // Query Optimizada
+                // 1. OBTENER DIRECTORIO DE SERVICIOS ACTIVOS PARA CRUCE
+                const qDir = window.query(window.collection(window.db, "directorio_servicios"), window.where("estado", "==", "activo"));
+                const qsDir = await window.getDocs(qDir);
+                let idServiciosActivos = new Set();
+                qsDir.forEach(d => idServiciosActivos.add(d.id));
+
+                // 2. OBTENER CONTROL BIOLÓGICO
                 const q = window.query(window.collection(window.db, "control_biologico"), window.orderBy("timestamp", "desc"));
                 const qs = await window.getDocs(q);
                 
@@ -289,21 +321,20 @@
                     data.id = doc.id;
                     let pasaFiltro = true;
 
-                    // 1. Filtro Tipo (Aplica tanto a Activos como a Historial)
+                    // Si está activo pero el servicio "matriz" ya no está activo, lo tratamos como inactivo visualmente
+                    if(data.estado === 'activo' && data.idServicio && !idServiciosActivos.has(data.idServicio)) {
+                        data.estado = 'finalizado'; 
+                    }
+
                     if(fTipo !== "todos" && data.tipo !== fTipo) pasaFiltro = false;
                     
-                    // 2. Comportamiento Activos vs Filtros Manuales
                     if(soloActivosPorDefecto) {
                         if(data.estado !== "activo") pasaFiltro = false;
                     } else {
-                        // Filtro Empresa
                         if(fEmp && !data.empresa.toUpperCase().includes(fEmp)) pasaFiltro = false;
-                        
-                        // Filtro Fechas (Cubre fecha inicio o bitacora)
                         if(fIni && fFin && pasaFiltro) {
                             let caeEnRango = false;
                             if(data.fecha_inicio >= fIni && data.fecha_inicio <= fFin) caeEnRango = true;
-                            
                             if(!caeEnRango && data.bitacora) {
                                 for(let b of data.bitacora) {
                                     if(b.fecha >= fIni && b.fecha <= fFin) { caeEnRango = true; break; }
@@ -332,17 +363,16 @@
             cont.innerHTML = "";
 
             if(serviciosGlobales.length === 0) {
-                cont.innerHTML = `<div class="text-center py-10 glass rounded-3xl"><p class="text-sm font-bold text-slate-500">No se encontraron servicios.</p></div>`;
+                cont.innerHTML = `<div class="text-center py-10 glass rounded-3xl"><p class="text-sm font-bold text-slate-500">No se encontraron equipos.</p></div>`;
                 return;
             }
 
             serviciosGlobales.forEach((serv, indexServicio) => {
                 const icono = serv.tipo === 'audiometria' ? 'fa-headphones text-orange-500' : 'fa-lungs text-blue-500';
                 const bgTag = serv.estado === 'activo' ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-slate-100 text-slate-600 border-slate-200';
-                const txtTag = serv.estado === 'activo' ? 'ACTIVO' : 'FINALIZADO';
+                const txtTag = serv.estado === 'activo' ? 'ACTIVO EN RUTA' : 'ARCHIVADO';
                 const numRegs = serv.bitacora ? serv.bitacora.length : 0;
                 
-                // 👇 ENCABEZADOS ENRIQUECIDOS (Marca, Equipo, Cabina) 👇
                 let cabinaBadge = serv.tipo === 'audiometria' && serv.ns_cabina ? `<span class="bg-white px-2 py-0.5 rounded border border-slate-200">Cabina: <b>${serv.ns_cabina}</b></span>` : '';
                 
                 let thHtml = ''; let trHtml = '';
@@ -355,11 +385,8 @@
                         serv.bitacora.forEach((b, indexBitacora) => {
                             let promOD = b.od ? Object.values(b.od).filter(v=>v).length : 0; 
                             let promOI = b.oi ? Object.values(b.oi).filter(v=>v).length : 0;
-                            
-                            // 👇 BOTONES INTERACTIVOS PARA MODAL DE AUDIOMETRÍA 👇
                             let btnOD = `<button onclick="abrirDetalleAudio(${indexServicio}, ${indexBitacora})" class="text-red-500 hover:text-red-700 underline decoration-red-300 underline-offset-2"><i class="fa-solid fa-up-right-from-square mr-1"></i>${promOD}/8 capt.</button>`;
                             let btnOI = `<button onclick="abrirDetalleAudio(${indexServicio}, ${indexBitacora})" class="text-blue-500 hover:text-blue-700 underline decoration-blue-300 underline-offset-2"><i class="fa-solid fa-up-right-from-square mr-1"></i>${promOI}/8 capt.</button>`;
-
                             trHtml += `<tr class="border-t border-slate-100 hover:bg-slate-50 transition"><td class="py-2 px-3 text-xs font-bold text-slate-600">${b.fecha}</td><td class="py-2 px-3 text-center text-xs font-bold">${btnOD}</td><td class="py-2 px-3 text-center text-xs font-bold">${btnOI}</td><td class="py-2 px-3 text-right text-[10px] font-bold text-slate-500">${b.medico}</td></tr>`;
                         });
                     } else {
@@ -371,7 +398,7 @@
                 }
 
                 const btnFinalizar = serv.estado === 'activo' 
-                    ? `<button onclick="finalizarServicio('${serv.id}')" class="w-full mt-4 bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 rounded-lg text-xs transition border border-red-200"><i class="fa-solid fa-power-off mr-1"></i> Finalizar y Archivar Servicio</button>` 
+                    ? `<button onclick="finalizarServicio('${serv.id}')" class="w-full mt-4 bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 rounded-lg text-xs transition border border-red-200"><i class="fa-solid fa-power-off mr-1"></i> Forzar Cierre de Bitácora Manualmente</button>` 
                     : ``;
 
                 cont.innerHTML += `
@@ -384,7 +411,7 @@
                             <div class="flex flex-wrap gap-2 text-[10px] font-medium text-slate-500">
                                 <span class="bg-slate-50 px-2 py-0.5 rounded border border-slate-200"><i class="fa-regular fa-calendar mr-1"></i> ${serv.fecha_inicio}</span>
                                 <span class="bg-slate-50 px-2 py-0.5 rounded border border-slate-200 text-slate-800 font-bold">${serv.equipo}</span>
-                                <span class="bg-slate-50 px-2 py-0.5 rounded border border-slate-200"><i class="fa-solid fa-barcode mr-1"></i> ${serv.ns_equipo}</span>
+                                <span class="bg-slate-50 px-2 py-0.5 rounded border border-slate-200"><i class="fa-solid fa-barcode mr-1"></i> <b class="text-orange-500">${serv.ns_equipo}</b></span>
                                 ${cabinaBadge}
                             </div>
 
@@ -412,78 +439,122 @@
         };
 
         window.finalizarServicio = async function(idFirebase) {
-            if(!confirm("¿Estás seguro que deseas marcar este servicio como FINALIZADO?\n\nLos médicos ya no lo verán en su lista de activos para agregar calibraciones.")) return;
-            
+            if(!confirm("¿Estás seguro que deseas marcar este equipo como FINALIZADO manualmente?")) return;
             try {
                 await window.updateDoc(window.doc(window.db, "control_biologico", idFirebase), { estado: "finalizado" });
-                alert("Servicio finalizado correctamente.");
-                // Recargamos en base a si el admin estaba en la vista por defecto o con filtros
+                alert("Equipo finalizado correctamente.");
                 const fIni = document.getElementById('f-inicio').value;
                 if(fIni === '') buscarServicios(true); 
                 else buscarServicios(false);
-            } catch(e) {
-                alert("Error al intentar finalizar.");
-            }
+            } catch(e) { alert("Error al intentar finalizar."); }
         };
 
-        // 👇 MODAL INTELIGENTE DE AUDIOMETRÍA 👇
         window.abrirDetalleAudio = function(indexServicio, indexBitacora) {
             const b = serviciosGlobales[indexServicio].bitacora[indexBitacora];
             document.getElementById('mod-audio-fecha').innerText = `Calibración del: ${b.fecha}`;
             
-            const gridOD = document.getElementById('grid-od');
-            const gridOI = document.getElementById('grid-oi');
+            const gridOD = document.getElementById('grid-od'); const gridOI = document.getElementById('grid-oi');
             gridOD.innerHTML = ''; gridOI.innerHTML = '';
-
             const frecs = [250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
-            
             frecs.forEach(f => {
-                let valOD = (b.od && b.od[f]) ? b.od[f] : '-';
-                let valOI = (b.oi && b.oi[f]) ? b.oi[f] : '-';
-                
+                let valOD = (b.od && b.od[f]) ? b.od[f] : '-'; let valOI = (b.oi && b.oi[f]) ? b.oi[f] : '-';
                 gridOD.innerHTML += `<div class="bg-white border border-slate-200 p-1.5 rounded text-xs shadow-sm"><p class="text-[8px] text-slate-400 mb-0.5 font-bold">${f}</p><b class="text-slate-700">${valOD}</b></div>`;
                 gridOI.innerHTML += `<div class="bg-white border border-slate-200 p-1.5 rounded text-xs shadow-sm"><p class="text-[8px] text-slate-400 mb-0.5 font-bold">${f}</p><b class="text-slate-700">${valOI}</b></div>`;
             });
 
-            const modal = document.getElementById('modal-audio');
-            const card = document.getElementById('modal-audio-card');
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
+            const modal = document.getElementById('modal-audio'); const card = document.getElementById('modal-audio-card');
+            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
         };
 
         window.cerrarModalAudio = function() {
-            const modal = document.getElementById('modal-audio');
-            const card = document.getElementById('modal-audio-card');
-            modal.classList.add('opacity-0'); card.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            const modal = document.getElementById('modal-audio'); const card = document.getElementById('modal-audio-card');
+            modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
         };
 
         // =========================================================
-        // MOTOR DE RENDERIZADO PDF (MÚLTIPLES SERVICIOS CONTINUOS)
+        // MOTOR AVANZADO DE REPORTE PDF
         // =========================================================
-        window.generarPDFGlobal = function() {
-            if(serviciosGlobales.length === 0) {
-                alert("No hay servicios en pantalla para generar el PDF."); return;
+        window.abrirModalReporte = function() {
+            const modal = document.getElementById('modal-reporte-avanzado'); const card = document.getElementById('modal-reporte-avanzado-card');
+            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
+        };
+        window.cerrarModalReporte = function() {
+            const modal = document.getElementById('modal-reporte-avanzado'); const card = document.getElementById('modal-reporte-avanzado-card');
+            modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        };
+
+        window.cambiarModoReporte = function() {
+            const modo = document.getElementById('rep-modo').value;
+            if(modo === 'estudio') {
+                document.getElementById('rep-box-estudio').classList.remove('hidden');
+                document.getElementById('rep-box-ns').classList.add('hidden');
+            } else {
+                document.getElementById('rep-box-estudio').classList.add('hidden');
+                document.getElementById('rep-box-ns').classList.remove('hidden');
             }
-
-            const zona = document.getElementById('zona-impresion');
-            zona.innerHTML = '';
-            let htmlPDF = '';
-
-            // Construir una "hoja" por cada servicio en pantalla
-            serviciosGlobales.forEach(data => {
-                htmlPDF += '<div class="servicio-print-block">';
-                if(data.tipo === 'audiometria') htmlPDF += renderizarPDF_Audiometria(data);
-                else htmlPDF += renderizarPDF_Espirometria(data);
-                htmlPDF += '</div>';
-            });
-
-            zona.innerHTML = htmlPDF;
-            
-            // Damos 800ms para que el navegador decodifique y pinte todas las firmas Base64
-            setTimeout(() => { window.print(); }, 800);
         };
 
+        window.ejecutarReportePersonalizado = async function() {
+            const btn = document.getElementById('btn-generar-pdf-avanzado');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Construyendo...'; btn.disabled = true;
+
+            const modo = document.getElementById('rep-modo').value;
+            const fIni = document.getElementById('rep-f-ini').value;
+            const fFin = document.getElementById('rep-f-fin').value;
+            const zona = document.getElementById('zona-impresion');
+            
+            try {
+                // Hacemos una consulta limpia a la BD en lugar de usar la variable local para no perder data.
+                const q = window.query(window.collection(window.db, "control_biologico"), window.orderBy("timestamp", "asc"));
+                const qs = await window.getDocs(q);
+                let equiposAImprimir = [];
+
+                qs.forEach(doc => {
+                    let s = doc.data();
+                    let pasaFiltro = true;
+
+                    if(modo === 'estudio') {
+                        if(s.tipo !== document.getElementById('rep-estudio-val').value) pasaFiltro = false;
+                    } else {
+                        if(s.ns_equipo.toUpperCase() !== document.getElementById('rep-ns-val').value.trim().toUpperCase()) pasaFiltro = false;
+                    }
+
+                    if(pasaFiltro) {
+                        // Filtramos estrictamente la bitácora interna por las fechas
+                        if(fIni && fFin && s.bitacora) {
+                            s.bitacora = s.bitacora.filter(b => b.fecha >= fIni && b.fecha <= fFin);
+                        }
+                        // Solo incluimos equipos que sí tuvieron calibraciones en esas fechas
+                        if(s.bitacora && s.bitacora.length > 0) {
+                            equiposAImprimir.push(s);
+                        }
+                    }
+                });
+
+                if(equiposAImprimir.length === 0) {
+                    alert("No se encontraron registros de calibración con los parámetros ingresados.");
+                    btn.innerHTML = '<i class="fa-solid fa-print"></i> Consultar e Imprimir'; btn.disabled = false;
+                    return;
+                }
+
+                // Armado del HTML
+                zona.innerHTML = ''; let htmlPDF = '';
+                equiposAImprimir.forEach(data => {
+                    htmlPDF += '<div class="servicio-print-block">';
+                    if(data.tipo === 'audiometria') htmlPDF += renderizarPDF_Audiometria(data);
+                    else htmlPDF += renderizarPDF_Espirometria(data);
+                    htmlPDF += '</div>';
+                });
+                zona.innerHTML = htmlPDF;
+
+                cerrarModalReporte();
+                setTimeout(() => { window.print(); }, 800);
+
+            } catch(e) { alert("Error extrayendo información."); }
+            btn.innerHTML = '<i class="fa-solid fa-print"></i> Consultar e Imprimir'; btn.disabled = false;
+        };
+
+        // RENDERIZADOS ESPECÍFICOS DE TABLA
         function renderizarPDF_Audiometria(data) {
             let filasBitacora = '';
             if(data.bitacora) {
@@ -501,9 +572,6 @@
                     </tr>`;
                 });
             }
-
-            // Se elimina el for() que creaba las filas en blanco
-
             return `
                 <table class="header-box">
                     <tr>
@@ -521,69 +589,36 @@
                         </td>
                     </tr>
                 </table>
-
                 <table style="width: 100%; font-family: Arial, sans-serif; font-size: 11px; margin-bottom: 15px; border-collapse: collapse;">
                     <tr>
-                        <td style="width: 12%; font-weight: bold; padding: 3px 0;">AUDIÓMETRO:</td>
-                        <td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.equipo}</td>
-                        <td style="width: 12%; font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S:</td>
-                        <td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_equipo}</td>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0;">AUDIÓMETRO:</td><td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.equipo}</td>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S:</td><td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_equipo}</td>
                     </tr>
                     <tr>
-                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td>
-                        <td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa}</td>
-                        <td style="font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S CABINA:</td>
-                        <td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_cabina || ''}</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight: bold; padding: 3px 0;">FECHA INICIO:</td>
-                        <td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.fecha_inicio}</td>
-                        <td colspan="2"></td>
+                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa}</td>
+                        <td style="font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S CABINA:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_cabina || ''}</td>
                     </tr>
                 </table>
-
                 <div style="display: flex; justify-content: space-around; font-family: Arial; font-weight: bold; margin-bottom: 5px; font-size: 14px;">
-                    <div style="width: 45%; text-align: center;">OÍDO DERECHO</div>
-                    <div style="width: 45%; text-align: center;">OÍDO IZQUIERDO</div>
+                    <div style="width: 45%; text-align: center;">OÍDO DERECHO</div><div style="width: 45%; text-align: center;">OÍDO IZQUIERDO</div>
                 </div>
-
                 <table class="print-table">
                     <thead>
                         <tr>
-                            <th rowspan="2" class="bg-verde-lapi">FECHA</th>
-                            <th colspan="8" class="bg-rojo-lapi"></th>
-                            <th rowspan="2" style="background: white !important; border-top: none; border-bottom: none; width: 2%;"></th>
-                            <th colspan="8" style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;"></th>
-                            <th rowspan="2" class="bg-verde-lapi">REALIZÓ<br>NOMBRE Y FIRMA</th>
+                            <th rowspan="2" class="bg-verde-lapi">FECHA</th><th colspan="8" class="bg-rojo-lapi"></th><th rowspan="2" style="background: white !important; border-top: none; border-bottom: none; width: 2%;"></th><th colspan="8" style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;"></th><th rowspan="2" class="bg-verde-lapi">REALIZÓ<br>NOMBRE Y FIRMA</th>
                         </tr>
                         <tr>
                             <th class="bg-rojo-lapi">250</th><th class="bg-rojo-lapi">500</th><th class="bg-rojo-lapi">1000</th><th class="bg-rojo-lapi">2000</th><th class="bg-rojo-lapi">3000</th><th class="bg-rojo-lapi">4000</th><th class="bg-rojo-lapi">6000</th><th class="bg-rojo-lapi">8000</th>
-                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">250</th>
-                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">500</th>
-                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">1000</th>
-                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">2000</th>
-                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">3000</th>
-                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">4000</th>
-                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">6000</th>
-                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">8000</th>
+                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">250</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">500</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">1000</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">2000</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">3000</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">4000</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">6000</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">8000</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        ${filasBitacora}
-                    </tbody>
+                    <tbody>${filasBitacora}</tbody>
                 </table>
             `;
         }
 
         function renderizarPDF_Espirometria(data) {
             let filasBitacora = '';
-            let fechasServicio = data.fecha_inicio;
-            
-            if(data.bitacora && data.bitacora.length > 0) {
-                const ultima = data.bitacora[data.bitacora.length - 1].fecha;
-                if(data.fecha_inicio !== ultima) fechasServicio = `${data.fecha_inicio} al ${ultima}`;
-            }
-
             if(data.bitacora) {
                 data.bitacora.forEach(b => {
                     filasBitacora += `
@@ -596,15 +631,10 @@
                     </tr>`;
                 });
             }
-
-            // Se elimina el for() que creaba las filas en blanco
-
             return `
                 <table class="header-box">
                     <tr>
-                        <td style="width: 25%; text-align: center; vertical-align: middle;">
-                            <img src="logoLAPI.png" style="max-width: 150px; max-height: 65px; display: block; margin: 0 auto;">
-                        </td>
+                        <td style="width: 25%; text-align: center; vertical-align: middle;"><img src="logoLAPI.png" style="max-width: 150px; max-height: 65px; display: block; margin: 0 auto;"></td>
                         <td style="width: 50%;" class="header-title">CONTROL BIOLÓGICO<br>ESPIROMETRÍA</td>
                         <td style="width: 25%; padding: 0;">
                             <table style="width: 100%; height: 100%; border-collapse: collapse; text-align: center; border: none;">
@@ -616,39 +646,22 @@
                         </td>
                     </tr>
                 </table>
-
                 <table style="width: 100%; font-family: Arial, sans-serif; font-size: 11px; margin-bottom: 15px; border-collapse: collapse;">
                     <tr>
-                        <td style="width: 12%; font-weight: bold; padding: 3px 0;">ESPIRÓMETRO:</td>
-                        <td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.equipo}</td>
-                        <td style="width: 12%; font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S:</td>
-                        <td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_equipo}</td>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0;">ESPIRÓMETRO:</td><td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.equipo}</td>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S:</td><td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_equipo}</td>
                     </tr>
                     <tr>
-                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td>
-                        <td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa}</td>
-                        <td style="font-weight: bold; padding: 3px 0; padding-left: 15px;">FECHAS:</td>
-                        <td style="border-bottom: 1px solid #000; padding: 3px 5px;">${fechasServicio}</td>
+                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa}</td>
+                        <td style="font-weight: bold; padding: 3px 0; padding-left: 15px;">FECHAS:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;"></td>
                     </tr>
                 </table>
-
                 <table class="print-table" style="font-size: 12px;">
                     <thead>
-                        <tr>
-                            <th rowspan="2" style="width: 15%;">FECHA</th>
-                            <th colspan="2">DIFERENCIA RELATIVA AL VOLUMEN INDICADO</th>
-                            <th colspan="2">REALIZÓ</th>
-                        </tr>
-                        <tr>
-                            <th style="width: 20%;">INSPIRAR %</th>
-                            <th style="width: 20%;">ESPIRAR %</th>
-                            <th style="width: 25%;">NOMBRE</th>
-                            <th style="width: 20%;">FIRMA</th>
-                        </tr>
+                        <tr><th rowspan="2" style="width: 15%;">FECHA</th><th colspan="2">DIFERENCIA RELATIVA AL VOLUMEN INDICADO</th><th colspan="2">REALIZÓ</th></tr>
+                        <tr><th style="width: 20%;">INSPIRAR %</th><th style="width: 20%;">ESPIRAR %</th><th style="width: 25%;">NOMBRE</th><th style="width: 20%;">FIRMA</th></tr>
                     </thead>
-                    <tbody>
-                        ${filasBitacora}
-                    </tbody>
+                    <tbody>${filasBitacora}</tbody>
                 </table>
             `;
         }
