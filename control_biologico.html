@@ -47,7 +47,7 @@
     <div class="glass text-white p-4 shadow-md sticky top-0 z-50 rounded-b-3xl mx-2 mb-6 flex justify-between items-center">
         <div>
             <h1 class="text-lg font-black tracking-tight leading-tight"><i class="fa-solid fa-wave-square mr-1"></i> Control Biológico</h1>
-            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Equipos Móviles</p>
+            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Servicios Foráneos</p>
         </div>
         <button onclick="window.location.href='index.html'" class="bg-white/20 hover:bg-white/30 p-2 rounded-xl text-xs font-bold transition-all"><i class="fa-solid fa-house mr-1"></i> Portal</button>
     </div>
@@ -56,10 +56,10 @@
 
         <div id="vista-lista" class="animate-fade-in">
             <button onclick="abrirNuevoServicio()" class="w-full bg-white text-orange-600 font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 mb-8 flex justify-center items-center gap-2 text-lg">
-                <i class="fa-solid fa-folder-plus"></i> Registrar Nuevo Equipo
+                <i class="fa-solid fa-folder-plus"></i> Registrar Control Biológico de Instalación
             </button>
 
-            <h2 class="text-xs font-black uppercase tracking-widest text-orange-200 mb-4 border-b border-white/20 pb-2"><i class="fa-solid fa-tower-cell mr-1"></i> Equipos Activos en Ruta</h2>
+            <h2 class="text-xs font-black uppercase tracking-widest text-orange-200 mb-4 border-b border-white/20 pb-2"><i class="fa-solid fa-tower-cell mr-1"></i> Equipos de Servicios Activos</h2>
             <div id="contenedor-servicios" class="space-y-4">
                 <div class="text-center py-10 opacity-70"><i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i><p class="text-sm font-bold">Cargando...</p></div>
             </div>
@@ -88,7 +88,7 @@
 
                 <!-- CAMBIO: AHORA ES UN SELECTOR DE SERVICIOS ACTIVOS -->
                 <div>
-                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Campaña / Empresa Asignada</label>
+                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Servicios activos</label>
                     <select id="ns-servicio" class="w-full p-3 bg-white/20 text-white border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold text-sm appearance-none cursor-pointer">
                         <option value="" disabled selected class="text-black">Cargando servicios...</option>
                     </select>
