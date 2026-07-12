@@ -302,7 +302,6 @@
             }
         }
 
-        // CARGA INTELIGENTE DE SERVICIOS ACTIVO
         async function cargarServiciosActivos() {
             const select = document.getElementById('input-servicio');
             try {
@@ -314,12 +313,22 @@
                     return;
                 }
 
-                let html = '<option value="" disabled selected class="text-black">Selecciona la empresa ...</option>';
+                // Guardamos en arreglo temporal para ordenar
+                let listaTemporal = [];
                 querySnapshot.forEach(doc => {
-                    const d = doc.data();
-                    // Mostramos nombreComercial en la App
-                    html += `<option value="${doc.id}" class="text-black">${d.nombreComercial}</option>`;
+                    let d = doc.data();
+                    d.id = doc.id;
+                    listaTemporal.push(d);
                 });
+
+                // ORDEN ALFABÉTICO (A-Z)
+                listaTemporal.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
+
+                let html = '<option value="" disabled selected class="text-black">Selecciona la empresa / campaña...</option>';
+                listaTemporal.forEach(d => {
+                    html += `<option value="${d.id}" class="text-black">${d.nombreComercial}</option>`;
+                });
+                
                 select.innerHTML = html;
             } catch (error) {
                 console.error("Error al cargar servicios:", error);
