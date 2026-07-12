@@ -67,7 +67,7 @@
 
         <div id="vista-nuevo" class="hidden animate-fade-in glass p-6 rounded-3xl shadow-xl">
             <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
-                <h2 class="font-black text-xl"><i class="fa-solid fa-file-signature mr-2"></i> Iniciar Equipo </h2>
+                <h2 class="font-black text-xl"><i class="fa-solid fa-file-signature mr-2"></i> Control Biológico de Instalación</h2>
                 <button onclick="volverLista()" class="text-sm bg-white/20 px-3 py-1 rounded-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
@@ -104,19 +104,19 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">N/S Equipo</label>
-                        <input type="text" id="ns-serie" placeholder="Ej. SN-4920" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm">
+                        <input type="text" id="ns-serie" placeholder="EJ.1328..." class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm">
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-1 gap-3">
                     <div id="contenedor-cabina">
                         <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">N/S Cabina</label>
-                        <input type="text" id="ns-cabina" placeholder="Ej. C-102" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm">
+                        <input type="text" id="ns-cabina" placeholder="Ej.8702..." class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm">
                     </div>
                 </div>
 
                 <button id="btn-guardar-cabecera" onclick="guardarNuevoServicio()" class="w-full bg-white hover:bg-orange-50 text-orange-600 font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 mt-4 text-sm flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-check"></i> Activar y Generar Bitácora
+                    <i class="fa-solid fa-check"></i> Activar Equipo
                 </button>
             </div>
         </div>
@@ -368,7 +368,7 @@
             const eq = document.getElementById('ns-equipo').value;
             const ns = document.getElementById('ns-serie').value.trim().toUpperCase();
             
-            if(!selServicio.value) return mostrarToast("Seleccione una campaña de la lista.");
+            if(!selServicio.value) return mostrarToast("Seleccione una empresa de la lista.");
             const emp = selServicio.options[selServicio.selectedIndex].text;
             const idServicio = selServicio.value;
 
@@ -413,7 +413,7 @@
 
         window.guardarBitacoraDiaria = async function() {
             const med = document.getElementById('cap-medico').value.trim().toUpperCase();
-            if(!med) return mostrarToast("Seleccione o escriba el nombre del médico.");
+            if(!med) return mostrarToast("Seleccione o escriba el nombre del Médico / Técnico.");
             
             const blank = document.createElement('canvas');
             blank.width = canvas.width; blank.height = canvas.height;
