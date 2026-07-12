@@ -262,18 +262,33 @@
             }
         }
 
-        // CARGAR DIRECTORIO PARA EL SELECTOR AL GENERAR NUEVO EQUIPO
         async function cargarDirectorioServicios() {
             const select = document.getElementById('ns-servicio');
             try {
                 const q = window.query(window.collection(window.db, "directorio_servicios"), window.where("estado", "==", "activo"));
                 const qs = await window.getDocs(q);
+                
                 if (qs.empty) {
                     select.innerHTML = '<option value="" disabled selected class="text-black">No hay campañas activas.</option>';
                     return;
                 }
+
+                // Arreglo temporal
+                let listaTemporal = [];
+                qs.forEach(doc => {
+                    let d = doc.data();
+                    d.id = doc.id;
+                    listaTemporal.push(d);
+                });
+
+                // ORDEN ALFABÉTICO (A-Z)
+                listaTemporal.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
+
                 let html = '<option value="" disabled selected class="text-black">Selecciona la campaña...</option>';
-                qs.forEach(doc => { html += `<option value="${doc.id}" class="text-black">${doc.data().nombreComercial}</option>`; });
+                listaTemporal.forEach(d => { 
+                    html += `<option value="${d.id}" class="text-black">${d.nombreComercial}</option>`; 
+                });
+                
                 select.innerHTML = html;
             } catch (e) {
                 select.innerHTML = '<option value="" disabled selected class="text-black">Error cargando servicios.</option>';
