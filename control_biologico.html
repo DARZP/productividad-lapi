@@ -56,10 +56,10 @@
 
         <div id="vista-lista" class="animate-fade-in">
             <button onclick="abrirNuevoServicio()" class="w-full bg-white text-orange-600 font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 mb-8 flex justify-center items-center gap-2 text-lg">
-                <i class="fa-solid fa-folder-plus"></i> Generar Nuevo Servicio
+                <i class="fa-solid fa-folder-plus"></i> Registrar Nuevo Equipo
             </button>
 
-            <h2 class="text-xs font-black uppercase tracking-widest text-orange-200 mb-4 border-b border-white/20 pb-2"><i class="fa-solid fa-tower-cell mr-1"></i> Servicios Activos</h2>
+            <h2 class="text-xs font-black uppercase tracking-widest text-orange-200 mb-4 border-b border-white/20 pb-2"><i class="fa-solid fa-tower-cell mr-1"></i> Equipos Activos en Ruta</h2>
             <div id="contenedor-servicios" class="space-y-4">
                 <div class="text-center py-10 opacity-70"><i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i><p class="text-sm font-bold">Cargando...</p></div>
             </div>
@@ -67,7 +67,7 @@
 
         <div id="vista-nuevo" class="hidden animate-fade-in glass p-6 rounded-3xl shadow-xl">
             <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
-                <h2 class="font-black text-xl"><i class="fa-solid fa-file-signature mr-2"></i> Iniciar Servicio </h2>
+                <h2 class="font-black text-xl"><i class="fa-solid fa-file-signature mr-2"></i> Iniciar Equipo </h2>
                 <button onclick="volverLista()" class="text-sm bg-white/20 px-3 py-1 rounded-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
@@ -86,17 +86,19 @@
                     </div>
                 </div>
 
+                <!-- CAMBIO: AHORA ES UN SELECTOR DE SERVICIOS ACTIVOS -->
                 <div>
-                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Empresa</label>
-                    <input type="text" id="ns-empresa" list="lista-empresas" placeholder="Buscar empresa..." class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm">
+                    <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Campaña / Empresa Asignada</label>
+                    <select id="ns-servicio" class="w-full p-3 bg-white/20 text-white border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold text-sm appearance-none cursor-pointer">
+                        <option value="" disabled selected class="text-black">Cargando servicios...</option>
+                    </select>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label id="lbl-equipo" class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Audiómetro</label>
                         <div class="relative">
-                            <select id="ns-equipo" class="w-full p-3 bg-white/20 text-white border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold text-sm appearance-none cursor-pointer">
-                                </select>
+                            <select id="ns-equipo" class="w-full p-3 bg-white/20 text-white border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold text-sm appearance-none cursor-pointer"></select>
                             <i class="fa-solid fa-chevron-down absolute right-3 top-4 pointer-events-none text-white/70"></i>
                         </div>
                     </div>
@@ -106,19 +108,15 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 gap-3">
                     <div id="contenedor-cabina">
                         <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">N/S Cabina</label>
                         <input type="text" id="ns-cabina" placeholder="Ej. C-102" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold uppercase text-sm">
                     </div>
-                    <div id="contenedor-fecha" class="col-span-1">
-                        <label class="block text-[10px] font-bold text-white/90 uppercase tracking-widest mb-1">Fecha Inicio</label>
-                        <input type="date" id="ns-fecha" class="w-full p-3 bg-white/20 text-white border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition font-bold text-sm">
-                    </div>
                 </div>
 
                 <button id="btn-guardar-cabecera" onclick="guardarNuevoServicio()" class="w-full bg-white hover:bg-orange-50 text-orange-600 font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 mt-4 text-sm flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-check"></i> Confirmar
+                    <i class="fa-solid fa-check"></i> Activar y Generar Bitácora
                 </button>
             </div>
         </div>
@@ -126,14 +124,13 @@
         <div id="vista-captura" class="hidden animate-fade-in">
             <div class="glass p-5 rounded-3xl shadow-sm mb-6 border-l-4 border-white/50">
                 <div class="flex justify-between items-start mb-2">
-                    <h2 id="cap-empresa" class="font-black text-xl leading-tight text-white uppercase">EMPRESA</h2>
-                    <button onclick="volverLista()" class="text-xs bg-white/20 px-3 py-1.5 rounded-lg font-bold hover:bg-white/30 shrink-0 ml-2"><i class="fa-solid fa-arrow-left mr-1"></i> Lista</button>
+                    <h2 id="cap-empresa" class="font-black text-xl leading-tight text-white uppercase pr-2">EMPRESA</h2>
+                    <button onclick="volverLista()" class="text-xs bg-white/20 px-3 py-1.5 rounded-lg font-bold hover:bg-white/30 shrink-0"><i class="fa-solid fa-arrow-left mr-1"></i> Lista</button>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-xs font-medium text-white/90">
-                    <p id="p-tipo-icon"><i id="icon-equipo" class="fa-solid fa-headphones mr-1"></i> <span id="cap-equipo" class="font-bold"></span></p>
-                    <p><i class="fa-solid fa-barcode mr-1"></i> N/S: <span id="cap-ns" class="font-bold text-orange-200"></span></p>
-                    <p id="p-cabina"><i class="fa-solid fa-box mr-1"></i> Cab: <span id="cap-cab" class="font-bold text-orange-200"></span></p>
-                    <p><i class="fa-regular fa-calendar mr-1"></i> <span id="cap-fecha"></span></p>
+                    <p id="p-tipo-icon" class="col-span-2"><i id="icon-equipo" class="fa-solid fa-headphones mr-1"></i> <span id="cap-equipo" class="font-bold"></span></p>
+                    <p class="bg-black/20 p-1.5 rounded-lg border border-white/10 text-center"><i class="fa-solid fa-barcode mr-1 opacity-70"></i> N/S: <br><span id="cap-ns" class="font-black text-orange-200 text-sm"></span></p>
+                    <p id="p-cabina" class="bg-black/20 p-1.5 rounded-lg border border-white/10 text-center"><i class="fa-solid fa-box mr-1 opacity-70"></i> Cabina: <br><span id="cap-cab" class="font-black text-orange-200 text-sm"></span></p>
                 </div>
             </div>
 
@@ -207,7 +204,6 @@
 
     </div>
 
-    <datalist id="lista-empresas"></datalist>
     <datalist id="lista-medicos"></datalist>
 
     <script>
@@ -220,20 +216,14 @@
         let dibujando = false;
 
         document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById('ns-fecha').value = new Date().toISOString().split('T')[0];
-            
-            const datalistEmpresas = document.getElementById('lista-empresas');
-            if(window.LAPI_CONFIG && window.LAPI_CONFIG.empresas) {
-                datalistEmpresas.innerHTML = window.LAPI_CONFIG.empresas.map(e => `<option value="${e}">`).join('');
-            }
-
             const datalistMedicos = document.getElementById('lista-medicos');
             if(window.LAPI_CONFIG && window.LAPI_CONFIG.medicos) {
                 datalistMedicos.innerHTML = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">`).join('');
             }
 
             cambiarTipoFormulario();
-            cargarServiciosActivos();
+            cargarDirectorioServicios();
+            cargarEquiposActivos();
             configurarCanvas();
         });
 
@@ -252,7 +242,6 @@
             const tipo = document.querySelector('input[name="tipoControl"]:checked').value;
             const selectEquipo = document.getElementById('ns-equipo');
             const contCabina = document.getElementById('contenedor-cabina');
-            const contFecha = document.getElementById('contenedor-fecha');
             const lblEquipo = document.getElementById('lbl-equipo');
 
             selectEquipo.innerHTML = '<option value="" disabled selected class="text-white/60">SELECCIONE...</option>';
@@ -264,18 +253,35 @@
                     <option value="MADSEN ITERA II" class="text-slate-800">MADSEN ITERA II</option>
                 `;
                 contCabina.classList.remove('hidden');
-                contFecha.classList.replace('col-span-2', 'col-span-1');
             } else {
                 lblEquipo.innerText = "Espirómetro";
                 selectEquipo.innerHTML += `
                     <option value="MEDKRO- PRO" class="text-slate-800">MEDKRO- PRO</option>
                 `;
                 contCabina.classList.add('hidden');
-                contFecha.classList.replace('col-span-1', 'col-span-2');
             }
         }
 
-        async function cargarServiciosActivos() {
+        // CARGAR DIRECTORIO PARA EL SELECTOR AL GENERAR NUEVO EQUIPO
+        async function cargarDirectorioServicios() {
+            const select = document.getElementById('ns-servicio');
+            try {
+                const q = window.query(window.collection(window.db, "directorio_servicios"), window.where("estado", "==", "activo"));
+                const qs = await window.getDocs(q);
+                if (qs.empty) {
+                    select.innerHTML = '<option value="" disabled selected class="text-black">No hay campañas activas.</option>';
+                    return;
+                }
+                let html = '<option value="" disabled selected class="text-black">Selecciona la campaña...</option>';
+                qs.forEach(doc => { html += `<option value="${doc.id}" class="text-black">${doc.data().nombreComercial}</option>`; });
+                select.innerHTML = html;
+            } catch (e) {
+                select.innerHTML = '<option value="" disabled selected class="text-black">Error cargando servicios.</option>';
+            }
+        }
+
+        // CARGAR EQUIPOS DE LA COLECCIÓN DE CONTROL BIOLÓGICO
+        async function cargarEquiposActivos() {
             const cont = document.getElementById('contenedor-servicios');
             try {
                 const q = window.query(window.collection(window.db, "control_biologico"), window.where("estado", "==", "activo"));
@@ -283,7 +289,7 @@
                 cont.innerHTML = "";
                 
                 if(qs.empty) {
-                    cont.innerHTML = `<div class="text-center py-6 glass rounded-2xl"><p class="text-sm font-bold text-orange-100">No hay servicios abiertos.</p></div>`;
+                    cont.innerHTML = `<div class="text-center py-6 glass rounded-2xl"><p class="text-sm font-bold text-orange-100">No hay equipos biológicos activos.</p></div>`;
                     return;
                 }
 
@@ -294,12 +300,13 @@
                     
                     cont.innerHTML += `
                         <div onclick="abrirCaptura('${doc.id}', '${d.tipo}', '${d.empresa}', '${d.equipo}', '${d.ns_equipo}', '${d.ns_cabina || ''}', '${d.fecha_inicio}')" class="glass p-4 rounded-2xl cursor-pointer hover:bg-white/30 transition border-l-4 border-white/50 flex justify-between items-center shadow-sm active:scale-95">
-                            <div>
-                                <h3 class="font-black text-sm uppercase text-white">${d.empresa}</h3>
-                                <p class="text-[10px] text-white/90 font-medium uppercase mt-0.5"><i class="fa-solid ${icono} mr-1"></i> ${d.tipo} | <i class="fa-regular fa-calendar ml-1 mr-1"></i> ${d.fecha_inicio}</p>
+                            <div class="w-3/4">
+                                <h3 class="font-black text-sm uppercase text-white truncate">${d.empresa}</h3>
+                                <p class="text-[10px] text-white/90 font-medium uppercase mt-1"><i class="fa-solid ${icono} mr-1 text-orange-300"></i> ${d.equipo}</p>
+                                <p class="text-xs text-white font-bold uppercase mt-1"><i class="fa-solid fa-barcode mr-1 opacity-70"></i> N/S: <span class="text-orange-200">${d.ns_equipo}</span></p>
                             </div>
-                            <div class="text-right">
-                                <span class="bg-white/20 px-3 py-1 rounded-lg text-xs font-black text-white shadow-inner"><i class="fa-solid fa-list-check mr-1 text-orange-200"></i> ${numRegistros} regs.</span>
+                            <div class="text-right shrink-0">
+                                <span class="bg-white/20 px-3 py-1 rounded-lg text-xs font-black text-white shadow-inner"><i class="fa-solid fa-list-check mr-1 text-orange-200"></i> ${numRegistros}</span>
                             </div>
                         </div>
                     `;
@@ -308,7 +315,7 @@
         }
 
         window.abrirNuevoServicio = () => { document.getElementById('vista-lista').classList.add('hidden'); document.getElementById('vista-nuevo').classList.remove('hidden'); }
-        window.volverLista = () => { document.getElementById('vista-nuevo').classList.add('hidden'); document.getElementById('vista-captura').classList.add('hidden'); document.getElementById('vista-lista').classList.remove('hidden'); docIdActivo = null; tipoControlActivo = null; cargarServiciosActivos(); }
+        window.volverLista = () => { document.getElementById('vista-nuevo').classList.add('hidden'); document.getElementById('vista-captura').classList.add('hidden'); document.getElementById('vista-lista').classList.remove('hidden'); docIdActivo = null; tipoControlActivo = null; cargarEquiposActivos(); }
         
         window.abrirCaptura = (id, tipo, emp, eq, ns, cab, fec) => {
             docIdActivo = id;
@@ -317,7 +324,6 @@
             document.getElementById('cap-empresa').innerText = emp;
             document.getElementById('cap-equipo').innerText = eq;
             document.getElementById('cap-ns').innerText = ns;
-            document.getElementById('cap-fecha').innerText = fec;
             
             if(tipo === 'audiometria') {
                 document.getElementById('icon-equipo').className = "fa-solid fa-headphones mr-1";
@@ -332,7 +338,7 @@
                 document.getElementById('modulo-espirometria').classList.remove('hidden');
             }
             
-            document.querySelectorAll('input[type="number"]').forEach(inp => inp.value = '');
+            document.querySelectorAll('#vista-captura input[type="number"]').forEach(inp => inp.value = '');
             document.getElementById('cap-medico').value = '';
             limpiarFirma();
 
@@ -343,25 +349,31 @@
 
         window.guardarNuevoServicio = async function() {
             const tipo = document.querySelector('input[name="tipoControl"]:checked').value;
-            const emp = document.getElementById('ns-empresa').value.trim().toUpperCase();
+            const selServicio = document.getElementById('ns-servicio');
             const eq = document.getElementById('ns-equipo').value;
             const ns = document.getElementById('ns-serie').value.trim().toUpperCase();
-            const fec = document.getElementById('ns-fecha').value;
             
+            if(!selServicio.value) return mostrarToast("Seleccione una campaña de la lista.");
+            const emp = selServicio.options[selServicio.selectedIndex].text;
+            const idServicio = selServicio.value;
+
             let cab = "";
             if (tipo === 'audiometria') {
                 cab = document.getElementById('ns-cabina').value.trim().toUpperCase();
                 if(!cab) return mostrarToast("Falta N/S de Cabina.");
             }
 
-            if(!emp || !eq || !ns || !fec) return mostrarToast("Llena todos los campos obligatorios.");
+            if(!eq || !ns) return mostrarToast("Llena todos los campos del equipo.");
             
+            const fec = new Date().toISOString().split('T')[0]; // Fecha actual oculta
+
             const btn = document.getElementById('btn-guardar-cabecera');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creando...'; btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Vinculando...'; btn.disabled = true;
 
             const nuevoDoc = {
                 tipo: tipo,
                 estado: "activo",
+                idServicio: idServicio, // Vinculado a directorio_servicios
                 empresa: emp,
                 equipo: eq,
                 ns_equipo: ns,
@@ -374,9 +386,9 @@
 
             try {
                 const docRef = await window.addDoc(window.collection(window.db, "control_biologico"), nuevoDoc);
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> Iniciar Registro Maestro'; btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Activar y Generar Bitácora'; btn.disabled = false;
                 
-                document.getElementById('ns-empresa').value = ''; document.getElementById('ns-serie').value = ''; document.getElementById('ns-cabina').value = '';
+                document.getElementById('ns-servicio').value = ''; document.getElementById('ns-serie').value = ''; document.getElementById('ns-cabina').value = '';
                 
                 abrirCaptura(docRef.id, tipo, emp, eq, ns, cab, fec);
             } catch(e) {
