@@ -324,7 +324,7 @@
                 // ORDEN ALFABÉTICO (A-Z)
                 listaTemporal.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
 
-                let html = '<option value="" disabled selected class="text-black">Selecciona la empresa / campaña...</option>';
+                let html = '<option value="" disabled selected class="text-black">Selecciona la empresa</option>';
                 listaTemporal.forEach(d => {
                     html += `<option value="${d.id}" class="text-black">${d.nombreComercial}</option>`;
                 });
