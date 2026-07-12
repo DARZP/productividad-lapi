@@ -335,43 +335,52 @@
 
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-2"></i> Activar y Guardar Servicio'; btn.disabled = false;
         };
+     
 
         window.cargarServicios = async function() {
             const container = document.getElementById('lista-servicios-container');
             container.innerHTML = '<div class="text-center py-20 text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-orange-300 block"></i></div>';
             
             try {
-                const q = window.query(window.collection(window.db, "directorio_servicios"), window.orderBy("timestamp", "desc"));
+                // Ya no ordenamos por timestamp, descargamos todo
+                const q = window.query(window.collection(window.db, "directorio_servicios"));
                 const qs = await window.getDocs(q);
-                serviciosGlobales = [];
+                
+                let listaTemporal = [];
                 const hoy = new Date();
-
                 let promesasActualizacion = [];
 
                 qs.forEach((docSnap) => {
                     let data = docSnap.data();
                     data.id = docSnap.id;
-                    
-                    // Lógica de Auto-Cierre Inteligente (Ventana de 2 días)
+                    listaTemporal.push(data);
+                });
+
+                // MAGIA: ORDEN ALFABÉTICO EXACTO (A-Z)
+                listaTemporal.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
+
+                serviciosGlobales = [];
+
+                listaTemporal.forEach((data) => {
+                    // Lógica de Auto-Cierre Inteligente
                     if (data.estado === 'activo' && !data.excepcionCierre) {
                         let fFin = new Date(data.fechaFin + 'T23:59:59');
                         let diasVencido = (hoy - fFin) / (1000 * 60 * 60 * 24);
                         
                         if (diasVencido > 2) {
-                            data.estado = 'finalizado'; // Actualizamos localmente para la vista
-                            // Agregamos a la cola para actualizar en Firebase
+                            data.estado = 'finalizado'; 
                             promesasActualizacion.push( window.updateDoc(window.doc(window.db, "directorio_servicios", data.id), { estado: 'finalizado' }) );
                         }
                     }
-                    
                     serviciosGlobales.push(data);
                 });
 
-                // Si hubo auto-cierres, los ejecutamos en segundo plano
                 if(promesasActualizacion.length > 0) Promise.all(promesasActualizacion).catch(e => console.log("Error auto-cierre", e));
 
                 renderizarLista();
-            } catch (error) { container.innerHTML = '<p class="text-center text-xs text-red-500 py-10 font-bold">Error de conexión.</p>'; }
+            } catch (error) { 
+                container.innerHTML = '<p class="text-center text-xs text-red-500 py-10 font-bold">Error de conexión.</p>'; 
+            }
         };
 
         function renderizarLista() {
