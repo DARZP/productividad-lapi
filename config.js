@@ -87,6 +87,7 @@ window.LAPI_CONFIG = {
         "Soriano Arvea Ariagna Anahi",
         "Susana Cayetano",
         "Tahuilan Enciso Cinthia",
+        "Tania Aidee Ledesma Corona",
         "Toriz Segura Jessica Noemi",
         "Vazquez Euan Daniela de los Angeles",
         "Velasco Duran Araceli",
