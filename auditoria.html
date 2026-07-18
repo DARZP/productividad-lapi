@@ -59,39 +59,28 @@
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
+    <!-- NAVEGACIÓN LATERAL UNIFICADA -->
     <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom">
+        <div class="hidden md:flex mb-2 text-3xl"><i class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i></div>
         
-        <div class="hidden md:flex mb-2 text-3xl">
-            <i id="logo-snake" class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i>
-        </div>
-
         <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span>
         </a>
-
         <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
-
         <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div>
-            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Global</span>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Monitor</span>
         </a>
         <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Reportes</span>
         </a>
-
         <a href="admin_servicios.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-building text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Servicios</span>
         </a>
-
-        <a href="admin_servicios.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all">
-            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-building text-base md:text-xl"></i></div>
-            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Servicios</span>
-        </a>
-        
-        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group">
+        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group transition-all">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span>
         </a>
@@ -118,14 +107,15 @@
             </div>
             
             <div class="flex flex-wrap gap-2 bg-black/20 p-1.5 rounded-xl w-full md:w-auto">
-                <button onclick="cambiarSeccion('cruce')" id="nav-cruce" class="tab-active flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-800"><i class="fa-solid fa-code-compare mr-1"></i> Inbox de Cruce</button>
+                <button onclick="cambiarSeccion('cruce')" id="nav-cruce" class="tab-active flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-800"><i class="fa-solid fa-building mr-1"></i> Sucursales</button>
+                <button onclick="cambiarSeccion('foraneos')" id="nav-foraneos" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-white/70 hover:text-white"><i class="fa-solid fa-map-location-dot mr-1"></i> Foráneos (IA)</button>
                 <button onclick="cambiarSeccion('tnc')" id="nav-tnc" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-white/70 hover:text-white"><i class="fa-solid fa-list-check mr-1"></i> Gestión TNC</button>
                 <button onclick="cambiarSeccion('perfil')" id="nav-perfil" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-white/70 hover:text-white"><i class="fa-solid fa-user-doctor mr-1"></i> Expediente</button>
             </div>
         </div>
 
+        <!-- SECCIÓN: SUCURSALES (ORIGINAL) -->
         <div id="sec-cruce" class="block animate-fade-in flex-1">
-            
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div class="glass p-4 rounded-3xl text-center border-b-4 border-emerald-500 shadow-sm"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Match Ocultos (OK)</p><p id="kpi-aud-match" class="text-3xl font-black text-emerald-600 mt-1">0</p></div>
                 <div class="glass p-4 rounded-3xl text-center border-b-4 border-red-500 shadow-sm"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Faltan en App</p><p id="kpi-aud-rojo" class="text-3xl font-black text-red-600 mt-1">0</p></div>
@@ -138,21 +128,17 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                
                 <div class="glass p-6 rounded-3xl shadow-sm border-l-4 border-sky-500 relative flex flex-col justify-between">
                     <div class="absolute top-0 right-0 bg-sky-100 text-sky-600 text-[9px] font-black px-2 py-1 rounded-bl-lg">M2M ENABLED</div>
                     <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Origen de Datos (Excel)</h3>
-                    
                     <button onclick="iniciarExtraccionInteligente()" class="w-full bg-[#0078d4] hover:bg-[#005a9e] text-white font-bold py-2.5 rounded-xl transition-all shadow-md text-sm active:scale-95 mb-4 flex items-center justify-center gap-2">
                         <i class="fa-brands fa-microsoft text-lg"></i> Extraer de OneDrive
                     </button>
-                    
                     <div class="relative flex py-1 items-center mb-2">
                         <div class="flex-grow border-t border-slate-200"></div>
                         <span class="flex-shrink-0 mx-4 text-slate-400 text-[9px] font-bold uppercase tracking-widest">O Archivo Local</span>
                         <div class="flex-grow border-t border-slate-200"></div>
                     </div>
-                    
                     <input type="file" id="archivoAuditoria" multiple accept=".csv, .xlsx, .xls, .ods" class="w-full mb-3 text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
                     <button onclick="ejecutarCruceDeDatos()" id="btn-auditoria" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-2.5 rounded-xl transition-all shadow-sm text-xs active:scale-95 mt-auto"><i class="fa-solid fa-upload mr-1"></i> Cruzar Archivos Locales</button>
                 </div>
@@ -207,6 +193,77 @@
                         </thead>
                         <tbody id="tabla-auditoria" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs bg-slate-50/30">
                             <tr><td colspan="6" class="text-center py-20 text-slate-400 italic font-bold">No hay discrepancias. La operación está sana o no has cruzado datos.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- NUEVA SECCIÓN: FORÁNEOS (CONCILIACIÓN IA) -->
+        <div id="sec-foraneos" class="hidden animate-fade-in flex-1">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- PANEL IA -->
+                <div class="glass p-6 rounded-3xl shadow-sm border-l-4 border-indigo-500 md:col-span-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-black text-xs uppercase tracking-wider text-slate-500"><i class="fa-solid fa-robot mr-1"></i> Análisis de Bitácora (IA)</h3>
+                        <i class="fa-solid fa-wand-magic-sparkles text-indigo-400 text-lg"></i>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mb-4 font-bold tracking-wide">Sube el PDF escaneado de la bitácora foránea. La Inteligencia Artificial interpretará el formato libre, omitirá estudios de laboratorio/EKG y normalizará nombres de empresas para cruzar contra el sistema.</p>
+                    
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">API Key Gemini <span class="text-indigo-500">(Multimodal)</span></label>
+                            <input type="password" id="gemini-api-key" placeholder="Pega aquí tu clave..." class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 focus:border-indigo-400 transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">PDF Escaneado</label>
+                            <input type="file" id="pdf-bitacora" accept="application/pdf" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
+                        </div>
+                    </div>
+                    
+                    <button onclick="analizarPDFBitacora()" id="btn-analizar-pdf" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 rounded-xl transition-all shadow-md text-xs active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i> Procesar Documento
+                    </button>
+                </div>
+
+                <!-- KPI FORÁNEOS -->
+                <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 md:col-span-2 flex flex-col justify-center">
+                    <h3 class="font-black text-xs uppercase tracking-wider mb-4 text-slate-500 border-b border-slate-100 pb-2"><i class="fa-solid fa-chart-line mr-1"></i> Resumen de Conciliación</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-slate-50 p-4 rounded-2xl text-center border border-slate-200">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estudios en PDF</p>
+                            <p id="kpi-for-pdf" class="text-3xl font-black text-slate-700 mt-1">0</p>
+                        </div>
+                        <div class="bg-emerald-50 p-4 rounded-2xl text-center border border-emerald-100">
+                            <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Cuadran Exacto</p>
+                            <p id="kpi-for-match" class="text-3xl font-black text-emerald-600 mt-1">0</p>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-2xl text-center border border-red-100">
+                            <p class="text-[10px] font-black text-red-600 uppercase tracking-widest">Discrepancias</p>
+                            <p id="kpi-for-error" class="text-3xl font-black text-red-600 mt-1">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLA RESULTADOS FORÁNEOS -->
+            <div class="glass rounded-3xl flex-1 flex flex-col overflow-hidden shadow-sm border border-slate-200 min-h-[400px]">
+                <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                    <h3 class="font-black text-[12px] text-slate-700 uppercase tracking-widest"><i class="fa-solid fa-table-list text-indigo-500 mr-2"></i> Resultados de Conciliación (App vs Papel)</h3>
+                </div>
+                <div class="overflow-x-auto scroll-custom flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-white z-10 shadow-sm text-[10px] uppercase text-slate-400 font-black tracking-widest border-b border-slate-200">
+                            <tr>
+                                <th class="p-4">Fecha / Empresa (Normalizada)</th>
+                                <th class="p-4">Estudio</th>
+                                <th class="p-4 text-center text-indigo-600">En Papel (PDF)</th>
+                                <th class="p-4 text-center text-sky-600">En Sistema (App)</th>
+                                <th class="p-4">Observación IA / Criterio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-foraneos" class="divide-y divide-slate-100 font-medium text-slate-700 text-xs bg-slate-50/30">
+                            <tr><td colspan="5" class="text-center py-20 text-slate-400 italic font-bold">Sube una bitácora en PDF para iniciar la conciliación.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -273,12 +330,13 @@
         </div>
     </main>
 
+    <!-- ZONA DE MODALES ORIGINALES MANTENIDA IGUAL -->
     <div id="modal-onedrive" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <!-- ... (Contenido OneDrive intacto) ... -->
         <div id="modal-onedrive-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-sky-200 text-center flex flex-col max-h-[90vh]">
             <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-brands fa-microsoft"></i></div>
             <h3 class="text-xl font-black mb-2 text-slate-800">Extracción de Nube</h3>
             <p class="text-sm text-slate-500 mb-5">El sistema buscará los archivos Excel basándose en el mes seleccionado.</p>
-            
             <div id="od-config">
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2 text-left">Periodo a buscar (Mes/Año)</label>
                 <input type="month" id="od-mes-buscar" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 font-bold text-slate-700 outline-none focus:border-sky-400">
@@ -287,7 +345,6 @@
                     <button onclick="ejecutarExtraccionOneDrive()" class="w-1/2 bg-[#0078d4] hover:bg-[#005a9e] text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Buscar y Extraer</button>
                 </div>
             </div>
-
             <div id="od-status" class="hidden flex-col items-center">
                 <i class="fa-solid fa-circle-notch fa-spin text-4xl text-sky-500 mb-4"></i>
                 <p id="od-status-text" class="text-sm font-bold text-slate-600 mb-4">Conectando con Microsoft Graph...</p>
@@ -297,6 +354,7 @@
     </div>
 
     <div id="modal-tnc" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <!-- ... (Contenido TNC intacto) ... -->
         <div id="modal-tnc-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-lg w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-xl font-black mb-4 text-orange-600 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Registrar TNC</h3>
             <input type="hidden" id="tnc-hash"><input type="hidden" id="tnc-origen"><input type="hidden" id="tnc-fecha"><input type="hidden" id="tnc-medico"><input type="hidden" id="tnc-lugar"><input type="hidden" id="tnc-estudio">
@@ -305,9 +363,7 @@
                 <p class="text-xs text-slate-500 mb-2 font-bold">1. Busca el servicio exacto en la base de datos:</p>
                 <div class="flex gap-2 mb-3">
                     <select id="tnc-filtro-origen" onchange="ejecutarBuscadorTNC()" class="w-1/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-600 focus:border-orange-400">
-                        <option value="Todos">Todos</option>
-                        <option value="Sucursal">Sucursal</option>
-                        <option value="Foráneo">Foráneo</option>
+                        <option value="Todos">Todos</option><option value="Sucursal">Sucursal</option><option value="Foráneo">Foráneo</option>
                     </select>
                     <input type="text" id="tnc-filtro-texto" onkeyup="ejecutarBuscadorTNC()" placeholder="Ej. Lomas Verdes, Juan, HC..." class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-orange-400">
                 </div>
@@ -333,9 +389,10 @@
     </div>
 
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <!-- ... (Contenido Lupa intacto) ... -->
         <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-2xl w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
-                <h3 class="text-lg font-black text-orange-600 flex items-center gap-2"><i class="fa-solid fa-microscope"></i> Visor de Metadatos (Excel)</h3>
+                <h3 class="text-lg font-black text-orange-600 flex items-center gap-2"><i class="fa-solid fa-users"></i> Detalle de Pacientes</h3>
                 <button onclick="cerrarModal('lupa')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <div id="lupa-info" class="text-xs text-slate-500 mb-3 bg-slate-50 p-3 rounded-xl border border-slate-200"></div>
@@ -351,18 +408,23 @@
         </div>
     </div>
 
-    <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-correccion-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-orange-200 text-center">
-            <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-            <h3 class="text-lg font-black mb-2 text-slate-800">Forzar Sincronización</h3>
-            <p class="text-sm text-slate-500 mb-5">El sistema ajustará Firebase para que cuadre exactamente con el Excel subido.</p>
-            <p id="c-info" class="text-xs text-orange-800 bg-orange-50 p-3 rounded-xl border border-orange-200 font-bold mb-6"></p>
-            <input type="hidden" id="c-hash">
-            <input type="hidden" id="c-cantE">
-            <input type="hidden" id="c-cantA">
-            <div class="flex gap-3">
-                <button onclick="cerrarModal('correccion')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar</button>
-                <button id="btn-ejecutar-corr" onclick="ejecutarCorreccion()" class="w-1/2 bg-orange-600 hover:bg-orange-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Sincronizar</button>
+    <!-- Modal Editar Cantidad -->
+    <div id="modal-editar-cant" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-editar-cant-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                <h3 class="text-lg font-black text-sky-600 flex items-center gap-2"><i class="fa-solid fa-pen"></i> Editar Cantidad</h3>
+                <button onclick="cerrarModal('editar-cant')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <p id="edit-cant-info" class="text-xs font-bold text-slate-700 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200 text-center"></p>
+            <input type="hidden" id="edit-cant-groupId"><input type="hidden" id="edit-cant-dbSource"><input type="hidden" id="edit-cant-estudio"><input type="hidden" id="edit-cant-medico">
+            <div class="mb-6">
+                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 text-center">Nueva Cantidad</label>
+                <input type="number" id="edit-cant-val" min="0" class="w-full text-center p-3 text-2xl font-black text-slate-800 bg-white border border-slate-300 rounded-xl outline-none focus:border-sky-500 shadow-sm">
+                <p class="text-[9px] text-slate-400 text-center mt-2 leading-tight">Pon "0" si quieres eliminar específicamente este estudio del registro completo.</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="cerrarModal('editar-cant')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all text-sm">Cancelar</button>
+                <button id="btn-guardar-cant" onclick="guardarEdicionCant()" class="w-1/2 bg-sky-600 hover:bg-sky-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 text-sm">Guardar</button>
             </div>
         </div>
     </div>
@@ -393,6 +455,10 @@
         const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 
         window.iniciarAppAuditoria = async function() {
+            // Recuperar API Key si existe
+            const savedKey = localStorage.getItem('gemini_api_key');
+            if(savedKey) document.getElementById('gemini-api-key').value = savedKey;
+
             aplicarFiltroRapido('mes_anterior'); 
             window.cargarTNCs();
             await window.cargarIgnorados();
@@ -436,7 +502,7 @@
         };
 
         window.cambiarSeccion = function(sec) {
-            ['cruce', 'tnc', 'perfil'].forEach(s => {
+            ['cruce', 'foraneos', 'tnc', 'perfil'].forEach(s => {
                 document.getElementById(`sec-${s}`).classList.add('hidden');
                 document.getElementById(`nav-${s}`).classList.remove('tab-active', 'text-slate-800');
                 document.getElementById(`nav-${s}`).classList.add('text-white/70');
@@ -492,11 +558,7 @@
         };
 
         const msalConfig = {
-            auth: {
-                clientId: "eaaa1a34-63b2-4dc1-bf1e-8a16e820e9c3", 
-                authority: "https://login.microsoftonline.com/fae950d2-8771-4d4e-a95e-a9dab0bd22de",
-                redirectUri: window.location.href.split('?')[0] 
-            }
+            auth: { clientId: "eaaa1a34-63b2-4dc1-bf1e-8a16e820e9c3", authority: "https://login.microsoftonline.com/fae950d2-8771-4d4e-a95e-a9dab0bd22de", redirectUri: window.location.href.split('?')[0] }
         };
         const msalInstance = new msal.PublicClientApplication(msalConfig);
 
@@ -532,9 +594,7 @@
                     const activeAccount = msalInstance.getAllAccounts()[0];
                     if(activeAccount) {
                         tokenResponse = await msalInstance.acquireTokenSilent({ scopes: ["Files.Read.All"], account: activeAccount });
-                    } else {
-                        throw new Error("No hay cuenta activa");
-                    }
+                    } else { throw new Error("No hay cuenta activa"); }
                 } catch(err) {
                     const loginResponse = await msalInstance.loginPopup({ scopes: ["User.Read", "Files.Read.All"] });
                     tokenResponse = await msalInstance.acquireTokenSilent({ scopes: ["Files.Read.All"], account: loginResponse.account });
@@ -559,50 +619,32 @@
 
                 if(archivosAProcesar.length === 0) {
                     statusTxt.innerHTML = `<span class="text-red-500">No se encontraron Excels en la ruta solicitada.</span>`;
-                    setTimeout(() => cerrarModal('onedrive'), 3000);
-                    return;
+                    setTimeout(() => cerrarModal('onedrive'), 3000); return;
                 }
 
                 statusTxt.innerText = `Descargando y procesando ${archivosAProcesar.length} archivos...`;
-                
-                excelDataGlobal = {}; 
-                let exitos = 0;
+                excelDataGlobal = {}; let exitos = 0;
 
                 for(let file of archivosAProcesar) {
-                    const dlUrl = file["@microsoft.graph.downloadUrl"]; 
-                    if(!dlUrl) continue;
-                    
+                    const dlUrl = file["@microsoft.graph.downloadUrl"]; if(!dlUrl) continue;
                     try {
                         listaArchivos.innerHTML = `<div><i class="fa-solid fa-spinner fa-spin text-sky-400 mr-1"></i> Leyendo: ${file.name}</div>` + listaArchivos.innerHTML;
-                        const fileRes = await fetch(dlUrl); 
-                        const arrayBuffer = await fileRes.arrayBuffer();
-                        await procesarArrayBufferExcel(arrayBuffer); 
-                        exitos++;
+                        const fileRes = await fetch(dlUrl); const arrayBuffer = await fileRes.arrayBuffer();
+                        await procesarArrayBufferExcel(arrayBuffer); exitos++;
                         listaArchivos.children[0].innerHTML = `<i class="fa-solid fa-check text-emerald-500 mr-1"></i> Listo: ${file.name}`;
                     } catch(e) {
-                        console.error("Error al leer archivo:", file.name, e);
                         listaArchivos.children[0].innerHTML = `<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Error en: ${file.name}`;
                     }
                 }
 
                 statusTxt.innerHTML = `<span class="text-emerald-600 font-black"><i class="fa-solid fa-check-double mr-1"></i> ¡Extracción Completada!</span>`;
-                sincronizarAppGlobal();
-                window.reRenderAuditoria();
+                sincronizarAppGlobal(); window.reRenderAuditoria();
                 
-                setTimeout(() => {
-                    cerrarModal('onedrive');
-                    mostrarToast(`${exitos} Excels extraídos de OneDrive.`, "exito");
-                }, 2000);
+                setTimeout(() => { cerrarModal('onedrive'); mostrarToast(`${exitos} Excels extraídos de OneDrive.`, "exito"); }, 2000);
 
-            } catch (err) { 
-                console.error("Error M2M:", err); 
-                statusTxt.innerHTML = `<span class="text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Error en la conexión con Microsoft.</span>`;
-            }
+            } catch (err) { statusTxt.innerHTML = `<span class="text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Error en la conexión con Microsoft.</span>`; }
         };
 
-        // ==========================================================
-        // 2. MOTOR ESTRICTO CONTEXTUAL Y EXTRACTOR INTELIGENTE
-        // ==========================================================
         function normalizarDato(texto) {
             if (!texto) return "Desconocido";
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
@@ -635,14 +677,12 @@
         function unificarEstudio(est) {
             if(!est) return "Desconocido";
             let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            
             if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clínica";
             if (upper.includes("ESPIROMETRIA")) return "Espirometría";
-            if (upper.includes("AUDIOMETRIA")) return "Audiometría";
+            if (upper.includes("AUDIOMETRIA") || upper === "AUDIOS") return "Audiometría";
             if (upper.includes("ELECTROCARDIOGRAMA") || upper === "ECG" || upper === "EKG") return "Electrocardiograma";
             if (upper.includes("VISUAL") || upper.includes("OPTOMETRIA")) return "Examen Capacidad Visual";
             if (upper.includes("CONSULTA")) return "Consulta Médica";
-
             return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
@@ -654,46 +694,32 @@
 
         function traducirMedico(rawMed, rawSuc) {
             if (!rawMed) return "Desconocido";
-
             let med = String(rawMed).toUpperCase().trim();
             med = med.replace(/^DR\(A\)\.?\s*/, '').replace(/^DRA\.?\s*/, '').replace(/^DR\.?\s*/, '');
             med = med.replace(/\./g, '');
             med = med.replace(/\[INICIAL NO REGISTRADA:\s*/g, '').replace(/\]/g, '').trim();
 
             if (med === 'X' || med === '✔' || med === 'OK') return "X";
-
             let suc = normalizarDato(rawSuc).toUpperCase();
 
             if (diccIniciales[suc] && diccIniciales[suc][med]) return normalizarDato(diccIniciales[suc][med]);
-            for (const sucursalKey in diccIniciales) {
-                if (diccIniciales[sucursalKey][med]) return normalizarDato(diccIniciales[sucursalKey][med]);
-            }
+            for (const sucursalKey in diccIniciales) { if (diccIniciales[sucursalKey][med]) return normalizarDato(diccIniciales[sucursalKey][med]); }
 
             const medNormalizado = normalizarDato(med).toUpperCase();
             const medicos = window.LAPI_CONFIG.medicos || [];
 
-            const exactMatch = medicos.find(m => normalizarDato(m).toUpperCase() === medNormalizado);
-            if(exactMatch) return exactMatch;
-
-            const partialMatch = medicos.find(m => {
-                const mNorm = normalizarDato(m).toUpperCase();
-                return mNorm.includes(medNormalizado) || medNormalizado.includes(mNorm);
-            });
+            const exactMatch = medicos.find(m => normalizarDato(m).toUpperCase() === medNormalizado); if(exactMatch) return exactMatch;
+            const partialMatch = medicos.find(m => { const mNorm = normalizarDato(m).toUpperCase(); return mNorm.includes(medNormalizado) || medNormalizado.includes(mNorm); });
             if(partialMatch) return partialMatch;
 
             const palabrasIngresadas = medNormalizado.split(' ').filter(p => p.length > 2);
             if (palabrasIngresadas.length > 1) {
                 for (let m of medicos) {
                     const mNorm = normalizarDato(m).toUpperCase();
-                    const coincidenciaTotal = palabrasIngresadas.every(palabra => mNorm.includes(palabra));
-                    if (coincidenciaTotal) return m;
-
-                    const palabrasCatalogo = mNorm.split(' ').filter(p => p.length > 2);
-                    const coincidenciaInversa = palabrasCatalogo.every(palabra => medNormalizado.includes(palabra));
-                    if (coincidenciaInversa) return m;
+                    if (palabrasIngresadas.every(palabra => mNorm.includes(palabra))) return m;
+                    if (mNorm.split(' ').filter(p => p.length > 2).every(palabra => medNormalizado.includes(palabra))) return m;
                 }
             }
-
             return `[INICIAL NO REGISTRADA: ${med}]`;
         }
 
@@ -738,8 +764,7 @@
                 if(iEnc!==-1){
                     sEx = normalizarDato(sEx);
                     for(let r=iEnc+1; r<filas.length; r++){
-                        let f = filas[r]; 
-                        if(!f) continue;
+                        let f = filas[r]; if(!f) continue;
                         let fStr = f.join(" ").toUpperCase();
                         
                         let primeraCelda = String(f[0] || "").toUpperCase();
@@ -763,18 +788,11 @@
                                 let estRaw = estudiosMapeo[key];
                                 let est = unificarEstudio(estRaw);
                                 let med = traducirMedico(f[mapa[key]], sEx);
-                                
                                 let folioAsignado = (est === "Historia Clínica" || est === "Historia Clinica") ? folioEncontrado : "N/A";
-
                                 const hash = `${fEx}|${sEx}|${normalizarDato(med)}|${est}`;
                                 
                                 if(!excelDataGlobal[hash]) excelDataGlobal[hash] = [];
-                                excelDataGlobal[hash].push({ 
-                                    orden: numeroOrden, 
-                                    paciente: nombrePaciente,
-                                    empresa: empresaLimpia,
-                                    folio: folioAsignado
-                                });
+                                excelDataGlobal[hash].push({ orden: numeroOrden, paciente: nombrePaciente, empresa: empresaLimpia, folio: folioAsignado });
                             }
                         });
                     }
@@ -784,25 +802,18 @@
 
         window.sincronizarAppGlobal = function() {
             appDataGlobal = {};
-            
             for (let suc in diccIniciales) {
                 for (let ini in diccIniciales[suc]) {
                     window.medicoASucursalGlobal[normalizarDato(diccIniciales[suc][ini])] = normalizarDato(suc);
                 }
             }
-
             rawDataGlobal.forEach(reg => {
                 let sucReal = reg.sucursalBase;
-                
                 if (!sucReal || sucReal.toUpperCase() === "FORÁNEO" || sucReal.toUpperCase() === "DESCONOCIDA") {
-                    if (window.medicoASucursalGlobal[reg.medico]) {
-                        sucReal = window.medicoASucursalGlobal[reg.medico];
-                    }
+                    if (window.medicoASucursalGlobal[reg.medico]) sucReal = window.medicoASucursalGlobal[reg.medico];
                 }
-
                 const hash = `${reg.fecha}|${sucReal}|${reg.medico}|${reg.estudio}`;
                 appDataGlobal[hash] = (appDataGlobal[hash] || 0) + 1;
-                
                 if(reg.hasMeta) window.enrichedHashes.add(hash);
             });
         };
@@ -818,21 +829,10 @@
                     let data = await input.files[i].arrayBuffer();
                     await procesarArrayBufferExcel(data); 
                 }
-                sincronizarAppGlobal();
-                window.reRenderAuditoria();
+                sincronizarAppGlobal(); window.reRenderAuditoria();
             } catch(e) { mostrarToast("Error leyendo Excel", "error"); console.error(e); }
             document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-upload mr-1"></i> Cruzar Archivos Locales';
         };
-
-        function verificarParametrosURL() {
-            const params = new URLSearchParams(window.location.search);
-            if(params.has('medico')) {
-                cambiarSeccion('tnc');
-                window.seleccionarRegistroTNC(params.get('origen') || 'Sucursal', params.get('fecha') || '', params.get('lugar') || '', params.get('medico') || '', params.get('estudio') || '');
-                abrirModal('tnc');
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        }
 
         window.initAuditoria = async function() {
             try {
@@ -864,10 +864,7 @@
                                 let estLimpio = unificarEstudio(det.estudio);
                                 let metaKey = getMetaKey(estLimpio);
                                 let hasMeta = data[metaKey] && data[metaKey].length > 0;
-                                
-                                for(let k=0; k<cant; k++) {
-                                    rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: estLimpio, medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)), hasMeta });
-                                }
+                                for(let k=0; k<cant; k++) rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: estLimpio, medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)), hasMeta });
                             });
                         } else if (data.estudio) {
                             let estLimpio = unificarEstudio(data.estudio);
@@ -881,10 +878,7 @@
                             let estLimpio = unificarEstudio(det.estudio);
                             let metaKey = getMetaKey(estLimpio);
                             let hasMeta = data[metaKey] && data[metaKey].length > 0;
-                            
-                            for(let k=0; k<cant; k++) {
-                                rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), sucursalBase: normalizarDato(data.sucursal || "FORÁNEO"), estudio: estLimpio, medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")), hasMeta });
-                            }
+                            for(let k=0; k<cant; k++) rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), sucursalBase: normalizarDato(data.sucursal || "FORÁNEO"), estudio: estLimpio, medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")), hasMeta, cantDetalle: cant });
                         });
                     }
                 });
@@ -898,7 +892,6 @@
                             let estLimpio = unificarEstudio(est);
                             let metaKey = getMetaKey(estLimpio);
                             let hasMeta = data[metaKey] && data[metaKey].length > 0;
-                            
                             for(let k=0; k<cant; k++){
                                 rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: estLimpio, medico: normalizarDato(traducirMedico(data.medico, data.sucursal)), hasMeta });
                             }
@@ -910,11 +903,7 @@
                 sincronizarAppGlobal();
                 
                 if(Object.keys(excelDataGlobal).length > 0) window.reRenderAuditoria();
-                verificarParametrosURL(); 
-            } catch (error) { 
-                console.error(error);
-                document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Límite de Cuota o Red'; 
-            }
+            } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Límite de Cuota o Red'; }
         };
 
         window.aplicarFiltroRapido = function(tipo) {
@@ -931,33 +920,25 @@
             const hoy = new Date();
             let iStr = '', fStr = '';
 
-            function formatDate(d) {
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            }
+            function formatDate(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 
             if (tipo === 'mes_actual') {
-                let first = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-                let last = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+                let first = new Date(hoy.getFullYear(), hoy.getMonth(), 1); let last = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
                 iStr = formatDate(first); fStr = formatDate(last);
             } else if (tipo === 'mes_anterior') {
-                let first = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
-                let last = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+                let first = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1); let last = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
                 iStr = formatDate(first); fStr = formatDate(last);
             } else if (tipo === 'semana_actual') {
                 let diff = hoy.getDate() - hoy.getDay() + (hoy.getDay() === 0 ? -6 : 1);
-                let first = new Date(hoy.setDate(diff));
-                let last = new Date(hoy.setDate(diff + 6));
+                let first = new Date(hoy.setDate(diff)); let last = new Date(hoy.setDate(diff + 6));
                 iStr = formatDate(first); fStr = formatDate(last);
             } else if (tipo === 'semana_anterior') {
                 let diff = hoy.getDate() - hoy.getDay() + (hoy.getDay() === 0 ? -6 : 1) - 7;
-                let first = new Date(hoy.setDate(diff));
-                let last = new Date(hoy.setDate(diff + 6));
+                let first = new Date(hoy.setDate(diff)); let last = new Date(hoy.setDate(diff + 6));
                 iStr = formatDate(first); fStr = formatDate(last);
             }
             
-            document.getElementById('a-inicio').value = iStr; 
-            document.getElementById('a-fin').value = fStr;
-            
+            document.getElementById('a-inicio').value = iStr; document.getElementById('a-fin').value = fStr;
             window.initAuditoria();
         };
 
@@ -969,10 +950,7 @@
             let match=0, faltaEnApp=0, extraEnApp=0, ignoradosEnKpi=0; 
             let html = "";
             
-            window.discrepanciasInyectar = [];
-            window.discrepanciasEliminar = [];
-            window.discrepanciasTNC = [];
-            window.matchesParaEnriquecer = []; 
+            window.discrepanciasInyectar = []; window.discrepanciasEliminar = []; window.discrepanciasTNC = []; window.matchesParaEnriquecer = []; 
 
             let discrepanciasPorSucursal = {};
 
@@ -984,7 +962,6 @@
 
             todasLasLlaves.forEach(hash => {
                 const [fecha, sucursalBase, medico, estudio] = hash.split('|');
-                
                 if(!sucursalesAuditadas.has(sucursalBase)) return; 
                 if(fIni && fecha < fIni) return; 
                 if(fFin && fecha > fFin) return;
@@ -993,16 +970,13 @@
                 const cA = appDataGlobal[hash] || 0;
 
                 if (cE === cA) {
-                    match++; 
-                    if(cE > 0 && !window.enrichedHashes.has(hash)) window.matchesParaEnriquecer.push(hash); 
+                    match++; if(cE > 0 && !window.enrichedHashes.has(hash)) window.matchesParaEnriquecer.push(hash); 
                 } else if (window.ignoredHashes.has(hash)) {
                     ignoradosEnKpi++; 
                 } else {
                     if (cE > cA) faltaEnApp++; else extraEnApp++;
-                    
                     if (!discrepanciasPorSucursal[sucursalBase]) discrepanciasPorSucursal[sucursalBase] = 0;
                     discrepanciasPorSucursal[sucursalBase]++;
-
                     listaPendientes.push({ hash, fecha, sucursalBase, medico, estudio, cE, cA });
                 }
             });
@@ -1013,9 +987,7 @@
             if (window.sucursalActiva !== "Todas") {
                 filtrados = filtrados.filter(item => item.sucursalBase === window.sucursalActiva);
                 document.getElementById('lbl-sucursal-activa').innerText = window.sucursalActiva.toUpperCase();
-            } else {
-                document.getElementById('lbl-sucursal-activa').innerText = "TODAS";
-            }
+            } else { document.getElementById('lbl-sucursal-activa').innerText = "TODAS"; }
 
             filtrados.forEach(item => {
                 const { hash, fecha, sucursalBase, medico, estudio, cE, cA } = item;
@@ -1024,11 +996,9 @@
                 let btnLupa = cE > 0 ? `<button onclick="verLupa('${hash}')" class="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-2 py-1 rounded ml-2 transition shadow-sm" title="Ver Metadatos Extraídos del Excel"><i class="fa-solid fa-magnifying-glass"></i></button>` : '';
 
                 if (cE > cA) { 
-                    cHTML = 'bg-red-50 hover:bg-red-100 border-l-4 border-red-400'; 
-                    window.discrepanciasInyectar.push({hash: hash, cantE: cE, cantA: cA});
+                    cHTML = 'bg-red-50 hover:bg-red-100 border-l-4 border-red-400'; window.discrepanciasInyectar.push({hash: hash, cantE: cE, cantA: cA});
                 } else { 
-                    cHTML = 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-400'; 
-                    window.discrepanciasEliminar.push({hash: hash, cantE: cE, cantA: cA});
+                    cHTML = 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-400'; window.discrepanciasEliminar.push({hash: hash, cantE: cE, cantA: cA});
                 }
                 
                 window.discrepanciasTNC.push({hash: hash, cE: cE, cA: cA});
@@ -1054,47 +1024,35 @@
             document.getElementById('btn-bulk-inyectar').style.display = window.discrepanciasInyectar.length > 0 ? 'inline-block' : 'none';
             document.getElementById('btn-bulk-eliminar').style.display = window.discrepanciasEliminar.length > 0 ? 'inline-block' : 'none';
             document.getElementById('btn-bulk-tnc').style.display = window.discrepanciasTNC.length > 0 ? 'inline-block' : 'none';
-            
             document.getElementById('btn-bulk-enriquecer').style.display = window.matchesParaEnriquecer.length > 0 ? 'inline-block' : 'none';
         };
 
         function renderizarMenuSucursales(conteos) {
-            const menu = document.getElementById('menu-sucursales');
-            let html = '';
-            let totalErr = Object.values(conteos).reduce((a,b) => a+b, 0);
-            
+            const menu = document.getElementById('menu-sucursales'); let html = ''; let totalErr = Object.values(conteos).reduce((a,b) => a+b, 0);
             let actTodas = window.sucursalActiva === "Todas" ? "bg-orange-600 text-white shadow-md" : "bg-orange-50 text-orange-700 hover:bg-orange-100";
             html += `<button onclick="cambiarFiltroSucursal('Todas')" class="w-full text-left p-2.5 rounded-xl font-bold text-xs flex justify-between items-center transition-all ${actTodas}">Todas <span class="bg-black/20 px-2 py-0.5 rounded-lg text-[10px]">${totalErr}</span></button>`;
-            
             for(let suc in conteos) {
-                let errs = conteos[suc];
-                let act = window.sucursalActiva === suc ? "bg-orange-600 text-white shadow-md" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50";
+                let errs = conteos[suc]; let act = window.sucursalActiva === suc ? "bg-orange-600 text-white shadow-md" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50";
                 let badge = errs > 0 ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-600";
                 html += `<button onclick="cambiarFiltroSucursal('${suc}')" class="w-full text-left p-2.5 rounded-xl font-bold text-xs flex justify-between items-center transition-all mt-1 ${act}">${suc} <span class="${badge} px-2 py-0.5 rounded-lg text-[10px]">${errs}</span></button>`;
             }
             menu.innerHTML = html;
         }
 
-        window.cambiarFiltroSucursal = function(suc) {
-            window.sucursalActiva = suc;
-            window.reRenderAuditoria();
-        }
+        window.cambiarFiltroSucursal = function(suc) { window.sucursalActiva = suc; window.reRenderAuditoria(); }
 
         window.enriquecerMatchesMasivo = async function() {
             if(!confirm(`¿Deseas inyectar los metadatos de Excel a los ${window.matchesParaEnriquecer.length} grupos que hicieron Match perfecto?`)) return;
-            const btn = document.getElementById('btn-bulk-enriquecer');
-            const txtOriginal = btn.innerHTML;
+            const btn = document.getElementById('btn-bulk-enriquecer'); const txtOriginal = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Enriqueciendo BD...'; btn.disabled = true;
 
             try {
-                let actualizados = 0;
-                let hashesPorFecha = {};
+                let actualizados = 0; let hashesPorFecha = {};
                 for(let hash of window.matchesParaEnriquecer) {
                     const [fecha, sucursal, medico, estudio] = hash.split('|');
                     if(!hashesPorFecha[fecha]) hashesPorFecha[fecha] = [];
                     hashesPorFecha[fecha].push({hash, sucursal, medico, estudio});
                 }
-
                 for(let fecha in hashesPorFecha) {
                     const qDocs = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", "==", fecha));
                     const qsDocs = await window.getDocs(qDocs);
@@ -1102,215 +1060,104 @@
                     const qsLeg = await window.getDocs(qLeg);
 
                     for(let item of hashesPorFecha[fecha]) {
-                        let metadatosRicos = excelDataGlobal[item.hash] || [];
-                        if(metadatosRicos.length === 0) continue;
-
+                        let metadatosRicos = excelDataGlobal[item.hash] || []; if(metadatosRicos.length === 0) continue;
                         let docRefToUpdate = null;
 
                         for(let d of qsDocs.docs) {
-                            let data = d.data();
-                            let dbSuc = normalizarDato(data.sucursal);
-                            let dbMed = normalizarDato(traducirMedico(data.medico, dbSuc));
-                            
-                            if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
-                                if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed];
-                            }
+                            let data = d.data(); let dbSuc = normalizarDato(data.sucursal); let dbMed = normalizarDato(traducirMedico(data.medico, dbSuc));
+                            if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed]; }
                             if (dbMed === item.medico && dbSuc === item.sucursal) {
-                                let hasStudy = false;
-                                if (data.estudios) {
-                                    for(let k in data.estudios) {
-                                        if (unificarEstudio(k) === item.estudio) hasStudy = true;
-                                    }
-                                }
-                                if (hasStudy) {
-                                    docRefToUpdate = d.ref;
-                                    break;
-                                }
+                                let hasStudy = false; if (data.estudios) { for(let k in data.estudios) { if (unificarEstudio(k) === item.estudio) hasStudy = true; } }
+                                if (hasStudy) { docRefToUpdate = d.ref; break; }
                             }
                         }
 
                         if (!docRefToUpdate) {
                             for(let d of qsLeg.docs) {
-                                let data = d.data();
-                                let dbSuc = normalizarDato(data.sucursal || data.empresa || "FORÁNEO");
-                                let dbMedTop = normalizarDato(traducirMedico(data.medico, dbSuc)); 
-
+                                let data = d.data(); let dbSuc = normalizarDato(data.sucursal || data.empresa || "FORÁNEO"); let dbMedTop = normalizarDato(traducirMedico(data.medico, dbSuc)); 
                                 if (dbSuc === "FORÁNEO" && window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop];
-                                
                                 let docHasMedicoAndStudy = false;
                                 if (data.detalles && data.detalles.length > 0) {
-                                    docHasMedicoAndStudy = data.detalles.some(det => 
-                                        normalizarDato(traducirMedico(det.medico || data.medico, dbSuc)) === item.medico &&
-                                        unificarEstudio(det.estudio) === item.estudio
-                                    );
+                                    docHasMedicoAndStudy = data.detalles.some(det => normalizarDato(traducirMedico(det.medico || data.medico, dbSuc)) === item.medico && unificarEstudio(det.estudio) === item.estudio);
                                 } else if (data.estudio) {
                                     docHasMedicoAndStudy = (normalizarDato(traducirMedico(data.medico, dbSuc)) === item.medico && unificarEstudio(data.estudio) === item.estudio);
                                 }
-
-                                if (dbSuc === item.sucursal && docHasMedicoAndStudy) {
-                                    docRefToUpdate = d.ref;
-                                    break; 
-                                }
+                                if (dbSuc === item.sucursal && docHasMedicoAndStudy) { docRefToUpdate = d.ref; break; }
                             }
                         }
 
-                        if (docRefToUpdate) {
-                            let key = getMetaKey(item.estudio);
-                            await window.updateDoc(docRefToUpdate, { [key]: metadatosRicos });
-                            actualizados++;
-                        }
+                        if (docRefToUpdate) { let key = getMetaKey(item.estudio); await window.updateDoc(docRefToUpdate, { [key]: metadatosRicos }); actualizados++; }
                     }
                 }
-                
-                mostrarToast(`Enriquecimiento exitoso: ${actualizados} registros actualizados con IA`, "exito");
-                await window.initAuditoria(); 
-            } catch(e) { 
-                console.error(e); 
-                mostrarToast("Error enriqueciendo datos", "error"); 
-            }
-            
+                mostrarToast(`Enriquecimiento exitoso: ${actualizados} registros actualizados con IA`, "exito"); await window.initAuditoria(); 
+            } catch(e) { console.error(e); mostrarToast("Error enriqueciendo datos", "error"); }
             btn.innerHTML = txtOriginal; btn.disabled = false;
         };
 
         window.aplicarAjuste = async function(fecha, sucursal, medico, estudio, cantApp, cantExcel) {
             if (cantExcel === cantApp) return;
-
-            let hashParaMetadatos = `${fecha}|${sucursal}|${medico}|${estudio}`;
-            let metadatosRicos = excelDataGlobal[hashParaMetadatos] || [];
-
+            let hashParaMetadatos = `${fecha}|${sucursal}|${medico}|${estudio}`; let metadatosRicos = excelDataGlobal[hashParaMetadatos] || [];
             if (cantExcel > cantApp) {
                 let aInyectar = cantExcel - cantApp;
-                
                 const qDocs = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", "==", fecha));
                 const querySnapshot = await window.getDocs(qDocs);
-                let docRefToUpdate = null;
-                let datos = null;
-
+                let docRefToUpdate = null; let datos = null;
                 for(let d of querySnapshot.docs) {
-                    let dData = d.data();
-                    let rawSuc = dData.sucursal || "FORÁNEO";
-                    let dbSuc = normalizarDato(rawSuc);
-                    let dbMed = normalizarDato(traducirMedico(dData.medico, rawSuc)); 
-                    
-                    if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
-                        if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed];
-                    }
-                    
-                    if (dbMed === medico && dbSuc === sucursal) {
-                        docRefToUpdate = d.ref;
-                        datos = dData;
-                        break;
-                    }
+                    let dData = d.data(); let rawSuc = dData.sucursal || "FORÁNEO"; let dbSuc = normalizarDato(rawSuc); let dbMed = normalizarDato(traducirMedico(dData.medico, rawSuc)); 
+                    if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed]; }
+                    if (dbMed === medico && dbSuc === sucursal) { docRefToUpdate = d.ref; datos = dData; break; }
                 }
-
                 if (docRefToUpdate) {
-                    if(!datos.estudios) datos.estudios = {};
-                    datos.estudios[estudio] = (parseInt(datos.estudios[estudio]) || 0) + aInyectar; 
-                    
-                    let updatePayload = { 
-                        estudios: datos.estudios, 
-                        ultimaActualizacion: new Date() 
-                    };
+                    if(!datos.estudios) datos.estudios = {}; datos.estudios[estudio] = (parseInt(datos.estudios[estudio]) || 0) + aInyectar; 
+                    let updatePayload = { estudios: datos.estudios, ultimaActualizacion: new Date() };
                     if(metadatosRicos.length > 0) updatePayload[getMetaKey(estudio)] = metadatosRicos;
-
                     await window.updateDoc(docRefToUpdate, updatePayload);
                 } else {
-                    let safeSucursal = sucursal.replace(/[^a-zA-Z0-9]/g, '');
-                    let safeMedico = medico.replace(/[^a-zA-Z0-9]/g, '');
-                    const newDocId = `SUC_${fecha}_${safeSucursal}_${safeMedico}`;
-                    
-                    let setPayload = { 
-                        tipo: "sucursal_agrupada", fecha, sucursal, medico, 
-                        estudios: { [estudio]: aInyectar }, observaciones: "Ajustado por Auditoría", ultimaActualizacion: new Date() 
-                    };
+                    let safeSucursal = sucursal.replace(/[^a-zA-Z0-9]/g, ''); let safeMedico = medico.replace(/[^a-zA-Z0-9]/g, ''); const newDocId = `SUC_${fecha}_${safeSucursal}_${safeMedico}`;
+                    let setPayload = { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: aInyectar }, observaciones: "Ajustado por Auditoría", ultimaActualizacion: new Date() };
                     if(metadatosRicos.length > 0) setPayload[getMetaKey(estudio)] = metadatosRicos;
-
                     await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", newDocId), setPayload);
                 }
             } else {
                 let aReducir = cantApp - cantExcel;
-                
                 const qDocs = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", "==", fecha));
                 const qs2 = await window.getDocs(qDocs);
-                
                 for(let d of qs2.docs) {
                     if (aReducir <= 0) break;
-                    let datos = d.data();
-                    let rawSuc = datos.sucursal || "FORÁNEO";
-                    let dbSuc = normalizarDato(rawSuc);
-                    let dbMed = normalizarDato(traducirMedico(datos.medico, rawSuc)); 
-                    
-                    if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
-                        if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed];
-                    }
-
+                    let datos = d.data(); let rawSuc = datos.sucursal || "FORÁNEO"; let dbSuc = normalizarDato(rawSuc); let dbMed = normalizarDato(traducirMedico(datos.medico, rawSuc)); 
+                    if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed]; }
                     if (dbMed === medico && dbSuc === sucursal && datos.estudios && datos.estudios[estudio]) {
                         let actual = parseInt(datos.estudios[estudio]) || 0;
                         if(actual > 0) {
-                            let quitar = Math.min(actual, aReducir);
-                            datos.estudios[estudio] = actual - quitar;
-                            aReducir -= quitar;
+                            let quitar = Math.min(actual, aReducir); datos.estudios[estudio] = actual - quitar; aReducir -= quitar;
                             if(datos.estudios[estudio] <= 0) delete datos.estudios[estudio];
-                            
-                            let updatePayload = { 
-                                estudios: datos.estudios, 
-                                ultimaActualizacion: new Date() 
-                            };
+                            let updatePayload = { estudios: datos.estudios, ultimaActualizacion: new Date() };
                             if(metadatosRicos.length > 0) updatePayload[getMetaKey(estudio)] = metadatosRicos;
-
                             await window.updateDoc(d.ref, updatePayload);
                         }
                     }
                 }
-
                 if (aReducir > 0) {
                     const qL = window.query(window.collection(window.db, "registros"), window.where("fecha", "==", fecha));
                     const qsL = await window.getDocs(qL);
-                    
                     for (let d of qsL.docs) {
                         if (aReducir <= 0) break;
-                        let data = d.data();
-                        
-                        let rawSuc = data.sucursal || data.empresa || "FORÁNEO";
-                        let dbSuc = normalizarDato(rawSuc);
-                        let dbMedTop = normalizarDato(traducirMedico(data.medico, rawSuc)); 
-
-                        if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") {
-                            if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop];
-                        }
-                        
-                        if(dbSuc !== sucursal) continue;
-
-                        let modificado = false;
-                        
+                        let data = d.data(); let rawSuc = data.sucursal || data.empresa || "FORÁNEO"; let dbSuc = normalizarDato(rawSuc); let dbMedTop = normalizarDato(traducirMedico(data.medico, rawSuc)); 
+                        if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop]; }
+                        if(dbSuc !== sucursal) continue; let modificado = false;
                         if (data.detalles && data.detalles.length > 0) {
                             for (let det of data.detalles) {
                                 if (aReducir <= 0) break;
-                                let dMed = normalizarDato(traducirMedico(det.medico || data.medico, rawSuc));
-                                let dEst = unificarEstudio(det.estudio);
-                                if (dMed === medico && dEst === estudio) {
-                                    let c = parseInt(det.cant) || 1;
-                                    let quitar = Math.min(c, aReducir);
-                                    det.cant = c - quitar;
-                                    aReducir -= quitar;
-                                    modificado = true;
-                                }
+                                let dMed = normalizarDato(traducirMedico(det.medico || data.medico, rawSuc)); let dEst = unificarEstudio(det.estudio);
+                                if (dMed === medico && dEst === estudio) { let c = parseInt(det.cant) || 1; let quitar = Math.min(c, aReducir); det.cant = c - quitar; aReducir -= quitar; modificado = true; }
                             }
                             if(modificado) {
                                 data.detalles = data.detalles.filter(det => (parseInt(det.cant) || 0) > 0);
-                                if (data.detalles.length === 0 && !data.estudio) {
-                                    await window.deleteDoc(d.ref);
-                                } else {
-                                    await window.updateDoc(d.ref, { detalles: data.detalles });
-                                }
+                                if (data.detalles.length === 0 && !data.estudio) { await window.deleteDoc(d.ref); } else { await window.updateDoc(d.ref, { detalles: data.detalles }); }
                             }
                         } else if (data.estudio) {
-                            let dMed = normalizarDato(traducirMedico(data.medico, rawSuc));
-                            let dEst = unificarEstudio(data.estudio);
-                            if (dMed === medico && dEst === estudio) {
-                                await window.deleteDoc(d.ref);
-                                aReducir -= 1;
-                            }
+                            let dMed = normalizarDato(traducirMedico(data.medico, rawSuc)); let dEst = unificarEstudio(data.estudio);
+                            if (dMed === medico && dEst === estudio) { await window.deleteDoc(d.ref); aReducir -= 1; }
                         }
                     }
                 }
@@ -1319,140 +1166,75 @@
 
         window.prepararCorreccion = function(hash, cantExcel, cantApp) {
             const [fecha, suc, med, est] = hash.split('|');
-            document.getElementById('c-hash').value = hash; 
-            document.getElementById('c-cantE').value = cantExcel;
-            document.getElementById('c-cantA').value = cantApp;
+            document.getElementById('c-hash').value = hash; document.getElementById('c-cantE').value = cantExcel; document.getElementById('c-cantA').value = cantApp;
             document.getElementById('c-info').innerHTML = `El sistema ajustará el perfil de <b>${med}</b> para que pase de ${cantApp} a exactamente <b>${cantExcel}</b> estudios de <b>${est}</b>.`;
             abrirModal('correccion');
         };
 
         window.ejecutarCorreccion = async function() {
-            const btn = document.getElementById('btn-ejecutar-corr');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
-
-            const hash = document.getElementById('c-hash').value; 
-            const cE = parseInt(document.getElementById('c-cantE').value);
-            const cA = parseInt(document.getElementById('c-cantA').value);
+            const btn = document.getElementById('btn-ejecutar-corr'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
+            const hash = document.getElementById('c-hash').value; const cE = parseInt(document.getElementById('c-cantE').value); const cA = parseInt(document.getElementById('c-cantA').value);
             const [fecha, sucursal, medico, estudio] = hash.split('|');
-
             try {
-                await window.aplicarAjuste(fecha, sucursal, medico, estudio, cA, cE);
-                mostrarToast("Base de datos sincronizada correctamente", "exito");
-                cerrarModal('correccion');
-                await window.initAuditoria(); 
-            } catch (e) { 
-                console.error(e);
-                mostrarToast("Fallo la sincronización", "error"); 
-            }
+                await window.aplicarAjuste(fecha, sucursal, medico, estudio, cA, cE); mostrarToast("Base de datos sincronizada", "exito"); cerrarModal('correccion'); await window.initAuditoria(); 
+            } catch (e) { console.error(e); mostrarToast("Fallo sincronización", "error"); }
             btn.innerHTML = 'Sincronizar'; btn.disabled = false;
         };
 
         window.inyectarFaltantesMasivo = async function() {
             if(!confirm(`¿Estás seguro de inyectar los ${window.discrepanciasInyectar.length} grupos VISIBLES en tu tabla?`)) return;
-            const btn = document.getElementById('btn-bulk-inyectar');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Inyectando...'; btn.disabled = true;
-
+            const btn = document.getElementById('btn-bulk-inyectar'); const txtOriginal = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Inyectando...'; btn.disabled = true;
             try {
-                for(let item of window.discrepanciasInyectar) {
-                    const [fecha, sucursal, medico, estudio] = item.hash.split('|');
-                    await window.aplicarAjuste(fecha, sucursal, medico, estudio, item.cantA, item.cantE);
-                }
-                mostrarToast("Inyección masiva completada", "exito");
-                await window.initAuditoria(); 
-            } catch(e) { console.error(e); mostrarToast("Ocurrió un error en la inyección", "error"); }
-            
+                for(let item of window.discrepanciasInyectar) { const [fecha, sucursal, medico, estudio] = item.hash.split('|'); await window.aplicarAjuste(fecha, sucursal, medico, estudio, item.cantA, item.cantE); }
+                mostrarToast("Inyección completada", "exito"); await window.initAuditoria(); 
+            } catch(e) { mostrarToast("Error", "error"); }
             btn.innerHTML = txtOriginal; btn.disabled = false;
         };
 
         window.eliminarSobrantesMasivo = async function() {
             if(!confirm(`¿Estás seguro de limpiar y ajustar los ${window.discrepanciasEliminar.length} grupos VISIBLES en tu tabla?`)) return;
-            const btn = document.getElementById('btn-bulk-eliminar');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Ajustando...'; btn.disabled = true;
-
+            const btn = document.getElementById('btn-bulk-eliminar'); const txtOriginal = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Ajustando...'; btn.disabled = true;
             try {
-                for(let item of window.discrepanciasEliminar) {
-                    const [fecha, sucursal, medico, estudio] = item.hash.split('|');
-                    await window.aplicarAjuste(fecha, sucursal, medico, estudio, item.cantA, item.cantE);
-                }
-                mostrarToast("Limpieza masiva completada", "exito");
-                await window.initAuditoria();
-            } catch(e) { console.error(e); mostrarToast("Ocurrió un error en la limpieza", "error"); }
-
+                for(let item of window.discrepanciasEliminar) { const [fecha, sucursal, medico, estudio] = item.hash.split('|'); await window.aplicarAjuste(fecha, sucursal, medico, estudio, item.cantA, item.cantE); }
+                mostrarToast("Limpieza completada", "exito"); await window.initAuditoria();
+            } catch(e) { mostrarToast("Error", "error"); }
             btn.innerHTML = txtOriginal; btn.disabled = false;
         };
 
         window.generarTncMasivo = async function() {
             if(!confirm(`¿Deseas levantar automáticamente ${window.discrepanciasTNC.length} TNCs por los errores VISIBLES?`)) return;
-            const btn = document.getElementById('btn-bulk-tnc');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generando TNCs...'; btn.disabled = true;
-
+            const btn = document.getElementById('btn-bulk-tnc'); const txtOriginal = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generando...'; btn.disabled = true;
             try {
                 for(let item of window.discrepanciasTNC) {
-                    const hash = item.hash;
-                    const [fecha, lugar, medico, estudio] = hash.split('|');
-                    const dif = item.cE - item.cA;
-                    const clasif = dif > 0 ? "ESTUDIO FALTANTE (OMISIÓN APP)" : "ESTUDIO SOBRANTE (DUPLICADO APP)";
-                    const notas = `Detectado en Auditoría Ciega Masiva (Diferencia: ${dif > 0 ? '+' + dif : dif})`;
-
-                    await window.addDoc(window.collection(window.db, "tickets_auditoria"), {
-                        origen: "Sucursal", 
-                        fechaOperativa: fecha, sucursal: lugar, medico: medico, estudio: estudio,
-                        clasificacion: clasif, comentarios: notas, estado: 'Abierto', timestamp: new Date()
-                    });
+                    const hash = item.hash; const [fecha, lugar, medico, estudio] = hash.split('|'); const dif = item.cE - item.cA;
+                    const clasif = dif > 0 ? "ESTUDIO FALTANTE (OMISIÓN APP)" : "ESTUDIO SOBRANTE (DUPLICADO APP)"; const notas = `Detectado en Auditoría Ciega Masiva (Diferencia: ${dif > 0 ? '+' + dif : dif})`;
+                    await window.addDoc(window.collection(window.db, "tickets_auditoria"), { origen: "Sucursal", fechaOperativa: fecha, sucursal: lugar, medico: medico, estudio: estudio, clasificacion: clasif, comentarios: notas, estado: 'Abierto', timestamp: new Date() });
                 }
-                mostrarToast("TNCs masivos generados con éxito", "exito");
-                window.cargarTNCs(); 
-            } catch(e) { console.error(e); mostrarToast("Error generando los TNCs", "error"); }
-            
+                mostrarToast("TNCs generados con éxito", "exito"); window.cargarTNCs(); 
+            } catch(e) { mostrarToast("Error", "error"); }
             btn.innerHTML = txtOriginal; btn.disabled = false;
         };
 
-        window.abrirBuscadorUniversal = function() {
-            document.getElementById('tnc-hash').value = "";
-            window.resetBuscadorTNC();
-            abrirModal('tnc');
-            window.ejecutarBuscadorTNC();
-        };
+        window.abrirBuscadorUniversal = function() { document.getElementById('tnc-hash').value = ""; window.resetBuscadorTNC(); abrirModal('tnc'); window.ejecutarBuscadorTNC(); };
 
         window.resetBuscadorTNC = function() {
-            document.getElementById('tnc-paso-1').classList.remove('hidden');
-            document.getElementById('tnc-paso-2').classList.add('hidden');
-            document.getElementById('tnc-filtro-texto').value = '';
-            document.getElementById('tnc-filtro-origen').value = 'Todos';
-            document.getElementById('tnc-notas').value = '';
+            document.getElementById('tnc-paso-1').classList.remove('hidden'); document.getElementById('tnc-paso-2').classList.add('hidden');
+            document.getElementById('tnc-filtro-texto').value = ''; document.getElementById('tnc-filtro-origen').value = 'Todos'; document.getElementById('tnc-notas').value = '';
             window.ejecutarBuscadorTNC();
         };
 
         window.ejecutarBuscadorTNC = function() {
-            const origen = document.getElementById('tnc-filtro-origen').value;
-            const txt = document.getElementById('tnc-filtro-texto').value.toUpperCase().trim();
-            const contenedor = document.getElementById('tnc-resultados-busqueda');
-
+            const origen = document.getElementById('tnc-filtro-origen').value; const txt = document.getElementById('tnc-filtro-texto').value.toUpperCase().trim(); const contenedor = document.getElementById('tnc-resultados-busqueda');
             let filtrados = rawDataGlobal;
             if(origen !== "Todos") filtrados = filtrados.filter(r => r.tipo === origen);
             if(txt) filtrados = filtrados.filter(r => r.medico.includes(txt) || r.lugar.includes(txt) || r.fecha.includes(txt) || r.estudio.includes(txt));
-
             filtrados.sort((a,b) => (b.fecha || "1900-01-01").localeCompare(a.fecha || "1900-01-01"));
-            
             let mostrados = new Set(); let html = '';
-            
             filtrados.forEach(r => {
                 const llave = `${r.tipo}|${r.fecha}|${r.lugar}|${r.medico}|${r.estudio}`;
                 if(!mostrados.has(llave)) {
-                    const arg = `'${r.tipo}', '${r.fecha}', '${r.lugar}', '${r.medico}', '${r.estudio}'`;
-                    const color = r.tipo === 'Sucursal' ? 'text-sky-600 bg-sky-50' : 'text-orange-600 bg-orange-50';
-                    html += `
-                        <button onclick="seleccionarRegistroTNC(${arg})" class="w-full text-left p-3 bg-white hover:bg-orange-50 border border-slate-100 rounded-xl text-xs transition flex justify-between items-center shadow-sm">
-                            <div>
-                                <b class="text-orange-700 text-sm">${r.medico}</b> <span class="text-slate-400 font-bold ml-1">${r.fecha}</span><br>
-                                <span class="text-slate-600 font-bold">${r.estudio}</span> <span class="text-slate-500">en ${r.lugar}</span>
-                            </div>
-                            <span class="${color} px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider">${r.tipo}</span>
-                        </button>
-                    `;
+                    const arg = `'${r.tipo}', '${r.fecha}', '${r.lugar}', '${r.medico}', '${r.estudio}'`; const color = r.tipo === 'Sucursal' ? 'text-sky-600 bg-sky-50' : 'text-orange-600 bg-orange-50';
+                    html += `<button onclick="seleccionarRegistroTNC(${arg})" class="w-full text-left p-3 bg-white hover:bg-orange-50 border border-slate-100 rounded-xl text-xs transition flex justify-between items-center shadow-sm"><div><b class="text-orange-700 text-sm">${r.medico}</b> <span class="text-slate-400 font-bold ml-1">${r.fecha}</span><br><span class="text-slate-600 font-bold">${r.estudio}</span> <span class="text-slate-500">en ${r.lugar}</span></div><span class="${color} px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider">${r.tipo}</span></button>`;
                     mostrados.add(llave);
                 }
             });
@@ -1460,70 +1242,30 @@
         };
 
         window.seleccionarRegistroTNC = function(origen, fecha, lugar, medico, estudio) {
-            document.getElementById('tnc-origen').value = origen;
-            document.getElementById('tnc-fecha').value = fecha;
-            document.getElementById('tnc-lugar').value = lugar;
-            document.getElementById('tnc-medico').value = medico;
-            document.getElementById('tnc-estudio').value = estudio;
-
-            document.getElementById('tnc-servicio-seleccionado').innerHTML = `
-                <span class="text-[10px] text-orange-500 uppercase tracking-widest block mb-1">Servicio Afectado</span>
-                <span class="text-sm font-black text-slate-800">${medico}</span><br>
-                <span class="font-bold text-slate-500">${estudio} <span class="font-normal mx-1">|</span> ${fecha} <span class="font-normal mx-1">|</span> ${lugar} (${origen})</span>
-            `;
-
-            const TNC_CATALOGO = {
-                "Sucursal": { "Espirometría": ["CONSENTIMIENTO INFORMADO", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "SIGNOS VITALES Y SOMATOMETRÍA", "INTERROGATORIO Y/O ANTECEDENTES", "DISPONIBILIDAD DE MANIOBRA", "CALIDAD DE MANIOBRA", "REGISTRO EN SISTEMA WEB"], "Agudeza Visual": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "REGISTRO DE AGUDEZA VISUAL", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB"], "Electrocardiograma": ["DISPONIBILIDAD DE TRAZO", "FICHA DE IDENTIFICACIÓN", "CALIDAD DEL TRAZO"], "Historia Clínica": ["EXPLORACIÓN FÍSICA", "AUDIOGRAMA", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB", "FICHA DE IDENTIFICACIÓN"], "Genérico": ["FICHA DE IDENTIFICACIÓN", "REGISTRO EN SISTEMA WEB", "LETRA LEGIBLE", "CONTROL DOCUMENTAL"] },
-                "Foráneo": { "Historia Clínica": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA"], "Audiometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA", "CALIDAD DEL AUDIOGRAMA"], "Espirometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "SIGNOS VITALES Y SOMATOMETRÍA", "CALIDAD DE MANIOBRA"], "Genérico": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "FICHA DE IDENTIFICACIÓN", "ERROR DE CAPTURA"] },
-                "Global": ["ESTUDIO FALTANTE (OMISIÓN APP)", "ESTUDIO SOBRANTE (DUPLICADO APP)", "OTRO / COMENTARIO"]
-            };
-
+            document.getElementById('tnc-origen').value = origen; document.getElementById('tnc-fecha').value = fecha; document.getElementById('tnc-lugar').value = lugar; document.getElementById('tnc-medico').value = medico; document.getElementById('tnc-estudio').value = estudio;
+            document.getElementById('tnc-servicio-seleccionado').innerHTML = `<span class="text-[10px] text-orange-500 uppercase tracking-widest block mb-1">Servicio Afectado</span><span class="text-sm font-black text-slate-800">${medico}</span><br><span class="font-bold text-slate-500">${estudio} <span class="font-normal mx-1">|</span> ${fecha} <span class="font-normal mx-1">|</span> ${lugar} (${origen})</span>`;
+            const TNC_CATALOGO = { "Sucursal": { "Espirometría": ["CONSENTIMIENTO INFORMADO", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "SIGNOS VITALES Y SOMATOMETRÍA", "INTERROGATORIO Y/O ANTECEDENTES", "DISPONIBILIDAD DE MANIOBRA", "CALIDAD DE MANIOBRA", "REGISTRO EN SISTEMA WEB"], "Agudeza Visual": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "REGISTRO DE AGUDEZA VISUAL", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB"], "Electrocardiograma": ["DISPONIBILIDAD DE TRAZO", "FICHA DE IDENTIFICACIÓN", "CALIDAD DEL TRAZO"], "Historia Clínica": ["EXPLORACIÓN FÍSICA", "AUDIOGRAMA", "DIAGNÓSTICO Y/O RECOMENDACIÓN", "REGISTRO EN SISTEMA WEB", "FICHA DE IDENTIFICACIÓN"], "Genérico": ["FICHA DE IDENTIFICACIÓN", "REGISTRO EN SISTEMA WEB", "LETRA LEGIBLE", "CONTROL DOCUMENTAL"] }, "Foráneo": { "Historia Clínica": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA"], "Audiometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "EXPLORACIÓN FÍSICA", "CALIDAD DEL AUDIOGRAMA"], "Espirometría": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "REQUERIMIENTOS", "FICHA DE IDENTIFICACIÓN", "INTERROGATORIO Y/O ANTECEDENTES", "SIGNOS VITALES Y SOMATOMETRÍA", "CALIDAD DE MANIOBRA"], "Genérico": ["LETRA LEGIBLE", "CONTROL DOCUMENTAL", "FICHA DE IDENTIFICACIÓN", "ERROR DE CAPTURA"] }, "Global": ["ESTUDIO FALTANTE (OMISIÓN APP)", "ESTUDIO SOBRANTE (DUPLICADO APP)", "OTRO / COMENTARIO"] };
             const sel = document.getElementById('tnc-clasificacion'); sel.innerHTML = '';
             TNC_CATALOGO.Global.forEach(t => sel.innerHTML += `<option value="${t}" class="font-bold text-red-700">${t}</option>`);
             const opciones = (TNC_CATALOGO[origen] || {})[estudio] || (TNC_CATALOGO[origen] || {})["Genérico"] || [];
             if(opciones.length > 0) sel.innerHTML += `<option disabled>--- TNCs de ${estudio || 'este tipo'} ---</option>`;
             opciones.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
-
-            document.getElementById('tnc-paso-1').classList.add('hidden');
-            document.getElementById('tnc-paso-2').classList.remove('hidden');
-        };
-
-        window.abrirModalTncAutomatica = function(hash, cantExcel, cantApp) {
-            const [fecha, sucBase, med, est] = hash.split('|');
-            document.getElementById('tnc-hash').value = hash;
-            window.seleccionarRegistroTNC("Sucursal", fecha, sucBase, med, est);
-            const dif = cantExcel - cantApp;
-            document.getElementById('tnc-clasificacion').value = dif > 0 ? "ESTUDIO FALTANTE (OMISIÓN APP)" : "ESTUDIO SOBRANTE (DUPLICADO APP)";
-            document.getElementById('tnc-notas').value = `Detectado en Auditoría Ciega (Diferencia: ${dif>0?'+'+dif:dif})`;
-            abrirModal('tnc');
+            document.getElementById('tnc-paso-1').classList.add('hidden'); document.getElementById('tnc-paso-2').classList.remove('hidden');
         };
 
         window.guardarTNC = async function() {
-            const origen = document.getElementById('tnc-origen').value;
-            const fecha = document.getElementById('tnc-fecha').value;
-            const lugar = document.getElementById('tnc-lugar').value;
-            const medico = document.getElementById('tnc-medico').value;
-            const estudio = document.getElementById('tnc-estudio').value;
-            const clasif = document.getElementById('tnc-clasificacion').value;
-            const notas = document.getElementById('tnc-notas').value;
-
-            if(!fecha || !medico || !estudio || !lugar) return mostrarToast("Hubo un error cargando los datos del servicio", "error");
-
+            const origen = document.getElementById('tnc-origen').value; const fecha = document.getElementById('tnc-fecha').value; const lugar = document.getElementById('tnc-lugar').value; const medico = document.getElementById('tnc-medico').value; const estudio = document.getElementById('tnc-estudio').value; const clasif = document.getElementById('tnc-clasificacion').value; const notas = document.getElementById('tnc-notas').value;
+            if(!fecha || !medico || !estudio || !lugar) return mostrarToast("Hubo un error cargando los datos", "error");
             try {
-                await window.addDoc(window.collection(window.db, "tickets_auditoria"), {
-                    origen, fechaOperativa: fecha, sucursal: lugar, medico, estudio,
-                    clasificacion: clasif, comentarios: notas, estado: 'Abierto', timestamp: new Date()
-                });
-                mostrarToast("TNC Registrado Oficialmente", "exito");
-                cerrarModal('tnc'); window.cargarTNCs();
+                await window.addDoc(window.collection(window.db, "tickets_auditoria"), { origen, fechaOperativa: fecha, sucursal: lugar, medico, estudio, clasificacion: clasif, comentarios: notas, estado: 'Abierto', timestamp: new Date() });
+                mostrarToast("TNC Registrado Oficialmente", "exito"); cerrarModal('tnc'); window.cargarTNCs();
             } catch(e) { mostrarToast("Error guardando TNC", "error"); }
         };
 
         window.cargarTNCs = async function() {
             try {
                 const q = window.query(window.collection(window.db, "tickets_auditoria"), window.orderBy("timestamp", "desc"));
-                const qs = await window.getDocs(q);
-                ticketsGlobal = [];
+                const qs = await window.getDocs(q); ticketsGlobal = [];
                 qs.forEach(doc => { let d = doc.data(); d.id = doc.id; ticketsGlobal.push(d); });
                 window.filtrarTickets('Abierto');
             } catch (e) { console.error("Error TNCs:", e); }
@@ -1532,43 +1274,20 @@
         window.filtrarTickets = function(estadoFiltro) {
             ['Abierto', 'Resuelto', 'Cerrado'].forEach(e => document.getElementById(`tab-${e}`).classList.remove('active'));
             document.getElementById(`tab-${estadoFiltro}`).classList.add('active');
-
             const filtrados = ticketsGlobal.filter(t => t.estado === estadoFiltro);
-            document.getElementById('c-abiertos').innerText = ticketsGlobal.filter(t => t.estado === 'Abierto').length;
-            document.getElementById('c-resueltos').innerText = ticketsGlobal.filter(t => t.estado === 'Resuelto').length;
-            document.getElementById('c-cerrados').innerText = ticketsGlobal.filter(t => t.estado === 'Cerrado').length;
-
+            document.getElementById('c-abiertos').innerText = ticketsGlobal.filter(t => t.estado === 'Abierto').length; document.getElementById('c-resueltos').innerText = ticketsGlobal.filter(t => t.estado === 'Resuelto').length; document.getElementById('c-cerrados').innerText = ticketsGlobal.filter(t => t.estado === 'Cerrado').length;
             const tbody = document.getElementById('tabla-tickets'); tbody.innerHTML = '';
-            
-            if(filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-slate-400 italic">No hay TNCs en estado ${estadoFiltro}.</td></tr>`;
-                return;
-            }
-
+            if(filtrados.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-slate-400 italic">No hay TNCs en estado ${estadoFiltro}.</td></tr>`; return; }
             filtrados.forEach(d => {
                 let badge = ''; let acciones = '';
                 if(d.estado === 'Abierto') {
-                    badge = '<span class="px-2.5 py-1 rounded bg-red-100 text-red-700 border border-red-200">Abierto</span>';
-                    acciones = `<button onclick="cambiarEstadoTNC('${d.id}', 'Resuelto')" class="bg-amber-500 hover:bg-amber-400 text-white py-1.5 px-3 rounded-lg shadow text-[10px] font-bold transition">Marcar Resuelto</button>`;
+                    badge = '<span class="px-2.5 py-1 rounded bg-red-100 text-red-700 border border-red-200">Abierto</span>'; acciones = `<button onclick="cambiarEstadoTNC('${d.id}', 'Resuelto')" class="bg-amber-500 hover:bg-amber-400 text-white py-1.5 px-3 rounded-lg shadow text-[10px] font-bold transition">Marcar Resuelto</button>`;
                 } else if(d.estado === 'Resuelto') {
-                    badge = '<span class="px-2.5 py-1 rounded bg-amber-100 text-amber-700 border border-amber-200">Por Validar</span>';
-                    acciones = `<button onclick="cambiarEstadoTNC('${d.id}', 'Cerrado')" class="bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 px-3 rounded-lg shadow text-[10px] font-bold transition">Validar y Cerrar</button>`;
+                    badge = '<span class="px-2.5 py-1 rounded bg-amber-100 text-amber-700 border border-amber-200">Por Validar</span>'; acciones = `<button onclick="cambiarEstadoTNC('${d.id}', 'Cerrado')" class="bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 px-3 rounded-lg shadow text-[10px] font-bold transition">Validar y Cerrar</button>`;
                 } else {
-                    badge = '<span class="px-2.5 py-1 rounded bg-emerald-50 text-emerald-600 border border-emerald-200">Cerrado</span>';
-                    acciones = `<span class="text-emerald-500 text-lg"><i class="fa-solid fa-check-double"></i></span>`;
+                    badge = '<span class="px-2.5 py-1 rounded bg-emerald-50 text-emerald-600 border border-emerald-200">Cerrado</span>'; acciones = `<span class="text-emerald-500 text-lg"><i class="fa-solid fa-check-double"></i></span>`;
                 }
-
-                tbody.innerHTML += `
-                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                        <td class="p-4"><p class="font-bold text-slate-700">${d.fechaOperativa}</p><p class="text-[9px] text-slate-400 uppercase">${d.origen}</p></td>
-                        <td class="p-4"><p class="font-bold text-orange-700 uppercase">${d.medico}</p><p class="text-[9px] font-bold text-slate-500 uppercase">${d.sucursal}</p></td>
-                        <td class="p-4 text-xs font-bold text-slate-600">${d.estudio}</td>
-                        <td class="p-4 text-[10px] font-black text-red-600 uppercase">${d.clasificacion}</td>
-                        <td class="p-4 text-xs text-slate-500 max-w-[200px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td>
-                        <td class="p-4 text-center"><span class="px-2.5 py-1 rounded border text-[9px] font-black">${badge}</span></td>
-                        <td class="p-4 text-center">${acciones}</td>
-                    </tr>
-                `;
+                tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-4"><p class="font-bold text-slate-700">${d.fechaOperativa}</p><p class="text-[9px] text-slate-400 uppercase">${d.origen}</p></td><td class="p-4"><p class="font-bold text-orange-700 uppercase">${d.medico}</p><p class="text-[9px] font-bold text-slate-500 uppercase">${d.sucursal}</p></td><td class="p-4 text-xs font-bold text-slate-600">${d.estudio}</td><td class="p-4 text-[10px] font-black text-red-600 uppercase">${d.clasificacion}</td><td class="p-4 text-xs text-slate-500 max-w-[200px] truncate" title="${d.comentarios}">${d.comentarios || '--'}</td><td class="p-4 text-center"><span class="px-2.5 py-1 rounded border text-[9px] font-black">${badge}</span></td><td class="p-4 text-center">${acciones}</td></tr>`;
             });
         };
 
@@ -1576,70 +1295,192 @@
             let msg = nuevoEstado === 'Resuelto' ? "¿El médico ya respondió/corrigió este TNC?" : "¿Has verificado la corrección para archivar este TNC?";
             if(!confirm(msg)) return;
             try {
-                let actualizacion = { estado: nuevoEstado };
-                if(nuevoEstado === 'Resuelto') actualizacion.fechaResolucion = new Date();
-                if(nuevoEstado === 'Cerrado') actualizacion.fechaCierre = new Date();
-                await window.updateDoc(window.doc(window.db, "tickets_auditoria", id), actualizacion);
-                mostrarToast(`TNC movido a ${nuevoEstado}`, "exito"); window.cargarTNCs(); 
+                let actualizacion = { estado: nuevoEstado }; if(nuevoEstado === 'Resuelto') actualizacion.fechaResolucion = new Date(); if(nuevoEstado === 'Cerrado') actualizacion.fechaCierre = new Date();
+                await window.updateDoc(window.doc(window.db, "tickets_auditoria", id), actualizacion); mostrarToast(`TNC movido a ${nuevoEstado}`, "exito"); window.cargarTNCs(); 
             } catch (e) { mostrarToast("Fallo al actualizar", "error"); }
         };
 
         window.exportarTNCs = async function() {
-            if(ticketsGlobal.length === 0) return mostrarToast("No hay datos.", "info");
-            let data = [];
+            if(ticketsGlobal.length === 0) return mostrarToast("No hay datos.", "info"); let data = [];
             ticketsGlobal.forEach(d => { data.push({ "ESTADO": d.estado, "ORIGEN": d.origen, "FECHA_SERVICIO": d.fechaOperativa, "LUGAR": d.sucursal, "MEDICO": d.medico, "ESTUDIO": d.estudio, "CATEGORIA_TNC": d.clasificacion, "NOTAS": d.comentarios || '' }); });
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "TNC_Reporte"); XLSX.writeFile(wb, `LAPI_TNC_Reporte_${new Date().toISOString().split('T')[0]}.xlsx`);
         };
 
         window.cargarPerfilMedico = async function() {
-            const nom = document.getElementById('input-buscar-medico').value.trim().toUpperCase();
-            if(!nom) return;
-            document.getElementById('mensaje-perfil-vacio').classList.add('hidden');
-            document.getElementById('contenido-perfil').classList.remove('hidden');
-            document.getElementById('perf-historial').innerHTML = '<p class="text-center text-slate-400 italic py-6">Buscando expediente en la base de datos...</p>';
-            
+            const nom = document.getElementById('input-buscar-medico').value.trim().toUpperCase(); if(!nom) return;
+            document.getElementById('mensaje-perfil-vacio').classList.add('hidden'); document.getElementById('contenido-perfil').classList.remove('hidden'); document.getElementById('perf-historial').innerHTML = '<p class="text-center text-slate-400 italic py-6">Buscando expediente en la base de datos...</p>';
             try {
-                const q = window.query(window.collection(window.db, "tickets_auditoria"), window.where("medico", "==", nom));
-                const qs = await window.getDocs(q);
+                const q = window.query(window.collection(window.db, "tickets_auditoria"), window.where("medico", "==", nom)); const qs = await window.getDocs(q);
                 let total = 0; let fallas = {}; let html = "";
-                
-                if(qs.empty) {
-                    html = '<div class="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl text-center"><i class="fa-solid fa-award text-emerald-500 text-4xl mb-3"></i><p class="text-sm text-emerald-700 font-bold">Expediente impecable. 0 TNCs registrados.</p></div>';
-                } else {
-                    let docsAr = []; qs.forEach(d => docsAr.push(d.data()));
-                    docsAr.sort((a,b) => (b.fechaOperativa || "1900-01-01").localeCompare(a.fechaOperativa || "1900-01-01"));
+                if(qs.empty) { html = '<div class="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl text-center"><i class="fa-solid fa-award text-emerald-500 text-4xl mb-3"></i><p class="text-sm text-emerald-700 font-bold">Expediente impecable. 0 TNCs registrados.</p></div>'; } else {
+                    let docsAr = []; qs.forEach(d => docsAr.push(d.data())); docsAr.sort((a,b) => (b.fechaOperativa || "1900-01-01").localeCompare(a.fechaOperativa || "1900-01-01"));
                     docsAr.forEach(d => {
                         total++; fallas[d.clasificacion] = (fallas[d.clasificacion] || 0) + 1;
                         const icon = d.estado === 'Abierto' ? '<i class="fa-solid fa-circle text-red-500 text-[10px]"></i>' : '<i class="fa-solid fa-circle text-emerald-500 text-[10px]"></i>';
-                        html += `
-                            <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col gap-1 shadow-sm">
-                                <div class="flex justify-between items-center"><span class="text-[11px] text-slate-500 font-bold">${d.fechaOperativa} | ${d.origen}</span> ${icon}</div>
-                                <p class="text-xs font-black text-red-600 uppercase">${d.clasificacion}</p>
-                                <p class="text-[11px] font-bold text-slate-700">${d.estudio}</p>
-                            </div>
-                        `;
+                        html += `<div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col gap-1 shadow-sm"><div class="flex justify-between items-center"><span class="text-[11px] text-slate-500 font-bold">${d.fechaOperativa} | ${d.origen}</span> ${icon}</div><p class="text-xs font-black text-red-600 uppercase">${d.clasificacion}</p><p class="text-[11px] font-bold text-slate-700">${d.estudio}</p></div>`;
                     });
                 }
-                
-                document.getElementById('perf-total-tnc').innerText = total;
-                document.getElementById('perf-historial').innerHTML = html;
-                window.dibujarGraficaPerfil(fallas);
+                document.getElementById('perf-total-tnc').innerText = total; document.getElementById('perf-historial').innerHTML = html; window.dibujarGraficaPerfil(fallas);
             } catch (e) { mostrarToast("Error buscando perfil", "error"); console.log(e); }
         };
 
         window.dibujarGraficaPerfil = function(dataObj) {
-            if(chartMedico) chartMedico.destroy();
-            const labels = Object.keys(dataObj); const data = Object.values(dataObj);
-            if(labels.length === 0) {
-                document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<p class="text-center text-slate-400 text-xs mt-16 font-medium">Sin datos para graficar</p><canvas id="chart-tnc-medico" class="hidden"></canvas>';
-                return;
-            } else { document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<canvas id="chart-tnc-medico"></canvas>'; }
-
-            chartMedico = new Chart(document.getElementById('chart-tnc-medico').getContext('2d'), {
-                type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#ef4444', '#f59e0b', '#8b5cf6', '#3b82f6', '#10b981'], borderWidth: 0, hoverOffset: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
-            });
+            if(chartMedico) chartMedico.destroy(); const labels = Object.keys(dataObj); const data = Object.values(dataObj);
+            if(labels.length === 0) { document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<p class="text-center text-slate-400 text-xs mt-16 font-medium">Sin datos para graficar</p><canvas id="chart-tnc-medico" class="hidden"></canvas>'; return; } else { document.getElementById('chart-tnc-medico').parentElement.innerHTML = '<canvas id="chart-tnc-medico"></canvas>'; }
+            chartMedico = new Chart(document.getElementById('chart-tnc-medico').getContext('2d'), { type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#ef4444', '#f59e0b', '#8b5cf6', '#3b82f6', '#10b981'], borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' } });
         };
+
+        // ==========================================
+        // LÓGICA DE AUDITORÍA CON IA (FORÁNEOS)
+        // ==========================================
+        window.analizarPDFBitacora = async function() {
+            const fileInput = document.getElementById('pdf-bitacora');
+            const apiKey = document.getElementById('gemini-api-key').value.trim();
+            
+            if(!fileInput.files.length) return mostrarToast("Sube el PDF escaneado de la bitácora", "error");
+            if(!apiKey) return mostrarToast("Ingresa tu API Key de Gemini", "error");
+
+            // Guardamos la clave para el futuro
+            localStorage.setItem('gemini_api_key', apiKey);
+
+            const btn = document.getElementById('btn-analizar-pdf');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analizando Documento...';
+            btn.disabled = true;
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(e) {
+                const base64PDF = e.target.result.split(',')[1];
+                
+                const promptEstricto = `Eres un asistente de extracción de datos médicos. Vas a leer el escaneo adjunto de una bitácora foránea.
+Instrucciones estrictas:
+1. Ignora cualquier estudio relacionado con Laboratorio, Rayos X, Electrocardiograma (EKG/ECG) u otros.
+2. Extrae ÚNICAMENTE los conteos totales por día y por empresa de: 'Audiometría' (incluye Audios), 'Espirometría' (incluye Espiros), 'Historia Clínica' (incluye HC, Hist, Clínica) y 'Examen Capacidad Visual' (incluye Optometría, Visual).
+3. Analiza las notas al margen o fechas tachadas. Si los registros están en la hoja del 16 de Julio pero tienen una flecha o texto que diga que pertenecen al 15, asígnalos al 15.
+4. Devuelve ÚNICAMENTE un arreglo JSON válido, sin formato Markdown ni texto adicional. Estructura requerida:
+[
+  {
+    "fecha": "YYYY-MM-DD",
+    "empresa": "Nombre tal cual se lee",
+    "estudios": {
+      "Historia Clínica": 10,
+      "Audiometría": 5,
+      "Espirometría": 0,
+      "Examen Capacidad Visual": 0
+    }
+  }
+]`;
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { text: promptEstricto },
+                                    { inlineData: { mimeType: "application/pdf", data: base64PDF } }
+                                ]
+                            }]
+                        })
+                    });
+
+                    if(!response.ok) throw new Error("Error en la respuesta de la API");
+                    const dataRes = await response.json();
+                    
+                    let text = dataRes.candidates[0].content.parts[0].text;
+                    // Limpieza del JSON en caso de que devuelva bloque Markdown
+                    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const jsonExtraido = JSON.parse(text);
+
+                    procesarCruceForaneosIA(jsonExtraido);
+                    mostrarToast("¡Análisis de IA completado!", "exito");
+                } catch(err) {
+                    console.error("Error en IA:", err);
+                    mostrarToast("Error en el análisis. Verifica el PDF y la API Key.", "error");
+                }
+                
+                btn.innerHTML = '<i class="fa-solid fa-magnifying-glass-chart"></i> Procesar Documento';
+                btn.disabled = false;
+            };
+            
+            reader.readAsDataURL(file);
+        };
+
+        function procesarCruceForaneosIA(bitacoraIA) {
+            const tbody = document.getElementById('tabla-foraneos');
+            tbody.innerHTML = '';
+            
+            let totalPDF = 0, matchCount = 0, errorCount = 0;
+            
+            // Agrupar los datos de la app (rawDataGlobal) exclusivamente para FORÁNEOS
+            // Criterio de agrupación: Fecha -> Empresa -> Estudio
+            let datosApp = {};
+            rawDataGlobal.forEach(r => {
+                if(r.tipo === "Foráneo") {
+                    if(!datosApp[r.fecha]) datosApp[r.fecha] = {};
+                    if(!datosApp[r.fecha][r.lugar]) datosApp[r.fecha][r.lugar] = {};
+                    
+                    datosApp[r.fecha][r.lugar][r.estudio] = (datosApp[r.fecha][r.lugar][r.estudio] || 0) + (r.cantDetalle || 1);
+                }
+            });
+
+            bitacoraIA.forEach(registroPDF => {
+                // Fuzzy matching de la empresa
+                const empresaNormalizada = normalizarEmpresa(registroPDF.empresa);
+                const fecha = registroPDF.fecha;
+                
+                for(const [estudio, cantidadPDF] of Object.entries(registroPDF.estudios)) {
+                    if(cantidadPDF === 0) continue; // Solo nos importan los estudios que sí tuvieron
+                    totalPDF += cantidadPDF;
+                    
+                    // Buscar en el sistema (App)
+                    let cantidadApp = 0;
+                    if(datosApp[fecha] && datosApp[fecha][empresaNormalizada]) {
+                        cantidadApp = datosApp[fecha][empresaNormalizada][estudio] || 0;
+                    }
+
+                    let claseFila = "", observacion = "", tColorPDF = "text-slate-800", tColorApp = "text-slate-800";
+                    
+                    if(cantidadPDF === cantidadApp) {
+                        claseFila = "bg-emerald-50 border-l-4 border-emerald-400";
+                        observacion = '<span class="text-emerald-600 font-bold"><i class="fa-solid fa-check-double mr-1"></i>Match Perfecto</span>';
+                        matchCount++;
+                    } else {
+                        claseFila = "bg-red-50 border-l-4 border-red-400";
+                        errorCount++;
+                        if(cantidadPDF > cantidadApp) {
+                            let dif = cantidadPDF - cantidadApp;
+                            observacion = `<span class="text-red-600 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Faltan ${dif} en la App. Sugerencia: Revisar capturas omitidas por el médico.</span>`;
+                            tColorApp = "text-red-600 font-black";
+                        } else {
+                            let dif = cantidadApp - cantidadPDF;
+                            observacion = `<span class="text-amber-600 font-bold"><i class="fa-solid fa-circle-info mr-1"></i>Sobran ${dif} en la App. Sugerencia: Posible error de fecha al sincronizar.</span>`;
+                            tColorPDF = "text-amber-600 font-black";
+                        }
+                    }
+
+                    tbody.innerHTML += `
+                        <tr class="${claseFila} hover:bg-slate-100 transition border-b border-slate-200">
+                            <td class="p-3"><p class="font-bold text-slate-700">${fecha}</p><p class="text-[9px] font-black uppercase text-indigo-600">${empresaNormalizada}</p><p class="text-[8px] text-slate-400">Leído como: "${registroPDF.empresa}"</p></td>
+                            <td class="p-3 font-bold text-slate-600 text-xs">${estudio}</td>
+                            <td class="p-3 text-center text-lg ${tColorPDF}">${cantidadPDF}</td>
+                            <td class="p-3 text-center text-lg ${tColorApp}">${cantidadApp}</td>
+                            <td class="p-3 text-xs leading-tight">${observacion}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            if(tbody.innerHTML === '') {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-400 italic font-bold">No se detectaron estudios válidos en el PDF analizado.</td></tr>';
+            }
+
+            document.getElementById('kpi-for-pdf').innerText = totalPDF;
+            document.getElementById('kpi-for-match').innerText = matchCount;
+            document.getElementById('kpi-for-error').innerText = errorCount;
+        }
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
