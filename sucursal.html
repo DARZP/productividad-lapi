@@ -15,14 +15,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.3); }
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .study-row { transition: background-color 0.2s; }
-        .study-row:hover { background-color: rgba(255, 255, 255, 0.1); }
         .scroll-custom::-webkit-scrollbar { width: 6px; height: 6px; }
         .scroll-custom::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 10px; }
         .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
-        /* Animación suave */
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -57,13 +54,11 @@
 
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- Botón volver al portal operativo (Ahora fuera del contenedor de login) -->
     <a href="index.html" class="absolute top-4 left-4 z-[100] w-10 h-10 flex items-center justify-center rounded-full glass text-white hover:bg-white/20 transition-all active:scale-95 shadow-sm" title="Volver al Portal">
         <i class="fa-solid fa-house"></i>
     </a>
 
     <div id="pantalla-login" class="flex-1 flex flex-col items-center justify-center p-4 gap-4 w-full max-w-md mx-auto relative">
-        
         <div class="glass p-8 rounded-3xl shadow-2xl w-full text-center mt-8">
             <div class="w-16 h-16 bg-white/20 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner"><i class="fa-solid fa-user-doctor"></i></div>
             <h1 class="text-2xl font-black text-white mb-1"><i class="fa-solid fa-building mr-2"></i> REGISTRO DIARIO</h1>
@@ -71,13 +66,13 @@
             
             <div class="space-y-4 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Nombre del Médico / TÉCNICO </label>
-                    <input type="text" id="login-medico" list="lista-medicos" placeholder="Ej. Harry Styles" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase font-bold">
+                    <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Nombre del Médico / Técnico </label>
+                    <input type="text" id="login-medico" list="lista-medicos" placeholder="Ej. Juan Pérez" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border border-white/10 rounded-xl outline-none focus:border-white/50 transition uppercase font-bold shadow-inner">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Sucursal</label>
                     <div class="relative">
-                        <select id="login-sucursal" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border-none rounded-xl outline-none focus:ring-2 focus:ring-white/50 transition uppercase font-bold appearance-none cursor-pointer">
+                        <select id="login-sucursal" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border border-white/10 rounded-xl outline-none focus:border-white/50 transition uppercase font-bold appearance-none cursor-pointer shadow-inner">
                             <option value="" disabled selected class="text-slate-500">SELECCIONA UNA SUCURSAL...</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white">
@@ -85,20 +80,13 @@
                         </div>
                     </div>
                 </div>
-                <button id="btn-login" onclick="iniciarSesion()" class="w-full bg-white text-orange-600 hover:bg-orange-50 font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 mt-2 flex justify-center items-center gap-2">
+                <button id="btn-login" onclick="iniciarSesion()" class="w-full bg-white text-orange-600 hover:bg-orange-50 font-black py-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-95 mt-4 flex justify-center items-center gap-2">
                     <i class="fa-solid fa-right-to-bracket"></i> Ingresar a mi Turno
                 </button>
             </div>
         </div>
 
-        <div class="glass p-4 rounded-2xl shadow-xl border-dashed border-2 border-white/30 w-full text-center">
-            <p class="text-xs font-bold uppercase mb-2 opacity-80">¿Vas a capturar un servicio foráneos?</p>
-            <button onclick="window.location.href='foraneos.html'" class="w-full bg-white/20 hover:bg-white/30 py-3 rounded-lg text-sm font-bold transition-all active:scale-95">
-                <i class="fa-solid fa-truck-medical mr-2"></i> Ir a registro de Foráneos
-            </button>
-        </div>
-
-        <div class="mt-2 mb-4 text-center w-full">
+        <div class="mt-4 mb-4 text-center w-full">
             <button onclick="abrirModalPWA()" class="text-white/70 hover:text-white text-sm font-bold underline transition-all active:scale-95">
                 <i class="fa-solid fa-mobile-screen mr-1"></i> ¿Cómo instalar esta App?
             </button>
@@ -112,7 +100,6 @@
                     <p class="text-xs font-bold opacity-80 uppercase tracking-widest mb-0.5">Turno Operativo</p>
                     <h2 id="ui-fecha" class="text-lg font-black leading-tight">Cargando...</h2>
                 </div>
-                <!-- Nav superior en sesión activa -->
                 <div class="flex gap-2">
                     <a href="index.html" class="bg-white/20 hover:bg-white/30 p-2 rounded-lg text-sm font-bold transition-all active:scale-95 flex items-center justify-center" title="Volver al Portal"><i class="fa-solid fa-house"></i></a>
                     <button onclick="location.reload()" class="bg-white/20 hover:bg-white/30 p-2 rounded-lg text-sm font-bold transition-all active:scale-95" title="Recargar Sesión"><i class="fa-solid fa-rotate-right"></i></button>
@@ -139,18 +126,19 @@
             </div>
 
             <div id="vista-captura-principal" class="animate-fade-in">
+                <!-- CONTENEDOR GRID DE ESTUDIOS -->
                 <div id="contenedor-estudios" class="space-y-4"></div>
                 
-                <div class="glass p-4 rounded-2xl shadow-sm mb-6 mt-6 border-white/10">
-                    <label class="block mb-2 font-bold text-sm text-white/90">Observaciones (Pendientes, Fallas, Inconvenientes)</label>
-                    <textarea id="obs-principal" oninput="actualizarObservaciones(this.value)" class="w-full p-3 rounded-xl bg-black/20 border border-white/10 outline-none placeholder-white/50 text-white font-medium" rows="3" placeholder="Ej. Equipo de audiometría falló, paciente pendiente..."></textarea>
+                <div class="glass p-5 rounded-3xl shadow-lg mb-6 mt-6 border border-white/20">
+                    <label class="block mb-3 font-bold text-sm text-white/90 uppercase tracking-widest"><i class="fa-solid fa-pen mr-1"></i> Observaciones</label>
+                    <textarea id="obs-principal" oninput="actualizarObservaciones(this.value)" class="w-full p-4 rounded-xl bg-black/20 border border-white/10 outline-none placeholder-white/40 text-white font-medium shadow-inner" rows="3" placeholder="Ej. Equipo de audiometría falló, paciente pendiente..."></textarea>
                 </div>
 
                 <div class="flex flex-col gap-3 mb-6">
-                    <button onclick="mostrarResumen()" class="w-full bg-white text-orange-600 font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <button onclick="mostrarResumen()" class="w-full bg-white text-orange-600 font-bold py-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
                         Ver Resumen De Turno <i class="fa-solid fa-arrow-right"></i>
                     </button>
-                    <button id="btn-ver-global" onclick="mostrarResumenSucursal()" class="w-full bg-transparent border-2 border-white/30 hover:bg-white/10 text-white font-bold py-3.5 rounded-xl transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <button id="btn-ver-global" onclick="mostrarResumenSucursal()" class="w-full bg-transparent border-2 border-white/40 hover:bg-white/10 text-white font-bold py-4 rounded-xl transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-globe"></i> Ver Resumen de Sucursal
                     </button>
                 </div>
@@ -161,7 +149,7 @@
                     <h2 class="font-black text-xl text-white"><i class="fa-solid fa-clipboard-check mr-2"></i> Reporte individual </h2>
                 </div>
                 
-                <div id="resumen-contenido" class="bg-black/20 p-4 rounded-2xl mb-6 space-y-2 border border-white/10 text-white/90 text-sm"></div>
+                <div id="resumen-contenido" class="bg-black/20 p-5 rounded-2xl mb-6 space-y-2 border border-white/10 text-white/90 text-sm"></div>
 
                 <div class="mb-6">
                     <label class="block mb-2 font-bold text-sm text-white/90">Mis Observaciones:</label>
@@ -169,29 +157,20 @@
                 </div>
 
                 <div class="flex gap-3">
-                    <button onclick="ocultarResumen()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <button onclick="ocultarResumen()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-arrow-left"></i> Volver
                     </button>
-                    <button id="btn-descargar-sucursal" onclick="generarImagenCompartir()" class="w-2/3 bg-orange-500 hover:bg-orange-600 text-white font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-download"></i> Descargar Reporte individual
+                    <button id="btn-descargar-sucursal" onclick="generarImagenCompartir()" class="w-2/3 bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-download"></i> Descargar Reporte
                     </button>
                 </div>
             </div>
 
             <div id="vista-resumen-sucursal" class="hidden glass p-6 rounded-3xl shadow-xl border border-white/20 animate-fade-in relative overflow-hidden">
-                
-                <div id="tutorial-global" class="absolute inset-x-6 top-24 bottom-6 z-[60] glass rounded-3xl p-6 text-center flex flex-col items-center justify-center border-2 border-dashed border-white animate-fade-in hidden">
-                    <i class="fa-solid fa-hand-pointer text-7xl text-orange-200 mb-6 animate-bounce"></i>
-                    <p class="text-xs font-bold uppercase tracking-widest text-orange-200 opacity-80 mb-2">Paso Importante:</p>
-                    <h3 class="font-black text-2xl text-white mb-6 leading-tight">🛑 ¡ESTO NO ES EL REPORTE! <br> No tomes captura aquí.</h3>
-                    <p class="text-sm font-medium text-white/90 mb-8 max-w-xs">Esta pantalla es solo para verificar. Para reportar al grupo, usa el botón de <b>"Descargar Reporte"</b> que está abajo. 👇</p>
-                    <button onclick="ocultarTutorialGlobal()" class="bg-white text-orange-600 font-bold px-8 py-3 rounded-xl shadow-lg active:scale-95 transition-all">Entendido</button>
-                </div>
-
                 <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4 relative z-10">
                     <h2 class="font-black text-xl text-white leading-tight"><i class="fa-solid fa-globe mr-1"></i> Global<br><span class="text-xs text-orange-200 uppercase font-medium">Sucursal del Día</span></h2>
                     <div class="flex gap-2">
-                        <button onclick="copiarResumenTexto()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl transition active:scale-95 flex items-center gap-2 font-bold text-sm" title="Copiar Texto">
+                        <button onclick="copiarResumenTexto()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl transition hover:scale-[1.02] active:scale-95 flex items-center gap-2 font-bold text-sm" title="Copiar Texto">
                             <i class="fa-solid fa-copy"></i> Copiar Texto
                         </button>
                     </div>
@@ -200,29 +179,27 @@
                 <div id="resumen-global-contenido" class="space-y-4 mb-6 max-h-[55vh] overflow-y-auto pr-2 scroll-custom relative z-10"></div>
 
                 <div class="flex gap-3 relative z-10">
-                    <button onclick="ocultarResumenSucursal()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <button onclick="ocultarResumenSucursal()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-arrow-left"></i> Volver
                     </button>
-                    <button id="btn-descargar-global" onclick="generarImagenGlobal()" class="w-2/3 bg-orange-500 hover:bg-orange-600 text-white font-black py-3.5 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <button id="btn-descargar-global" onclick="generarImagenGlobal()" class="w-2/3 bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-download"></i> Descargar Reporte
                     </button>
                 </div>
             </div>
 
             <div id="vista-mi-historial" class="hidden w-full max-w-2xl mx-auto space-y-6 animate-fade-in pb-12">
-                
+                <!-- Contenido de historial se mantiene idéntico -->
                 <div class="glass p-5 rounded-3xl text-white">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="font-black text-xl leading-tight"><i class="fa-solid fa-chart-line mr-1 text-orange-200"></i> Mis Registros<br><span class="text-[10px] font-medium opacity-80 uppercase tracking-widest" id="lbl-nombre-historial"></span></h2>
                         <button onclick="cerrarHistorial()" class="text-[10px] uppercase tracking-widest bg-white/20 hover:bg-white/30 px-3 py-2 rounded-xl font-bold transition"><i class="fa-solid fa-xmark mr-1"></i> Cerrar</button>
                     </div>
-                    
                     <div class="grid grid-cols-3 gap-2 text-xs font-bold mt-2">
                         <button id="btn-filtro-hoy" onclick="filtrarHistorial('hoy')" class="btn-filtro bg-white text-orange-600 py-2.5 rounded-xl shadow-sm transition">Hoy</button>
                         <button id="btn-filtro-semana" onclick="filtrarHistorial('semana')" class="btn-filtro bg-white/20 hover:bg-white/30 text-white py-2.5 rounded-xl transition">Semana</button>
                         <button id="btn-filtro-mes" onclick="filtrarHistorial('mes')" class="btn-filtro bg-white/20 hover:bg-white/30 text-white py-2.5 rounded-xl transition">Mes</button>
                     </div>
-                    
                     <div class="flex gap-2 mt-3 pt-3 border-t border-white/20">
                         <div class="flex-1">
                             <label class="block text-[9px] font-black text-white/70 uppercase tracking-widest mb-1">Desde</label>
@@ -262,7 +239,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="bg-white p-6 rounded-3xl text-slate-800 shadow-xl space-y-8">
                         <div>
                             <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Distribución por Tipo de Estudio</h3>
@@ -273,7 +249,6 @@
                             <div class="relative h-48 w-full"><canvas id="mi-chart-tendencia"></canvas></div>
                         </div>
                     </div>
-
                     <div class="bg-white rounded-3xl text-slate-800 shadow-xl overflow-hidden border border-slate-100">
                         <div class="bg-slate-50 px-5 py-3 border-b border-slate-200">
                             <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-table-list mr-1"></i> Bitácora de Capturas</h3>
@@ -281,28 +256,19 @@
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs border-collapse">
                                 <thead class="bg-white text-[9px] uppercase text-slate-400 border-b border-slate-100">
-                                    <tr>
-                                        <th class="p-3">Fecha</th>
-                                        <th class="p-3">Sede/Origen</th>
-                                        <th class="p-3 text-right">Detalle</th>
-                                    </tr>
+                                    <tr><th class="p-3">Fecha</th><th class="p-3">Sede/Origen</th><th class="p-3 text-right">Detalle</th></tr>
                                 </thead>
-                                <tbody id="mi-tabla-bitacora" class="divide-y divide-slate-100 font-medium text-slate-600 bg-white">
-                                    </tbody>
+                                <tbody id="mi-tabla-bitacora" class="divide-y divide-slate-100 font-medium text-slate-600 bg-white"></tbody>
                             </table>
                         </div>
                     </div>
-
-                    <p class="text-[9px] text-white/50 text-center italic px-4 mt-6 leading-relaxed opacity-80">
-                        * Los datos registrados antes de la creación de la plataforma fueron generados en base al registro histórico de los concentrados de Excel.
-                    </p>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <!-- Modales restantes y Plantillas HTML2Canvas ocultas (No se modifican) -->
+    <!-- Modales restantes y Plantillas HTML2Canvas ocultas -->
     <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-pwa-card" class="glass bg-orange-600/90 p-6 rounded-3xl shadow-2xl max-w-sm w-full text-white transform scale-95 transition-transform duration-300">
             <h3 class="text-xl font-black mb-5 text-center"><i class="fa-solid fa-download mr-2"></i> Instalar Aplicación</h3>
@@ -395,7 +361,7 @@
             }
 
             const versionDiv = document.createElement('div');
-            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
+            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-white/40 font-bold tracking-widest pointer-events-none opacity-60';
             versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
             document.body.appendChild(versionDiv);
         });
@@ -546,8 +512,8 @@
             const counterElement = document.getElementById(idHTML);
             if(counterElement) {
                 counterElement.innerText = datosDelDia.estudios[estudio];
-                counterElement.classList.add('scale-150', 'text-orange-200');
-                setTimeout(() => counterElement.classList.remove('scale-150', 'text-orange-200'), 200);
+                counterElement.classList.add('scale-150', 'text-orange-300');
+                setTimeout(() => counterElement.classList.remove('scale-150', 'text-orange-300'), 200);
             }
             sincronizarConNube();
         }
@@ -565,23 +531,25 @@
             listaEstudiosOficial.forEach(estudio => {
                 const cantidadAct = datosDelDia.estudios[estudio] || 0;
                 const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
+                
+                // NUEVO: Diseño de Tarjetas en GRID de 2 Columnas
                 htmlEstudios += `
-                    <div class="study-row flex items-center justify-between py-3 border-b border-white/10 last:border-0 px-3 rounded-lg">
-                        <span class="text-sm font-bold text-white/90 leading-tight w-1/2">${estudio}</span>
-                        <div class="flex items-center gap-3 bg-black/20 p-1.5 rounded-xl border border-white/10">
-                            <button onclick="cambiarContador('${estudio}', -1)" class="w-10 h-10 rounded-lg bg-white/20 text-white shadow-sm font-black text-xl hover:bg-white/40 transition-all active:scale-90">-</button>
-                            <span id="${idHTML}" class="w-8 text-center font-black text-white text-lg transition-transform">${cantidadAct}</span>
-                            <button onclick="cambiarContador('${estudio}', 1)" class="w-10 h-10 rounded-lg bg-white text-orange-600 shadow-sm font-black text-xl hover:bg-gray-100 transition-all active:scale-90">+</button>
+                    <div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors shadow-sm">
+                        <span class="text-[10px] font-black text-white/90 leading-tight text-center h-8 flex items-center">${estudio}</span>
+                        <div class="flex items-center gap-3 bg-black/20 p-1.5 rounded-xl border border-white/5 w-full justify-between mt-2">
+                            <button onclick="cambiarContador('${estudio}', -1)" class="w-8 h-8 rounded-lg bg-white/10 text-white shadow-sm font-black text-lg hover:bg-white/30 transition-all active:scale-90 flex items-center justify-center"><i class="fa-solid fa-minus"></i></button>
+                            <span id="${idHTML}" class="w-8 text-center font-black text-white text-xl transition-transform">${cantidadAct}</span>
+                            <button onclick="cambiarContador('${estudio}', 1)" class="w-8 h-8 rounded-lg bg-white text-orange-600 shadow-sm font-black text-lg hover:bg-gray-100 transition-all active:scale-90 flex items-center justify-center"><i class="fa-solid fa-plus"></i></button>
                         </div>
                     </div>
                 `;
             });
             contenedor.innerHTML = `
-                <div class="glass rounded-2xl shadow-sm overflow-hidden">
-                    <div class="bg-black/20 text-white px-4 py-3 border-b border-white/10 flex justify-between items-center">
-                        <h3 class="font-black text-xs tracking-widest uppercase opacity-80"><i class="fa-solid fa-list-check mr-2"></i> Conteo de Estudios</h3>
+                <div class="glass rounded-3xl shadow-lg overflow-hidden border border-white/20">
+                    <div class="bg-black/20 text-white px-5 py-4 border-b border-white/10 flex justify-between items-center">
+                        <h3 class="font-black text-xs tracking-widest uppercase opacity-90"><i class="fa-solid fa-list-check mr-2"></i> Conteo de Estudios</h3>
                     </div>
-                    <div class="p-2 bg-black/10">${htmlEstudios}</div>
+                    <div class="p-3 bg-black/10 grid grid-cols-2 gap-3">${htmlEstudios}</div>
                 </div>
             `;
         }
@@ -664,7 +632,6 @@
 
                 qs.forEach(doc => {
                     const data = doc.data();
-                    
                     if(normalizarTexto(data.sucursal) !== miSucursalNorm) return;
 
                     let medNorm = normalizarTexto(data.medico);
@@ -742,13 +709,11 @@
 
                 document.getElementById('vista-captura-principal').classList.add('hidden');
                 document.getElementById('vista-resumen-sucursal').classList.remove('hidden');
-                document.getElementById('tutorial-global').classList.remove('hidden');
 
             } catch(e) { console.error(e); mostrarToast("Hubo un error cargando el global. Intenta de nuevo.", "error"); }
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
-        window.ocultarTutorialGlobal = function() { document.getElementById('tutorial-global').classList.add('hidden'); };
         window.ocultarResumenSucursal = function() {
             document.getElementById('vista-resumen-sucursal').classList.add('hidden');
             document.getElementById('vista-captura-principal').classList.remove('hidden');
@@ -795,7 +760,7 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...'; btn.disabled = true;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
-            document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal.toUpperCase()}`;
+            document.getElementById('cap-glob-sucursal').innerText = `SUCURMAKE: ${d.sucursal.toUpperCase()}`;
             document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Presente :</b> <span class="text-orange-200 font-bold">${d.personal.join(', ')}</span></p>`;
             
             let listHtml = '';
