@@ -15,13 +15,22 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #f8fafc; }
         .scroll-custom::-webkit-scrollbar { width: 6px; height: 6px; }
         .scroll-custom::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 10px; }
-        .scroll-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.2); border-radius: 10px; }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Ocultar flechas nativas del input number */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] { -moz-appearance: textfield; }
+
+        .shadow-soft { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
     </style>
 
     <script type="module">
@@ -50,76 +59,79 @@
         window.where = where;
     </script>
 </head>
-<body class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen text-white pb-20 flex flex-col justify-between relative">
+<body class="min-h-screen p-4 flex flex-col pt-6 text-slate-800 pb-10 relative">
 
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
-    <a href="index.html" class="absolute top-4 left-4 z-[100] w-10 h-10 flex items-center justify-center rounded-full glass text-white hover:bg-white/20 transition-all active:scale-95 shadow-sm" title="Volver al Portal">
+    <a href="index.html" class="absolute top-4 left-4 z-[100] w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-orange-600 hover:border-orange-300 transition-all active:scale-95 shadow-sm" title="Volver al Portal">
         <i class="fa-solid fa-house"></i>
     </a>
 
     <div id="pantalla-login" class="flex-1 flex flex-col items-center justify-center p-4 gap-4 w-full max-w-md mx-auto relative">
-        <div class="glass p-8 rounded-3xl shadow-2xl w-full text-center mt-8">
-            <div class="w-16 h-16 bg-white/20 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner"><i class="fa-solid fa-user-doctor"></i></div>
-            <h1 class="text-2xl font-black text-white mb-1"><i class="fa-solid fa-building mr-2"></i> REGISTRO DIARIO</h1>
-            <p class="text-sm text-white/80 mb-6 font-medium">Productividad Sucursales</p>
+        <div class="bg-white p-8 rounded-3xl shadow-soft w-full text-center border border-slate-200 border-t-4 border-t-orange-500 mt-8">
+            <div class="w-16 h-16 bg-slate-50 text-orange-500 border border-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-user-doctor"></i></div>
+            <h1 class="text-2xl font-black text-slate-800 mb-1"><i class="fa-solid fa-building mr-2 text-orange-500"></i> REGISTRO DIARIO</h1>
+            <p class="text-xs text-slate-500 mb-6 font-bold uppercase tracking-widest">Productividad Sucursales</p>
             
             <div class="space-y-4 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Nombre del Médico / Técnico </label>
-                    <input type="text" id="login-medico" list="lista-medicos" placeholder="Ej. ERLING HAALAND" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border border-white/10 rounded-xl outline-none focus:border-white/50 transition uppercase font-bold shadow-inner">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Nombre del Médico / Técnico </label>
+                    <input type="text" id="login-medico" list="lista-medicos" placeholder="Ej. Juan Pérez" class="w-full p-3 bg-slate-50 text-slate-700 placeholder-slate-400 border border-slate-200 rounded-xl outline-none focus:border-orange-400 transition uppercase font-bold shadow-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-white/90 uppercase tracking-wide mb-1">Sucursal</label>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Sucursal</label>
                     <div class="relative">
-                        <select id="login-sucursal" class="w-full p-3 bg-white/20 text-white placeholder-white/60 border border-white/10 rounded-xl outline-none focus:border-white/50 transition uppercase font-bold appearance-none cursor-pointer shadow-inner">
-                            <option value="" disabled selected class="text-slate-500">SELECCIONA UNA SUCURSAL...</option>
+                        <select id="login-sucursal" class="w-full p-3 bg-slate-50 text-slate-700 placeholder-slate-400 border border-slate-200 rounded-xl outline-none focus:border-orange-400 transition uppercase font-bold appearance-none cursor-pointer shadow-sm">
+                            <option value="" disabled selected class="text-slate-400">SELECCIONA UNA SUCURSAL...</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white">
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
                             <i class="fa-solid fa-chevron-down"></i>
                         </div>
                     </div>
                 </div>
-                <button id="btn-login" onclick="iniciarSesion()" class="w-full bg-white text-orange-600 hover:bg-orange-50 font-black py-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-95 mt-4 flex justify-center items-center gap-2">
+                <button id="btn-login" onclick="iniciarSesion()" class="w-full bg-orange-600 text-white hover:bg-orange-700 font-black py-4 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-95 mt-4 flex justify-center items-center gap-2">
                     <i class="fa-solid fa-right-to-bracket"></i> Ingresar a mi Turno
                 </button>
             </div>
         </div>
 
-        <div class="mt-4 mb-4 text-center w-full">
-            <button onclick="abrirModalPWA()" class="text-white/70 hover:text-white text-sm font-bold underline transition-all active:scale-95">
+        <div class="mt-2 mb-4 text-center w-full">
+            <button onclick="abrirModalPWA()" class="text-slate-500 hover:text-orange-600 text-sm font-bold underline transition-all active:scale-95">
                 <i class="fa-solid fa-mobile-screen mr-1"></i> ¿Cómo instalar esta App?
             </button>
         </div>
     </div>
 
-    <div id="pantalla-app" class="hidden w-full max-w-3xl mx-auto flex-1">
-        <div class="glass text-white p-4 shadow-md sticky top-0 z-50 rounded-b-3xl mx-2 mb-4">
+    <div id="pantalla-app" class="hidden w-full max-w-3xl mx-auto flex-1 mt-4">
+        
+        <!-- ENCABEZADO DE TURNO -->
+        <div class="bg-white border border-slate-200 text-slate-800 p-4 shadow-sm sticky top-2 z-50 rounded-2xl mx-2 mb-4">
             <div class="flex justify-between items-center">
                 <div>
-                    <p class="text-xs font-bold opacity-80 uppercase tracking-widest mb-0.5">Turno Operativo</p>
-                    <h2 id="ui-fecha" class="text-lg font-black leading-tight">Cargando...</h2>
+                    <p class="text-[10px] font-black opacity-60 uppercase tracking-widest mb-0.5 text-slate-500">Turno Operativo</p>
+                    <h2 id="ui-fecha" class="text-lg font-black leading-tight text-slate-800">Cargando...</h2>
                 </div>
                 <div class="flex gap-2">
-                    <a href="index.html" class="bg-white/20 hover:bg-white/30 p-2 rounded-lg text-sm font-bold transition-all active:scale-95 flex items-center justify-center" title="Volver al Portal"><i class="fa-solid fa-house"></i></a>
-                    <button onclick="location.reload()" class="bg-white/20 hover:bg-white/30 p-2 rounded-lg text-sm font-bold transition-all active:scale-95" title="Recargar Sesión"><i class="fa-solid fa-rotate-right"></i></button>
-                    <button onclick="cerrarSesion()" class="bg-white/20 hover:bg-white/30 p-2 rounded-lg text-sm font-bold transition-all active:scale-95"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+                    <a href="index.html" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 p-2.5 rounded-lg text-sm font-bold transition-all active:scale-95 flex items-center justify-center" title="Volver al Portal"><i class="fa-solid fa-house"></i></a>
+                    <button onclick="location.reload()" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 p-2.5 rounded-lg text-sm font-bold transition-all active:scale-95" title="Recargar Sesión"><i class="fa-solid fa-rotate-right"></i></button>
+                    <button onclick="cerrarSesion()" class="bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 p-2.5 rounded-lg text-sm font-bold transition-all active:scale-95"><i class="fa-solid fa-right-from-bracket"></i></button>
                 </div>
             </div>
         </div>
 
-        <div class="p-4 mt-2">
-            <div class="glass p-4 rounded-2xl shadow-sm border-l-4 border-white flex items-center justify-between mb-6">
+        <div class="px-2 mt-2">
+            <!-- TARJETA MÉDICO -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-sky-500 flex items-center justify-between mb-6">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-white/20 text-white rounded-full flex items-center justify-center text-lg"><i class="fa-solid fa-user-md"></i></div>
+                    <div class="w-12 h-12 bg-sky-50 border border-sky-100 text-sky-600 rounded-full flex items-center justify-center text-xl shadow-sm"><i class="fa-solid fa-user-md"></i></div>
                     <div>
-                        <p id="ui-medico" class="font-black text-white leading-tight">Dr. Nombre</p>
-                        <p id="ui-sucursal" class="text-xs font-bold text-white/80 uppercase">Sucursal</p>
+                        <p id="ui-medico" class="font-black text-slate-800 leading-tight">Dr. Nombre</p>
+                        <p id="ui-sucursal" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sucursal</p>
                     </div>
                 </div>
                 <div class="flex flex-col items-end gap-2">
-                    <button onclick="abrirMiHistorial()" class="text-[11px] bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg font-bold transition active:scale-95 shadow-sm flex items-center gap-1">
-                        <i class="fa-solid fa-chart-user"></i> Mi Perfil
+                    <button onclick="abrirMiHistorial()" class="text-[10px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-3 py-2 rounded-lg font-bold transition active:scale-95 shadow-sm flex items-center gap-1 uppercase tracking-wider">
+                        <i class="fa-solid fa-chart-user"></i> Perfil
                     </button>
                     <div id="indicador-guardado" class="text-[10px] font-black text-white bg-emerald-500 px-2.5 py-1 rounded-md opacity-0 transition-all duration-300 shadow-sm"></div>
                 </div>
@@ -129,49 +141,51 @@
                 <!-- CONTENEDOR GRID DE ESTUDIOS -->
                 <div id="contenedor-estudios" class="space-y-4"></div>
                 
-                <div class="glass p-5 rounded-3xl shadow-lg mb-6 mt-6 border border-white/20">
-                    <label class="block mb-3 font-bold text-sm text-white/90 uppercase tracking-widest"><i class="fa-solid fa-pen mr-1"></i> Observaciones</label>
-                    <textarea id="obs-principal" oninput="actualizarObservaciones(this.value)" class="w-full p-4 rounded-xl bg-black/20 border border-white/10 outline-none placeholder-white/40 text-white font-medium shadow-inner" rows="3" placeholder="Ej. Equipo de audiometría falló, paciente pendiente..."></textarea>
+                <div class="bg-white p-5 rounded-3xl shadow-sm mb-6 mt-6 border border-slate-200">
+                    <label class="block mb-3 font-black text-[10px] text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-pen text-orange-500 mr-1"></i> Observaciones</label>
+                    <textarea id="obs-principal" oninput="actualizarObservaciones(this.value)" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none placeholder-slate-400 text-slate-700 font-medium shadow-inner focus:border-orange-400 transition-colors" rows="3" placeholder="Ej. Equipo de audiometría falló, paciente pendiente..."></textarea>
                 </div>
 
                 <div class="flex flex-col gap-3 mb-6">
-                    <button onclick="mostrarResumen()" class="w-full bg-white text-orange-600 font-bold py-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
+                    <button onclick="mostrarResumen()" class="w-full bg-orange-600 text-white font-black py-4 rounded-xl shadow-md transition-all hover:bg-orange-700 active:scale-95 flex justify-center items-center gap-2 text-sm">
                         Ver Resumen De Turno <i class="fa-solid fa-arrow-right"></i>
                     </button>
-                    <button id="btn-ver-global" onclick="mostrarResumenSucursal()" class="w-full bg-transparent border-2 border-white/40 hover:bg-white/10 text-white font-bold py-4 rounded-xl transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
+                    <button id="btn-ver-global" onclick="mostrarResumenSucursal()" class="w-full bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white font-black py-4 rounded-xl shadow-md transition-all active:scale-95 flex justify-center items-center gap-2 text-sm">
                         <i class="fa-solid fa-globe"></i> Ver Resumen de Sucursal
                     </button>
                 </div>
             </div>
 
-            <div id="vista-resumen-final" class="hidden glass p-6 rounded-3xl shadow-xl border border-white/20 animate-fade-in">
-                <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
-                    <h2 class="font-black text-xl text-white"><i class="fa-solid fa-clipboard-check mr-2"></i> Reporte individual </h2>
+            <!-- VISTA: RESUMEN INDIVIDUAL -->
+            <div id="vista-resumen-final" class="hidden bg-white p-6 rounded-3xl shadow-soft border border-slate-200 animate-fade-in">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                    <h2 class="font-black text-xl text-slate-800"><i class="fa-solid fa-clipboard-check text-emerald-500 mr-2"></i> Reporte Individual </h2>
                 </div>
                 
-                <div id="resumen-contenido" class="bg-black/20 p-5 rounded-2xl mb-6 space-y-2 border border-white/10 text-white/90 text-sm"></div>
+                <div id="resumen-contenido" class="bg-slate-50 p-5 rounded-2xl mb-6 space-y-3 border border-slate-200 text-slate-700 text-sm shadow-inner font-medium"></div>
 
                 <div class="mb-6">
-                    <label class="block mb-2 font-bold text-sm text-white/90">Mis Observaciones:</label>
-                    <textarea id="obs-resumen" oninput="actualizarObservaciones(this.value)" class="w-full p-3 rounded-xl bg-black/20 border border-white/10 outline-none placeholder-white/50 text-white font-medium" rows="3"></textarea>
+                    <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Mis Observaciones:</label>
+                    <textarea id="obs-resumen" oninput="actualizarObservaciones(this.value)" class="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 outline-none placeholder-slate-400 text-slate-700 font-medium focus:border-orange-400 shadow-sm" rows="3"></textarea>
                 </div>
 
                 <div class="flex gap-3">
-                    <button onclick="ocultarResumen()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <button onclick="ocultarResumen()" class="w-1/3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-black py-4 rounded-xl shadow-sm transition-all active:scale-95 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-arrow-left"></i> Volver
                     </button>
-                    <button id="btn-descargar-sucursal" onclick="generarImagenCompartir()" class="w-2/3 bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
+                    <button id="btn-descargar-sucursal" onclick="generarImagenCompartir()" class="w-2/3 bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-download"></i> Descargar Reporte
                     </button>
                 </div>
             </div>
 
-            <div id="vista-resumen-sucursal" class="hidden glass p-6 rounded-3xl shadow-xl border border-white/20 animate-fade-in relative overflow-hidden">
-                <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4 relative z-10">
-                    <h2 class="font-black text-xl text-white leading-tight"><i class="fa-solid fa-globe mr-1"></i> Global<br><span class="text-xs text-orange-200 uppercase font-medium">Sucursal del Día</span></h2>
+            <!-- VISTA: RESUMEN SUCURSAL GLOBAL -->
+            <div id="vista-resumen-sucursal" class="hidden bg-white p-6 rounded-3xl shadow-soft border border-slate-200 animate-fade-in relative overflow-hidden">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 relative z-10">
+                    <h2 class="font-black text-xl text-slate-800 leading-tight"><i class="fa-solid fa-globe text-sky-500 mr-1"></i> Global<br><span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Sucursal del Día</span></h2>
                     <div class="flex gap-2">
-                        <button onclick="copiarResumenTexto()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl transition hover:scale-[1.02] active:scale-95 flex items-center gap-2 font-bold text-sm" title="Copiar Texto">
-                            <i class="fa-solid fa-copy"></i> Copiar Texto
+                        <button onclick="copiarResumenTexto()" class="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-4 py-2 rounded-xl transition hover:scale-[1.02] active:scale-95 flex items-center gap-2 font-black text-[11px] uppercase tracking-widest shadow-sm" title="Copiar Texto">
+                            <i class="fa-solid fa-copy"></i> Copiar
                         </button>
                     </div>
                 </div>
@@ -179,55 +193,55 @@
                 <div id="resumen-global-contenido" class="space-y-4 mb-6 max-h-[55vh] overflow-y-auto pr-2 scroll-custom relative z-10"></div>
 
                 <div class="flex gap-3 relative z-10">
-                    <button onclick="ocultarResumenSucursal()" class="w-1/3 bg-white/20 hover:bg-white/30 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <button onclick="ocultarResumenSucursal()" class="w-1/3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-black py-4 rounded-xl shadow-sm transition-all active:scale-95 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-arrow-left"></i> Volver
                     </button>
-                    <button id="btn-descargar-global" onclick="generarImagenGlobal()" class="w-2/3 bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
+                    <button id="btn-descargar-global" onclick="generarImagenGlobal()" class="w-2/3 bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-download"></i> Descargar Reporte
                     </button>
                 </div>
             </div>
 
+            <!-- VISTA: MI HISTORIAL -->
             <div id="vista-mi-historial" class="hidden w-full max-w-2xl mx-auto space-y-6 animate-fade-in pb-12">
-                <!-- Contenido de historial se mantiene idéntico -->
-                <div class="glass p-5 rounded-3xl text-white">
+                <div class="bg-white border border-slate-200 p-5 rounded-3xl text-slate-800 shadow-sm">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="font-black text-xl leading-tight"><i class="fa-solid fa-chart-line mr-1 text-orange-200"></i> Mis Registros<br><span class="text-[10px] font-medium opacity-80 uppercase tracking-widest" id="lbl-nombre-historial"></span></h2>
-                        <button onclick="cerrarHistorial()" class="text-[10px] uppercase tracking-widest bg-white/20 hover:bg-white/30 px-3 py-2 rounded-xl font-bold transition"><i class="fa-solid fa-xmark mr-1"></i> Cerrar</button>
+                        <h2 class="font-black text-xl leading-tight text-slate-800"><i class="fa-solid fa-chart-line mr-1 text-orange-500"></i> Mis Registros<br><span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" id="lbl-nombre-historial"></span></h2>
+                        <button onclick="cerrarHistorial()" class="text-[10px] uppercase tracking-widest bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-xl font-bold transition"><i class="fa-solid fa-xmark mr-1"></i> Cerrar</button>
                     </div>
                     <div class="grid grid-cols-3 gap-2 text-xs font-bold mt-2">
-                        <button id="btn-filtro-hoy" onclick="filtrarHistorial('hoy')" class="btn-filtro bg-white text-orange-600 py-2.5 rounded-xl shadow-sm transition">Hoy</button>
-                        <button id="btn-filtro-semana" onclick="filtrarHistorial('semana')" class="btn-filtro bg-white/20 hover:bg-white/30 text-white py-2.5 rounded-xl transition">Semana</button>
-                        <button id="btn-filtro-mes" onclick="filtrarHistorial('mes')" class="btn-filtro bg-white/20 hover:bg-white/30 text-white py-2.5 rounded-xl transition">Mes</button>
+                        <button id="btn-filtro-hoy" onclick="filtrarHistorial('hoy')" class="btn-filtro bg-orange-600 text-white py-2.5 rounded-xl shadow-sm transition">Hoy</button>
+                        <button id="btn-filtro-semana" onclick="filtrarHistorial('semana')" class="btn-filtro bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 py-2.5 rounded-xl transition">Semana</button>
+                        <button id="btn-filtro-mes" onclick="filtrarHistorial('mes')" class="btn-filtro bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 py-2.5 rounded-xl transition">Mes</button>
                     </div>
-                    <div class="flex gap-2 mt-3 pt-3 border-t border-white/20">
+                    <div class="flex gap-2 mt-3 pt-3 border-t border-slate-100">
                         <div class="flex-1">
-                            <label class="block text-[9px] font-black text-white/70 uppercase tracking-widest mb-1">Desde</label>
-                            <input type="date" id="historial-fecha-inicio" onchange="filtrarHistorial('custom')" class="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white/50 transition-colors">
+                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Desde</label>
+                            <input type="date" id="historial-fecha-inicio" onchange="filtrarHistorial('custom')" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none text-slate-700 focus:border-orange-400 transition-colors">
                         </div>
                         <div class="flex-1">
-                            <label class="block text-[9px] font-black text-white/70 uppercase tracking-widest mb-1">Hasta</label>
-                            <input type="date" id="historial-fecha-fin" onchange="filtrarHistorial('custom')" class="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-[10px] font-bold outline-none text-white focus:border-white/50 transition-colors">
+                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Hasta</label>
+                            <input type="date" id="historial-fecha-fin" onchange="filtrarHistorial('custom')" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none text-slate-700 focus:border-orange-400 transition-colors">
                         </div>
                     </div>
                 </div>
 
                 <div id="loader-historial" class="hidden text-center py-10">
-                    <i class="fa-solid fa-spinner fa-spin text-4xl text-white/50 mb-3 block"></i>
-                    <p class="text-sm font-bold text-white/70">Consultando Base de Datos...</p>
+                    <i class="fa-solid fa-spinner fa-spin text-4xl text-orange-400 mb-3 block"></i>
+                    <p class="text-sm font-bold text-slate-500">Consultando Base de Datos...</p>
                 </div>
 
                 <div id="contenido-historial" class="space-y-5">
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white p-5 rounded-3xl text-slate-800 shadow-xl text-center border-b-4 border-orange-500 flex flex-col justify-center">
+                        <div class="bg-white p-5 rounded-3xl text-slate-800 shadow-sm text-center border-b-4 border-orange-500 flex flex-col justify-center">
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estudios Totales</p>
                             <p id="mi-kpi-total" class="text-4xl font-black text-slate-800 mt-1">0</p>
                         </div>
-                        <div class="bg-white p-5 rounded-3xl text-slate-800 shadow-xl text-center border-b-4 border-sky-500 flex flex-col justify-center">
+                        <div class="bg-white p-5 rounded-3xl text-slate-800 shadow-sm text-center border-b-4 border-sky-500 flex flex-col justify-center">
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Volumen Sucursal</p>
                             <p id="mi-kpi-sucursal" class="text-3xl font-black text-sky-600 mt-1">0</p>
                         </div>
-                        <div id="card-kpi-foraneos" class="bg-white p-5 rounded-3xl text-slate-800 shadow-xl col-span-2 text-center border-b-4 border-emerald-500 flex justify-around items-center hidden">
+                        <div id="card-kpi-foraneos" class="bg-white p-5 rounded-3xl text-slate-800 shadow-sm col-span-2 text-center border-b-4 border-emerald-500 flex justify-around items-center hidden">
                             <div>
                                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Volumen Foráneos</p>
                                 <p id="mi-kpi-foraneos" class="text-2xl font-black text-emerald-600 mt-1">0</p>
@@ -239,7 +253,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white p-6 rounded-3xl text-slate-800 shadow-xl space-y-8">
+
+                    <div class="bg-white p-6 rounded-3xl text-slate-800 shadow-sm border border-slate-200 space-y-8">
                         <div>
                             <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Distribución por Tipo de Estudio</h3>
                             <div class="relative h-48 w-full"><canvas id="mi-chart-tipos"></canvas></div>
@@ -249,88 +264,102 @@
                             <div class="relative h-48 w-full"><canvas id="mi-chart-tendencia"></canvas></div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-3xl text-slate-800 shadow-xl overflow-hidden border border-slate-100">
+
+                    <div class="bg-white rounded-3xl text-slate-800 shadow-sm overflow-hidden border border-slate-200">
                         <div class="bg-slate-50 px-5 py-3 border-b border-slate-200">
-                            <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-table-list mr-1"></i> Bitácora de Capturas</h3>
+                            <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-table-list text-orange-500 mr-1"></i> Bitácora de Capturas</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs border-collapse">
                                 <thead class="bg-white text-[9px] uppercase text-slate-400 border-b border-slate-100">
-                                    <tr><th class="p-3">Fecha</th><th class="p-3">Sede/Origen</th><th class="p-3 text-right">Detalle</th></tr>
+                                    <tr>
+                                        <th class="p-3">Fecha</th>
+                                        <th class="p-3">Sede/Origen</th>
+                                        <th class="p-3 text-right">Detalle</th>
+                                    </tr>
                                 </thead>
-                                <tbody id="mi-tabla-bitacora" class="divide-y divide-slate-100 font-medium text-slate-600 bg-white"></tbody>
+                                <tbody id="mi-tabla-bitacora" class="divide-y divide-slate-100 font-medium text-slate-600 bg-white">
+                                </tbody>
                             </table>
                         </div>
                     </div>
+
+                    <p class="text-[9px] text-slate-400 text-center italic px-4 mt-6 leading-relaxed">
+                        * Los datos registrados antes de la creación de la plataforma fueron generados en base al registro histórico de los concentrados de Excel.
+                    </p>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <!-- Modales restantes y Plantillas HTML2Canvas ocultas -->
-    <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-pwa-card" class="glass bg-orange-600/90 p-6 rounded-3xl shadow-2xl max-w-sm w-full text-white transform scale-95 transition-transform duration-300">
-            <h3 class="text-xl font-black mb-5 text-center"><i class="fa-solid fa-download mr-2"></i> Instalar Aplicación</h3>
-            <div class="mb-5 bg-black/10 p-4 rounded-2xl border border-white/10">
-                <h4 class="font-bold border-b border-white/20 pb-2 mb-3 text-orange-200"><i class="fa-brands fa-apple mr-1 text-lg"></i> iOS (iPhone/iPad)</h4>
-                <ol class="text-sm space-y-2 list-decimal list-inside opacity-90 font-medium">
+    <!-- PWA MODAL -->
+    <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-pwa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300">
+            <h3 class="text-xl font-black mb-5 text-center text-orange-600"><i class="fa-solid fa-download mr-2"></i> Instalar Aplicación</h3>
+            <div class="mb-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <h4 class="font-black border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-apple mr-1 text-lg"></i> iOS (iPhone/iPad)</h4>
+                <ol class="text-xs space-y-2 list-decimal list-inside font-medium text-slate-600">
                     <li>Abre esta página en <b>Safari</b>.</li>
                     <li>Toca el botón Compartir <i class="fa-solid fa-arrow-up-from-bracket mx-1"></i> abajo.</li>
                     <li>Selecciona <b>Agregar a inicio</b> <i class="fa-solid fa-square-plus mx-1"></i>.</li>
                 </ol>
             </div>
-            <div class="mb-6 bg-black/10 p-4 rounded-2xl border border-white/10">
-                <h4 class="font-bold border-b border-white/20 pb-2 mb-3 text-orange-200"><i class="fa-brands fa-android mr-1 text-lg"></i> Android</h4>
-                <ol class="text-sm space-y-2 list-decimal list-inside opacity-90 font-medium">
+            <div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <h4 class="font-black border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-android mr-1 text-lg"></i> Android</h4>
+                <ol class="text-xs space-y-2 list-decimal list-inside font-medium text-slate-600">
                     <li>Abre esta página en <b>Chrome</b>.</li>
                     <li>Toca el menú <i class="fa-solid fa-ellipsis-vertical mx-1"></i> arriba a la derecha.</li>
                     <li>Selecciona <b>Instalar aplicación</b>.</li>
                 </ol>
             </div>
-            <button onclick="cerrarModalPWA()" class="w-full bg-white text-orange-600 font-black py-3 rounded-xl transition-all active:scale-95 shadow-lg">Entendido</button>
+            <button onclick="cerrarModalPWA()" class="w-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-black py-3 rounded-xl transition-all active:scale-95 shadow-sm">Entendido</button>
         </div>
     </div>
 
+    <!-- TPL CAPTURA IMAGEN PROFESIONAL SUCURSAL -->
     <div id="captura-temp-sucursal" class="fixed -top-[3000px] -left-[3000px] w-[550px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
-        <div class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-8 rounded-[2rem]">
-            <div class="glass p-6 rounded-3xl text-white mb-6">
-                <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-building mr-2"></i> REGISTRO SUCURSAL</h1>
-                <p id="cap-sucursal-nombre" class="text-base font-medium opacity-90"></p>
+        <div class="bg-slate-50 min-h-screen p-8 rounded-[2rem] border border-slate-200">
+            <div class="bg-white p-6 rounded-3xl text-slate-800 mb-6 shadow-sm border-t-4 border-orange-500">
+                <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-building text-orange-500 mr-2"></i> REGISTRO SUCURSAL</h1>
+                <p id="cap-sucursal-nombre" class="text-sm font-bold uppercase tracking-widest text-slate-400"></p>
             </div>
-            <div class="glass p-6 rounded-3xl text-white">
-                <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-2xl">
-                    <i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Resumen de Turno
+            <div class="bg-white p-6 rounded-3xl text-slate-800 shadow-sm border border-slate-100">
+                <h2 class="font-black mb-6 text-center flex items-center justify-center gap-2 text-2xl border-b border-slate-100 pb-4">
+                    <i class="fa-solid fa-file-contract text-orange-500"></i> Resumen de Turno
                 </h2>
-                <div id="cap-resumen-info" class="text-base bg-black/20 p-5 rounded-xl mb-4 border border-white/10 text-white opacity-90"></div>
-                <div id="cap-resumen-lista" class="text-base bg-black/20 p-5 rounded-xl mb-4 space-y-2 border border-white/10"></div>
-                <p class="text-sm font-bold uppercase mb-1 opacity-80 mt-4">Observaciones</p>
-                <div id="cap-observaciones" class="text-base bg-black/20 p-5 rounded-xl min-h-[60px] border border-white/10 italic text-white/90">Sin observaciones.</div>
-                <div class="text-center w-full pt-6 mt-6 border-t border-white/10 text-white/50 text-xs font-bold tracking-widest">GENERADO POR PWA PRODUCTIVIDAD</div>
+                <div id="cap-resumen-info" class="text-sm bg-slate-50 p-5 rounded-2xl mb-4 border border-slate-200 text-slate-600 font-medium"></div>
+                <div id="cap-resumen-lista" class="text-base bg-slate-50 p-5 rounded-2xl mb-6 space-y-3 border border-slate-200 text-slate-700 font-medium"></div>
+                
+                <p class="text-[11px] font-black uppercase tracking-widest mb-2 text-slate-400">Observaciones Reportadas</p>
+                <div id="cap-observaciones" class="text-sm bg-slate-50 p-5 rounded-2xl min-h-[60px] border border-slate-200 italic text-slate-600 font-medium leading-relaxed">Sin observaciones.</div>
+                
+                <div class="text-center w-full pt-6 mt-6 border-t border-slate-100 text-slate-400 text-[10px] font-black tracking-widest uppercase">GENERADO POR LAPI SUITE OPERATIVA</div>
             </div>
         </div>
     </div>
 
+    <!-- TPL CAPTURA IMAGEN PROFESIONAL GLOBAL -->
     <div id="captura-temp-global" class="fixed -top-[3000px] -left-[3000px] w-[550px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
-        <div class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-8 rounded-[2rem]">
-            <div class="glass p-6 rounded-3xl text-white mb-6">
-                <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-globe mr-2"></i> REPORTE GLOBAL</h1>
-                <p id="cap-glob-sucursal" class="text-base font-medium opacity-90 uppercase"></p>
+        <div class="bg-slate-50 min-h-screen p-8 rounded-[2rem] border border-slate-200">
+            <div class="bg-white p-6 rounded-3xl text-slate-800 mb-6 shadow-sm border-t-4 border-sky-500">
+                <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-globe text-sky-500 mr-2"></i> REPORTE GLOBAL</h1>
+                <p id="cap-glob-sucursal" class="text-sm font-bold uppercase tracking-widest text-slate-400"></p>
             </div>
-            <div class="glass p-6 rounded-3xl text-white">
-                <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-2xl">
-                    <i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Acumulado del Día
+            <div class="bg-white p-6 rounded-3xl text-slate-800 shadow-sm border border-slate-100">
+                <h2 class="font-black mb-6 text-center flex items-center justify-center gap-2 text-2xl border-b border-slate-100 pb-4">
+                    <i class="fa-solid fa-camera-viewfinder text-sky-500"></i> Acumulado del Día
                 </h2>
                 
-                <div id="cap-glob-info" class="text-base bg-black/20 p-5 rounded-xl mb-4 border border-white/10 text-white opacity-90"></div>
+                <div id="cap-glob-info" class="text-sm bg-slate-50 p-5 rounded-2xl mb-4 border border-slate-200 text-slate-600 font-medium"></div>
                 
-                <h3 class="font-bold text-orange-200 mt-4 border-b border-white/20 pb-1 mb-2">Cantidades Totales</h3>
-                <div id="cap-glob-lista" class="text-base bg-black/20 p-5 rounded-xl mb-4 space-y-2 border border-white/10"></div>
+                <h3 class="font-black text-[11px] text-sky-600 uppercase tracking-widest mt-6 border-b border-slate-200 pb-2 mb-3">Cantidades Totales</h3>
+                <div id="cap-glob-lista" class="text-base bg-slate-50 p-5 rounded-2xl mb-6 space-y-3 border border-slate-200 text-slate-700 font-medium"></div>
                 
-                <h3 class="font-bold text-orange-200 mt-4 border-b border-white/20 pb-1 mb-2">Observaciones Combinadas</h3>
-                <div id="cap-glob-obs" class="text-base bg-black/20 p-5 rounded-xl min-h-[60px] border border-white/10 italic text-white/90"></div>
+                <h3 class="font-black text-[11px] text-sky-600 uppercase tracking-widest mt-6 border-b border-slate-200 pb-2 mb-3">Observaciones Combinadas</h3>
+                <div id="cap-glob-obs" class="text-sm bg-slate-50 p-5 rounded-2xl min-h-[60px] border border-slate-200 italic text-slate-600 font-medium leading-relaxed"></div>
                 
-                <div class="text-center w-full pt-6 mt-6 border-t border-white/10 text-white/50 text-xs font-bold tracking-widest">GENERADO POR PWA PRODUCTIVIDAD</div>
+                <div class="text-center w-full pt-6 mt-6 border-t border-slate-100 text-slate-400 text-[10px] font-black tracking-widest uppercase">GENERADO POR LAPI SUITE OPERATIVA</div>
             </div>
         </div>
     </div>
@@ -357,11 +386,11 @@
             
             const selectSucursal = document.getElementById('login-sucursal');
             if(selectSucursal) {
-                selectSucursal.innerHTML += sucursalesOficiales.map(s => `<option value="${s}" class="text-slate-800">${s}</option>`).join('');
+                selectSucursal.innerHTML += sucursalesOficiales.map(s => `<option value="${s}" class="text-slate-700">${s}</option>`).join('');
             }
 
             const versionDiv = document.createElement('div');
-            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-white/40 font-bold tracking-widest pointer-events-none opacity-60';
+            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
             versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
             document.body.appendChild(versionDiv);
         });
@@ -502,6 +531,7 @@
             }
         }
 
+        // CONTROL HÍBRIDO (BOTONES + MANUAL)
         window.cambiarContador = function(estudio, quantity) {
             if (navigator.vibrate) navigator.vibrate(15);
             if(!datosDelDia.estudios[estudio]) datosDelDia.estudios[estudio] = 0;
@@ -511,9 +541,24 @@
             const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
             const counterElement = document.getElementById(idHTML);
             if(counterElement) {
-                counterElement.innerText = datosDelDia.estudios[estudio];
-                counterElement.classList.add('scale-150', 'text-orange-300');
-                setTimeout(() => counterElement.classList.remove('scale-150', 'text-orange-300'), 200);
+                counterElement.value = datosDelDia.estudios[estudio];
+                counterElement.classList.add('scale-110', 'text-orange-500');
+                setTimeout(() => counterElement.classList.remove('scale-110', 'text-orange-500'), 200);
+            }
+            sincronizarConNube();
+        }
+
+        window.setContador = function(estudio, value) {
+            let num = parseInt(value);
+            if(isNaN(num) || num < 0) num = 0;
+            datosDelDia.estudios[estudio] = num;
+            
+            const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
+            const counterElement = document.getElementById(idHTML);
+            if(counterElement) {
+                counterElement.value = num;
+                counterElement.classList.add('scale-110', 'text-orange-500');
+                setTimeout(() => counterElement.classList.remove('scale-110', 'text-orange-500'), 200);
             }
             sincronizarConNube();
         }
@@ -532,24 +577,24 @@
                 const cantidadAct = datosDelDia.estudios[estudio] || 0;
                 const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
                 
-                // NUEVO: Diseño de Tarjetas en GRID de 2 Columnas
+                // NUEVO: Diseño de 2 Columnas responsivo, Input manual central, alineado a la derecha
                 htmlEstudios += `
-                    <div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors shadow-sm">
-                        <span class="text-[15px] font-black text-white/90 leading-tight text-center h-8 flex items-center">${estudio}</span>
-                        <div class="flex items-center gap-3 bg-black/20 p-1.5 rounded-xl border border-white/5 w-full justify-between mt-2">
-                            <button onclick="cambiarContador('${estudio}', -1)" class="w-8 h-8 rounded-lg bg-white/10 text-white shadow-sm font-black text-lg hover:bg-white/30 transition-all active:scale-90 flex items-center justify-center"><i class="fa-solid fa-minus"></i></button>
-                            <span id="${idHTML}" class="w-8 text-center font-black text-white text-xl transition-transform">${cantidadAct}</span>
-                            <button onclick="cambiarContador('${estudio}', 1)" class="w-8 h-8 rounded-lg bg-white text-orange-600 shadow-sm font-black text-lg hover:bg-gray-100 transition-all active:scale-90 flex items-center justify-center"><i class="fa-solid fa-plus"></i></button>
+                    <div class="flex items-center justify-between p-3 rounded-2xl bg-white border border-slate-200 hover:border-orange-300 transition-colors shadow-sm gap-2 group">
+                        <span class="text-xs font-black text-slate-700 leading-tight flex-1 uppercase">${estudio}</span>
+                        <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-1 shrink-0 shadow-sm group-hover:border-orange-200 transition-colors">
+                            <button onclick="cambiarContador('${estudio}', -1)" class="w-8 h-8 rounded bg-slate-100 text-slate-600 font-black hover:bg-slate-200 active:scale-90 transition-all flex items-center justify-center">-</button>
+                            <input type="number" id="${idHTML}" value="${cantidadAct}" min="0" onchange="setContador('${estudio}', this.value)" class="w-10 text-center font-black text-slate-800 bg-transparent outline-none appearance-none m-0 p-0 text-base transition-transform focus:ring-0">
+                            <button onclick="cambiarContador('${estudio}', 1)" class="w-8 h-8 rounded bg-orange-100 text-orange-600 font-black hover:bg-orange-200 active:scale-90 transition-all flex items-center justify-center">+</button>
                         </div>
                     </div>
                 `;
             });
             contenedor.innerHTML = `
-                <div class="glass rounded-3xl shadow-lg overflow-hidden border border-white/20">
-                    <div class="bg-black/20 text-white px-5 py-4 border-b border-white/10 flex justify-between items-center">
-                        <h3 class="font-black text-xs tracking-widest uppercase opacity-90"><i class="fa-solid fa-list-check mr-2"></i> Conteo de Estudios</h3>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-50 text-slate-700 px-5 py-4 border-b border-slate-200 flex justify-between items-center">
+                        <h3 class="font-black text-xs tracking-widest uppercase"><i class="fa-solid fa-list-check text-orange-500 mr-2"></i> Conteo de Estudios</h3>
                     </div>
-                    <div class="p-3 bg-black/10 grid grid-cols-2 gap-3">${htmlEstudios}</div>
+                    <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50/50">${htmlEstudios}</div>
                 </div>
             `;
         }
@@ -561,17 +606,17 @@
             let totalEstudios = 0; let listHtml = '';
             for (const [estudio, cant] of Object.entries(datosDelDia.estudios)) {
                 if (cant > 0) {
-                    listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center">
-                                    <span class="font-bold text-orange-200 text-sm">${estudio}</span>
-                                    <span class="bg-white/20 px-3 py-1 rounded-lg font-black">${cant}</span>
+                    listHtml += `<div class="border-t border-slate-200 pt-3 mt-3 flex justify-between items-center">
+                                    <span class="font-bold text-orange-600 text-sm">${estudio}</span>
+                                    <span class="bg-white border border-slate-200 px-4 py-1.5 rounded-xl font-black text-lg text-slate-800 shadow-sm">${cant}</span>
                                  </div>`;
                     totalEstudios += cant;
                 }
             }
-            if (totalEstudios === 0) listHtml += `<p class="text-center italic opacity-60 mt-4 py-4 border-t border-white/10">El día está en blanco.</p>`;
-            else listHtml += `<div class="border-t-2 border-dashed border-white/20 pt-3 mt-4 flex justify-between items-center text-lg">
-                                <span class="font-black text-white/90">REPORTE PERSONAL:</span>
-                                <span class="font-black text-emerald-400">${totalEstudios}</span>
+            if (totalEstudios === 0) listHtml += `<p class="text-center italic text-slate-400 font-medium py-4">El día está en blanco.</p>`;
+            else listHtml += `<div class="border-t-2 border-dashed border-slate-300 pt-4 mt-5 flex justify-between items-center text-lg">
+                                <span class="font-black text-slate-800">REPORTE PERSONAL:</span>
+                                <span class="font-black text-emerald-600">${totalEstudios}</span>
                              </div>`;
             document.getElementById('resumen-contenido').innerHTML = listHtml;
             document.getElementById('obs-resumen').value = datosDelDia.observaciones || '';
@@ -597,7 +642,7 @@
                     await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
                     
                     if (indicador) {
-                        indicador.className = navigator.onLine ? "text-[10px] font-black text-white bg-emerald-500 px-2.5 py-1 rounded-md shadow-sm transition-all" : "text-[10px] font-black text-slate-800 bg-white px-2.5 py-1 rounded-md shadow-sm transition-all";
+                        indicador.className = navigator.onLine ? "text-[10px] font-black text-white bg-emerald-500 px-2.5 py-1 rounded-md shadow-sm transition-all" : "text-[10px] font-black text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md shadow-sm transition-all";
                         indicador.innerHTML = navigator.onLine ? '<i class="fa-solid fa-cloud-check"></i> ¡Guardado en la Nube!' : '<i class="fa-solid fa-hard-drive"></i> Guardado Local';
                         setTimeout(() => indicador.classList.add('opacity-0'), 2500);
                     }
@@ -668,7 +713,7 @@
                     for(let est in obj.estudios) {
                         let cant = obj.estudios[est];
                         tieneEst = true;
-                        estInd += `<div class="flex justify-between text-xs text-white/80"><span>${est}</span><b>${cant}</b></div>`;
+                        estInd += `<div class="flex justify-between text-xs text-slate-600 font-bold mb-1"><span>${est}</span><b class="text-slate-800 bg-slate-100 px-2 rounded">${cant}</b></div>`;
                     }
                     
                     let obsFinal = obj.observaciones.join(" | ");
@@ -681,29 +726,29 @@
                 
                 let htmlAcumulado = '';
                 for(let est in acumulado) {
-                    htmlAcumulado += `<div class="flex justify-between items-center border-b border-white/10 pb-1 mb-1">
-                                        <span class="text-sm font-medium text-orange-200">${est}</span>
-                                        <span class="font-black bg-white/20 px-2 py-0.5 rounded text-sm">${acumulado[est]}</span>
+                    htmlAcumulado += `<div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-2">
+                                        <span class="text-sm font-bold text-sky-700">${est}</span>
+                                        <span class="font-black bg-white border border-slate-200 px-3 py-1 rounded-xl text-base text-slate-800 shadow-sm">${acumulado[est]}</span>
                                       </div>`;
                 }
                 
                 let htmlIndividual = '';
                 desgloseIndividual.forEach(ind => {
-                    htmlIndividual += `<div class="bg-black/20 p-3 rounded-lg border border-white/5 mb-3">
-                                          <h4 class="font-bold text-sm text-emerald-300 border-b border-white/10 pb-1 mb-2"><i class="fa-solid fa-user-md mr-1"></i> ${ind.medico}</h4>
-                                          ${ind.htmlEstudios || '<p class="text-xs opacity-50 italic">Sin estudios registrados.</p>'}
-                                          ${ind.observaciones ? `<div class="mt-2 text-xs italic bg-white/10 p-2 rounded text-white/90 border border-white/10">"${ind.observaciones}"</div>` : ''}
+                    htmlIndividual += `<div class="bg-white p-4 rounded-2xl border border-slate-200 mb-3 shadow-sm">
+                                          <h4 class="font-black text-sm text-sky-600 border-b border-slate-100 pb-2 mb-3"><i class="fa-solid fa-user-md mr-1"></i> ${ind.medico}</h4>
+                                          ${ind.htmlEstudios || '<p class="text-xs text-slate-400 italic">Sin estudios registrados.</p>'}
+                                          ${ind.observaciones ? `<div class="mt-3 text-xs italic bg-slate-50 p-3 rounded-xl text-slate-600 border border-slate-200 font-medium">"${ind.observaciones}"</div>` : ''}
                                        </div>`;
                 });
 
                 document.getElementById('resumen-global-contenido').innerHTML = `
-                    <div class="bg-white/10 p-4 rounded-xl border border-white/20">
-                        <h3 class="font-black text-white mb-3 text-center border-b border-white/20 pb-2">SUMA TOTAL: <span class="text-emerald-400 ml-2 text-xl">${totalG}</span></h3>
-                        ${htmlAcumulado || '<p class="text-center text-sm opacity-60 italic">Nadie ha registrado estudios aún.</p>'}
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
+                        <h3 class="font-black text-slate-800 mb-4 text-center border-b border-slate-200 pb-3 uppercase tracking-widest text-sm">SUMA TOTAL: <span class="text-sky-600 ml-2 text-2xl">${totalG}</span></h3>
+                        ${htmlAcumulado || '<p class="text-center text-sm text-slate-400 italic font-bold">Nadie ha registrado estudios aún.</p>'}
                     </div>
-                    <div class="mt-4 relative">
-                        <h3 class="font-bold text-sm uppercase tracking-widest opacity-80 mb-2">Desglose Global</h3>
-                        ${htmlIndividual || '<p class="text-center text-sm opacity-60 italic">Sin datos individuales.</p>'}
+                    <div class="mt-6 relative">
+                        <h3 class="font-black text-xs uppercase tracking-widest text-slate-400 mb-3 ml-2">Desglose Global por Médico</h3>
+                        ${htmlIndividual || '<p class="text-center text-sm text-slate-400 italic font-bold">Sin datos individuales.</p>'}
                     </div>
                 `;
 
@@ -739,13 +784,13 @@
 
         window.generarImagenCompartir = async function() {
             const btn = document.getElementById('btn-descargar-sucursal'); const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...'; btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
 
             const sucursal = sesionActual.sucursal.toUpperCase(); const medico = sesionActual.medico.toUpperCase();
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
-            document.getElementById('cap-sucursal-nombre').innerText = `Sucursal: ${sucursal}`;
-            document.getElementById('cap-resumen-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal:</b> <span class="text-orange-200">${medico}</span></p>`;
+            document.getElementById('cap-sucursal-nombre').innerText = `SUCURSAL: ${sucursal}`;
+            document.getElementById('cap-resumen-info').innerHTML = `<p class="mb-1"><b class="text-slate-500">Fecha:</b> ${fechaUI}</p><p><b class="text-slate-500">Personal:</b> <span class="text-orange-600 font-bold">${medico}</span></p>`;
             document.getElementById('cap-resumen-lista').innerHTML = document.getElementById('resumen-contenido').innerHTML;
             document.getElementById('cap-observaciones').innerText = datosDelDia.observaciones || 'Sin observaciones relevantes.';
             
@@ -757,20 +802,20 @@
         window.generarImagenGlobal = async function() {
             const d = window.datosGlobalesTemp; if(!d) return;
             const btn = document.getElementById('btn-descargar-global'); const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...'; btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
             document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal.toUpperCase()}`;
-            document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Presente :</b> <span class="text-orange-200 font-bold">${d.personal.join(', ')}</span></p>`;
+            document.getElementById('cap-glob-info').innerHTML = `<p class="mb-1"><b class="text-slate-500">Fecha:</b> ${fechaUI}</p><p><b class="text-slate-500">Personal Presente:</b> <span class="text-sky-600 font-bold">${d.personal.join(', ')}</span></p>`;
             
             let listHtml = '';
-            for(let est in d.acumulado) { listHtml += `<div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="font-bold text-orange-200 text-sm">${est}</span><span class="bg-white/20 px-3 py-1 rounded-lg font-black">${d.acumulado[est]}</span></div>`; }
-            listHtml += `<div class="border-t-2 border-dashed border-white/20 pt-3 mt-4 flex justify-between items-center text-lg"><span class="font-black text-white/90">SUMA SUCURSAL:</span><span class="font-black text-emerald-400">${d.totalG}</span></div>`;
-            document.getElementById('cap-glob-lista').innerHTML = listHtml || '<p class="opacity-60 italic text-center">Sin estudios en la sucursal.</p>';
+            for(let est in d.acumulado) { listHtml += `<div class="border-t border-slate-200 pt-3 mt-3 flex justify-between items-center text-slate-800"><span class="font-bold text-sky-700 text-sm">${est}</span><span class="bg-white border border-slate-200 px-3 py-1 rounded-xl font-black shadow-sm">${d.acumulado[est]}</span></div>`; }
+            listHtml += `<div class="border-t-2 border-dashed border-slate-300 pt-4 mt-5 flex justify-between items-center text-lg"><span class="font-black text-slate-800">SUMA SUCURSAL:</span><span class="font-black text-sky-600 text-2xl">${d.totalG}</span></div>`;
+            document.getElementById('cap-glob-lista').innerHTML = listHtml || '<p class="opacity-60 italic text-center font-bold">Sin estudios en la sucursal.</p>';
 
             let obsHtml = '';
-            d.desgloseIndividual.forEach(ind => { if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-2 border-orange-400 pl-3"><p class="text-xs text-orange-200 font-bold mb-0.5">${ind.medico}</p><p class="text-sm">"${ind.observaciones}"</p></div>`; });
-            document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones.';
+            d.desgloseIndividual.forEach(ind => { if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-4 border-sky-400 pl-3 bg-white p-3 rounded-r-xl shadow-sm"><p class="text-[10px] text-sky-600 font-black uppercase tracking-widest mb-1">${ind.medico}</p><p class="text-sm font-medium text-slate-700">"${ind.observaciones}"</p></div>`; });
+            document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones reportadas en la sucursal.';
 
             await new Promise(r => setTimeout(r, 100));
             await procesarHtml2Canvas(document.getElementById('captura-temp-global'), `LAPI_Global_${d.sucursal.toUpperCase()}_${fechaOperativa}`);
@@ -820,10 +865,10 @@
                 if(!iStr || !fStr) return;
             }
 
-            document.querySelectorAll('.btn-filtro').forEach(b => { b.classList.remove('bg-white', 'text-orange-600', 'shadow-sm'); b.classList.add('bg-white/20', 'text-white'); });
+            document.querySelectorAll('.btn-filtro').forEach(b => { b.classList.remove('bg-orange-600', 'text-white', 'shadow-sm'); b.classList.add('bg-slate-50', 'text-slate-600'); });
             if (periodo !== 'custom') {
                 const btnFiltro = document.getElementById(`btn-filtro-${periodo}`);
-                if(btnFiltro) { btnFiltro.classList.remove('bg-white/20', 'text-white'); btnFiltro.classList.add('bg-white', 'text-orange-600', 'shadow-sm'); }
+                if(btnFiltro) { btnFiltro.classList.remove('bg-slate-50', 'text-slate-600'); btnFiltro.classList.add('bg-orange-600', 'text-white', 'shadow-sm'); }
                 document.getElementById('historial-fecha-inicio').value = iStr; document.getElementById('historial-fecha-fin').value = fStr;
             }
 
@@ -879,16 +924,16 @@
                 }
 
                 let labelsTipos = Object.keys(conteoEstudios); let dataTipos = Object.values(conteoEstudios);
-                dibujarMiGrafico('mi-chart-tipos', 'doughnut', labelsTipos, dataTipos, ['#f97316', '#0ea5e9', '#10b981', '#8b5cf6', '#f43f5e']);
+                dibujarMiGrafico('mi-chart-tipos', 'doughnut', labelsTipos, dataTipos, ['#ea580c', '#0ea5e9', '#10b981', '#8b5cf6', '#f43f5e']);
                 let fechasOrdenadas = Object.keys(tendencia).sort(); let dataTendencia = fechasOrdenadas.map(f => tendencia[f]);
-                dibujarMiGrafico('mi-chart-tendencia', 'line', fechasOrdenadas, dataTendencia, ['#f97316']);
+                dibujarMiGrafico('mi-chart-tendencia', 'line', fechasOrdenadas, dataTendencia, ['#ea580c']);
 
                 bitacora.sort((a,b) => b.fecha.localeCompare(a.fecha));
                 let tbody = document.getElementById('mi-tabla-bitacora'); tbody.innerHTML = '';
-                if (bitacora.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="text-center p-6 text-slate-400 italic">Sin actividad en este periodo</td></tr>'; } 
+                if (bitacora.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="text-center p-6 text-slate-400 italic font-bold">Sin actividad en este periodo</td></tr>'; } 
                 else {
                     bitacora.forEach(b => {
-                        tbody.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="p-3 text-[10px] whitespace-nowrap text-slate-500">${b.fecha}</td><td class="p-3 text-xs font-bold text-slate-700">${b.origen}</td><td class="p-3 text-xs text-orange-600 font-bold text-right">${b.detalle}</td></tr>`;
+                        tbody.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-100"><td class="p-3 text-[10px] font-black whitespace-nowrap text-slate-400">${b.fecha}</td><td class="p-3 text-xs font-bold text-slate-700">${b.origen}</td><td class="p-3 text-xs text-orange-600 font-black text-right">${b.detalle}</td></tr>`;
                     });
                 }
             } catch(e) { console.error(e); mostrarToast("Error calculando tu historial.", "error"); }
@@ -904,7 +949,7 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: tipo === 'doughnut', position: 'bottom' } } }
             };
             if (tipo === 'doughnut') { conf.data.datasets[0].borderWidth = 0; conf.options.cutout = '70%'; } 
-            else if (tipo === 'line') { conf.options.scales = { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } }; }
+            else if (tipo === 'line') { conf.options.scales = { y: { beginAtZero: true, grid: { color: '#f8fafc' } }, x: { grid: { display: false } } }; }
             misGraficos[canvasId] = new Chart(document.getElementById(canvasId), conf);
         }
 
