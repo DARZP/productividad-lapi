@@ -74,7 +74,7 @@
 
             <!-- PASO 0: SERVICIO Y HORARIO -->
             <div id="paso-0" class="paso">
-                <label class="block mb-2 font-bold uppercase tracking-widest text-[10px] text-white/90">1. Servicio o Campaña Activa</label>
+                <label class="block mb-2 font-bold uppercase tracking-widest text-[10px] text-white/90">1. Servicios Activos</label>
                 <select id="input-servicio" class="w-full p-4 mb-4 rounded-xl bg-white/20 border border-white/10 text-white font-bold outline-none shadow-inner">
                     <option value="" disabled selected class="text-black">Cargando servicios disponibles...</option>
                 </select>
@@ -320,7 +320,7 @@
 
                 listaTemporal.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
 
-                let html = '<option value="" disabled selected class="text-black">Selecciona la campaña...</option>';
+                let html = '<option value="" disabled selected class="text-black">Selecciona el servicio...</option>';
                 listaTemporal.forEach(d => {
                     html += `<option value="${d.id}" class="text-black">${d.nombreComercial}</option>`;
                 });
@@ -343,7 +343,7 @@
 
         function verificarRegistro() { 
             const select = document.getElementById('input-servicio');
-            if(!select.value) return mostrarToast("Debes seleccionar una campaña de la lista.", "error");
+            if(!select.value) return mostrarToast("Debes seleccionar un Servicio de la lista.", "error");
 
             const hIni = document.getElementById('input-hora-inicio').value;
             const hFin = document.getElementById('input-hora-fin').value;
