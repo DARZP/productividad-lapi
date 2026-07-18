@@ -760,7 +760,7 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...'; btn.disabled = true;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
 
-            document.getElementById('cap-glob-sucursal').innerText = `SUCURMAKE: ${d.sucursal.toUpperCase()}`;
+            document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal.toUpperCase()}`;
             document.getElementById('cap-glob-info').innerHTML = `<p><b>Fecha:</b> ${fechaUI}</p><p><b>Personal Presente :</b> <span class="text-orange-200 font-bold">${d.personal.join(', ')}</span></p>`;
             
             let listHtml = '';
