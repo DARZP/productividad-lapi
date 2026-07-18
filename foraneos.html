@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Productividad Foráneos</title>
+    <title>Registro Foráneos - LAPI</title>
     
     <link rel="manifest" href="manifest_captura.json">
     <meta name="theme-color" content="#ea580c">
@@ -43,68 +43,82 @@
         window.updateDoc = updateDoc;
     </script>
     <style>
-        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #f8fafc; }
         .paso { transition: all 0.4s ease; }
+        
+        /* Ocultar flechas nativas del input number para diseño limpio */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] { -moz-appearance: textfield; }
+        
+        .shadow-soft { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
     </style>
 </head>
-<body class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-4 flex flex-col items-center pt-6 font-sans text-white pb-10 relative">
+<body class="min-h-screen flex flex-col items-center pt-6 text-slate-800 pb-10 relative">
 
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
-    <a href="index.html" class="absolute top-4 left-4 z-[100] w-10 h-10 flex items-center justify-center rounded-full glass text-white hover:bg-white/20 transition-all active:scale-95 shadow-sm" title="Volver al Portal">
+    <!-- Botón Inicio Profesional -->
+    <a href="index.html" class="absolute top-4 left-4 z-[100] w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-orange-600 hover:border-orange-300 transition-all active:scale-95 shadow-sm" title="Volver al Portal">
         <i class="fa-solid fa-house"></i>
     </a>
 
     <datalist id="lista-medicos"></datalist>
     <datalist id="lista-empresas"></datalist>
 
-    <div id="contenedor-principal" class="w-full max-w-md flex-1 mt-10">
+    <div id="contenedor-principal" class="w-full max-w-md flex-1 mt-12 px-4">
         
-        <div class="glass p-6 rounded-3xl shadow-2xl mb-6 border border-white/20">
+        <div class="bg-white p-6 rounded-3xl shadow-soft mb-6 border border-slate-200 border-t-4 border-t-orange-500">
         
-            <div class="flex justify-between items-start mb-6 border-b border-white/20 pb-4">
+            <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
                 <div>
-                    <h1 class="text-2xl font-black text-white mb-1"><i class="fa-solid fa-map-location-dot mr-2"></i> REGISTRO DIARIO</h1>
-                    <p class="text-sm text-white/80 font-medium">Productividad Foráneos</p>
+                    <h1 class="text-2xl font-black text-slate-800 mb-1"><i class="fa-solid fa-map-location-dot text-orange-500 mr-2"></i> REGISTRO DIARIO</h1>
+                    <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">Productividad Foráneos</p>
                 </div>
-                <button onclick="location.reload()" class="bg-white/20 hover:bg-white/30 text-white w-10 h-10 flex items-center justify-center rounded-xl text-lg font-bold transition-all hover:scale-[1.02] active:scale-95 shadow-sm" title="Reiniciar Registro">
+                <button onclick="location.reload()" class="bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 w-10 h-10 flex items-center justify-center rounded-xl text-lg font-bold transition-all hover:scale-[1.02] active:scale-95 shadow-sm" title="Reiniciar Registro">
                     <i class="fa-solid fa-rotate-right"></i>
                 </button>
             </div>
 
             <!-- PASO 0: SERVICIO Y HORARIO -->
             <div id="paso-0" class="paso">
-                <label class="block mb-2 font-bold uppercase tracking-widest text-[10px] text-white/90">1. Servicios Activos</label>
-                <select id="input-servicio" class="w-full p-4 mb-4 rounded-xl bg-white/20 border border-white/10 text-white font-bold outline-none shadow-inner">
-                    <option value="" disabled selected class="text-black">Cargando servicios disponibles...</option>
-                </select>
+                <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">1. Servicio o Campaña Activa</label>
+                <div class="relative mb-4">
+                    <select id="input-servicio" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-bold outline-none focus:border-orange-400 shadow-sm appearance-none cursor-pointer transition-colors">
+                        <option value="" disabled selected>Cargando servicios disponibles...</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-slate-400 pointer-events-none"></i>
+                </div>
                 <input type="hidden" id="input-empresa-nombre">
-                <input type="hidden" id="input-fecha"> 
+                <input type="hidden" id="input-fecha">
 
                 <div class="flex gap-4 mb-6 mt-4">
                     <div class="w-1/2">
-                        <label class="block mb-2 font-bold uppercase tracking-widest text-[10px] text-white/90">Hora Inicio</label>
-                        <input type="time" id="input-hora-inicio" class="w-full p-3 rounded-xl bg-white/20 border border-white/10 text-white font-bold outline-none shadow-inner">
+                        <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Hora Inicio Real</label>
+                        <input type="time" id="input-hora-inicio" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-bold outline-none focus:border-orange-400 shadow-sm transition-colors">
                     </div>
                     <div class="w-1/2">
-                        <label class="block mb-2 font-bold uppercase tracking-widest text-[10px] text-white/90">Hora Fin</label>
-                        <input type="time" id="input-hora-fin" class="w-full p-3 rounded-xl bg-white/20 border border-white/10 text-white font-bold outline-none shadow-inner">
+                        <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Hora Fin Real</label>
+                        <input type="time" id="input-hora-fin" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-bold outline-none focus:border-orange-400 shadow-sm transition-colors">
                     </div>
                 </div>
 
-                <button onclick="verificarRegistro()" class="w-full bg-white text-orange-600 font-black py-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
+                <button onclick="verificarRegistro()" class="w-full bg-orange-600 text-white font-black py-3.5 rounded-xl shadow-md transition-all hover:bg-orange-700 active:scale-95 flex justify-center items-center gap-2">
                     Siguiente Paso <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
 
             <!-- PASO 2: SELECCIÓN DE ESTUDIOS -->
             <div id="paso-2" class="paso hidden">
-                <label class="block mb-4 font-bold uppercase tracking-widest text-[10px] text-white/90">2. ¿Qué estudios se hicieron?</label>
+                <label class="block mb-4 font-black uppercase tracking-widest text-[10px] text-slate-500">2. ¿Qué estudios se hicieron?</label>
                 
-                <!-- NUEVO DISEÑO CHECKBOX TIPO "CHIPS" -->
+                <!-- CHECKBOX TIPO "CHIPS" ADMINISTRATIVOS -->
                 <div id="lista-checkbox-estudios" class="space-y-3 mb-6"></div>
                 
-                <button onclick="iniciarCapturaDetalle()" class="w-full bg-white text-orange-600 font-black py-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
+                <button onclick="iniciarCapturaDetalle()" class="w-full bg-orange-600 text-white font-black py-3.5 rounded-xl shadow-md transition-all hover:bg-orange-700 active:scale-95 flex justify-center items-center gap-2">
                     Continuar <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
@@ -116,17 +130,17 @@
 
             <!-- PASO 4: RESUMEN FINAL -->
             <div id="paso-4" class="paso hidden">
-                <h2 class="font-black mb-4 text-center flex items-center justify-center gap-2 text-xl border-b border-white/20 pb-3">
-                    <i class="fa-solid fa-camera-viewfinder text-orange-200"></i> Resumen Final
+                <h2 class="font-black mb-4 text-center flex items-center justify-center gap-2 text-xl border-b border-slate-100 pb-3 text-slate-800">
+                    <i class="fa-solid fa-camera-viewfinder text-orange-500"></i> Resumen Final
                 </h2>
-                <div id="resumen-contenido" class="text-sm bg-black/20 p-5 rounded-2xl mb-4 space-y-2 border border-white/10 shadow-inner"></div>
+                <div id="resumen-contenido" class="text-sm bg-slate-50 p-5 rounded-2xl mb-4 space-y-3 border border-slate-200 font-medium text-slate-700 shadow-inner"></div>
                 
-                <label class="block mb-2 font-bold uppercase tracking-widest text-[10px] text-white/90">Observaciones (Pendientes o Info Relevante)</label>
-                <textarea id="input-observaciones" class="w-full p-4 mb-6 rounded-xl bg-white/20 border border-white/10 outline-none placeholder-white/60 shadow-inner" rows="3" placeholder="Ej. 3 pacientes pendientes..."></textarea>
+                <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Observaciones (Pendientes o Info Relevante)</label>
+                <textarea id="input-observaciones" class="w-full p-3 mb-6 rounded-xl bg-white border border-slate-200 outline-none placeholder-slate-400 focus:border-orange-400 shadow-sm text-sm font-medium transition-colors" rows="3" placeholder="Ej. 3 pacientes pendientes..."></textarea>
 
                 <div class="flex gap-3">
-                    <button onclick="location.reload()" class="w-1/3 bg-red-500 hover:bg-red-600 font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95">Reiniciar</button>
-                    <button id="btn-confirmar" onclick="finalizar()" class="w-2/3 bg-emerald-500 hover:bg-emerald-600 font-black py-4 rounded-xl shadow-lg transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
+                    <button onclick="location.reload()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 font-black py-3.5 rounded-xl transition-all active:scale-95">Reiniciar</button>
+                    <button id="btn-confirmar" onclick="finalizar()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow-md transition-all active:scale-95 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-cloud-arrow-up"></i> Confirmar Turno
                     </button>
                 </div>
@@ -134,21 +148,21 @@
 
             <!-- CONFIRMACIÓN Y COMPARTIR -->
             <div id="paso-post-confirmacion" class="paso hidden text-center">
-                <div class="glass p-8 rounded-3xl mb-6 border-t border-white/30 border-l-4 border-emerald-500 shadow-2xl">
-                    <i class="fa-solid fa-circle-check text-6xl text-emerald-300 mb-4 block drop-shadow-md"></i>
-                    <h2 class="text-2xl font-black mb-2 text-white">¡Registro Guardado!</h2>
-                    <p class="text-sm text-white/80 mb-6 font-medium">Tus datos han sido sincronizados en la nube.</p>
-                    <div class="bg-black/20 p-5 rounded-2xl border border-white/10 shadow-inner">
-                        <p class="text-xs uppercase tracking-widest opacity-70 text-white font-bold mb-1">Folio de Rastreo</p>
-                        <p id="post-folio-text" class="text-5xl font-black text-orange-200">----</p>
+                <div class="bg-emerald-50 p-8 rounded-3xl mb-6 border border-emerald-100 shadow-sm">
+                    <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-4 block"></i>
+                    <h2 class="text-2xl font-black mb-2 text-emerald-800">¡Registro Guardado!</h2>
+                    <p class="text-sm text-emerald-600 mb-6 font-bold">Tus datos han sido sincronizados en la nube.</p>
+                    <div class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm">
+                        <p class="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-1">Folio de Rastreo</p>
+                        <p id="post-folio-text" class="text-5xl font-black text-orange-600">----</p>
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-4">
-                    <button onclick="generarImagenCompartir()" id="btn-compartir-final" class="w-full bg-white text-orange-600 font-black py-4 rounded-xl shadow-xl flex justify-center items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all">
+                <div class="flex flex-col gap-3">
+                    <button onclick="generarImagenCompartir()" id="btn-compartir-final" class="w-full bg-slate-800 text-white font-black py-3.5 rounded-xl shadow-md flex justify-center items-center gap-2 hover:bg-slate-700 active:scale-95 transition-all">
                         <i class="fa-solid fa-arrow-up-from-bracket"></i> Compartir Resumen (Imagen)
                     </button>
-                    <button onclick="location.reload()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 rounded-xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
+                    <button onclick="location.reload()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 font-black py-3.5 rounded-xl active:scale-95 transition-all">
                         Finalizar y Volver al Inicio
                     </button>
                 </div>
@@ -156,125 +170,124 @@
 
             <!-- MÓDULO DE EDICIÓN LEGACY -->
             <div id="paso-edicion" class="paso hidden">
-                <h2 class="text-xl font-black mb-4 text-center border-b border-white/20 pb-3">Modificando: <span id="edit-folio-text" class="text-orange-200"></span></h2>
+                <h2 class="text-xl font-black mb-4 text-center border-b border-slate-100 pb-3 text-slate-800">Modificando: <span id="edit-folio-text" class="text-orange-600"></span></h2>
                 
                 <div class="space-y-4 text-sm">
-                    <div class="bg-black/10 p-5 rounded-2xl border border-white/10 shadow-inner">
-                        <label class="block mb-2 font-bold uppercase tracking-widest text-[10px]">Empresa (Edición Manual):</label> 
-                        <input id="edit-empresa" list="lista-empresas" class="w-full p-3 mb-4 rounded-xl bg-white/20 uppercase text-white outline-none font-bold">
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
+                        <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Empresa (Edición Manual):</label> 
+                        <input id="edit-empresa" list="lista-empresas" class="w-full p-3 mb-4 rounded-xl bg-white border border-slate-200 uppercase text-slate-700 outline-none font-bold focus:border-orange-400">
                         
-                        <label class="block mb-2 font-bold uppercase tracking-widest text-[10px]">Fecha:</label> 
-                        <input type="date" id="edit-fecha" class="w-full p-3 mb-4 rounded-xl bg-white/20 text-white outline-none font-bold">
+                        <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Fecha:</label> 
+                        <input type="date" id="edit-fecha" class="w-full p-3 mb-4 rounded-xl bg-white border border-slate-200 text-slate-700 outline-none font-bold focus:border-orange-400">
                         
                         <div class="flex gap-4">
                             <div class="w-1/2">
-                                <label class="block mb-2 font-bold uppercase tracking-widest text-[10px]">Inicio:</label>
-                                <input type="time" id="edit-hora-inicio" class="w-full p-3 rounded-xl bg-white/20 text-white outline-none font-bold">
+                                <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Inicio:</label>
+                                <input type="time" id="edit-hora-inicio" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-slate-700 outline-none font-bold focus:border-orange-400">
                             </div>
                             <div class="w-1/2">
-                                <label class="block mb-2 font-bold uppercase tracking-widest text-[10px]">Fin:</label>
-                                <input type="time" id="edit-hora-fin" class="w-full p-3 rounded-xl bg-white/20 text-white outline-none font-bold">
+                                <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Fin:</label>
+                                <input type="time" id="edit-hora-fin" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-slate-700 outline-none font-bold focus:border-orange-400">
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-black/10 p-5 rounded-2xl border border-white/10 shadow-inner">
-                        <h3 class="font-bold uppercase tracking-widest text-[10px] border-b border-white/20 pb-2 mb-4 text-orange-200">Estudios Realizados</h3>
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
+                        <h3 class="font-black uppercase tracking-widest text-[10px] border-b border-slate-200 pb-2 mb-4 text-slate-500">Estudios Realizados</h3>
                         <div id="edit-detalles-container" class="space-y-3"></div>
-                        <button onclick="agregarFilaEdicion()" class="w-full mt-5 bg-white/20 hover:bg-white/30 transition py-3 rounded-xl text-xs font-bold active:scale-95"><i class="fa-solid fa-plus mr-1"></i> Agregar otro estudio</button>
+                        <button onclick="agregarFilaEdicion()" class="w-full mt-4 bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition py-2.5 rounded-xl text-xs font-bold active:scale-95 shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Agregar otro estudio</button>
                     </div>
 
-                    <div class="bg-black/10 p-5 rounded-2xl border border-white/10 shadow-inner">
-                        <label class="block mb-2 font-bold uppercase tracking-widest text-[10px]">Observaciones:</label>
-                        <textarea id="edit-observaciones" class="w-full p-3 rounded-xl bg-white/20 outline-none text-white placeholder-white/50" rows="3"></textarea>
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
+                        <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Observaciones:</label>
+                        <textarea id="edit-observaciones" class="w-full p-3 rounded-xl bg-white border border-slate-200 outline-none text-slate-700 focus:border-orange-400 font-medium" rows="3"></textarea>
                     </div>
                 </div>
 
                 <div class="flex gap-3 mt-6">
-                    <button onclick="location.reload()" class="w-1/3 bg-red-500 font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95">Cancelar</button>
-                    <button id="btn-guardar-cambios" onclick="guardarEdicion()" class="w-2/3 bg-emerald-500 font-black py-4 rounded-xl shadow-lg transition-all hover:scale-[1.02] active:scale-95">Guardar Cambios</button>
+                    <button onclick="location.reload()" class="w-1/3 bg-slate-100 border border-slate-200 text-slate-600 font-black py-3.5 rounded-xl transition-all active:scale-95">Cancelar</button>
+                    <button id="btn-guardar-cambios" onclick="guardarEdicion()" class="w-2/3 bg-emerald-600 text-white font-black py-3.5 rounded-xl shadow-md transition-all hover:bg-emerald-700 active:scale-95">Guardar Cambios</button>
                 </div>
             </div>
 
         </div>
 
         <div id="seccion-botones-extra" class="space-y-4 transition-all duration-500">
-            <div class="glass p-5 rounded-3xl shadow-xl border-dashed border-2 border-white/30 text-center">
-                <p class="text-[10px] font-bold uppercase tracking-widest mb-3 opacity-80 text-white">Editar registro previo</p>
+            <div class="bg-white p-5 rounded-3xl shadow-soft border border-slate-200 text-center">
+                <p class="text-[10px] font-black uppercase tracking-widest mb-3 text-slate-400">Editar registro previo</p>
                 <div class="flex gap-3">
-                    <input id="input-edit-id" placeholder="Folio (Ej: 4812M)" class="w-full p-3 rounded-xl bg-black/20 outline-none text-sm placeholder-white/50 uppercase font-black text-center text-white border border-white/10 shadow-inner">
-                    <button id="btn-buscar-folio" onclick="buscarRegistro()" class="bg-white/20 hover:bg-white/30 text-white transition-all px-5 py-3 rounded-xl text-sm font-bold active:scale-95"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    <input id="input-edit-id" placeholder="Folio (Ej: 4812M)" class="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 outline-none text-sm placeholder-slate-400 uppercase font-black text-center text-slate-700 focus:border-orange-400 transition-colors">
+                    <button id="btn-buscar-folio" onclick="buscarRegistro()" class="bg-slate-800 hover:bg-slate-700 text-white transition-all px-5 py-3 rounded-xl text-sm font-bold active:scale-95 shadow-sm"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
             </div>
             
             <div class="text-center w-full pt-2">
-                <button onclick="abrirModalPWA()" class="text-white/70 hover:text-white text-sm font-bold underline transition-all active:scale-95">
+                <button onclick="abrirModalPWA()" class="text-slate-500 hover:text-orange-600 text-sm font-bold underline transition-all active:scale-95">
                     <i class="fa-solid fa-mobile-screen mr-1"></i> ¿Cómo instalar esta App?
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- PWA MODAL -->
-    <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-pwa-card" class="glass bg-orange-600/95 p-6 rounded-3xl shadow-2xl max-w-sm w-full text-white transform scale-95 transition-transform duration-300 border border-white/20">
-            <h3 class="text-xl font-black mb-5 text-center"><i class="fa-solid fa-download mr-2"></i> Instalar Aplicación</h3>
+    <!-- PWA MODAL (ADMIN STYLE) -->
+    <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-pwa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200">
+            <h3 class="text-xl font-black mb-5 text-center text-orange-600"><i class="fa-solid fa-download mr-2"></i> Instalar App</h3>
             
-            <div class="mb-5 bg-black/20 p-5 rounded-2xl border border-white/10 shadow-inner">
-                <h4 class="font-black border-b border-white/20 pb-2 mb-3 text-orange-300"><i class="fa-brands fa-apple mr-1 text-lg"></i> iOS (iPhone/iPad)</h4>
-                <ol class="text-sm space-y-2 list-decimal list-inside opacity-90 font-medium">
+            <div class="mb-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <h4 class="font-black border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-apple mr-1 text-lg"></i> iOS (iPhone/iPad)</h4>
+                <ol class="text-xs space-y-2 list-decimal list-inside font-medium text-slate-600">
                     <li>Abre esta página en <b>Safari</b>.</li>
                     <li>Toca el botón Compartir <i class="fa-solid fa-arrow-up-from-bracket mx-1"></i> abajo.</li>
                     <li>Selecciona <b>Agregar a inicio</b> <i class="fa-solid fa-square-plus mx-1"></i>.</li>
                 </ol>
             </div>
 
-            <div class="mb-6 bg-black/20 p-5 rounded-2xl border border-white/10 shadow-inner">
-                <h4 class="font-black border-b border-white/20 pb-2 mb-3 text-orange-300"><i class="fa-brands fa-android mr-1 text-lg"></i> Android</h4>
-                <ol class="text-sm space-y-2 list-decimal list-inside opacity-90 font-medium">
+            <div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <h4 class="font-black border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-android mr-1 text-lg"></i> Android</h4>
+                <ol class="text-xs space-y-2 list-decimal list-inside font-medium text-slate-600">
                     <li>Abre esta página en <b>Chrome</b>.</li>
-                    <li>Toca el menú <i class="fa-solid fa-ellipsis-vertical mx-1"></i> arriba a la derecha.</li>
+                    <li>Toca el menú <i class="fa-solid fa-ellipsis-vertical mx-1"></i> arriba.</li>
                     <li>Selecciona <b>Instalar aplicación</b>.</li>
                 </ol>
             </div>
 
-            <button onclick="cerrarModalPWA()" class="w-full bg-white text-orange-600 font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg">Entendido</button>
+            <button onclick="cerrarModalPWA()" class="w-full bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 font-black py-3 rounded-xl transition-all active:scale-95">Cerrar</button>
         </div>
     </div>
 
-    <!-- TPL CAPTURA IMAGEN -->
+    <!-- TPL CAPTURA IMAGEN PROFESIONAL -->
     <div id="captura-temp" class="fixed -top-[3000px] -left-[3000px] w-[550px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
-        <div class="bg-gradient-to-br from-orange-400 to-orange-600 min-h-screen p-8 rounded-[2rem]">
+        <div class="bg-slate-50 min-h-screen p-8 rounded-[2rem] border border-slate-200">
             
-            <div class="glass p-6 rounded-3xl text-white mb-6">
-                <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-map-location-dot mr-2"></i> REGISTRO DIARIO</h1>
-                <p class="text-base opacity-80 font-medium">Productividad Foráneos</p>
+            <div class="bg-white p-6 rounded-3xl text-slate-800 mb-6 shadow-sm border-t-4 border-orange-500">
+                <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-map-location-dot text-orange-500 mr-2"></i> REGISTRO DIARIO</h1>
+                <p class="text-sm font-bold uppercase tracking-widest text-slate-400">Productividad Foráneos</p>
             </div>
             
-            <div class="glass p-6 rounded-3xl text-white">
-                <h2 class="font-bold mb-4 text-center flex items-center justify-center gap-2 text-2xl">
-                    <i class="fa-solid fa-camera-viewfinder text-orange-300"></i> Resumen Final
+            <div class="bg-white p-6 rounded-3xl text-slate-800 shadow-sm border border-slate-100">
+                <h2 class="font-black mb-6 text-center flex items-center justify-center gap-2 text-2xl border-b border-slate-100 pb-4">
+                    <i class="fa-solid fa-file-contract text-orange-500"></i> Resumen de Turno
                 </h2>
 
-                <div id="cap-resumen-contenido" class="text-base bg-black/20 p-5 rounded-xl mb-4 space-y-2 border border-white/10"></div>
+                <div id="cap-resumen-contenido" class="text-base bg-slate-50 p-5 rounded-2xl mb-6 space-y-3 border border-slate-200 text-slate-700 font-medium"></div>
                 
-                <p class="text-sm font-bold uppercase mb-1 opacity-80 mt-4">Observaciones</p>
-                <div id="cap-observaciones" class="text-base bg-black/20 p-5 rounded-xl min-h-[60px] border border-white/10 italic text-white/90">Sin observaciones.</div>
+                <p class="text-[11px] font-black uppercase tracking-widest mb-2 text-slate-400">Observaciones Reportadas</p>
+                <div id="cap-observaciones" class="text-sm bg-slate-50 p-5 rounded-2xl min-h-[60px] border border-slate-200 italic text-slate-600 font-medium leading-relaxed">Sin observaciones.</div>
                 
-                <div id="cap-folio-box" class="bg-black/30 p-3 rounded-xl mt-6 text-center border border-white/10 mx-auto w-1/2 max-w-[200px]">
-                    <p class="text-[8px] font-black uppercase tracking-widest opacity-70 text-orange-200">FOLIO VALIDADO</p>
-                    <p id="cap-folio" class="text-2xl font-black text-white">----</p>
+                <div id="cap-folio-box" class="bg-orange-50 p-4 rounded-2xl mt-8 text-center border border-orange-200 mx-auto w-1/2 max-w-[200px]">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-orange-600 mb-1">FOLIO VALIDADO</p>
+                    <p id="cap-folio" class="text-3xl font-black text-orange-700">----</p>
                 </div>
 
-                <div class="text-center w-full pt-6 mt-4 border-t border-white/10 text-white/50 text-xs font-bold tracking-widest">
-                    GENERADO POR PWA PRODUCTIVIDAD
+                <div class="text-center w-full pt-6 mt-6 border-t border-slate-100 text-slate-400 text-[10px] font-black tracking-widest uppercase">
+                    Generado por LAPI Suite Operativa
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIONES GLOBALES
         const empresas = window.LAPI_CONFIG.empresas;
         const medicos = window.LAPI_CONFIG.medicos;
         const estudios = window.LAPI_CONFIG.estudiosForaneos;
@@ -283,8 +296,8 @@
         let horasCalculadas = 0;
         let editDocId = null; 
 
-        window.addEventListener('offline', () => { mostrarToast("Sin conexión a Internet. Modo Offline activado. Puedes seguir trabajando.", "info", 5000); });
-        window.addEventListener('online', () => { mostrarToast("Conexión restaurada. Sincronizando datos a la nube...", "exito", 4000); });
+        window.addEventListener('offline', () => { mostrarToast("Sin conexión a Internet. Modo Offline activado.", "info", 5000); });
+        window.addEventListener('online', () => { mostrarToast("Conexión restaurada. Sincronizando...", "exito", 4000); });
 
         function mostrarToast(mensaje, tipo = 'error', duracion = 3500) {
             const toast = document.createElement('div');
@@ -307,7 +320,7 @@
                 const querySnapshot = await window.getDocs(q);
                 
                 if (querySnapshot.empty) {
-                    select.innerHTML = '<option value="" disabled selected class="text-black">No hay servicios activos asignados.</option>';
+                    select.innerHTML = '<option value="" disabled selected>No hay campañas activas.</option>';
                     return;
                 }
 
@@ -320,15 +333,15 @@
 
                 listaTemporal.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
 
-                let html = '<option value="" disabled selected class="text-black">Selecciona el servicio...</option>';
+                let html = '<option value="" disabled selected>Selecciona la empresa / campaña...</option>';
                 listaTemporal.forEach(d => {
-                    html += `<option value="${d.id}" class="text-black">${d.nombreComercial}</option>`;
+                    html += `<option value="${d.id}">${d.nombreComercial}</option>`;
                 });
                 
                 select.innerHTML = html;
             } catch (error) {
                 console.error("Error al cargar servicios:", error);
-                select.innerHTML = '<option value="" disabled selected class="text-black">Modo Offline: No se pudieron cargar los servicios.</option>';
+                select.innerHTML = '<option value="" disabled selected>Modo Offline: Error al cargar.</option>';
             }
         }
 
@@ -343,7 +356,7 @@
 
         function verificarRegistro() { 
             const select = document.getElementById('input-servicio');
-            if(!select.value) return mostrarToast("Debes seleccionar un Servicio de la lista.", "error");
+            if(!select.value) return mostrarToast("Debes seleccionar una campaña de la lista.", "error");
 
             const hIni = document.getElementById('input-hora-inicio').value;
             const hFin = document.getElementById('input-hora-fin').value;
@@ -366,27 +379,45 @@
             indiceActual = 0; mostrarDetalleEstudio();
         }
 
+        // LÓGICA DE CONTADOR MANUAL Y BOTONES HÍBRIDO
+        window.modificarCant = function(btn, delta) {
+            if(navigator.vibrate) navigator.vibrate(15);
+            const container = btn.parentElement;
+            const input = container.querySelector('.med-cant');
+            let val = parseInt(input.value) || 0;
+            val += delta;
+            if(val < 1) val = 1; 
+            input.value = val;
+        };
+
         function mostrarDetalleEstudio() {
             document.getElementById('paso-2').classList.add('hidden');
             document.getElementById('paso-3').classList.remove('hidden');
             const est = seleccionados[indiceActual];
             document.getElementById('detalle-estudio-actual').innerHTML = `
-                <div class="bg-black/20 p-5 rounded-3xl text-center mb-6 border border-white/10 text-white shadow-inner">
-                    <p class="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1 text-orange-200">Estudio Actual</p>
-                    <h3 class="font-black text-2xl">${est}</h3>
+                <div class="bg-orange-50 p-5 rounded-2xl text-center mb-6 border border-orange-100 shadow-sm">
+                    <p class="text-[10px] font-black uppercase tracking-widest mb-1 text-orange-600">Estudio Actual</p>
+                    <h3 class="font-black text-2xl text-orange-800">${est}</h3>
                 </div>
                 <div id="lista-medicos-detalle" class="space-y-3 mb-5"></div>
-                <button onclick="agregarFilaMedico()" class="w-full bg-white/20 hover:bg-white/30 text-white transition py-3.5 rounded-xl text-sm font-bold active:scale-95 mb-6 shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Añadir personal a este estudio</button>
-                <button onclick="guardarDetalle('${est}')" class="w-full bg-white text-orange-600 font-black py-4 rounded-xl shadow-xl active:scale-95 transition-all hover:scale-[1.02]">${indiceActual < seleccionados.length - 1 ? 'Siguiente Estudio <i class="fa-solid fa-arrow-right ml-1"></i>' : 'Ir al Resumen Final <i class="fa-solid fa-check ml-1"></i>'}</button>
+                <button onclick="agregarFilaMedico()" class="w-full bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition py-3 rounded-xl text-sm font-bold active:scale-95 mb-6 shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Añadir personal a este estudio</button>
+                <button onclick="guardarDetalle('${est}')" class="w-full bg-orange-600 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition-all hover:bg-orange-700">${indiceActual < seleccionados.length - 1 ? 'Siguiente Estudio <i class="fa-solid fa-arrow-right ml-1"></i>' : 'Ir al Resumen Final <i class="fa-solid fa-check ml-1"></i>'}</button>
             `;
             agregarFilaMedico();
         }
 
         function agregarFilaMedico() {
             const div = document.createElement('div');
-            div.className = "flex gap-2 med-fila";
-            div.innerHTML = `<input list="lista-medicos" placeholder="Personal Asignado" class="med-name w-full p-3.5 rounded-xl bg-white/20 outline-none placeholder-white/50 text-sm font-bold text-white border border-white/10 shadow-inner">
-                             <input type="number" min="1" placeholder="Cant." class="med-cant w-1/3 p-3.5 rounded-xl bg-white/20 outline-none placeholder-white/50 text-center font-bold text-white border border-white/10 shadow-inner">`;
+            div.className = "flex gap-2 items-center med-fila bg-slate-50 p-2.5 rounded-xl border border-slate-200 mb-2";
+            div.innerHTML = `
+                <input list="lista-medicos" placeholder="Técnico/Médico" class="med-name flex-1 p-2.5 bg-white border border-slate-200 rounded-lg outline-none text-xs font-bold text-slate-700 focus:border-orange-400 uppercase shadow-inner">
+                <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shrink-0 shadow-sm">
+                    <button type="button" onclick="modificarCant(this, -1)" class="w-8 h-8 rounded bg-slate-100 text-slate-600 font-black hover:bg-slate-200 transition-colors active:scale-90">-</button>
+                    <input type="number" min="1" value="1" class="med-cant w-10 text-center font-black text-slate-800 bg-transparent outline-none appearance-none m-0 p-0 text-sm">
+                    <button type="button" onclick="modificarCant(this, 1)" class="w-8 h-8 rounded bg-orange-100 text-orange-600 font-black hover:bg-orange-200 transition-colors active:scale-90">+</button>
+                </div>
+                <button type="button" onclick="this.closest('.med-fila').remove()" class="text-red-400 hover:text-red-600 px-2 shrink-0 transition-colors"><i class="fa-solid fa-trash"></i></button>
+            `;
             document.getElementById('lista-medicos-detalle').appendChild(div);
         }
 
@@ -423,14 +454,14 @@
             
             const empresaF = document.getElementById('input-empresa-nombre').value.toUpperCase();
 
-            let html = `<p class="mb-1"><b class="opacity-70 text-white">Fecha:</b> ${document.getElementById('input-fecha').value}</p>
-                        <p class="mb-1"><b class="opacity-70 text-white">Jornada:</b> <span class="text-orange-200 font-bold">${horasCalculadas} hrs</span></p>
-                        <p class="mb-3"><b class="opacity-70 text-white">Servicio:</b> ${empresaF}</p>`;
+            let html = `<p class="mb-1"><b class="opacity-70 text-slate-500">Fecha:</b> ${document.getElementById('input-fecha').value}</p>
+                        <p class="mb-1"><b class="opacity-70 text-slate-500">Jornada:</b> <span class="text-orange-600 font-black">${horasCalculadas} hrs</span></p>
+                        <p class="mb-3"><b class="opacity-70 text-slate-500">Servicio:</b> ${empresaF}</p>`;
             
             registroFinal.forEach(item => {
-                html += `<div class="border-t border-white/20 pt-3 mt-3 flex justify-between items-center text-white">
-                            <span><b class="text-orange-200 font-black">${item.estudio}</b><br><span class="text-[11px] font-bold opacity-80 uppercase tracking-wide">${item.medico}</span></span>
-                            <span class="bg-white/20 px-3 py-1 rounded-lg font-black text-xl shadow-inner">${item.cant}</span>
+                html += `<div class="border-t border-slate-200 pt-3 mt-3 flex justify-between items-center text-slate-800">
+                            <span><b class="text-orange-600 font-black">${item.estudio}</b><br><span class="text-[11px] font-bold text-slate-500 uppercase tracking-wide">${item.medico}</span></span>
+                            <span class="bg-white border border-slate-200 px-3 py-1.5 rounded-xl font-black text-xl shadow-sm text-slate-800">${item.cant}</span>
                          </div>`;
             });
             document.getElementById('resumen-contenido').innerHTML = html;
@@ -468,9 +499,7 @@
                 });
                 
                 document.getElementById('paso-4').classList.add('hidden');
-                
-                const pasoExito = document.getElementById('paso-post-confirmacion');
-                pasoExito.classList.remove('hidden');
+                document.getElementById('paso-post-confirmacion').classList.remove('hidden');
                 document.getElementById('post-folio-text').innerText = folio;
                 
                 mostrarToast(`¡Guardado exitosamente!`, "exito");
@@ -484,7 +513,7 @@
         window.generarImagenCompartir = async function() {
             const btn = document.getElementById('btn-compartir-final');
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generando imagen...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generando...';
             btn.disabled = true;
 
             const datos = window.datosParaCaptura;
@@ -515,9 +544,7 @@
                         const file = new File([blob], `LAPI_Resumen_${datos.folio}.png`, { type: 'image/png' });
                         if (navigator.canShare({ files: [file] })) {
                             try {
-                                await navigator.share({
-                                    files: [file], title: `LAPI - Resumen Folio ${datos.folio}`, text: `Resumen de servicio foráneo. ${datos.empresaF}`
-                                });
+                                await navigator.share({ files: [file], title: `LAPI - Resumen Folio ${datos.folio}`, text: `Resumen de servicio foráneo. ${datos.empresaF}` });
                                 mostrarToast("¡Reporte compartido!", "exito");
                             } catch (err) {
                                 if(err.name !== 'AbortError') forzarDescarga(canvas, datos.folio);
@@ -542,7 +569,7 @@
         async function buscarRegistro() { 
             const folioInput = document.getElementById('input-edit-id').value.trim().toUpperCase();
             if(!folioInput) return mostrarToast("Ingresa un número de folio primero.", "error");
-            if(!navigator.onLine) return mostrarToast("No se pueden buscar folios sin conexión a Internet.", "error");
+            if(!navigator.onLine) return mostrarToast("Búsqueda no disponible sin internet.", "error");
             
             const btn = document.getElementById('btn-buscar-folio');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
@@ -581,23 +608,31 @@
             if(data.detalles && data.detalles.length > 0){
                 data.detalles.forEach(d => agregarFilaEdicion(d.estudio, d.medico, d.cant));
             } else { agregarFilaEdicion(); }
-            mostrarToast("Registro cargado. Puedes editar la información.", "info");
+            mostrarToast("Registro cargado para editar.", "info");
         }
 
         function agregarFilaEdicion(estudio = '', medico = '', cant = '') {
             const div = document.createElement('div');
-            div.className = "flex gap-2 items-center bg-black/20 p-2 rounded-xl edit-fila text-white border border-white/10";
+            div.className = "flex flex-col gap-2 bg-slate-50 p-3 rounded-xl edit-fila border border-slate-200 mb-2";
             
-            const opcionesEstudios = estudios.map(e => `<option value="${e}" class="text-black" ${e === estudio ? 'selected' : ''}>${e}</option>`).join('');
+            const opcionesEstudios = estudios.map(e => `<option value="${e}" ${e === estudio ? 'selected' : ''}>${e}</option>`).join('');
             
             div.innerHTML = `
-                <select class="edit-est w-1/3 p-2.5 rounded-lg bg-white/20 text-white outline-none font-bold text-xs shadow-inner">
-                    <option value="" disabled ${!estudio ? 'selected' : ''} class="text-gray-400">Estudio...</option>
-                    ${opcionesEstudios}
-                </select>
-                <input list="lista-medicos" placeholder="Médico" value="${medico}" class="edit-med w-1/3 p-2.5 rounded-lg bg-white/20 outline-none placeholder-white/50 text-white font-bold text-xs shadow-inner">
-                <input type="number" min="1" placeholder="Cant." value="${cant}" class="edit-cant w-1/4 p-2.5 rounded-lg bg-white/20 outline-none placeholder-white/50 text-center text-white font-bold shadow-inner">
-                <button onclick="this.parentElement.remove()" class="text-red-300 font-black px-2 hover:text-red-500 transition active:scale-90"><i class="fa-solid fa-trash text-lg"></i></button>
+                <div class="flex gap-2">
+                    <select class="edit-est flex-1 p-2.5 rounded-lg bg-white border border-slate-200 text-slate-700 outline-none font-bold text-xs focus:border-orange-400">
+                        <option value="" disabled ${!estudio ? 'selected' : ''}>Estudio...</option>
+                        ${opcionesEstudios}
+                    </select>
+                    <button onclick="this.closest('.edit-fila').remove()" class="text-red-400 hover:text-red-600 px-3 shrink-0 bg-white border border-slate-200 rounded-lg"><i class="fa-solid fa-trash text-sm"></i></button>
+                </div>
+                <div class="flex gap-2 items-center">
+                    <input list="lista-medicos" placeholder="Médico" value="${medico}" class="edit-med flex-1 p-2.5 rounded-lg bg-white border border-slate-200 outline-none text-slate-700 font-bold text-xs focus:border-orange-400 uppercase">
+                    <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shrink-0 shadow-sm">
+                        <button type="button" onclick="modificarCant(this, -1)" class="w-8 h-8 rounded bg-slate-100 text-slate-600 font-black hover:bg-slate-200 active:scale-90 transition-colors">-</button>
+                        <input type="number" min="1" value="${cant || 1}" class="med-cant edit-cant w-10 text-center font-black text-slate-800 bg-transparent outline-none appearance-none m-0 p-0 text-sm">
+                        <button type="button" onclick="modificarCant(this, 1)" class="w-8 h-8 rounded bg-orange-100 text-orange-600 font-black hover:bg-orange-200 active:scale-90 transition-colors">+</button>
+                    </div>
+                </div>
             `;
             document.getElementById('edit-detalles-container').appendChild(div);
         }
@@ -609,7 +644,7 @@
             const horaFin = document.getElementById('edit-hora-fin').value;
             const observaciones = document.getElementById('edit-observaciones').value;
 
-            if(!empresa || !fecha || !horaInicio || !horaFin) return mostrarToast("Completa los datos generales del encabezado.", "error");
+            if(!empresa || !fecha || !horaInicio || !horaFin) return mostrarToast("Completa los datos generales.", "error");
 
             let detallesNuevos = []; let hayErrorDetalles = false;
 
@@ -644,7 +679,7 @@
                 mostrarToast("¡Modificación exitosa!", "exito", 0);
                 setTimeout(() => location.reload(), 2000);
             } catch(e) {
-                mostrarToast("Fallo al actualizar el registro.", "error");
+                mostrarToast("Fallo al actualizar.", "error");
                 btn.innerHTML = 'Guardar Cambios'; btn.disabled = false;
             }
         }
@@ -661,22 +696,18 @@
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('PWA lista'))
-                    .catch(err => console.log('Error PWA: ', err));
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('Error PWA: ', err));
             });
         }
 
         document.addEventListener("DOMContentLoaded", () => {
             const versionDiv = document.createElement('div');
-            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-white/40 font-bold tracking-widest pointer-events-none opacity-60';
+            versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
             versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
             document.body.appendChild(versionDiv);
 
-            // Cargar fecha oculta y horas
             const now = new Date();
             const year = now.getFullYear(); const month = String(now.getMonth() + 1).padStart(2, '0'); const day = String(now.getDate()).padStart(2, '0');
-            
             const dateInput = document.getElementById('input-fecha');
             if(dateInput) dateInput.value = `${year}-${month}-${day}`;
 
@@ -686,15 +717,15 @@
             if(horaFinInput) horaFinInput.value = `${hours}:${minutes}`;
 
             document.getElementById('lista-medicos').innerHTML = medicos.map(m => `<option value="${m}">`).join('');
-            document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join(''); // Se mantiene para Edición Legada
+            document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join(''); 
             
-            // NUEVO DISEÑO CHECKBOX TIPO CHIPS
+            // CHIPS ADMINISTRATIVOS PROFESIONALES
             document.getElementById('lista-checkbox-estudios').innerHTML = estudios.map(e => `
-                <label class="relative flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl cursor-pointer transition-all active:scale-95 group">
-                    <span class="font-black text-sm text-white relative z-10">${e}</span>
+                <label class="relative flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl cursor-pointer transition-all active:scale-95 group shadow-sm">
+                    <span class="font-black text-sm text-slate-700 relative z-10">${e}</span>
                     <input type="checkbox" value="${e}" class="peer sr-only">
-                    <div class="absolute inset-0 rounded-2xl border-2 border-transparent peer-checked:border-orange-300 peer-checked:bg-orange-500/40 transition-all"></div>
-                    <div class="w-6 h-6 rounded-full border-2 border-white/50 peer-checked:border-transparent peer-checked:bg-orange-400 flex items-center justify-center transition-all relative z-10">
+                    <div class="absolute inset-0 rounded-2xl border-2 border-transparent peer-checked:border-orange-400 peer-checked:bg-orange-50 transition-all"></div>
+                    <div class="w-6 h-6 rounded-full border-2 border-slate-300 peer-checked:border-transparent peer-checked:bg-orange-500 flex items-center justify-center transition-all relative z-10 shadow-sm">
                         <i class="fa-solid fa-check text-white opacity-0 peer-checked:opacity-100 text-xs"></i>
                     </div>
                 </label>
