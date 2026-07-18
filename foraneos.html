@@ -85,7 +85,7 @@
 
             <!-- PASO 0: SERVICIO Y HORARIO -->
             <div id="paso-0" class="paso">
-                <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">1. Servicio o Campaña Activa</label>
+                <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">1. Servicios Activos</label>
                 <div class="relative mb-4">
                     <select id="input-servicio" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-bold outline-none focus:border-orange-400 shadow-sm appearance-none cursor-pointer transition-colors">
                         <option value="" disabled selected>Cargando servicios disponibles...</option>
@@ -320,7 +320,7 @@
                 const querySnapshot = await window.getDocs(q);
                 
                 if (querySnapshot.empty) {
-                    select.innerHTML = '<option value="" disabled selected>No hay campañas activas.</option>';
+                    select.innerHTML = '<option value="" disabled selected>No hay servicios activos.</option>';
                     return;
                 }
 
@@ -333,7 +333,7 @@
 
                 listaTemporal.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
 
-                let html = '<option value="" disabled selected>Selecciona la empresa / campaña...</option>';
+                let html = '<option value="" disabled selected>Selecciona la empresa...</option>';
                 listaTemporal.forEach(d => {
                     html += `<option value="${d.id}">${d.nombreComercial}</option>`;
                 });
@@ -356,7 +356,7 @@
 
         function verificarRegistro() { 
             const select = document.getElementById('input-servicio');
-            if(!select.value) return mostrarToast("Debes seleccionar una campaña de la lista.", "error");
+            if(!select.value) return mostrarToast("Debes seleccionar una empresa de la lista.", "error");
 
             const hIni = document.getElementById('input-hora-inicio').value;
             const hFin = document.getElementById('input-hora-fin').value;
