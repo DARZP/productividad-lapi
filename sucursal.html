@@ -182,7 +182,7 @@
             <!-- VISTA: RESUMEN SUCURSAL GLOBAL -->
             <div id="vista-resumen-sucursal" class="hidden bg-white p-6 rounded-3xl shadow-soft border border-slate-200 animate-fade-in relative overflow-hidden">
                 <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 relative z-10">
-                    <h2 class="font-black text-xl text-slate-800 leading-tight"><i class="fa-solid fa-globe text-sky-500 mr-1"></i> Global<br><span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Sucursal del Día</span></h2>
+                    <h2 class="font-black text-xl text-slate-800 leading-tight"><i class="fa-solid fa-globe text-sky-500 mr-1"></i> Global<br><span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Acumulado del día</span></h2>
                     <div class="flex gap-2">
                         <button onclick="copiarResumenTexto()" class="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-4 py-2 rounded-xl transition hover:scale-[1.02] active:scale-95 flex items-center gap-2 font-black text-[11px] uppercase tracking-widest shadow-sm" title="Copiar Texto">
                             <i class="fa-solid fa-copy"></i> Copiar
@@ -747,7 +747,7 @@
                         ${htmlAcumulado || '<p class="text-center text-sm text-slate-400 italic font-bold">Nadie ha registrado estudios aún.</p>'}
                     </div>
                     <div class="mt-6 relative">
-                        <h3 class="font-black text-xs uppercase tracking-widest text-slate-400 mb-3 ml-2">Desglose Global por Médico</h3>
+                        <h3 class="font-black text-xs uppercase tracking-widest text-slate-400 mb-3 ml-2">Desglose Global por Personal</h3>
                         ${htmlIndividual || '<p class="text-center text-sm text-slate-400 italic font-bold">Sin datos individuales.</p>'}
                     </div>
                 `;
