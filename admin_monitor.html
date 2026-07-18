@@ -15,7 +15,8 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        // AGREGADO: Importamos getDoc para leer un registro específico antes de editarlo
+        import { getFirestore, collection, getDocs, getDoc, query, where, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -29,6 +30,7 @@
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
         window.getDocs = getDocs;
+        window.getDoc = getDoc; // Asignación de getDoc al entorno global
         window.collection = collection;
         window.query = query;
         window.where = where; 
@@ -193,6 +195,9 @@
 
     </main>
 
+    <!-- MODALES -->
+    
+    <!-- Modal: Detalle Pacientes (Lupa) -->
     <div id="modal-lupa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div id="modal-lupa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-2xl w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 flex flex-col max-h-[80vh]">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
@@ -209,6 +214,34 @@
                 </table>
             </div>
             <div class="mt-4 flex gap-3"><button onclick="cerrarModal('lupa')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cerrar Visor</button></div>
+        </div>
+    </div>
+
+    <!-- Modal: Editar Cantidad (Nuevo) -->
+    <div id="modal-editar-cant" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-editar-cant-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                <h3 class="text-lg font-black text-sky-600 flex items-center gap-2"><i class="fa-solid fa-pen"></i> Editar Cantidad</h3>
+                <button onclick="cerrarModal('editar-cant')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <p id="edit-cant-info" class="text-xs font-bold text-slate-700 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200 text-center"></p>
+            
+            <input type="hidden" id="edit-cant-groupId">
+            <input type="hidden" id="edit-cant-dbSource">
+            <input type="hidden" id="edit-cant-estudio">
+            <input type="hidden" id="edit-cant-medico">
+
+            <div class="mb-6">
+                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 text-center">Nueva Cantidad</label>
+                <input type="number" id="edit-cant-val" min="0" class="w-full text-center p-3 text-2xl font-black text-slate-800 bg-white border border-slate-300 rounded-xl outline-none focus:border-sky-500 shadow-sm">
+                <p class="text-[9px] text-slate-400 text-center mt-2 leading-tight">Pon "0" si quieres eliminar específicamente este estudio del registro completo.</p>
+            </div>
+            
+            <div class="flex gap-2">
+                <button onclick="cerrarModal('editar-cant')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all text-sm">Cancelar</button>
+                <button id="btn-guardar-cant" onclick="guardarEdicionCant()" class="w-1/2 bg-sky-600 hover:bg-sky-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 text-sm">Guardar</button>
+            </div>
         </div>
     </div>
 
@@ -460,9 +493,16 @@
                 let trClass = `${bgClass} border-b border-slate-100 border-l-4 ${borderColor} transition hover:bg-orange-50/50`;
 
                 let esPrimeroDelGrupo = (index === 0 || vista[index - 1].groupId !== r.groupId);
+                
+                // Botón Borrar (Elimina TODO el documento completo, por eso solo sale en el primer elemento del grupo)
                 let btnBorrar = esPrimeroDelGrupo 
-                    ? `<button onclick="eliminarRegistro('${r.groupId}', '${r.dbSource}')" class="text-red-400 hover:text-red-600 bg-white hover:bg-red-50 p-2 rounded-lg transition border border-slate-200 hover:border-red-200 shadow-sm" title="Eliminar este bloque completo"><i class="fa-solid fa-trash-can"></i></button>` 
+                    ? `<button onclick="eliminarRegistro('${r.groupId}', '${r.dbSource}')" class="text-red-400 hover:text-red-600 bg-white hover:bg-red-50 p-2 rounded-lg transition border border-slate-200 hover:border-red-200 shadow-sm" title="Eliminar el bloque completo"><i class="fa-solid fa-trash-can"></i></button>` 
                     : '';
+
+                // Botón Editar Cantidad (Aparece en cada fila para modificar ese estudio específico)
+                let safeMed = r.medico.replace(/'/g, "\\'");
+                let safeEst = r.estudio.replace(/'/g, "\\'");
+                let btnEditarRow = `<button onclick="abrirEdicionCant('${r.groupId}', '${r.dbSource}', '${safeEst}', '${safeMed}', ${r.cant})" class="text-sky-500 hover:text-sky-700 bg-white hover:bg-sky-50 p-2 rounded-lg transition border border-slate-200 hover:border-sky-200 shadow-sm" title="Editar cantidad de este estudio"><i class="fa-solid fa-pen"></i></button>`;
 
                 let btnLupa = r.metadatos && r.metadatos.length > 0 ? `<button onclick="verLupaAdmin('${r.groupId}', '${r.estudio}')" class="ml-2 text-indigo-500 hover:text-indigo-700 hover:bg-indigo-100 p-1 rounded transition"><i class="fa-solid fa-users"></i></button>` : '';
 
@@ -474,7 +514,12 @@
                         <td class="p-3 font-bold text-slate-700 text-xs">${r.lugar}</td>
                         <td class="p-3 text-slate-500 font-bold text-[11px]">${r.estudio}</td>
                         <td class="p-3 text-center font-black text-indigo-600">${r.cant} ${btnLupa}</td>
-                        <td class="p-3 text-center">${btnBorrar}</td>
+                        <td class="p-3 text-center">
+                            <div class="flex justify-center gap-1">
+                                ${btnBorrar}
+                                ${btnEditarRow}
+                            </div>
+                        </td>
                     </tr>
                 `;
             });
@@ -530,6 +575,86 @@
                 alert("No se pudo eliminar el registro. Verifica permisos.");
             }
         };
+
+        // ====== LÓGICA NUEVA: EDICIÓN ESPECÍFICA DE CANTIDAD ======
+        window.abrirEdicionCant = function(groupId, dbSource, estudio, medico, cantActual) {
+            document.getElementById('edit-cant-groupId').value = groupId;
+            document.getElementById('edit-cant-dbSource').value = dbSource;
+            document.getElementById('edit-cant-estudio').value = estudio;
+            document.getElementById('edit-cant-medico').value = medico;
+            document.getElementById('edit-cant-val').value = cantActual;
+            
+            document.getElementById('edit-cant-info').innerText = `${estudio} (${medico})`;
+            abrirModal('editar-cant');
+        };
+
+        window.guardarEdicionCant = async function() {
+            let groupId = document.getElementById('edit-cant-groupId').value;
+            let dbSource = document.getElementById('edit-cant-dbSource').value;
+            let estudio = document.getElementById('edit-cant-estudio').value;
+            let medico = document.getElementById('edit-cant-medico').value;
+            let nuevaCant = parseInt(document.getElementById('edit-cant-val').value);
+
+            if (isNaN(nuevaCant) || nuevaCant < 0) return alert("Por favor ingresa una cantidad válida.");
+
+            let btn = document.getElementById('btn-guardar-cant');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+            btn.disabled = true;
+
+            try {
+                let docRef = window.doc(window.db, dbSource, groupId);
+                let docSnap = await window.getDoc(docRef);
+                if(!docSnap.exists()) throw new Error("El documento no existe.");
+                let data = docSnap.data();
+
+                // Lógica para registros agrupados de Sucursales (mapa 'estudios')
+                if (dbSource === "registros_diarios_sucursales") {
+                    let realKey = Object.keys(data.estudios || {}).find(k => unificarEstudio(k) === estudio);
+                    if (realKey) {
+                        if (nuevaCant === 0) {
+                            delete data.estudios[realKey];
+                        } else {
+                            data.estudios[realKey] = nuevaCant;
+                        }
+                        await window.updateDoc(docRef, { estudios: data.estudios });
+                    }
+                } 
+                // Lógica para registros Foráneos y Sucursales antiguos (array 'detalles' o string 'estudio')
+                else if (dbSource === "registros") {
+                    if (data.detalles) {
+                        let index = data.detalles.findIndex(det => 
+                            unificarEstudio(det.estudio) === estudio && 
+                            normalizarDato(det.medico || data.medico) === medico
+                        );
+                        if (index !== -1) {
+                            if (nuevaCant === 0) {
+                                data.detalles.splice(index, 1);
+                            } else {
+                                data.detalles[index].cant = nuevaCant;
+                            }
+                            await window.updateDoc(docRef, { detalles: data.detalles });
+                        }
+                    } else if (data.estudio && unificarEstudio(data.estudio) === estudio) {
+                        // Casos muy antiguos donde no existía el arreglo 'detalles', sino un registro por estudio.
+                        if (nuevaCant === 0) {
+                            await window.deleteDoc(docRef);
+                        } else {
+                            alert("Los registros unitarios muy antiguos no pueden modificar su cantidad desde aquí. Elimínelo y recaptúrelo.");
+                        }
+                    }
+                }
+                
+                cerrarModal('editar-cant');
+                cargarDatosAdmin(); // Recargamos para reflejar los cambios
+            } catch(e) {
+                console.error(e);
+                alert("Ocurrió un error al intentar actualizar la base de datos.");
+            }
+            
+            btn.innerHTML = 'Guardar';
+            btn.disabled = false;
+        };
+
     </script>
 </body>
 </html>
