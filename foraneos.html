@@ -408,15 +408,19 @@
 
         function agregarFilaMedico() {
             const div = document.createElement('div');
-            div.className = "flex gap-2 items-center med-fila bg-slate-50 p-2.5 rounded-xl border border-slate-200 mb-2";
+            // Diseño Responsivo: flex-col en móviles (apilado), flex-row en pantallas grandes
+            div.className = "flex flex-col sm:flex-row gap-3 items-center med-fila bg-slate-50 p-4 rounded-xl border border-slate-200 mb-3 shadow-sm";
             div.innerHTML = `
-                <input list="lista-medicos" placeholder="Técnico/Médico" class="med-name flex-1 p-2.5 bg-white border border-slate-200 rounded-lg outline-none text-xs font-bold text-slate-700 focus:border-orange-400 uppercase shadow-inner">
-                <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shrink-0 shadow-sm">
-                    <button type="button" onclick="modificarCant(this, -1)" class="w-8 h-8 rounded bg-slate-100 text-slate-600 font-black hover:bg-slate-200 transition-colors active:scale-90">-</button>
-                    <input type="number" min="1" value="1" class="med-cant w-10 text-center font-black text-slate-800 bg-transparent outline-none appearance-none m-0 p-0 text-sm">
-                    <button type="button" onclick="modificarCant(this, 1)" class="w-8 h-8 rounded bg-orange-100 text-orange-600 font-black hover:bg-orange-200 transition-colors active:scale-90">+</button>
+                <input list="lista-medicos" placeholder="Técnico/Médico" class="med-name w-full p-3.5 bg-white border border-slate-200 rounded-lg outline-none text-xs font-bold text-slate-700 focus:border-orange-400 uppercase shadow-inner">
+                
+                <div class="flex items-center justify-between w-full sm:w-auto gap-3">
+                    <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-1.5 shadow-sm flex-1 sm:flex-none justify-center">
+                        <button type="button" onclick="modificarCant(this, -1)" class="w-10 h-10 rounded bg-slate-100 text-slate-600 font-black hover:bg-slate-200 active:scale-90 transition-colors text-lg">-</button>
+                        <input type="number" min="1" value="1" class="med-cant edit-cant w-12 text-center font-black text-slate-800 bg-transparent outline-none appearance-none m-0 p-0 text-base">
+                        <button type="button" onclick="modificarCant(this, 1)" class="w-10 h-10 rounded bg-orange-100 text-orange-600 font-black hover:bg-orange-200 active:scale-90 transition-colors text-lg">+</button>
+                    </div>
+                    <button type="button" onclick="this.closest('.med-fila').remove()" class="text-red-400 hover:text-red-600 p-3 bg-white border border-slate-200 rounded-lg shadow-sm transition-colors active:scale-90 shrink-0"><i class="fa-solid fa-trash text-lg"></i></button>
                 </div>
-                <button type="button" onclick="this.closest('.med-fila').remove()" class="text-red-400 hover:text-red-600 px-2 shrink-0 transition-colors"><i class="fa-solid fa-trash"></i></button>
             `;
             document.getElementById('lista-medicos-detalle').appendChild(div);
         }
@@ -719,11 +723,11 @@
             document.getElementById('lista-medicos').innerHTML = medicos.map(m => `<option value="${m}">`).join('');
             document.getElementById('lista-empresas').innerHTML = empresas.map(e => `<option value="${e}">`).join(''); 
             
-            // CHIPS ADMINISTRATIVOS PROFESIONALES
+            // CHIPS ADMINISTRATIVOS PROFESIONALES (CON VIBRACIÓN HÁPTICA)
             document.getElementById('lista-checkbox-estudios').innerHTML = estudios.map(e => `
                 <label class="relative flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl cursor-pointer transition-all active:scale-95 group shadow-sm">
                     <span class="font-black text-sm text-slate-700 relative z-10">${e}</span>
-                    <input type="checkbox" value="${e}" class="peer sr-only">
+                    <input type="checkbox" value="${e}" class="peer sr-only" onchange="if(navigator.vibrate) navigator.vibrate(15)">
                     <div class="absolute inset-0 rounded-2xl border-2 border-transparent peer-checked:border-orange-400 peer-checked:bg-orange-50 transition-all"></div>
                     <div class="w-6 h-6 rounded-full border-2 border-slate-300 peer-checked:border-transparent peer-checked:bg-orange-500 flex items-center justify-center transition-all relative z-10 shadow-sm">
                         <i class="fa-solid fa-check text-white opacity-0 peer-checked:opacity-100 text-xs"></i>
