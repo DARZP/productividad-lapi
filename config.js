@@ -388,7 +388,7 @@ window.LAPI_CONFIG = {
     // ==========================================
     estudiosSucursales: [
         "Historia Clínica Empresa", "Historia Clínica LAPIWEB", "Consulta Médica", 
-        "Seguro", "Audiometría", "Espirometría", "Electrocardiograma", 
+        "Seguro", "Audiometría", "Espirometría", "Electro", 
         "Agudeza Visual", "Logoaudiometría", "Timpanometría", "Certificado", 
         "Nórdico", "Otro"
     ],
