@@ -217,7 +217,7 @@
                         </div>
                         <div>
                             <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">PDF Escaneado</label>
-                            <input type="file" id="pdf-bitacora" accept="application/pdf" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
+                            <input type="file" id="pdf-bitacora" accept="application/pdf, image/jpeg, image/png, image/webp" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
                         </div>
                     </div>
                     
@@ -1337,7 +1337,7 @@
             const fileInput = document.getElementById('pdf-bitacora');
             const apiKey = document.getElementById('gemini-api-key').value.trim();
             
-            if(!fileInput.files.length) return mostrarToast("Sube el PDF escaneado de la bitácora", "error");
+            if(!fileInput.files.length) return mostrarToast("Sube el escaneo o foto de la bitácora", "error");
             if(!apiKey) return mostrarToast("Ingresa tu API Key de Gemini", "error");
 
             // Guardamos la clave para el futuro
@@ -1348,24 +1348,36 @@
             btn.disabled = true;
 
             const file = fileInput.files[0];
+            const mimeType = file.type; // Dinámico: Sabe si es PDF, JPG o PNG
             const reader = new FileReader();
 
             reader.onload = async function(e) {
-                const base64PDF = e.target.result.split(',')[1];
+                const base64Data = e.target.result.split(',')[1];
                 
-                const promptEstricto = `Eres un asistente de extracción de datos médicos. Vas a leer el escaneo adjunto de una bitácora foránea.
-Instrucciones estrictas:
-1. Ignora cualquier estudio relacionado con Laboratorio, Rayos X, Electrocardiograma (EKG/ECG) u otros.
-2. Extrae ÚNICAMENTE los conteos totales por día y por empresa de: 'Audiometría' (incluye Audios), 'Espirometría' (incluye Espiros), 'Historia Clínica' (incluye HC, Hist, Clínica) y 'Examen Capacidad Visual' (incluye Optometría, Visual).
-3. Analiza las notas al margen o fechas tachadas. Si los registros están en la hoja del 16 de Julio pero tienen una flecha o texto que diga que pertenecen al 15, asígnalos al 15.
-4. Devuelve ÚNICAMENTE un arreglo JSON válido, sin formato Markdown ni texto adicional. Estructura requerida:
+                // EL "SÚPER PROMPT" ENTRENADO CON TUS IMÁGENES
+                const promptEstricto = `Actúas como un experto OCR y analista de datos médicos. Analiza el documento/imagen adjunto de una bitácora manuscrita.
+REGLAS DE EXTRACCIÓN ESTRICTAS:
+1. ESTRUCTURA VISUAL: Las Fechas principales están en letras grandes (ej. 15 JUNIO 26). En la columna izquierda están las Empresas (ej. Coca Cola Zaragoza, Ecolab, Neolpharma). A la derecha están las abreviaturas de estudios junto a números que suelen estar encerrados en círculos.
+2. ESTUDIOS OBJETIVO: Extrae ÚNICAMENTE las cantidades de estos 4 estudios:
+   - 'Historia Clínica': Busca 'HC', 'H.C.', 'Hist'.
+   - 'Audiometría': Busca 'Audio', 'Audios', 'Audiometria'.
+   - 'Espirometría': Busca 'Espiro', 'Espiros', 'Espirometria'.
+   - 'Examen Capacidad Visual': Busca 'Visual', 'Agudeza Visual', 'Ag. Visual', 'Optometría'.
+3. IGNORAR ABSOLUTAMENTE: EKG, ECG, BHC, QS, UP, Ego, RX, DSA, CFai, CB, CH, Inbodys, HbA1c, PSA, Hglu, Ag.Pr, Insulina, Hepatitis, HIV, P.Tir, P.Gine, RF, etc. No los incluyas.
+4. CÁLCULO DE CANTIDADES: A veces la cantidad es una suma (ej. '6+3=9'). Extrae el total final (9). Los números suelen estar dentro de círculos.
+5. MANEJO DE FECHAS:
+   - Usa la fecha grande escrita en la página y conviértela a YYYY-MM-DD (ej. 15 JUNIO 26 -> 2026-06-15).
+   - EXCEPCIÓN CRÍTICA: Si a lado de los estudios de una empresa hay una fecha pequeña escrita (ej. 15/06, 16/06), usa ESA fecha específica para esos estudios, ignorando la fecha de la página. Asume el año de la hoja.
+   - Ignora las fechas que formen parte de una firma de revisión (ej. firmas cruzadas con letras cursivas o la firma de 'Nancy 17/06/26').
+6. FORMATO DE SALIDA: Devuelve ÚNICAMENTE un arreglo JSON válido. NADA DE TEXTO ANTES NI DESPUÉS. SIN ETIQUETAS MARKDOWN.
+Estructura exacta:
 [
   {
     "fecha": "YYYY-MM-DD",
-    "empresa": "Nombre tal cual se lee",
+    "empresa": "Nombre de la empresa tal cual se lee",
     "estudios": {
-      "Historia Clínica": 10,
-      "Audiometría": 5,
+      "Historia Clínica": 0,
+      "Audiometría": 0,
       "Espirometría": 0,
       "Examen Capacidad Visual": 0
     }
@@ -1380,7 +1392,7 @@ Instrucciones estrictas:
                             contents: [{
                                 parts: [
                                     { text: promptEstricto },
-                                    { inlineData: { mimeType: "application/pdf", data: base64PDF } }
+                                    { inlineData: { mimeType: mimeType, data: base64Data } }
                                 ]
                             }]
                         })
@@ -1398,7 +1410,7 @@ Instrucciones estrictas:
                     mostrarToast("¡Análisis de IA completado!", "exito");
                 } catch(err) {
                     console.error("Error en IA:", err);
-                    mostrarToast("Error en el análisis. Verifica el PDF y la API Key.", "error");
+                    mostrarToast("Error en el análisis. Verifica el archivo y la API Key.", "error");
                 }
                 
                 btn.innerHTML = '<i class="fa-solid fa-magnifying-glass-chart"></i> Procesar Documento';
