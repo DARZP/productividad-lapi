@@ -653,8 +653,12 @@ No devuelvas ningún texto extra ni formato Markdown.`;
                         })
                     });
 
-                    if(!response.ok) throw new Error("Error en API Gemini");
-                    const dataRes = await response.json();
+                    if(!response.ok) {
+                        const errorDetails = await response.text();
+                        console.error("🔴 DETALLE DEL ERROR DE GOOGLE:", errorDetails);
+                        throw new Error("Revisa la consola (F12) para ver el error exacto.");
+                    }
+                    const dataRes = await response.json();       
                     
                     let text = dataRes.candidates[0].content.parts[0].text;
                     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
