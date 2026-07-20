@@ -16,7 +16,8 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        // IMPORTANTE: Agregué setDoc para guardar el Rol en Firebase
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, setDoc, doc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -32,6 +33,7 @@
         window.getDocs = getDocs;
         window.addDoc = addDoc;
         window.updateDoc = updateDoc;
+        window.setDoc = setDoc;
         window.doc = doc;
         window.collection = collection;
         window.query = query;
@@ -44,6 +46,14 @@
             const savedKey = localStorage.getItem('gemini_api_key');
             if(savedKey && document.getElementById('gemini-api-key-rol')) {
                 document.getElementById('gemini-api-key-rol').value = savedKey;
+            }
+
+            // RECUPERAR EL ROL GUARDADO LOCALMENTE AL RECARGAR LA PÁGINA
+            const rolGuardado = localStorage.getItem('lapi_rol_ia');
+            if (rolGuardado) {
+                const dataRol = JSON.parse(rolGuardado);
+                // Le pasamos 'false' para que no vuelva a intentar guardarlo en Firebase si solo recargó la página
+                window.procesarResultadoRol(dataRol.empresas, dataRol.fecha, false);
             }
         });
     </script>
@@ -71,6 +81,7 @@
             #zona-impresion { display: block !important; width: 100%; color: black; font-family: Arial, sans-serif; }
             .print-page { break-after: always; page-break-after: always; width: 100%; position: relative; }
             
+            /* Encabezado */
             .header-reporte { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
             .header-reporte td { padding: 4px; vertical-align: top; }
             .h-logo { width: 30%; text-align: left; }
@@ -80,12 +91,14 @@
             .info-grid td, .info-grid th { border: 1px solid #ccc; padding: 6px; text-align: left; }
             .info-grid th { background-color: #f8fafc !important; -webkit-print-color-adjust: exact; width: 25%; font-weight: bold; }
 
+            /* Tablas Formales */
             .seccion-titulo { font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #333; border-bottom: 2px solid #ea580c; padding-bottom: 2px; text-transform: uppercase; }
             .table-formal { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 20px; }
             .table-formal th, .table-formal td { border: 1px solid #333; padding: 5px; text-align: center; }
             .table-formal th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; font-weight: bold; text-transform: uppercase; }
             .table-formal .text-left { text-align: left; }
             
+            /* Gráficas */
             .grafica-container { width: 100%; max-height: 250px; margin-bottom: 20px; text-align: center; page-break-inside: avoid; }
             canvas { max-width: 100%; height: auto !important; }
         }
@@ -93,7 +106,7 @@
 </head>
 <body class="text-slate-800 flex h-screen overflow-hidden">
 
-    <!-- NAVEGACIÓN LATERAL -->
+    <!-- NAVEGACIÓN LATERAL UNIFICADA -->
     <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom no-print">
         <div class="hidden md:flex mb-2 text-3xl"><i class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i></div>
         
@@ -207,7 +220,8 @@
                     <i class="fa-solid fa-robot"></i> Cargar Imagen de Rol
                 </button>
                 
-                <div id="status-rol-activo" class="hidden mt-4 pt-3 border-t border-slate-100">
+                <div id="status-rol-activo" class="hidden mt-4 pt-3 border-t border-slate-100 relative">
+                    <button onclick="limpiarRol()" class="absolute top-3 right-0 text-slate-400 hover:text-red-500 transition-colors" title="Limpiar Rol Activo"><i class="fa-solid fa-trash"></i></button>
                     <p class="text-[10px] font-black uppercase text-indigo-600 mb-1">Rol Activo Cargado</p>
                     <p id="txt-fecha-rol" class="text-xs font-bold text-slate-700">Para: YYYY-MM-DD</p>
                     <p id="txt-cantidad-rol" class="text-xs text-slate-500 font-bold">X empresas detectadas</p>
@@ -350,9 +364,9 @@
         let servicioParaReporte = null; 
         
         // Estado del Rol evaluado por IA
-        let empresasEnRol = []; // Ej. ['BIMBO', 'COCA COLA']
-        let fechaRolOperativo = null; // YYYY-MM-DD
-        let reportesHechosEnRol = new Set(); // Set de IDs de servicios que sí reportaron en esa fecha
+        let empresasEnRol = []; 
+        let fechaRolOperativo = null; 
+        let reportesHechosEnRol = new Set(); 
 
         // Mostrar Toast
         window.mostrarToast = function(mensaje, tipo = 'info') {
@@ -507,7 +521,6 @@
                 // --- LÓGICA DE SEMÁFORO DE CUMPLIMIENTO ---
                 let statusHtml = '';
                 if(fechaRolOperativo && vistaActual === 'activo') {
-                    // Ver si este servicio está en el arreglo extraído por IA (Fuzzy match simple)
                     let nombreNorm = normalizarTexto(data.nombreComercial);
                     let asigandoEnRol = empresasEnRol.some(empRol => {
                         let rolNorm = normalizarTexto(empRol);
@@ -516,14 +529,11 @@
 
                     if(asigandoEnRol) {
                         if(reportesHechosEnRol.has(data.id)) {
-                            // Está en el rol y YA REPORTÓ
                             statusHtml = `<span class="flex items-center gap-1 text-[10px] font-bold text-emerald-600"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-inner block"></span> Reporte Exitoso (${fechaRolOperativo})</span>`;
                         } else {
-                            // Está en el rol y FATA POR REPORTAR
                             statusHtml = `<span class="flex items-center gap-1 text-[10px] font-bold text-red-600"><span class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-inner block animate-pulse"></span> Faltante de Reporte (${fechaRolOperativo})</span>`;
                         }
                     } else {
-                        // No está asignado en este rol
                         statusHtml = `<span class="flex items-center gap-1 text-[10px] font-bold text-slate-400"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 shadow-inner block"></span> Sin rol programado</span>`;
                     }
                 } else if(vistaActual === 'activo') {
@@ -567,7 +577,6 @@
         window.cambiarEstado = async function(id, nuevoEstado) {
             let data = serviciosGlobales.find(s => s.id === id);
             let payload = { estado: nuevoEstado, ultimaModificacion: new Date() };
-            // Si el administrador lo reactiva manualmente, activamos la excepción para que no se auto-cierre
             if(nuevoEstado === 'activo') payload.excepcionCierre = true; 
             
             try {
@@ -577,7 +586,6 @@
             } catch (error) { mostrarToast("No se pudo actualizar.", "error"); }
         };
 
-        // 3. EDICIÓN DE SERVICIOS
         window.prepararEdicion = function(id) {
             let data = serviciosGlobales.find(s => s.id === id);
             document.getElementById('e-id').value = id;
@@ -610,7 +618,7 @@
         };
 
         // ==========================================
-        // ANÁLISIS DE ROL POR IA (NUEVO)
+        // ANÁLISIS DE ROL POR IA (CON PERSISTENCIA)
         // ==========================================
         window.analizarImagenRol = async function() {
             const fileInput = document.getElementById('img-rol');
@@ -664,8 +672,8 @@ No devuelvas ningún texto extra ni formato Markdown.`;
                     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
                     const arregloEmpresas = JSON.parse(text);
 
-                    await procesarResultadoRol(arregloEmpresas, fechaTest);
-                    mostrarToast("Rol procesado correctamente", "exito");
+                    await window.procesarResultadoRol(arregloEmpresas, fechaTest, true);
+                    mostrarToast("Rol procesado y guardado correctamente", "exito");
                     cerrarModal('rol');
 
                 } catch(err) {
@@ -680,33 +688,52 @@ No devuelvas ningún texto extra ni formato Markdown.`;
             reader.readAsDataURL(file);
         };
 
-        async function procesarResultadoRol(arreglo, fechaObjetivo) {
+        window.procesarResultadoRol = async function(arreglo, fechaObjetivo, guardar = true) {
             empresasEnRol = arreglo;
             fechaRolOperativo = fechaObjetivo;
             reportesHechosEnRol = new Set();
 
-            // Consultar en la base de datos si ya existen reportes (en Foráneos) para esta fecha exacta
+            // 1. Guardado en Memoria Local y Firebase (Si es nuevo análisis)
+            if (guardar) {
+                localStorage.setItem('lapi_rol_ia', JSON.stringify({ fecha: fechaObjetivo, empresas: arreglo }));
+                
+                try {
+                    await window.setDoc(window.doc(window.db, "roles_diarios", fechaObjetivo), {
+                        fecha: fechaObjetivo,
+                        empresas: arreglo,
+                        timestamp: new Date()
+                    }, { merge: true });
+                } catch(e) { console.log("Nota: No se pudo sincronizar el rol en Firebase para las alertas", e); }
+            }
+
+            // 2. Verificamos quién ya reportó
             try {
                 const q = window.query(window.collection(window.db, "registros"), window.where("fecha", "==", fechaObjetivo));
                 const qs = await window.getDocs(q);
-                
                 qs.forEach(doc => {
                     let d = doc.data();
                     if(d.idServicio) reportesHechosEnRol.add(d.idServicio);
                 });
-            } catch(e) {
-                console.error("Error buscando reportes", e);
-            }
+            } catch(e) { console.error("Error buscando reportes", e); }
 
             document.getElementById('status-rol-activo').classList.remove('hidden');
             document.getElementById('txt-fecha-rol').innerText = `Día Evaluado: ${fechaObjetivo}`;
             document.getElementById('txt-cantidad-rol').innerText = `${arreglo.length} operaciones detectadas por IA`;
 
-            renderizarLista(); // Renderizamos para pintar los semáforos
-        }
+            renderizarLista(); 
+        };
 
+        window.limpiarRol = function() {
+            localStorage.removeItem('lapi_rol_ia');
+            empresasEnRol = [];
+            fechaRolOperativo = null;
+            reportesHechosEnRol.clear();
+            document.getElementById('status-rol-activo').classList.add('hidden');
+            renderizarLista();
+            mostrarToast("Rol removido de la vista", "info");
+        };
 
-        // 4. MOTOR DE REPORTES PDF (Sin Cambios)
+        // 4. MOTOR DE REPORTES PDF
         window.prepararReporte = function(id) {
             servicioParaReporte = serviciosGlobales.find(s => s.id === id);
             abrirModal('reporte');
