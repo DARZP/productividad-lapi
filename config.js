@@ -529,7 +529,9 @@ window.LAPI_CONFIG = {
             "AM": "Garcia Morado Ana Lourdes",
             "ALGM": "Garcia Morado Ana Lourdes",
             "JG": "Juan Manuel",
-            "GV": "Giselle Vizuet"
+            "GV": "Giselle Vizuet",
+            "YP": "Yasmin Cruz",
+            "YSPC": "Yasmin Cruz"
         },
         "PLAZA CENTRAL": {
             "IA": "Arizcorreta Colchado Ivonne Guadalupe",
