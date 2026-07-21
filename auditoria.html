@@ -331,24 +331,19 @@
         </div>
     </main>
 
-    <!-- ZONA DE MODALES -->
-    <div id="modal-onedrive" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-onedrive-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-sky-200 text-center flex flex-col max-h-[90vh]">
-            <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-brands fa-microsoft"></i></div>
-            <h3 class="text-xl font-black mb-2 text-slate-800">Extracción de Nube</h3>
-            <p class="text-sm text-slate-500 mb-5">El sistema buscará los archivos Excel basándose en el mes seleccionado.</p>
-            <div id="od-config">
-                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2 text-left">Periodo a buscar (Mes/Año)</label>
-                <input type="month" id="od-mes-buscar" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 font-bold text-slate-700 outline-none focus:border-sky-400">
-                <div class="flex gap-3 mt-4">
-                    <button onclick="cerrarModal('onedrive')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar</button>
-                    <button onclick="ejecutarExtraccionOneDrive()" class="w-1/2 bg-[#0078d4] hover:bg-[#005a9e] text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Buscar y Extraer</button>
-                </div>
-            </div>
-            <div id="od-status" class="hidden flex-col items-center">
-                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-sky-500 mb-4"></i>
-                <p id="od-status-text" class="text-sm font-bold text-slate-600 mb-4">Conectando con Microsoft Graph...</p>
-                <div id="od-lista-archivos" class="w-full text-left bg-slate-50 border border-slate-200 rounded-lg p-3 max-h-48 overflow-y-auto scroll-custom text-xs font-mono text-slate-500 space-y-1 mb-4"></div>
+    <!-- Modal de Corrección Individual -->
+    <div id="modal-correccion" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-correccion-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-orange-200 text-center">
+            <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <h3 class="text-lg font-black mb-2 text-slate-800">Forzar Sincronización</h3>
+            <p class="text-sm text-slate-500 mb-5">El sistema ajustará Firebase para que cuadre exactamente con el Excel subido.</p>
+            <p id="c-info" class="text-xs text-orange-800 bg-orange-50 p-3 rounded-xl border border-orange-200 font-bold mb-6"></p>
+            <input type="hidden" id="c-hash">
+            <input type="hidden" id="c-cantE">
+            <input type="hidden" id="c-cantA">
+            <div class="flex gap-3">
+                <button onclick="cerrarModal('correccion')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar</button>
+                <button id="btn-ejecutar-corr" onclick="ejecutarCorreccion()" class="w-1/2 bg-orange-600 hover:bg-orange-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Sincronizar</button>
             </div>
         </div>
     </div>
@@ -644,7 +639,7 @@
 
         function normalizarDato(texto) {
             if (!texto) return "DESCONOCIDO";
-            // Forzamos MAYÚSCULAS STRICTAS y quitamos acentos para emparejar con la App
+            // Forzamos MAYÚSCULAS y quitamos acentos de tajo para emparejar todo
             return String(texto).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
         }
         window.normalizarEmpresa = function(rawEmpresa) {
@@ -692,55 +687,67 @@
         function traducirMedico(rawMed, rawSuc) {
             if (!rawMed) return "DESCONOCIDO";
             
-            // 1. Limpieza inicial
-            let med = String(rawMed).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            // 1. Limpieza base del input
+            let med = normalizarDato(rawMed);
             med = med.replace(/^DR\(A\)\.?\s*/, '').replace(/^DRA\.?\s*/, '').replace(/^DR\.?\s*/, '');
             med = med.replace(/\./g, ' ');
             med = med.replace(/\[INICIAL NO REGISTRADA:\s*/g, '').replace(/\]/g, '').trim();
 
             if (med === 'X' || med === '✔' || med === 'OK') return "X";
+            
             let suc = normalizarDato(rawSuc);
+            let medicos = window.LAPI_CONFIG?.medicos || [];
 
-            // 2. Revisar el diccionario manual de iniciales (si aplica)
+            // 2. Diccionario (AHORA ES INSENSIBLE A MAYÚSCULAS PARA NO ROMPER TU config.js)
             const diccInic = window.LAPI_CONFIG?.diccionarioIniciales || {};
-            if (diccInic[suc] && diccInic[suc][med]) return normalizarDato(diccInic[suc][med]);
-            for (const sucursalKey in diccInic) { 
-                if (diccInic[sucursalKey][med]) return normalizarDato(diccInic[sucursalKey][med]); 
+            for (const sucursalKey in diccInic) {
+                if (normalizarDato(sucursalKey) === suc) {
+                    for (const medKey in diccInic[sucursalKey]) {
+                        // Comparamos versiones normalizadas, pero regresamos la versión oficial del catálogo
+                        if (normalizarDato(medKey) === med) return normalizarDato(diccInic[sucursalKey][medKey]);
+                    }
+                }
+            }
+            // Búsqueda global en el diccionario por si la sucursal viene mal escrita
+            for (const sucursalKey in diccInic) {
+                for (const medKey in diccInic[sucursalKey]) {
+                    if (normalizarDato(medKey) === med) return normalizarDato(diccInic[sucursalKey][medKey]);
+                }
             }
 
-            const medicos = window.LAPI_CONFIG?.medicos || [];
-
-            // 3. Búsqueda Exacta
+            // 3. Match Exacto en el catálogo principal
             let exactMatch = medicos.find(m => normalizarDato(m) === med); 
             if(exactMatch) return normalizarDato(exactMatch);
 
-            // 4. Búsqueda por Tokens (Agnóstico al Orden)
+            // 4. ALGORITMO INTELIGENTE (Agnóstico al orden e incompletos)
             const stopwords = ["DE", "LA", "LAS", "LOS", "DEL", "Y", "MC", "MAC"];
             const tokensInput = med.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
 
             if (tokensInput.length > 0) {
                 let bestMatch = null;
                 let maxScore = 0;
+                let bestRatio = 0;
 
                 for (let m of medicos) {
                     const mNorm = normalizarDato(m);
                     const tokensCat = mNorm.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
                     
                     let score = 0;
-                    // Compara cruzado cada palabra del nombre escrito vs el nombre del catálogo
                     tokensInput.forEach(tIn => {
-                        // Si son idénticas o si comparten raíz de al menos 4 letras
+                        // Si la palabra es igual, o si comparten una raíz de al menos 4 letras
                         if (tokensCat.some(tCat => tCat === tIn || (tCat.length >= 4 && tIn.length >= 4 && (tCat.startsWith(tIn) || tIn.startsWith(tCat))))) {
                             score++;
                         }
                     });
 
-                    // Criterio de Match: Si coinciden al menos 2 palabras (ej. nombre y apellido) 
-                    // o si coincide 1 palabra pero esa era la única que ingresaron
-                    let minTokens = Math.min(tokensInput.length, tokensCat.length);
-                    if (score >= 2 || (score === minTokens && score > 0)) {
-                        if (score > maxScore) {
+                    let ratio = score / tokensCat.length;
+
+                    // Es válido si coinciden al menos 2 palabras (ej. un nombre y un apellido), 
+                    // o si coincide todo lo que el usuario escribió (ej. solo puso un apellido raro y cruzó)
+                    if (score >= 2 || (score > 0 && score === tokensInput.length)) {
+                        if (score > maxScore || (score === maxScore && ratio > bestRatio)) {
                             maxScore = score;
+                            bestRatio = ratio;
                             bestMatch = mNorm;
                         }
                     }
@@ -748,14 +755,14 @@
                 if (bestMatch) return bestMatch;
             }
 
-            // 5. Búsqueda Parcial Simple (Fallback)
+            // 5. Fallback Básico
             const partialMatch = medicos.find(m => { 
                 const mNorm = normalizarDato(m); 
                 return mNorm.includes(med) || med.includes(mNorm); 
             });
             if(partialMatch) return normalizarDato(partialMatch);
 
-            // 6. Si no encontró nada, devuelve el nombre en MAYÚSCULAS 
+            // 6. Regresa siempre en MAYÚSCULAS PURAS para emparejar los IDs de la base de datos
             return med;
         }
         
