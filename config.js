@@ -455,7 +455,7 @@ window.LAPI_CONFIG = {
             "MC": "Contreras Herrera Maribel del Carmen",
             "MCCH": "Contreras Herrera Maribel del Carmen"
         },
-        "GRAM SUR": {
+        "GRAN SUR": {
             "X": "Garcia Malanco Jose Antonio"   
         },
         "CALZADA DEL HUESO": {
