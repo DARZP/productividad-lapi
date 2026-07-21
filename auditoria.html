@@ -643,8 +643,9 @@
         };
 
         function normalizarDato(texto) {
-            if (!texto) return "Desconocido";
-            return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            if (!texto) return "DESCONOCIDO";
+            // Forzamos MAYÚSCULAS STRICTAS y quitamos acentos para emparejar con la App
+            return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
         }
 
         window.normalizarEmpresa = function(rawEmpresa) {
@@ -690,68 +691,67 @@
         }
 
         function traducirMedico(rawMed, rawSuc) {
-            if (!rawMed) return "Desconocido";
+            if (!rawMed) return "DESCONOCIDO";
             
-            let med = String(rawMed).toUpperCase().trim();
+            let med = String(rawMed).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             med = med.replace(/^DR\(A\)\.?\s*/, '').replace(/^DRA\.?\s*/, '').replace(/^DR\.?\s*/, '');
             med = med.replace(/\./g, ' ');
             med = med.replace(/\[INICIAL NO REGISTRADA:\s*/g, '').replace(/\]/g, '').trim();
 
             if (med === 'X' || med === '✔' || med === 'OK') return "X";
-            let suc = normalizarDato(rawSuc).toUpperCase();
+            let suc = normalizarDato(rawSuc);
 
-            // 1. Diccionario de iniciales
+            // 1. Diccionario de iniciales manuales
             if (diccIniciales[suc] && diccIniciales[suc][med]) return normalizarDato(diccIniciales[suc][med]);
             for (const sucursalKey in diccIniciales) { 
                 if (diccIniciales[sucursalKey][med]) return normalizarDato(diccIniciales[sucursalKey][med]); 
             }
 
-            // 2. Limpiar para búsqueda
-            const medLimpio = med.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
             const medicos = window.LAPI_CONFIG.medicos || [];
 
-            // 3. Match exacto
-            let exactMatch = medicos.find(m => m.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() === medLimpio); 
-            if(exactMatch) return exactMatch;
+            // 2. Match exacto
+            let exactMatch = medicos.find(m => normalizarDato(m) === med); 
+            if(exactMatch) return normalizarDato(exactMatch);
 
-            // 4. Token Matching Inteligente Independiente del Orden
+            // 3. Token Matching Inteligente Independiente del Orden
             const stopwords = ["DE", "LA", "LAS", "LOS", "DEL", "Y", "MC", "MAC"];
-            const tokensInput = medLimpio.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
+            const tokensInput = med.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
 
             if (tokensInput.length > 0) {
                 let bestMatch = null;
                 let maxScore = 0;
 
                 for (let m of medicos) {
-                    const mNorm = m.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                    const mNorm = normalizarDato(m);
                     const tokensCat = mNorm.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
                     
                     let score = 0;
                     tokensInput.forEach(tIn => {
-                        // Buscar si el token del input coincide con algún token del catálogo (o su raíz)
-                        if (tokensCat.some(tCat => tCat === tIn || (tCat.length >= 5 && tIn.length >= 5 && (tCat.startsWith(tIn) || tIn.startsWith(tCat))))) {
+                        // Compara si la palabra es idéntica o si comparten al menos 4 letras (ej. ALEX vs ALEXANDER)
+                        if (tokensCat.some(tCat => tCat === tIn || (tCat.length >= 4 && tIn.length >= 4 && (tCat.startsWith(tIn) || tIn.startsWith(tCat))))) {
                             score++;
                         }
                     });
 
-                    if (score === tokensInput.length && score > maxScore) {
+                    // Si logramos más aciertos que el anterior, es nuestro nuevo mejor candidato
+                    if (score > maxScore) {
                         maxScore = score;
                         bestMatch = m;
                     }
                 }
                 
-                // Si coinciden al menos 2 palabras (ej: nombre y un apellido), sin importar el orden
-                if (bestMatch && maxScore >= 2) return bestMatch; 
-                // Si solo ingresó 1 palabra pero es muy específica (larga) y cruzó perfecto
-                if (bestMatch && maxScore === 1 && tokensInput.length === 1 && tokensInput[0].length >= 4) return bestMatch; 
+                // Si coinciden al menos 2 palabras (ej: nombre y apellido cruzados) o si es 1 sola palabra pero contundente
+                if (bestMatch && (maxScore >= 2 || (maxScore === 1 && tokensInput.length <= 2))) {
+                    return normalizarDato(bestMatch);
+                }
             }
 
-            // 5. Fallback básico cruzado
+            // 4. Fallback: Includes (el método tradicional)
             const partialMatch = medicos.find(m => { 
-                const mNorm = m.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(); 
-                return mNorm.includes(medLimpio) || medLimpio.includes(mNorm); 
+                const mNorm = normalizarDato(m); 
+                return mNorm.includes(med) || med.includes(mNorm); 
             });
-            if(partialMatch) return partialMatch;
+            if(partialMatch) return normalizarDato(partialMatch);
 
             return `[INICIAL NO REGISTRADA: ${med}]`;
         }
@@ -1129,24 +1129,39 @@
 
         window.aplicarAjuste = async function(fecha, sucursal, medico, estudio, cantApp, cantExcel) {
             if (cantExcel === cantApp) return;
-            let hashParaMetadatos = `${fecha}|${sucursal}|${medico}|${estudio}`; let metadatosRicos = excelDataGlobal[hashParaMetadatos] || [];
+            let hashParaMetadatos = `${fecha}|${sucursal}|${medico}|${estudio}`; 
+            let metadatosRicos = excelDataGlobal[hashParaMetadatos] || [];
+            
             if (cantExcel > cantApp) {
                 let aInyectar = cantExcel - cantApp;
                 const qDocs = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", "==", fecha));
                 const querySnapshot = await window.getDocs(qDocs);
                 let docRefToUpdate = null; let datos = null;
+                
                 for(let d of querySnapshot.docs) {
-                    let dData = d.data(); let rawSuc = dData.sucursal || "FORÁNEO"; let dbSuc = normalizarDato(rawSuc); let dbMed = normalizarDato(traducirMedico(dData.medico, rawSuc)); 
-                    if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed]; }
+                    let dData = d.data(); 
+                    let rawSuc = dData.sucursal || "FORÁNEO"; 
+                    let dbSuc = normalizarDato(rawSuc); 
+                    let dbMed = normalizarDato(traducirMedico(dData.medico, rawSuc)); 
+                    
+                    if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { 
+                        if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed]; 
+                    }
                     if (dbMed === medico && dbSuc === sucursal) { docRefToUpdate = d.ref; datos = dData; break; }
                 }
+                
                 if (docRefToUpdate) {
-                    if(!datos.estudios) datos.estudios = {}; datos.estudios[estudio] = (parseInt(datos.estudios[estudio]) || 0) + aInyectar; 
+                    if(!datos.estudios) datos.estudios = {}; 
+                    datos.estudios[estudio] = (parseInt(datos.estudios[estudio]) || 0) + aInyectar; 
                     let updatePayload = { estudios: datos.estudios, ultimaActualizacion: new Date() };
                     if(metadatosRicos.length > 0) updatePayload[getMetaKey(estudio)] = metadatosRicos;
                     await window.updateDoc(docRefToUpdate, updatePayload);
                 } else {
-                    let safeSucursal = sucursal.replace(/[^a-zA-Z0-9]/g, ''); let safeMedico = medico.replace(/[^a-zA-Z0-9]/g, ''); const newDocId = `SUC_${fecha}_${safeSucursal}_${safeMedico}`;
+                    // SE CORRIGIÓ LA GENERACIÓN DEL ID PARA HACER MATCH EXACTO CON LA APP
+                    let safeSucursal = sucursal.replace(/\s+/g, ''); 
+                    let safeMedico = medico.replace(/\s+/g, ''); 
+                    const newDocId = `SUC_${fecha}_${safeSucursal}_${safeMedico}`;
+                    
                     let setPayload = { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: aInyectar }, observaciones: "Ajustado por Auditoría", ultimaActualizacion: new Date() };
                     if(metadatosRicos.length > 0) setPayload[getMetaKey(estudio)] = metadatosRicos;
                     await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", newDocId), setPayload);
@@ -1157,8 +1172,13 @@
                 const qs2 = await window.getDocs(qDocs);
                 for(let d of qs2.docs) {
                     if (aReducir <= 0) break;
-                    let datos = d.data(); let rawSuc = datos.sucursal || "FORÁNEO"; let dbSuc = normalizarDato(rawSuc); let dbMed = normalizarDato(traducirMedico(datos.medico, rawSuc)); 
-                    if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed]; }
+                    let datos = d.data(); 
+                    let rawSuc = datos.sucursal || "FORÁNEO"; 
+                    let dbSuc = normalizarDato(rawSuc); 
+                    let dbMed = normalizarDato(traducirMedico(datos.medico, rawSuc)); 
+                    if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { 
+                        if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed]; 
+                    }
                     if (dbMed === medico && dbSuc === sucursal && datos.estudios && datos.estudios[estudio]) {
                         let actual = parseInt(datos.estudios[estudio]) || 0;
                         if(actual > 0) {
@@ -1175,21 +1195,33 @@
                     const qsL = await window.getDocs(qL);
                     for (let d of qsL.docs) {
                         if (aReducir <= 0) break;
-                        let data = d.data(); let rawSuc = data.sucursal || data.empresa || "FORÁNEO"; let dbSuc = normalizarDato(rawSuc); let dbMedTop = normalizarDato(traducirMedico(data.medico, rawSuc)); 
-                        if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop]; }
-                        if(dbSuc !== sucursal) continue; let modificado = false;
+                        let data = d.data(); 
+                        let rawSuc = data.sucursal || data.empresa || "FORÁNEO"; 
+                        let dbSuc = normalizarDato(rawSuc); 
+                        let dbMedTop = normalizarDato(traducirMedico(data.medico, rawSuc)); 
+                        if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { 
+                            if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop]; 
+                        }
+                        if(dbSuc !== sucursal) continue; 
+                        let modificado = false;
                         if (data.detalles && data.detalles.length > 0) {
                             for (let det of data.detalles) {
                                 if (aReducir <= 0) break;
-                                let dMed = normalizarDato(traducirMedico(det.medico || data.medico, rawSuc)); let dEst = unificarEstudio(det.estudio);
-                                if (dMed === medico && dEst === estudio) { let c = parseInt(det.cant) || 1; let quitar = Math.min(c, aReducir); det.cant = c - quitar; aReducir -= quitar; modificado = true; }
+                                let dMed = normalizarDato(traducirMedico(det.medico || data.medico, rawSuc)); 
+                                let dEst = unificarEstudio(det.estudio);
+                                if (dMed === medico && dEst === estudio) { 
+                                    let c = parseInt(det.cant) || 1; 
+                                    let quitar = Math.min(c, aReducir); 
+                                    det.cant = c - quitar; aReducir -= quitar; modificado = true; 
+                                }
                             }
                             if(modificado) {
                                 data.detalles = data.detalles.filter(det => (parseInt(det.cant) || 0) > 0);
                                 if (data.detalles.length === 0 && !data.estudio) { await window.deleteDoc(d.ref); } else { await window.updateDoc(d.ref, { detalles: data.detalles }); }
                             }
                         } else if (data.estudio) {
-                            let dMed = normalizarDato(traducirMedico(data.medico, rawSuc)); let dEst = unificarEstudio(data.estudio);
+                            let dMed = normalizarDato(traducirMedico(data.medico, rawSuc)); 
+                            let dEst = unificarEstudio(data.estudio);
                             if (dMed === medico && dEst === estudio) { await window.deleteDoc(d.ref); aReducir -= 1; }
                         }
                     }
