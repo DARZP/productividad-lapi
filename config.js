@@ -26,7 +26,7 @@ window.LAPI_CONFIG = {
         "Delgado Elizalde Diana Edit",
         "Diego Arias",
         "Dominguez Mojica Jannet Alejandra",
-        "Dulce Maria",
+        "Dulce Maria Buenrostro Perez",
         "Dra. Patricia Escobar",
         "Duque Hernandez Jaqueline",
         "Elzy Chacon",
