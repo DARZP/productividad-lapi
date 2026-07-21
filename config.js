@@ -511,6 +511,7 @@ window.LAPI_CONFIG = {
             "SSR": "Rueda Pedraza Sabine Shecid",
             "SSRP": "Rueda Pedraza Sabine Shecid",
             "MRC": "Cabrera Velazquez Miguel Ramon",
+            "BD": "Dulce Maria Buenrostro Perez",
             "DB": "Dulce Maria Buenrostro Perez",
             "MRCV": "Cabrera Velazquez Miguel Ramon",
             "YA": "Yirelka Yeraldine",
