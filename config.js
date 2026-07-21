@@ -559,7 +559,8 @@ window.LAPI_CONFIG = {
             "VMS": "Viviana Mojarra Sanchez",
             "YAZ": "Yirelka Anaya Zambrano",
             "JMF": "Jazmin Morales",
-            "FNF": "Fernanda Nicolas Flores"
+            "FNF": "Fernanda Nicolas Flores",
+            "PFPN": "Pichardo Nava Paula Fernanda"
         },
         "SANTA FE": {
             "GM": "Medina Molina Guadalupe",
