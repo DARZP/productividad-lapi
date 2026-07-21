@@ -645,9 +645,8 @@
         function normalizarDato(texto) {
             if (!texto) return "DESCONOCIDO";
             // Forzamos MAYÚSCULAS STRICTAS y quitamos acentos para emparejar con la App
-            return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            return String(texto).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
         }
-
         window.normalizarEmpresa = function(rawEmpresa) {
             if(!rawEmpresa) return "PARTICULAR";
             let norm = normalizarDato(rawEmpresa).toUpperCase();
@@ -693,6 +692,7 @@
         function traducirMedico(rawMed, rawSuc) {
             if (!rawMed) return "DESCONOCIDO";
             
+            // 1. Limpieza inicial
             let med = String(rawMed).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             med = med.replace(/^DR\(A\)\.?\s*/, '').replace(/^DRA\.?\s*/, '').replace(/^DR\.?\s*/, '');
             med = med.replace(/\./g, ' ');
@@ -701,19 +701,20 @@
             if (med === 'X' || med === '✔' || med === 'OK') return "X";
             let suc = normalizarDato(rawSuc);
 
-            // 1. Diccionario de iniciales manuales
-            if (diccIniciales[suc] && diccIniciales[suc][med]) return normalizarDato(diccIniciales[suc][med]);
-            for (const sucursalKey in diccIniciales) { 
-                if (diccIniciales[sucursalKey][med]) return normalizarDato(diccIniciales[sucursalKey][med]); 
+            // 2. Revisar el diccionario manual de iniciales (si aplica)
+            const diccInic = window.LAPI_CONFIG?.diccionarioIniciales || {};
+            if (diccInic[suc] && diccInic[suc][med]) return normalizarDato(diccInic[suc][med]);
+            for (const sucursalKey in diccInic) { 
+                if (diccInic[sucursalKey][med]) return normalizarDato(diccInic[sucursalKey][med]); 
             }
 
-            const medicos = window.LAPI_CONFIG.medicos || [];
+            const medicos = window.LAPI_CONFIG?.medicos || [];
 
-            // 2. Match exacto
+            // 3. Búsqueda Exacta
             let exactMatch = medicos.find(m => normalizarDato(m) === med); 
             if(exactMatch) return normalizarDato(exactMatch);
 
-            // 3. Token Matching Inteligente Independiente del Orden
+            // 4. Búsqueda por Tokens (Agnóstico al Orden)
             const stopwords = ["DE", "LA", "LAS", "LOS", "DEL", "Y", "MC", "MAC"];
             const tokensInput = med.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
 
@@ -726,36 +727,38 @@
                     const tokensCat = mNorm.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
                     
                     let score = 0;
+                    // Compara cruzado cada palabra del nombre escrito vs el nombre del catálogo
                     tokensInput.forEach(tIn => {
-                        // Compara si la palabra es idéntica o si comparten al menos 4 letras (ej. ALEX vs ALEXANDER)
+                        // Si son idénticas o si comparten raíz de al menos 4 letras
                         if (tokensCat.some(tCat => tCat === tIn || (tCat.length >= 4 && tIn.length >= 4 && (tCat.startsWith(tIn) || tIn.startsWith(tCat))))) {
                             score++;
                         }
                     });
 
-                    // Si logramos más aciertos que el anterior, es nuestro nuevo mejor candidato
-                    if (score > maxScore) {
-                        maxScore = score;
-                        bestMatch = m;
+                    // Criterio de Match: Si coinciden al menos 2 palabras (ej. nombre y apellido) 
+                    // o si coincide 1 palabra pero esa era la única que ingresaron
+                    let minTokens = Math.min(tokensInput.length, tokensCat.length);
+                    if (score >= 2 || (score === minTokens && score > 0)) {
+                        if (score > maxScore) {
+                            maxScore = score;
+                            bestMatch = mNorm;
+                        }
                     }
                 }
-                
-                // Si coinciden al menos 2 palabras (ej: nombre y apellido cruzados) o si es 1 sola palabra pero contundente
-                if (bestMatch && (maxScore >= 2 || (maxScore === 1 && tokensInput.length <= 2))) {
-                    return normalizarDato(bestMatch);
-                }
+                if (bestMatch) return bestMatch;
             }
 
-            // 4. Fallback: Includes (el método tradicional)
+            // 5. Búsqueda Parcial Simple (Fallback)
             const partialMatch = medicos.find(m => { 
                 const mNorm = normalizarDato(m); 
                 return mNorm.includes(med) || med.includes(mNorm); 
             });
             if(partialMatch) return normalizarDato(partialMatch);
 
-            return `[INICIAL NO REGISTRADA: ${med}]`;
+            // 6. Si no encontró nada, devuelve el nombre en MAYÚSCULAS 
+            return med;
         }
-
+        
         async function procesarArrayBufferExcel(arrayBuffer) {
             let wb = XLSX.read(arrayBuffer, {type:'array'});
             const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
