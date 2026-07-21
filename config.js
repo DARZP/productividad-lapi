@@ -577,7 +577,8 @@ window.LAPI_CONFIG = {
             "LLGM": "Lopez Lopez Guadalupe Mireya",
             "GMLL": "Lopez Lopez Guadalupe Mireya",
             "MLL": "Lopez Lopez Guadalupe Mireya",
-            "AGM": "Garcia Morado Ana Lourdes"
+            "AGM": "Garcia Morado Ana Lourdes",
+            "JNTS": "Toriz Segura Jessica Noemi"
         },
         "REVOLUCION": {
             "MS": "Miriam Elizabeth Saavedra Olvera",
