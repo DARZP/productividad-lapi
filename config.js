@@ -576,7 +576,9 @@ window.LAPI_CONFIG = {
             "ABCH": "Cabrera Hernandez Ana Beatriz",
             "LCZ": "Cruz Zavala Lucero",
             "LC": "Cruz Zavala Lucero",
-            "PEC": "Dra. Patricia Escobar"
+            "PEC": "Dra. Patricia Escobar",
+            "PGIV": "Islas Veivar Patricia Guadalupe",
+            "PGVI": "Islas Veivar Patricia Guadalupe"
         },
         "SATELITE": {
             "MASR": "Salinas Rojas Miguel Angel",
