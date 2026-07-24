@@ -37,10 +37,8 @@
 
         onAuthStateChanged(auth, (user) => {
             if (!user) {
-                // Si no hay sesión válida, se expulsa al usuario al login
                 window.location.replace('index.html');
             } else {
-                // Si la sesión es válida, quitamos el 'hidden' para revelar la página
                 document.body.classList.remove('hidden');
             }
         });
@@ -71,13 +69,11 @@
                 window.cargarServicios();
             }
             
-            // Cargar API Key si existe
             const savedKey = localStorage.getItem('gemini_api_key');
             if(savedKey && document.getElementById('gemini-api-key-rol')) {
                 document.getElementById('gemini-api-key-rol').value = savedKey;
             }
 
-            // RECUPERAR EL ROL GUARDADO LOCALMENTE AL RECARGAR LA PÁGINA
             const rolGuardado = localStorage.getItem('lapi_rol_ia');
             if (rolGuardado) {
                 const dataRol = JSON.parse(rolGuardado);
@@ -99,10 +95,8 @@
         
         .tab-btn.active { border-bottom-color: #ea580c; color: #ea580c; font-weight: 900; }
         
-        /* Animación suave para el colapsable */
         #form-servicio-body { transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out; overflow: hidden; }
 
-        /* Estilo para que el SELECT parezca un Badge */
         .select-badge {
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -120,7 +114,6 @@
             
             .print-page { break-after: always; page-break-after: always; width: 100%; position: relative; }
             
-            /* Encabezado */
             .header-reporte { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
             .header-reporte td { padding: 4px; vertical-align: top; }
             .h-logo { width: 30%; text-align: left; }
@@ -130,14 +123,12 @@
             .info-grid td, .info-grid th { border: 1px solid #ccc; padding: 6px; text-align: left; }
             .info-grid th { background-color: #f8fafc !important; -webkit-print-color-adjust: exact; width: 25%; font-weight: bold; }
 
-            /* Tablas Formales */
             .seccion-titulo { font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #333; border-bottom: 2px solid #ea580c; padding-bottom: 2px; text-transform: uppercase; }
             .table-formal { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 20px; }
             .table-formal th, .table-formal td { border: 1px solid #333; padding: 5px; text-align: center; }
             .table-formal th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; font-weight: bold; text-transform: uppercase; }
             .table-formal .text-left { text-align: left; }
             
-            /* Gráficas ahora son imágenes */
             .grafica-container { width: 100%; text-align: center; page-break-inside: avoid; margin-bottom: 20px; }
             .img-grafica { max-width: 100%; height: auto !important; max-height: 250px; display: block; margin: 0 auto; }
         }
@@ -294,10 +285,21 @@
                 </div>
 
                 <!-- TABS DE FILTRO -->
-                <div class="flex gap-4 border-b border-slate-100 mb-4 px-2 shrink-0">
+                <div class="flex gap-4 border-b border-slate-100 mb-3 px-2 shrink-0">
                     <button onclick="filtrarVista('activo')" id="tab-activo" class="tab-btn active pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-2 border-transparent"><i class="fa-solid fa-circle-play text-emerald-500 mr-1"></i> Activos</button>
                     <button onclick="filtrarVista('pausa')" id="tab-pausa" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-2 border-transparent"><i class="fa-solid fa-circle-pause text-amber-500 mr-1"></i> En Pausa</button>
                     <button onclick="filtrarVista('finalizado')" id="tab-finalizado" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-2 border-transparent"><i class="fa-solid fa-box-archive text-slate-400 mr-1"></i> Finalizados</button>
+                </div>
+
+                <!-- BUSCADOR Y FILTRO DE MES -->
+                <div class="flex flex-col sm:flex-row gap-2 mb-4 px-2 shrink-0">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        <input type="text" id="buscador-servicios" onkeyup="renderizarLista()" placeholder="Buscar empresa, folio, ubicación..." class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-orange-400 transition-colors">
+                    </div>
+                    <div class="w-full sm:w-40 relative" title="Buscar por mes y año">
+                        <input type="month" id="filtro-mes" onchange="renderizarLista()" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-orange-400 transition-colors text-slate-600">
+                    </div>
                 </div>
 
                 <!-- LISTA DE SERVICIOS -->
@@ -313,7 +315,6 @@
     <!-- ZONA OCULTA PARA HTML DE IMPRESIÓN (PDF) -->
     <div id="zona-impresion" class="hidden"></div>
     <div id="zona-impresion-graficas" class="hidden">
-        <!-- Contenedor invisible para renderizar las gráficas antes de pasarlas al PDF -->
         <canvas id="chart-totales-pdf"></canvas>
         <canvas id="chart-personal-pdf"></canvas>
     </div>
@@ -593,7 +594,6 @@
                 serviciosGlobales = [];
 
                 listaTemporal.forEach((data) => {
-                    // Lógica de Auto-Cierre Inteligente
                     if (data.estado === 'activo' && !data.excepcionCierre) {
                         let fFin = new Date(data.fechaFin + 'T23:59:59');
                         let diasVencido = (hoy - fFin) / (1000 * 60 * 60 * 24);
@@ -618,18 +618,36 @@
             return txt ? txt.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
         }
 
-        function renderizarLista() {
+        window.renderizarLista = function() {
             const container = document.getElementById('lista-servicios-container');
-            let filtrados = serviciosGlobales.filter(s => s.estado === vistaActual);
+            const textoBuscado = (document.getElementById('buscador-servicios').value || '').toLowerCase();
+            const mesBuscado = document.getElementById('filtro-mes').value; // Formato YYYY-MM
+            
+            let filtrados = serviciosGlobales.filter(s => {
+                if (s.estado !== vistaActual) return false;
+
+                if (textoBuscado) {
+                    const str = `${s.nombreComercial} ${s.folio} ${s.razonSocial} ${s.ubicacion}`.toLowerCase();
+                    if (!str.includes(textoBuscado)) return false;
+                }
+
+                if (mesBuscado) {
+                    // Validar si el mes cae dentro del rango de la campaña
+                    const mesInicio = s.fechaInicio.substring(0, 7);
+                    const mesFin = s.fechaFin.substring(0, 7);
+                    if (mesBuscado < mesInicio || mesBuscado > mesFin) return false;
+                }
+
+                return true;
+            });
             
             if(filtrados.length === 0) {
-                container.innerHTML = `<p class="text-center text-xs text-slate-400 py-10">No hay servicios en estado ${vistaActual}.</p>`;
+                container.innerHTML = `<p class="text-center text-xs text-slate-400 py-10">No hay servicios que coincidan.</p>`;
                 return;
             }
 
             let html = '';
             filtrados.forEach(data => {
-                // Configuración visual del Dropdown (Select) como Badge
                 let badgeClass = data.estado === 'activo' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
                                  data.estado === 'pausa' ? 'bg-amber-100 text-amber-700 border-amber-200' : 
                                  'bg-slate-100 text-slate-500 border-slate-200';
@@ -642,7 +660,6 @@
                     </select>
                 `;
 
-                // --- LÓGICA DE SEMÁFORO DE CUMPLIMIENTO (IA) ---
                 let statusHtml = '';
                 if(fechaRolOperativo && vistaActual === 'activo') {
                     let nombreNorm = normalizarTexto(data.nombreComercial);
@@ -827,8 +844,18 @@ No devuelvas ningún texto extra ni formato Markdown.`;
         // MOTOR DE REPORTES: EXTRACCIÓN DE DATOS
         // ==========================================
         async function obtenerDatosServicio(idServicio) {
-            const q = window.query(window.collection(window.db, "registros"), window.where("idServicio", "==", idServicio));
-            const qs = await window.getDocs(q);
+            const servicio = servicioParaReporte;
+            if(!servicio) return null;
+
+            // Intentar buscar por ID
+            let q = window.query(window.collection(window.db, "registros"), window.where("idServicio", "==", idServicio));
+            let qs = await window.getDocs(q);
+            
+            // Si está vacío, buscamos por nombre comercial (para historial de servicios viejos sin ID)
+            if (qs.empty) {
+                q = window.query(window.collection(window.db, "registros"), window.where("empresa", "==", servicio.nombreComercial));
+                qs = await window.getDocs(q);
+            }
             
             let diasLaboradosSet = new Set();
             let hrsPorMedico = {};
@@ -838,6 +865,10 @@ No devuelvas ningún texto extra ni formato Markdown.`;
 
             qs.forEach(doc => {
                 let d = doc.data();
+
+                // BLINDAJE DE FECHAS: Solo procesar registros del periodo del servicio seleccionado
+                if (d.fecha < servicio.fechaInicio || d.fecha > servicio.fechaFin) return;
+
                 diasLaboradosSet.add(d.fecha);
                 if(!hrsPorMedico[d.fecha]) hrsPorMedico[d.fecha] = {};
                 
