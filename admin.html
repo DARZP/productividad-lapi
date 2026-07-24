@@ -11,12 +11,51 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        // Importamos los módulos de autenticación de Firebase
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // GUARDIÁN DE SESIÓN
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // Si no hay sesión válida, se expulsa al usuario al login
+                window.location.replace('index.html');
+            } else {
+                // Si la sesión es válida, mostramos el cuerpo de la página
+                document.body.classList.remove('hidden');
+            }
+        });
+
+        // FUNCIÓN PARA CERRAR SESIÓN
+        window.cerrarSesionAdmin = () => {
+            signOut(auth).then(() => {
+                window.location.replace('index.html');
+            }).catch((error) => {
+                console.error("Error al cerrar sesión", error);
+            });
+        };
+    </script>
+
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         /* Efecto Cristal Estándar */
         .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .app-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .app-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; text-decoration: none; }
         .app-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.3); border-color: rgba(255, 255, 255, 0.5); }
         .app-card:active { transform: scale(0.95); }
         
@@ -32,7 +71,13 @@
         .delay-300 { animation-delay: 300ms; }
     </style>
 </head>
-<body class="bg-animated min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+<!-- La clase 'hidden' evita que la página parpadee antes de verificar la sesión -->
+<body class="bg-animated min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden hidden">
+
+    <!-- BOTÓN CERRAR SESIÓN -->
+    <button onclick="cerrarSesionAdmin()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-white/20 hover:bg-red-500/80 transition-colors text-white shadow-sm border border-white/30 z-50" title="Cerrar Sesión">
+        <i class="fa-solid fa-right-from-bracket"></i>
+    </button>
 
     <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
     <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
@@ -118,8 +163,6 @@
         </a>
 
     </div>
-
-        
 
     <div class="mt-16 text-center animate-fade-in-up delay-300 relative z-10">
         <p class="text-[10px] font-bold tracking-widest text-white/50 uppercase">&copy; 2026</p>
