@@ -253,7 +253,7 @@
                 <div class="bg-slate-50 p-5 rounded-2xl mb-5 border border-slate-200 text-sm text-slate-700 font-medium shadow-inner">
                     <p class="mb-2"><b class="text-slate-500 uppercase tracking-widest text-[10px]">Fecha:</b> <br><span id="cap-bio-fecha" class="text-base font-bold text-slate-800"></span></p>
                     <p class="mb-2"><b class="text-slate-500 uppercase tracking-widest text-[10px]">Realizó:</b> <br><span id="cap-bio-medico" class="text-orange-600 font-black text-lg uppercase"></span></p>
-                    <p class="mb-1"><b class="text-slate-500 uppercase tracking-widest text-[10px]">Equipo Implicado:</b> <br><span id="cap-bio-equipo" class="font-bold"></span></p>
+                    <p class="mb-1"><b class="text-slate-500 uppercase tracking-widest text-[10px]">Equipo Implicado:</b> <br><span id="cap-bio-equipo" class="font-bold"></span> (N/S: <span id="cap-bio-ns" class="font-bold text-orange-500"></span>)</p>
                 </div>
                 
                 <div id="cap-bio-resultados" class="text-sm bg-slate-50 p-5 rounded-2xl border border-slate-200 text-slate-700 font-medium hidden shadow-inner">
@@ -262,7 +262,7 @@
                 <div class="text-center w-full pt-6 mt-6 border-t border-slate-100 text-slate-400 text-[10px] font-black tracking-widest uppercase">GENERADO POR LAPI SUITE OPERATIVA</div>
             </div>
         </div>
-    </div>
+    </div> 
 
     <script>
         let docIdActivo = null;
@@ -321,7 +321,6 @@
             }
         }
 
-        // CARGAR EQUIPOS DE LA COLECCIÓN DE CONTROL BIOLÓGICO
         async function cargarEquiposActivos() {
             const cont = document.getElementById('contenedor-servicios');
             cont.innerHTML = '<div class="text-center py-10 opacity-70"><i class="fa-solid fa-spinner fa-spin text-3xl mb-2 text-slate-400"></i><p class="text-sm font-bold text-slate-500">Cargando Operaciones...</p></div>';
@@ -335,11 +334,9 @@
                     return;
                 }
 
-                // Agrupar los equipos por Servicio/Empresa
                 let agrupados = {};
                 qs.forEach(doc => {
-                    let d = doc.data();
-                    d.id = doc.id;
+                    let d = doc.data(); d.id = doc.id;
                     if(!agrupados[d.idServicio]) agrupados[d.idServicio] = { empresa: d.empresa, equipos: [] };
                     agrupados[d.idServicio].equipos.push(d);
                 });
@@ -353,42 +350,45 @@
                     let calibradosHoy = 0;
                     let htmlEquipos = "";
 
-                    // Ordenar: Primero los audiómetros, luego espirómetros
                     grupo.equipos.sort((a,b) => a.tipo.localeCompare(b.tipo));
 
                     grupo.equipos.forEach(eq => {
                         let reportoHoy = eq.bitacora && eq.bitacora.some(b => b.fecha === hoy);
+                        let cantidadHoy = reportoHoy ? eq.bitacora.filter(b => b.fecha === hoy).length : 0;
                         if(reportoHoy) calibradosHoy++;
 
-                        let estadoTxt = "";
-                        let estadoColor = "";
+                        let estadoTxt = ""; let estadoColor = "";
                         
                         if(eq.estado === 'instalacion_pendiente') {
                             estadoTxt = "PENDIENTE INSTALACIÓN"; estadoColor = "text-amber-600 bg-amber-50 border-amber-200";
                         } else if(reportoHoy) {
-                            estadoTxt = "CALIBRADO HOY"; estadoColor = "text-emerald-600 bg-emerald-50 border-emerald-200";
+                            estadoTxt = `CALIBRADO HOY (${cantidadHoy})`; estadoColor = "text-emerald-600 bg-emerald-50 border-emerald-200";
                         } else {
                             estadoTxt = "PENDIENTE CALIBRACIÓN"; estadoColor = "text-red-500 bg-red-50 border-red-200"; 
                         }
 
                         const iconoEq = eq.tipo === 'audiometria' ? 'fa-headphones text-orange-500' : 'fa-lungs text-blue-500';
+                        
+                        // Si ya calibró, mostramos un botón discreto de "+ Turno" en lugar de bloquear el renglón
+                        const hoverText = reportoHoy 
+                            ? `<span class="text-[10px] text-sky-500 mt-1.5 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-rotate-right"></i> + Turno</span>` 
+                            : `<span class="text-[10px] text-orange-500 mt-1.5 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Capturar <i class="fa-solid fa-arrow-right"></i></span>`;
 
                         htmlEquipos += `
-                            <div onclick="${reportoHoy ? '' : `abrirCaptura('${eq.id}', '${eq.tipo}', '${grupo.empresa}', '${eq.equipo}', '${eq.ns_equipo}', '${eq.ns_cabina || ''}', '${eq.fecha_inicio}', '${eq.estado}', '${idServ}')`}" 
-                                 class="flex items-center justify-between p-4 border-t border-slate-100 ${reportoHoy ? 'opacity-60 cursor-default bg-slate-50' : 'cursor-pointer hover:bg-slate-50 transition-colors active:scale-95 group'}">
+                            <div onclick="abrirCaptura('${eq.id}', '${eq.tipo}', '${grupo.empresa}', '${eq.equipo}', '${eq.ns_equipo}', '${eq.ns_cabina || ''}', '${eq.fecha_inicio}', '${eq.estado}', '${idServ}')" 
+                                 class="flex items-center justify-between p-4 border-t border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors active:scale-95 group ${reportoHoy ? 'bg-slate-50/50' : ''}">
                                 <div>
                                     <p class="text-xs font-black text-slate-700 uppercase tracking-wide"><i class="fa-solid ${iconoEq} mr-1.5"></i> ${eq.equipo}</p>
                                     <p class="text-[9px] font-bold text-slate-500 tracking-wider mt-1"><i class="fa-solid fa-barcode mr-1 opacity-70"></i> N/S: <span class="text-orange-600">${eq.ns_equipo}</span> ${eq.ns_cabina ? `| Cab: ${eq.ns_cabina}` : ''}</p>
                                 </div>
                                 <div class="text-right flex flex-col items-end">
                                     <span class="px-2 py-0.5 rounded-lg border text-[9px] font-black tracking-widest ${estadoColor} shadow-sm">${estadoTxt}</span>
-                                    ${!reportoHoy ? `<span class="text-[10px] text-orange-500 mt-1.5 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Capturar <i class="fa-solid fa-arrow-right"></i></span>` : ''}
+                                    ${hoverText}
                                 </div>
                             </div>
                         `;
                     });
 
-                    // Semáforo General del Servicio
                     let semaforoGlobal = "";
                     if(calibradosHoy === totalEquipos) {
                         semaforoGlobal = `<div class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 shadow-sm"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-inner"></span> Completo</div>`;
@@ -410,7 +410,6 @@
                         </div>
                     `;
                 }
-
             } catch(e) { cont.innerHTML = `<div class="text-center text-red-400 text-xs font-bold">Error cargando nube.</div>`; }
         }
 
@@ -591,69 +590,64 @@
 
             try {
                 const docRef = window.doc(window.db, "control_biologico", docIdActivo);
-                
-                // ACTUALIZAR DOCUMENTO Y PASAR A ACTIVO SI ESTABA PENDIENTE
                 let payloadUpdate = { bitacora: window.arrayUnion(registroHoy) };
                 if(estadoEquipoActivo === 'instalacion_pendiente') payloadUpdate.estado = 'activo';
                 
                 await window.updateDoc(docRef, payloadUpdate);
 
-                // COMPROBAR COMPLETITUD DE LA CAMPAÑA
-                const q = window.query(window.collection(window.db, "control_biologico"), window.where("idServicio", "==", idServicioActivo));
-                const qs = await window.getDocs(q);
-                
-                let equiposInstaladosHoy = [];
-                let todosTienenBitacoraHoy = true;
-
-                qs.forEach(d => {
-                    let eqData = d.data();
-                    if(eqData.estado === 'activo' || eqData.estado === 'instalacion_pendiente' || d.id === docIdActivo) {
-                        let tieneRegistro = (d.id === docIdActivo) || (eqData.bitacora && eqData.bitacora.some(b => b.fecha === fec));
-                        if(!tieneRegistro) todosTienenBitacoraHoy = false;
-                        if(tieneRegistro) equiposInstaladosHoy.push(eqData);
-                    }
-                });
-
                 const empresa = document.getElementById('cap-empresa').innerText;
+                const equipoTxt = document.getElementById('cap-equipo').innerText;
+                const nsTxt = document.getElementById('cap-ns').innerText;
 
-                if(estadoEquipoActivo === 'instalacion_pendiente' && todosTienenBitacoraHoy) {
-                    // REPORTE GRAN INSTALACIÓN COMPLETADA
-                    let resumenEquipos = equiposInstaladosHoy.map(e => `<p class="mb-2 text-slate-700 bg-white p-2 rounded-lg border border-slate-100 shadow-sm"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> <b>${e.equipo}</b> <span class="text-[10px] text-slate-400 ml-1">(N/S: ${e.ns_equipo})</span></p>`).join('');
+                if (estadoEquipoActivo === 'instalacion_pendiente') {
+                    // Evaluar si es el último de la INSTALACIÓN
+                    const q = window.query(window.collection(window.db, "control_biologico"), window.where("idServicio", "==", idServicioActivo));
+                    const qs = await window.getDocs(q);
                     
-                    window.datosComprobante = { 
-                        tipoMsg: "INSTALACIÓN COMPLETADA", 
-                        empresa: empresa, fecha: fec, medico: med, 
-                        equipo: "TODOS LOS EQUIPOS DE LA RUTA", ns: "MÚLTIPLES", 
-                        detallesHtml: `<p class="font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-200 pb-2 text-[10px] text-center">EQUIPOS HABILITADOS:</p>${resumenEquipos}` 
-                    };
-                    document.getElementById('exito-msg').innerHTML = "¡Excelente! Has completado la primera calibración de <b>todos los equipos</b> para este servicio.";
+                    let equiposInstaladosHoy = [];
+                    let todosTienenBitacoraHoy = true;
 
-                } else {
-                    // REPORTE INDIVIDUAL DIARIO O PARCIAL
-                    window.datosComprobante = { 
-                        tipoMsg: estadoEquipoActivo === 'instalacion_pendiente' ? "PRIMERA CALIBRACIÓN (PARCIAL)" : "CALIBRACIÓN DIARIA", 
-                        empresa: empresa, fecha: fec, medico: med, 
-                        equipo: document.getElementById('cap-equipo').innerText, 
-                        ns: document.getElementById('cap-ns').innerText, 
-                        detallesHtml: detallesHtml 
-                    };
-                    if(estadoEquipoActivo === 'instalacion_pendiente') {
-                        document.getElementById('exito-msg').innerHTML = "Calibración inicial guardada. <b>Aún faltan equipos por calibrar en esta instalación.</b>";
+                    qs.forEach(d => {
+                        let eqData = d.data();
+                        if(eqData.estado === 'activo' || eqData.estado === 'instalacion_pendiente' || d.id === docIdActivo) {
+                            let tieneRegistro = (d.id === docIdActivo) || (eqData.bitacora && eqData.bitacora.some(b => b.fecha === fec));
+                            if(!tieneRegistro) todosTienenBitacoraHoy = false;
+                            if(tieneRegistro) equiposInstaladosHoy.push(eqData);
+                        }
+                    });
+
+                    if(todosTienenBitacoraHoy) {
+                        let resumenEquipos = equiposInstaladosHoy.map(e => `<p class="mb-2 text-slate-700 bg-white p-2 rounded-lg border border-slate-100 shadow-sm"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> <b>${e.equipo}</b> <span class="text-[10px] text-slate-400 ml-1">(N/S: ${e.ns_equipo})</span></p>`).join('');
+                        window.datosComprobante = { 
+                            tipoMsg: "INSTALACIÓN COMPLETADA", empresa: empresa, fecha: fec, medico: med, equipo: "TODOS LOS EQUIPOS DE LA RUTA", ns: "MÚLTIPLES", 
+                            detallesHtml: `<p class="font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-200 pb-2 text-[10px] text-center">EQUIPOS HABILITADOS:</p>${resumenEquipos}` 
+                        };
+                        document.getElementById('exito-msg').innerHTML = "¡Excelente! Has completado la primera calibración de <b>todos los equipos</b> para este servicio.";
                     } else {
-                        document.getElementById('exito-msg').innerHTML = todosTienenBitacoraHoy ? "¡Listo! Has calibrado todos los equipos de este servicio por hoy." : "Calibración guardada. Aún quedan equipos pendientes por calibrar hoy en este servicio.";
+                        window.datosComprobante = { 
+                            tipoMsg: "PRIMERA CALIBRACIÓN (PARCIAL)", empresa: empresa, fecha: fec, medico: med, equipo: equipoTxt, ns: nsTxt, detallesHtml: detallesHtml 
+                        };
+                        document.getElementById('exito-msg').innerHTML = "Calibración inicial guardada. <b>Aún faltan equipos por calibrar en esta instalación.</b>";
                     }
+                } else {
+                    // CALIBRACIÓN DIARIA ESTÁNDAR (Totalmente independiente)
+                    window.datosComprobante = { 
+                        tipoMsg: "CALIBRACIÓN DIARIA", empresa: empresa, fecha: fec, medico: med, equipo: equipoTxt, ns: nsTxt, detallesHtml: detallesHtml 
+                    };
+                    document.getElementById('exito-msg').innerHTML = "Calibración operativa guardada correctamente.";
                 }
                 
+                const btnAccion = document.getElementById('btn-exito-accion');
+                btnAccion.innerText = "Finalizar y Volver";
+                btnAccion.onclick = () => { volverLista(); document.getElementById('vista-exito').classList.add('hidden'); };
+
                 document.getElementById('vista-captura').classList.add('hidden');
                 document.getElementById('vista-exito').classList.remove('hidden');
-                
-                const btnAccion = document.getElementById('btn-exito-accion');
-                btnAccion.innerText = todosTienenBitacoraHoy ? "Finalizar y Volver" : "Continuar con el siguiente";
-                btnAccion.onclick = () => { volverLista(); document.getElementById('vista-exito').classList.add('hidden'); };
 
             } catch(e) { console.log(e); mostrarToast("Error guardando Control Biológico."); }
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-1"></i> Guardar Control Biológico'; btn.disabled = false;
         }
+        
 
         window.generarImagenControl = async function() {
             const btn = document.getElementById('btn-compartir-bio');
