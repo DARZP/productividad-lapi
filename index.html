@@ -11,12 +11,42 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        // Importamos los módulos de Autenticación
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        // Exponemos funciones al ámbito global para los botones
+        window.auth = auth;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+
+        // Listener silencioso: Verifica si ya hay una sesión activa al cargar la página
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("Sesión activa detectada:", user.email);
+            }
+        });
+    </script>
+
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         /* Efecto Cristal Estándar */
         .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .app-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .app-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
         .app-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.3); border-color: rgba(255, 255, 255, 0.5); }
         .app-card:active { transform: scale(0.95); }
         
@@ -32,6 +62,9 @@
     </style>
 </head>
 <body class="bg-animated min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+
+    <!-- Notificaciones Toast -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[300] flex flex-col gap-2 pointer-events-none"></div>
 
     <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
     <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
@@ -76,7 +109,8 @@
             </div>
         </a>
 
-        <a href="admin.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
+        <!-- BOTÓN ADMIN CON INTERCEPTOR DE SEGURIDAD -->
+        <button onclick="accederAdmin()" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl w-full">
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center shadow-inner relative">
                 <i class="fa-solid fa-user-tie text-2xl text-white"></i>
             </div>
@@ -84,13 +118,111 @@
                 <h3 class="font-black text-sm text-white">ADMIN</h3>
                 <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Panel de Control</p>
             </div>
-        </a>
+        </button>
 
     </div>
 
     <div class="mt-16 text-center animate-fade-in-up delay-200 relative z-10">
-        <p class="text-[10px] font-bold tracking-widest text-white/50 uppercase">&copy; v3.5.0 (Julio 2026)</p>     
+        <p class="text-[10px] font-bold tracking-widest text-white/50 uppercase">&copy; v4.0.0 (Julio 2026)</p>     
     </div>
 
+    <!-- MODAL DE INICIO DE SESIÓN -->
+    <div id="modal-login" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-login-card" class="glass p-8 rounded-3xl shadow-2xl max-w-sm w-full text-white transform scale-95 transition-transform duration-300 border border-white/30 relative overflow-hidden">
+            
+            <button onclick="cerrarModalLogin()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white/70 hover:text-white">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center mb-6 pt-2">
+                <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+                    <i class="fa-solid fa-shield-halved text-3xl text-white"></i>
+                </div>
+                <h2 class="text-2xl font-black tracking-tight drop-shadow">Acceso Restringido</h2>
+                <p class="text-[10px] uppercase tracking-widest font-bold text-white/70 mt-1">Credenciales de Administrador</p>
+            </div>
+
+            <form onsubmit="procesarLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-white/80 mb-1 ml-1">Correo Electrónico</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-envelope absolute left-4 top-4 text-white/50"></i>
+                        <input type="email" id="login-email" required placeholder="admin@dominio.com" class="w-full py-3.5 pl-11 pr-4 bg-black/20 border border-white/10 rounded-xl outline-none focus:border-orange-300 focus:bg-black/30 transition-all font-bold text-sm text-white placeholder-white/40 shadow-inner">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-white/80 mb-1 ml-1">Contraseña</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-4 text-white/50"></i>
+                        <input type="password" id="login-pass" required placeholder="••••••••" class="w-full py-3.5 pl-11 pr-4 bg-black/20 border border-white/10 rounded-xl outline-none focus:border-orange-300 focus:bg-black/30 transition-all font-bold text-sm text-white placeholder-white/40 shadow-inner">
+                    </div>
+                </div>
+                <button type="submit" id="btn-submit-login" class="w-full bg-white text-orange-600 font-black py-3.5 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all mt-4 flex items-center justify-center gap-2">
+                    Ingresar al Panel <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function mostrarToast(mensaje, tipo = 'error') {
+            const toast = document.createElement('div');
+            const color = tipo === 'exito' ? 'bg-emerald-500' : 'bg-red-500';
+            const icono = tipo === 'exito' ? 'fa-check-circle' : 'fa-triangle-exclamation';
+            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs border border-white/20`;
+            toast.innerHTML = `<i class="fa-solid ${icono} text-lg"></i> <span class="leading-tight">${mensaje}</span>`;
+            document.getElementById('toast-container').appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
+            setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        window.accederAdmin = function() {
+            // Verificamos si ya hay una sesión de Firebase guardada en este dispositivo
+            if (window.auth && window.auth.currentUser) {
+                // Paso directo
+                window.location.href = 'admin.html';
+            } else {
+                // Desplegar Modal
+                const modal = document.getElementById('modal-login');
+                const card = document.getElementById('modal-login-card');
+                modal.classList.remove('hidden');
+                setTimeout(() => { 
+                    modal.classList.remove('opacity-0'); 
+                    card.classList.remove('scale-95'); 
+                }, 10);
+            }
+        };
+
+        window.cerrarModalLogin = function() {
+            const modal = document.getElementById('modal-login');
+            const card = document.getElementById('modal-login-card');
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        };
+
+        window.procesarLogin = async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const btn = document.getElementById('btn-submit-login');
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando...';
+            btn.disabled = true;
+
+            try {
+                await window.signInWithEmailAndPassword(window.auth, email, pass);
+                mostrarToast("Autenticación exitosa", "exito");
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 800);
+            } catch (error) {
+                console.error("Error Login:", error.code);
+                mostrarToast("Credenciales incorrectas o usuario no encontrado.");
+                btn.innerHTML = 'Ingresar al Panel <i class="fa-solid fa-arrow-right-to-bracket"></i>';
+                btn.disabled = false;
+            }
+        };
+    </script>
 </body>
 </html>
