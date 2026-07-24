@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Panel</title>
+    <title>Panel Admin - L Suite</title>
     
     <link rel="manifest" href="manifest_admin.json">
     <meta name="theme-color" content="#ea580c">
@@ -11,118 +11,158 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        // Importamos los módulos de autenticación
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // EL GUARDIÁN DE LA PÁGINA
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // Si no hay sesión, lo regresamos al index y no mostramos la página
+                window.location.replace('index.html');
+            } else {
+                // Si está logueado, quitamos la clase 'hidden' para mostrar el panel
+                document.body.classList.remove('hidden');
+            }
+        });
+
+        // Función para cerrar sesión
+        window.cerrarSesionAdmin = () => {
+            signOut(auth).then(() => {
+                window.location.replace('index.html');
+            }).catch((error) => {
+                console.error("Error al cerrar sesión", error);
+            });
+        };
+    </script>
+
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        /* Efecto Cristal Estándar */
-        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .app-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #ea580c; /* Naranja institucional */
+            /* Patrón de puntos sutil de fondo */
+            background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px); 
+            background-size: 24px 24px; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .app-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; text-decoration: none;}
         .app-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.3); border-color: rgba(255, 255, 255, 0.5); }
         .app-card:active { transform: scale(0.95); }
         
-        /* Fondo Animado */
-        .bg-animated { background: linear-gradient(-45deg, #f97316, #ea580c, #f59e0b, #ec4899); background-size: 400% 400%; animation: gradientBG 15s ease infinite; }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        
-        /* Animaciones */
-        .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
+        .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
         .delay-100 { animation-delay: 100ms; }
         .delay-200 { animation-delay: 200ms; }
-        .delay-300 { animation-delay: 300ms; }
     </style>
 </head>
-<body class="bg-animated min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+<!-- Agregamos 'hidden' al body. Solo se quitará si Firebase confirma la sesión -->
+<body class="min-h-screen flex flex-col items-center py-10 px-4 relative hidden">
 
-    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
-    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
+    <!-- BOTÓN DE CERRAR SESIÓN FLOTANTE -->
+    <button onclick="cerrarSesionAdmin()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-white/20 hover:bg-red-500/80 transition-colors text-white shadow-sm border border-white/30" title="Cerrar Sesión">
+        <i class="fa-solid fa-right-from-bracket"></i>
+    </button>
 
-    <div class="text-center mb-10 w-full max-w-sm animate-fade-in-up relative z-10 mt-8">
-        <div class="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
-            <i class="fa-solid fa-user-tie text-5xl text-orange-500"></i>
+    <div class="text-center mb-10 w-full animate-fade-in-up mt-4">
+        <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl">
+            <i class="fa-solid fa-user-tie text-4xl text-orange-500"></i>
         </div>
-        <h1 class="text-4xl font-black tracking-tight text-white mb-2 drop-shadow-md">PANEL <span class="text-orange-200">ADMIN</span></h1>
-        <p class="text-sm font-medium text-white/80 tracking-widest uppercase drop-shadow">Gestión Operativa</p>
+        <h1 class="text-3xl md:text-4xl font-black tracking-tight text-white mb-1 drop-shadow-md">PANEL ADMIN</h1>
+        <p class="text-xs font-bold text-white/80 tracking-widest uppercase drop-shadow">Gestión Operativa</p>
     </div>
 
-    <div class="grid grid-cols-3 gap-4 w-full max-w-md mx-auto relative z-10">
+    <!-- GRID DE APLICACIONES -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 w-full max-w-2xl mx-auto relative z-10">
         
-        <a href="admin_monitor.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-inner relative">
+        <a href="admin_monitor.html" class="app-card glass rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-inner relative mb-2">
                 <i class="fa-solid fa-server text-2xl text-white"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white uppercase">Monitor</h3>
+                <h3 class="font-black text-sm md:text-base text-white">MONITOR</h3>
                 <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Productividad</p>
             </div>
         </a>
 
-        <a href="reportes.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-fuchsia-400 to-purple-600 flex items-center justify-center shadow-inner relative">
+        <a href="reportes.html" class="app-card glass rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-inner relative mb-2">
                 <i class="fa-solid fa-chart-pie text-2xl text-white"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white uppercase">Reportes</h3>
+                <h3 class="font-black text-sm md:text-base text-white">REPORTES</h3>
                 <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Métricas</p>
             </div>
         </a>
 
-        <a href="admin_servicios.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center shadow-inner relative">
+        <a href="admin_servicios.html" class="app-card glass rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center shadow-inner relative mb-2">
                 <i class="fa-solid fa-building text-2xl text-white"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white uppercase">SERVICIOS</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Foráneos indiv</p>
+                <h3 class="font-black text-sm md:text-base text-white">SERVICIOS</h3>
+                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Foráneos Indiv</p>
             </div>
         </a>
 
-        <a href="auditoria.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-400 to-red-600 flex items-center justify-center shadow-inner relative">
+        <a href="auditoria.html" class="app-card glass rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-inner relative mb-2">
                 <i class="fa-solid fa-shield-halved text-2xl text-white"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white uppercase">Auditoría</h3>
+                <h3 class="font-black text-sm md:text-base text-white">AUDITORÍA</h3>
                 <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Cruce de Inf</p>
             </div>
         </a>
 
-        <a href="admin_biologico.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-inner relative">
+        <a href="admin_biologico.html" class="app-card glass rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-inner relative mb-2">
                 <i class="fa-solid fa-laptop-medical text-2xl text-white"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white uppercase">Equipos</h3>
+                <h3 class="font-black text-sm md:text-base text-white">EQUIPOS</h3>
                 <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">C. Biológico</p>
             </div>
         </a>
 
-        <a href="admin_requisiciones.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-inner relative">
+        <a href="admin_requisiciones.html" class="app-card glass rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-inner relative mb-2">
                 <i class="fa-solid fa-box-open text-2xl text-white"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white uppercase">Insumos</h3>
+                <h3 class="font-black text-sm md:text-base text-white">INSUMOS</h3>
                 <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Requisiciones</p>
             </div>
         </a>
 
-        <a href="index.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center shadow-inner relative">
+        <a href="index.html" class="app-card glass rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up shadow-xl md:col-start-2">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center shadow-inner relative mb-2">
                 <i class="fa-solid fa-house-medical text-2xl text-white"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white uppercase">Operativo</h3>
+                <h3 class="font-black text-sm md:text-base text-white">OPERATIVO</h3>
                 <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Módulo Captura</p>
             </div>
         </a>
 
     </div>
 
-        
-
-    <div class="mt-16 text-center animate-fade-in-up delay-300 relative z-10">
-        <p class="text-[10px] font-bold tracking-widest text-white/50 uppercase">&copy; 2026</p>
+    <div class="mt-auto pt-10 text-center animate-fade-in-up delay-200">
+        <p class="text-[10px] font-bold tracking-widest text-white/60 uppercase">&copy; 2026 LAPI Suite</p>     
     </div>
 
 </body>
