@@ -12,6 +12,42 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
+    <!-- NUEVO BLOQUE DE SEGURIDAD FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // GUARDIÁN DE SESIÓN
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // Si no hay sesión, rebotar al login
+                window.location.replace('index.html');
+            } else {
+                // Si la sesión es válida, mostramos la página
+                document.body.classList.remove('hidden');
+            }
+        });
+
+        // FUNCION PARA SALIR
+        window.cerrarSesionAdmin = () => {
+            signOut(auth).then(() => {
+                window.location.replace('index.html');
+            });
+        };
+    </script>
+
     <style>
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(254, 215, 170, 0.5); }
