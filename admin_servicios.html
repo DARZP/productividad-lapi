@@ -15,10 +15,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script type="module">
+        // 1. TODAS LAS IMPORTACIONES ESTRICTAMENTE HASTA ARRIBA
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        // IMPORTANTE: Agregué setDoc para guardar el Rol en Firebase
         import { getFirestore, collection, getDocs, addDoc, updateDoc, setDoc, doc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+        // 2. CONFIGURACIÓN FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
             authDomain: "lapi-productividad.firebaseapp.com",
@@ -29,6 +31,30 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        
+        // 3. GUARDIÁN DE SESIÓN (AUTH)
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // Si no hay sesión válida, se expulsa al usuario al login
+                window.location.replace('index.html');
+            } else {
+                // Si la sesión es válida, quitamos el 'hidden' para revelar la página
+                document.body.classList.remove('hidden');
+            }
+        });
+
+        // Función accesible desde HTML para cerrar sesión
+        window.cerrarSesionAdmin = () => {
+            signOut(auth).then(() => {
+                window.location.replace('index.html');
+            }).catch((error) => {
+                console.error("Error al cerrar sesión:", error);
+            });
+        };
+
+        // 4. INICIALIZACIÓN DE VARIABLES GLOBALES (FIRESTORE)
         window.db = getFirestore(app);
         window.getDocs = getDocs;
         window.addDoc = addDoc;
@@ -41,7 +67,10 @@
         window.where = where;
 
         document.addEventListener("DOMContentLoaded", () => {
-            window.cargarServicios();
+            if(typeof window.cargarServicios === "function") {
+                window.cargarServicios();
+            }
+            
             // Cargar API Key si existe
             const savedKey = localStorage.getItem('gemini_api_key');
             if(savedKey && document.getElementById('gemini-api-key-rol')) {
@@ -52,8 +81,10 @@
             const rolGuardado = localStorage.getItem('lapi_rol_ia');
             if (rolGuardado) {
                 const dataRol = JSON.parse(rolGuardado);
-                // Le pasamos 'false' para que no vuelva a intentar guardarlo en Firebase si solo recargó la página
-                window.procesarResultadoRol(dataRol.empresas, dataRol.fecha, false);
+                if(typeof window.procesarResultadoRol === "function"){
+                    // Le pasamos 'false' para que no vuelva a intentar guardarlo en Firebase
+                    window.procesarResultadoRol(dataRol.empresas, dataRol.fecha, false);
+                }
             }
         });
     </script>
@@ -104,7 +135,7 @@
         }
     </style>
 </head>
-<body class="text-slate-800 flex h-screen overflow-hidden">
+<body class="text-slate-800 flex h-screen overflow-hidden hidden">
 
     <!-- NAVEGACIÓN LATERAL UNIFICADA -->
     <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom no-print">
@@ -139,6 +170,11 @@
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-box-open text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Insumos</span>
         </a>
+        <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
+        <button onclick="cerrarSesionAdmin()" class="flex flex-col items-center p-1 md:p-2 text-red-400 hover:text-red-600 group transition-all w-full">
+            <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-red-50 transition-all"><i class="fa-solid fa-right-from-bracket text-base md:text-xl"></i></div>
+            <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Salir</span>
+        </button>
     </nav>
 
     <div id="toast-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
