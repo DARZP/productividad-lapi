@@ -11,7 +11,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Librería para las gráficas del PDF -->
+    <!-- Librería para las gráficas del PDF y Visor -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script type="module">
@@ -82,7 +82,6 @@
             if (rolGuardado) {
                 const dataRol = JSON.parse(rolGuardado);
                 if(typeof window.procesarResultadoRol === "function"){
-                    // Le pasamos 'false' para que no vuelva a intentar guardarlo en Firebase
                     window.procesarResultadoRol(dataRol.empresas, dataRol.fecha, false);
                 }
             }
@@ -103,13 +102,22 @@
         /* Animación suave para el colapsable */
         #form-servicio-body { transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out; overflow: hidden; }
 
-        /* REGLAS DE IMPRESIÓN DEL PDF */
+        /* Estilo para que el SELECT parezca un Badge */
+        .select-badge {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            text-align-last: center;
+        }
+
+        /* REGLAS DE IMPRESIÓN DEL PDF BLINDADAS PARA CELULAR */
         @media print {
             @page { size: letter portrait; margin: 12mm 15mm; } 
-            body, html { background: white !important; height: auto !important; display: block !important; }
-            nav, main, .no-print, .modales { display: none !important; }
             
-            #zona-impresion { display: block !important; width: 100%; color: black; font-family: Arial, sans-serif; }
+            body * { visibility: hidden; }
+            #zona-impresion, #zona-impresion * { visibility: visible; }
+            #zona-impresion { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+            
             .print-page { break-after: always; page-break-after: always; width: 100%; position: relative; }
             
             /* Encabezado */
@@ -129,9 +137,9 @@
             .table-formal th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; font-weight: bold; text-transform: uppercase; }
             .table-formal .text-left { text-align: left; }
             
-            /* Gráficas */
-            .grafica-container { width: 100%; max-height: 250px; margin-bottom: 20px; text-align: center; page-break-inside: avoid; }
-            canvas { max-width: 100%; height: auto !important; }
+            /* Gráficas ahora son imágenes */
+            .grafica-container { width: 100%; text-align: center; page-break-inside: avoid; margin-bottom: 20px; }
+            .img-grafica { max-width: 100%; height: auto !important; max-height: 250px; display: block; margin: 0 auto; }
         }
     </style>
 </head>
@@ -170,6 +178,8 @@
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-box-open text-base md:text-xl"></i></div>
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Insumos</span>
         </a>
+
+        <!-- BOTÓN DE CERRAR SESIÓN -->
         <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
         <button onclick="cerrarSesionAdmin()" class="flex flex-col items-center p-1 md:p-2 text-red-400 hover:text-red-600 group transition-all w-full">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-red-50 transition-all"><i class="fa-solid fa-right-from-bracket text-base md:text-xl"></i></div>
@@ -179,7 +189,7 @@
 
     <div id="toast-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
 
-    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 flex flex-col xl:flex-row gap-6 items-start relative z-10">
+    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 flex flex-col xl:flex-row gap-6 items-start relative z-10 no-print">
         
         <!-- COLUMNA IZQUIERDA: FORMULARIO DE ALTA (COLAPSABLE) -->
         <div class="w-full xl:w-[400px] shrink-0 flex flex-col gap-4">
@@ -212,10 +222,14 @@
                                     <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Folio</label>
                                     <input type="text" id="s-folio" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase" placeholder="Opcional">
                                 </div>
-                                <div>
+                                <div class="col-span-1">
                                     <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Razón Social</label>
                                     <input type="text" id="s-razon" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase" placeholder="Opcional">
                                 </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Ubicación</label>
+                                <input type="text" id="s-ubicacion" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 uppercase" placeholder="Opcional (Ej. Cdmx, Naucalpan)">
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
@@ -298,6 +312,11 @@
 
     <!-- ZONA OCULTA PARA HTML DE IMPRESIÓN (PDF) -->
     <div id="zona-impresion" class="hidden"></div>
+    <div id="zona-impresion-graficas" class="hidden">
+        <!-- Contenedor invisible para renderizar las gráficas antes de pasarlas al PDF -->
+        <canvas id="chart-totales-pdf"></canvas>
+        <canvas id="chart-personal-pdf"></canvas>
+    </div>
 
     <!-- MODALES -->
     <div class="modales">
@@ -355,9 +374,19 @@
                             <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Razón Social</label>
                             <input type="text" id="e-razon" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 uppercase focus:border-orange-400">
                         </div>
-                        <div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Ubicación</label>
+                        <input type="text" id="e-ubicacion" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 uppercase focus:border-orange-400">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="col-span-2">
                             <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Fin</label>
                             <input type="date" id="e-fecha-fin" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Hora Inicio</label>
+                            <input type="time" id="e-hora-ini" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Hora Salida</label>
@@ -370,34 +399,83 @@
             </div>
         </div>
 
-        <!-- MODAL REPORTE PDF -->
-        <div id="modal-reporte" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-            <div id="modal-reporte-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200">
-                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
-                    <h3 class="text-lg font-black text-slate-800"><i class="fa-solid fa-file-pdf text-red-500 mr-2"></i> Configurar Reporte</h3>
-                    <button onclick="cerrarModal('reporte')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
+        <!-- MODAL VISOR DE RESULTADOS EN VIVO -->
+        <div id="modal-visor" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+            <div id="modal-visor-card" class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col transform scale-95 transition-transform duration-300 border border-slate-200">
                 
-                <div class="mb-4">
-                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3">Elementos a incluir en el PDF:</p>
-                    <div class="space-y-2 text-xs font-bold text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="chk-encabezado" checked disabled class="accent-orange-500 w-4 h-4"> Encabezado del Servicio (Fijo)</label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="chk-totales" checked class="accent-orange-500 w-4 h-4"> Resumen de Totales por Estudio</label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="chk-desglose" checked class="accent-orange-500 w-4 h-4"> Desglose por Día y Estudio</label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="chk-personal" checked class="accent-orange-500 w-4 h-4"> Productividad del Personal</label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="chk-graficas" checked class="accent-orange-500 w-4 h-4"> Anexo Visual (Gráficas)</label>
+                <div class="flex justify-between items-center p-6 border-b border-slate-100 shrink-0">
+                    <div id="visor-header">
+                        <h3 class="text-xl font-black text-slate-800"><i class="fa-solid fa-chart-line text-orange-500 mr-2"></i> Reporte Operativo</h3>
+                        <p class="text-xs font-bold text-slate-400 tracking-widest uppercase mt-1">Cargando datos...</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="generarReportePDF()" id="btn-visor-pdf" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-black px-4 py-2 rounded-xl shadow-sm transition-all text-xs flex items-center gap-2"><i class="fa-solid fa-file-pdf"></i> Generar PDF</button>
+                        <button onclick="cerrarModal('visor')" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
                     </div>
                 </div>
                 
-                <button onclick="generarReportePDF()" id="btn-generar-pdf" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 text-xs flex justify-center items-center gap-2"><i class="fa-solid fa-print"></i> Consultar y Generar PDF</button>
+                <div id="visor-content" class="flex-1 overflow-y-auto scroll-custom p-6 bg-slate-50/50">
+                    <div class="text-center py-20 text-slate-400 italic" id="visor-loader">
+                        <i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-orange-400 block"></i>
+                        Procesando analítica...
+                    </div>
+                    
+                    <div id="visor-data" class="hidden space-y-6">
+                        <!-- KPIs -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="visor-kpis"></div>
+
+                        <!-- Gráficas -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                                <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Total por Estudio</h4>
+                                <div class="relative h-48"><canvas id="chart-visor-totales"></canvas></div>
+                            </div>
+                            <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                                <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Productividad por Personal</h4>
+                                <div class="relative h-48"><canvas id="chart-visor-personal"></canvas></div>
+                            </div>
+                        </div>
+
+                        <!-- Tablas -->
+                        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                            <div class="bg-slate-100 p-3 border-b border-slate-200"><h4 class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Desglose Operativo Diario</h4></div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 border-b border-slate-200">
+                                        <tr><th class="p-3">Fecha</th><th class="p-3">Estudio Realizado</th><th class="p-3 text-center">Cantidad</th></tr>
+                                    </thead>
+                                    <tbody id="visor-tabla-dias" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                            <div class="bg-slate-100 p-3 border-b border-slate-200"><h4 class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Productividad Detallada</h4></div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 border-b border-slate-200">
+                                        <tr><th class="p-3">Personal</th><th class="p-3">Estudio</th><th class="p-3 text-center">Total Realizado</th><th class="p-3 text-center">Horas Registradas</th></tr>
+                                    </thead>
+                                    <tbody id="visor-tabla-personal" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
+
     </div>
 
     <script>
         let serviciosGlobales = [];
         let vistaActual = 'activo';
+        
+        // Variables para el Visor/Reporte
         let servicioParaReporte = null; 
+        let datosReporteCache = null; // Guarda el resultado del fetch
+        let graficosVisor = {};
         
         // Estado del Rol evaluado por IA
         let empresasEnRol = []; 
@@ -473,6 +551,7 @@
                 nombreComercial: document.getElementById('s-comercial').value.toUpperCase().trim(),
                 folio: document.getElementById('s-folio').value.toUpperCase().trim() || 'S/F',
                 razonSocial: document.getElementById('s-razon').value.toUpperCase().trim() || 'NO ESPECIFICADA',
+                ubicacion: document.getElementById('s-ubicacion').value.toUpperCase().trim() || '',
                 fechaInicio: document.getElementById('s-fecha-ini').value,
                 fechaFin: document.getElementById('s-fecha-fin').value,
                 horaInicio: document.getElementById('s-hora-ini').value,
@@ -510,9 +589,7 @@
                     listaTemporal.push(data);
                 });
 
-                // Orden Alfabético (A-Z)
                 listaTemporal.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
-
                 serviciosGlobales = [];
 
                 listaTemporal.forEach((data) => {
@@ -552,9 +629,20 @@
 
             let html = '';
             filtrados.forEach(data => {
-                let badgeStyle = data.estado === 'activo' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : (data.estado === 'pausa' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200');
+                // Configuración visual del Dropdown (Select) como Badge
+                let badgeClass = data.estado === 'activo' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
+                                 data.estado === 'pausa' ? 'bg-amber-100 text-amber-700 border-amber-200' : 
+                                 'bg-slate-100 text-slate-500 border-slate-200';
                 
-                // --- LÓGICA DE SEMÁFORO DE CUMPLIMIENTO ---
+                let selectSemaforo = `
+                    <select onchange="cambiarEstado('${data.id}', this.value); event.stopPropagation();" onclick="event.stopPropagation();" class="${badgeClass} border px-2 py-1 rounded text-[9px] font-black uppercase outline-none cursor-pointer select-badge w-24">
+                        <option value="activo" ${data.estado === 'activo' ? 'selected' : ''}>🟢 ACTIVO</option>
+                        <option value="pausa" ${data.estado === 'pausa' ? 'selected' : ''}>🟠 EN PAUSA</option>
+                        <option value="finalizado" ${data.estado === 'finalizado' ? 'selected' : ''}>⚪ FINALIZADO</option>
+                    </select>
+                `;
+
+                // --- LÓGICA DE SEMÁFORO DE CUMPLIMIENTO (IA) ---
                 let statusHtml = '';
                 if(fechaRolOperativo && vistaActual === 'activo') {
                     let nombreNorm = normalizarTexto(data.nombreComercial);
@@ -575,31 +663,27 @@
                 } else if(vistaActual === 'activo') {
                     statusHtml = `<span class="flex items-center gap-1 text-[10px] font-bold text-slate-400"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 shadow-inner block"></span> Sube un rol para evaluar</span>`;
                 }
+
+                let textoUbicacion = data.ubicacion ? ` | Ubicación: ${data.ubicacion}` : '';
                 
                 html += `
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative transition hover:shadow-md">
+                <div onclick="abrirVisor('${data.id}')" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative transition hover:shadow-md cursor-pointer group">
                     <div class="flex justify-between items-start mb-1">
-                        <h4 class="font-black text-sm text-slate-800 w-3/4">${data.nombreComercial}</h4>
+                        <h4 class="font-black text-sm text-slate-800 w-3/4 group-hover:text-orange-600 transition-colors">${data.nombreComercial}</h4>
                         <div class="flex gap-2">
-                            <button onclick="prepararEdicion('${data.id}')" class="text-slate-400 hover:text-orange-500 transition" title="Editar Servicio"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="prepararReporte('${data.id}')" class="text-slate-400 hover:text-red-500 transition" title="Generar Reporte PDF"><i class="fa-solid fa-file-pdf"></i></button>
+                            <button onclick="event.stopPropagation(); prepararEdicion('${data.id}')" class="text-slate-400 hover:text-orange-500 transition" title="Editar Servicio"><i class="fa-solid fa-pen"></i></button>
                         </div>
                     </div>
                     
-                    <p class="text-[9px] text-slate-400 font-bold uppercase mb-2">Folio: ${data.folio} | Razón: ${data.razonSocial}</p>
+                    <p class="text-[9px] text-slate-400 font-bold uppercase mb-2">Folio: ${data.folio} | Razón: ${data.razonSocial}${textoUbicacion}</p>
                     
                     <div class="flex flex-wrap gap-2 text-[10px] font-bold text-slate-600 mb-3 bg-slate-50 p-2 rounded-lg border border-slate-100">
                         <span><i class="fa-solid fa-calendar-day text-orange-400 mr-1"></i> ${data.fechaInicio} al ${data.fechaFin}</span> <span>|</span>
                         <span><i class="fa-solid fa-clock text-sky-400 mr-1"></i> ${data.horaInicio} - ${data.horaFin}</span>
                     </div>
 
-                    <div class="flex gap-2 items-center mb-2">
-                        <span class="${badgeStyle} border px-2 py-1 rounded text-[9px] font-black uppercase"><i class="fa-solid fa-circle text-[8px] mr-1"></i> ${data.estado}</span>
-                        <select onchange="cambiarEstado('${data.id}', this.value)" class="flex-1 p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none text-slate-600 focus:border-orange-400">
-                            <option value="activo" ${data.estado === 'activo' ? 'selected' : ''}>Marcar como ACTIVO</option>
-                            <option value="pausa" ${data.estado === 'pausa' ? 'selected' : ''}>Poner en PAUSA</option>
-                            <option value="finalizado" ${data.estado === 'finalizado' ? 'selected' : ''}>FINALIZAR</option>
-                        </select>
+                    <div class="flex gap-2 items-center mb-2 justify-between">
+                        ${selectSemaforo}
                     </div>
 
                     <div class="pt-2 border-t border-slate-100 mt-2">
@@ -617,7 +701,7 @@
             
             try {
                 await window.updateDoc(window.doc(window.db, "directorio_servicios", id), payload);
-                mostrarToast(`Servicio movido a ${nuevoEstado}`, "exito");
+                mostrarToast(`Servicio movido a ${nuevoEstado.toUpperCase()}`, "exito");
                 window.cargarServicios(); 
             } catch (error) { mostrarToast("No se pudo actualizar.", "error"); }
         };
@@ -628,7 +712,9 @@
             document.getElementById('e-comercial').value = data.nombreComercial;
             document.getElementById('e-folio').value = data.folio;
             document.getElementById('e-razon').value = data.razonSocial;
+            document.getElementById('e-ubicacion').value = data.ubicacion || '';
             document.getElementById('e-fecha-fin').value = data.fechaFin;
+            document.getElementById('e-hora-ini').value = data.horaInicio || '';
             document.getElementById('e-hora-fin').value = data.horaFin;
             abrirModal('editar');
         };
@@ -643,7 +729,9 @@
                     nombreComercial: document.getElementById('e-comercial').value.toUpperCase(),
                     folio: document.getElementById('e-folio').value.toUpperCase(),
                     razonSocial: document.getElementById('e-razon').value.toUpperCase(),
+                    ubicacion: document.getElementById('e-ubicacion').value.toUpperCase().trim(),
                     fechaFin: document.getElementById('e-fecha-fin').value,
+                    horaInicio: document.getElementById('e-hora-ini').value,
                     horaFin: document.getElementById('e-hora-fin').value
                 });
                 cerrarModal('editar');
@@ -688,20 +776,11 @@ No devuelvas ningún texto extra ni formato Markdown.`;
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{
-                                parts: [
-                                    { text: promptEstricto },
-                                    { inlineData: { mimeType: mimeType, data: base64Data } }
-                                ]
-                            }]
+                            contents: [{ parts: [{ text: promptEstricto }, { inlineData: { mimeType: mimeType, data: base64Data } } ] }]
                         })
                     });
 
-                    if(!response.ok) {
-                        const errorDetails = await response.text();
-                        console.error("🔴 DETALLE DEL ERROR DE GOOGLE:", errorDetails);
-                        throw new Error("Revisa la consola (F12) para ver el error exacto.");
-                    }
+                    if(!response.ok) throw new Error("Revisa la consola (F12) para ver el error exacto.");
                     const dataRes = await response.json();       
                     
                     let text = dataRes.candidates[0].content.parts[0].text;
@@ -709,176 +788,205 @@ No devuelvas ningún texto extra ni formato Markdown.`;
                     const arregloEmpresas = JSON.parse(text);
 
                     await window.procesarResultadoRol(arregloEmpresas, fechaTest, true);
-                    mostrarToast("Rol procesado y guardado correctamente", "exito");
+                    mostrarToast("Rol procesado y guardado", "exito");
                     cerrarModal('rol');
 
-                } catch(err) {
-                    console.error("Error en IA:", err);
-                    mostrarToast("Falló la lectura del archivo. Verifica la API y la imagen.", "error");
-                }
+                } catch(err) { mostrarToast("Falló la lectura del archivo.", "error"); }
                 
                 btn.innerHTML = '<i class="fa-solid fa-eye"></i> Analizar Rol y Activar Semáforo';
                 btn.disabled = false;
             };
-            
             reader.readAsDataURL(file);
         };
 
         window.procesarResultadoRol = async function(arreglo, fechaObjetivo, guardar = true) {
-            empresasEnRol = arreglo;
-            fechaRolOperativo = fechaObjetivo;
-            reportesHechosEnRol = new Set();
-
-            // 1. Guardado en Memoria Local y Firebase (Si es nuevo análisis)
+            empresasEnRol = arreglo; fechaRolOperativo = fechaObjetivo; reportesHechosEnRol = new Set();
             if (guardar) {
                 localStorage.setItem('lapi_rol_ia', JSON.stringify({ fecha: fechaObjetivo, empresas: arreglo }));
-                
                 try {
-                    await window.setDoc(window.doc(window.db, "roles_diarios", fechaObjetivo), {
-                        fecha: fechaObjetivo,
-                        empresas: arreglo,
-                        timestamp: new Date()
-                    }, { merge: true });
-                } catch(e) { console.log("Nota: No se pudo sincronizar el rol en Firebase para las alertas", e); }
+                    await window.setDoc(window.doc(window.db, "roles_diarios", fechaObjetivo), { fecha: fechaObjetivo, empresas: arreglo, timestamp: new Date() }, { merge: true });
+                } catch(e) {}
             }
-
-            // 2. Verificamos quién ya reportó
             try {
                 const q = window.query(window.collection(window.db, "registros"), window.where("fecha", "==", fechaObjetivo));
                 const qs = await window.getDocs(q);
-                qs.forEach(doc => {
-                    let d = doc.data();
-                    if(d.idServicio) reportesHechosEnRol.add(d.idServicio);
-                });
-            } catch(e) { console.error("Error buscando reportes", e); }
-
+                qs.forEach(doc => { let d = doc.data(); if(d.idServicio) reportesHechosEnRol.add(d.idServicio); });
+            } catch(e) {}
             document.getElementById('status-rol-activo').classList.remove('hidden');
             document.getElementById('txt-fecha-rol').innerText = `Día Evaluado: ${fechaObjetivo}`;
             document.getElementById('txt-cantidad-rol').innerText = `${arreglo.length} operaciones detectadas por IA`;
-
             renderizarLista(); 
         };
 
         window.limpiarRol = function() {
-            localStorage.removeItem('lapi_rol_ia');
-            empresasEnRol = [];
-            fechaRolOperativo = null;
-            reportesHechosEnRol.clear();
-            document.getElementById('status-rol-activo').classList.add('hidden');
-            renderizarLista();
-            mostrarToast("Rol removido de la vista", "info");
+            localStorage.removeItem('lapi_rol_ia'); empresasEnRol = []; fechaRolOperativo = null; reportesHechosEnRol.clear();
+            document.getElementById('status-rol-activo').classList.add('hidden'); renderizarLista();
         };
 
-        // 4. MOTOR DE REPORTES PDF
-        window.prepararReporte = function(id) {
+        // ==========================================
+        // MOTOR DE REPORTES: EXTRACCIÓN DE DATOS
+        // ==========================================
+        async function obtenerDatosServicio(idServicio) {
+            const q = window.query(window.collection(window.db, "registros"), window.where("idServicio", "==", idServicio));
+            const qs = await window.getDocs(q);
+            
+            let diasLaboradosSet = new Set();
+            let hrsPorMedico = {};
+            let totalesEstudio = {};
+            let personalEstudios = {}; 
+            let diaEstudios = {}; 
+
+            qs.forEach(doc => {
+                let d = doc.data();
+                diasLaboradosSet.add(d.fecha);
+                if(!hrsPorMedico[d.fecha]) hrsPorMedico[d.fecha] = {};
+                
+                if(d.detalles) {
+                    d.detalles.forEach(det => {
+                        let med = det.medico; let est = det.estudio; let c = parseInt(det.cant) || 0;
+                        totalesEstudio[est] = (totalesEstudio[est] || 0) + c;
+                        if(!diaEstudios[d.fecha]) diaEstudios[d.fecha] = {};
+                        diaEstudios[d.fecha][est] = (diaEstudios[d.fecha][est] || 0) + c;
+                        if(!personalEstudios[med]) personalEstudios[med] = {};
+                        personalEstudios[med][est] = (personalEstudios[med][est] || 0) + c;
+                        if(!hrsPorMedico[d.fecha][med]) hrsPorMedico[d.fecha][med] = parseFloat(d.horasLaboradas || 0);
+                    });
+                }
+            });
+
+            let horasTotalMedico = {};
+            for(let f in hrsPorMedico) {
+                for(let m in hrsPorMedico[f]) { horasTotalMedico[m] = (horasTotalMedico[m] || 0) + hrsPorMedico[f][m]; }
+            }
+
+            return { diasLaboradosSet, totalesEstudio, diaEstudios, personalEstudios, horasTotalMedico };
+        }
+
+        // ==========================================
+        // VISUALIZADOR INTERACTIVO (MODAL)
+        // ==========================================
+        window.abrirVisor = async function(id) {
             servicioParaReporte = serviciosGlobales.find(s => s.id === id);
-            abrirModal('reporte');
-        };
-
-        window.generarReportePDF = async function() {
-            const btn = document.getElementById('btn-generar-pdf');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Consultando...'; btn.disabled = true;
-
-            const chkTotales = document.getElementById('chk-totales').checked;
-            const chkDesglose = document.getElementById('chk-desglose').checked;
-            const chkPersonal = document.getElementById('chk-personal').checked;
-            const chkGraficas = document.getElementById('chk-graficas').checked;
+            abrirModal('visor');
+            
+            document.getElementById('visor-header').innerHTML = `<h3 class="text-xl font-black text-slate-800"><i class="fa-solid fa-chart-line text-orange-500 mr-2"></i> Reporte: ${servicioParaReporte.nombreComercial}</h3><p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Folio: ${servicioParaReporte.folio} | Del ${servicioParaReporte.fechaInicio} al ${servicioParaReporte.fechaFin}</p>`;
+            document.getElementById('visor-loader').classList.remove('hidden');
+            document.getElementById('visor-data').classList.add('hidden');
 
             try {
-                const q = window.query(window.collection(window.db, "registros"), window.where("idServicio", "==", servicioParaReporte.id));
-                const qs = await window.getDocs(q);
-                
-                let registros = [];
-                let diasLaboradosSet = new Set();
-                let hrsPorMedico = {};
-                let totalesEstudio = {};
-                let personalEstudios = {}; 
-                let diaEstudios = {}; 
+                datosReporteCache = await obtenerDatosServicio(id);
+                const { diasLaboradosSet, totalesEstudio, diaEstudios, personalEstudios, horasTotalMedico } = datosReporteCache;
 
-                qs.forEach(doc => {
-                    let d = doc.data();
-                    diasLaboradosSet.add(d.fecha);
-                    if(!hrsPorMedico[d.fecha]) hrsPorMedico[d.fecha] = {};
-                    
-                    if(d.detalles) {
-                        d.detalles.forEach(det => {
-                            let med = det.medico;
-                            let est = det.estudio;
-                            let c = parseInt(det.cant) || 0;
+                let totalEstudios = Object.values(totalesEstudio).reduce((a,b) => a+b, 0);
+                document.getElementById('visor-kpis').innerHTML = `
+                    <div class="bg-white border-l-4 border-orange-500 p-4 rounded-xl shadow-sm text-center"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estudios Totales</p><p class="text-2xl font-black text-slate-800">${totalEstudios}</p></div>
+                    <div class="bg-white border-l-4 border-sky-500 p-4 rounded-xl shadow-sm text-center"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Días Laborados</p><p class="text-2xl font-black text-sky-600">${diasLaboradosSet.size}</p></div>
+                    <div class="bg-white border-l-4 border-emerald-500 p-4 rounded-xl shadow-sm text-center"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Personal Involucrado</p><p class="text-2xl font-black text-emerald-600">${Object.keys(personalEstudios).length}</p></div>
+                    <div class="bg-white border-l-4 border-indigo-500 p-4 rounded-xl shadow-sm text-center"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Horas Operativas</p><p class="text-2xl font-black text-indigo-600">${Object.values(horasTotalMedico).reduce((a,b)=>a+b, 0).toFixed(1)}h</p></div>
+                `;
 
-                            totalesEstudio[est] = (totalesEstudio[est] || 0) + c;
-                            if(!diaEstudios[d.fecha]) diaEstudios[d.fecha] = {};
-                            diaEstudios[d.fecha][est] = (diaEstudios[d.fecha][est] || 0) + c;
-                            if(!personalEstudios[med]) personalEstudios[med] = {};
-                            personalEstudios[med][est] = (personalEstudios[med][est] || 0) + c;
-                            
-                            if(!hrsPorMedico[d.fecha][med]) hrsPorMedico[d.fecha][med] = parseFloat(d.horasLaboradas || 0);
-                        });
-                    }
+                // Tablas
+                let tbDias = document.getElementById('visor-tabla-dias'); tbDias.innerHTML = '';
+                Object.keys(diaEstudios).sort().forEach(f => {
+                    let keys = Object.keys(diaEstudios[f]);
+                    tbDias.innerHTML += `<tr><td rowspan="${keys.length}" class="p-3 font-black text-slate-700 align-top">${f}</td><td class="p-3 font-bold">${keys[0]}</td><td class="p-3 text-center text-orange-600 font-black">${diaEstudios[f][keys[0]]}</td></tr>`;
+                    for(let i=1; i<keys.length; i++) tbDias.innerHTML += `<tr><td class="p-3 font-bold">${keys[i]}</td><td class="p-3 text-center text-orange-600 font-black">${diaEstudios[f][keys[i]]}</td></tr>`;
                 });
 
-                let horasTotalMedico = {};
-                for(let f in hrsPorMedico) {
-                    for(let m in hrsPorMedico[f]) { horasTotalMedico[m] = (horasTotalMedico[m] || 0) + hrsPorMedico[f][m]; }
-                }
+                let tbPersonal = document.getElementById('visor-tabla-personal'); tbPersonal.innerHTML = '';
+                Object.keys(personalEstudios).sort().forEach(m => {
+                    let keys = Object.keys(personalEstudios[m]);
+                    tbPersonal.innerHTML += `<tr><td rowspan="${keys.length}" class="p-3 font-black text-sky-700 align-top">${m}</td><td class="p-3 font-bold">${keys[0]}</td><td class="p-3 text-center text-sky-600 font-black">${personalEstudios[m][keys[0]]}</td><td rowspan="${keys.length}" class="p-3 text-center align-middle font-bold text-slate-500">${horasTotalMedico[m] || 0} h</td></tr>`;
+                    for(let i=1; i<keys.length; i++) tbPersonal.innerHTML += `<tr><td class="p-3 font-bold">${keys[i]}</td><td class="p-3 text-center text-sky-600 font-black">${personalEstudios[m][keys[i]]}</td></tr>`;
+                });
 
-                const zona = document.getElementById('zona-impresion');
-                let htmlPDF = `<div class="print-page">
-                <table class="header-reporte"><tr><td class="h-logo"><img src="logoLAPI.png" style="max-height: 45px;"></td><td class="h-title"><h2 style="font-size: 16px; margin:0; text-transform:uppercase;">Reporte de Servicio Foráneo</h2><p style="margin:2px 0 0 0; color:#ea580c;">Folio: ${servicioParaReporte.folio}</p></td></tr></table>
-                <table class="info-grid"><tr><th>Servicio Foráneo:</th><td colspan="3"><b>${servicioParaReporte.nombreComercial}</b></td></tr><tr><th>Razón Social:</th><td colspan="3">${servicioParaReporte.razonSocial}</td></tr><tr><th>Periodo Programado:</th><td>${servicioParaReporte.fechaInicio} al ${servicioParaReporte.fechaFin}</td><th>Horario Base:</th><td>${servicioParaReporte.horaInicio} - ${servicioParaReporte.horaFin}</td></tr><tr><th>Días con Actividad Real:</th><td colspan="3">${diasLaboradosSet.size} días (Fechas: ${Array.from(diasLaboradosSet).sort().join(', ') || 'Ninguna'})</td></tr></table>`;
+                document.getElementById('visor-loader').classList.add('hidden');
+                document.getElementById('visor-data').classList.remove('hidden');
 
-                if(diasLaboradosSet.size === 0) {
-                    htmlPDF += `<p style="text-align:center; font-style:italic;">No hay registros operativos capturados para este servicio aún.</p></div>`;
-                    zona.innerHTML = htmlPDF; cerrarModal('reporte'); setTimeout(() => { window.print(); }, 500);
-                    btn.innerHTML = '<i class="fa-solid fa-print"></i> Consultar y Generar PDF'; btn.disabled = false; return;
-                }
+                // Gráficos Visor
+                if(graficosVisor['tot']) graficosVisor['tot'].destroy();
+                graficosVisor['tot'] = new Chart(document.getElementById('chart-visor-totales').getContext('2d'), { type: 'bar', data: { labels: Object.keys(totalesEstudio), datasets: [{ label: 'Total', data: Object.values(totalesEstudio), backgroundColor: '#f97316', borderRadius: 4 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } });
 
-                if(chkTotales) {
-                    htmlPDF += `<div class="seccion-titulo">Resumen General de Estudios Realizados</div><table class="table-formal"><tr><th class="text-left">Tipo de Estudio</th><th style="width:20%;">Total</th></tr>`;
-                    for(let e in totalesEstudio) htmlPDF += `<tr><td class="text-left">${e}</td><td><b>${totalesEstudio[e]}</b></td></tr>`; htmlPDF += `</table>`;
-                }
+                if(graficosVisor['pers']) graficosVisor['pers'].destroy();
+                let labelsPers = Object.keys(personalEstudios); let dataPers = labelsPers.map(m => Object.values(personalEstudios[m]).reduce((a,b)=>a+b, 0));
+                graficosVisor['pers'] = new Chart(document.getElementById('chart-visor-personal').getContext('2d'), { type: 'doughnut', data: { labels: labelsPers, datasets: [{ data: dataPers, backgroundColor: ['#3b82f6','#10b981','#8b5cf6','#ef4444','#f59e0b'] }] }, options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } } } } });
 
-                if(chkDesglose) {
-                    htmlPDF += `<div class="seccion-titulo">Desglose Operativo por Día</div><table class="table-formal"><tr><th class="text-left">Fecha</th><th>Estudio</th><th style="width:20%;">Cantidad</th></tr>`;
-                    let fechasSort = Object.keys(diaEstudios).sort();
-                    fechasSort.forEach(f => {
-                        let estudiosDia = diaEstudios[f]; let keys = Object.keys(estudiosDia);
-                        htmlPDF += `<tr><td rowspan="${keys.length}" class="text-left" style="vertical-align:top;"><b>${f}</b></td><td class="text-left">${keys[0]}</td><td>${estudiosDia[keys[0]]}</td></tr>`;
-                        for(let i=1; i<keys.length; i++) htmlPDF += `<tr><td class="text-left">${keys[i]}</td><td>${estudiosDia[keys[i]]}</td></tr>`;
-                    }); htmlPDF += `</table>`;
-                }
-
-                if(chkPersonal) {
-                    htmlPDF += `<div class="seccion-titulo">Productividad del Personal Designado</div><table class="table-formal"><tr><th class="text-left">Personal</th><th>Estudio Realizado</th><th style="width:15%;">Estudios Totales</th><th style="width:15%;">Horas Registradas</th></tr>`;
-                    let medSort = Object.keys(personalEstudios).sort();
-                    medSort.forEach(m => {
-                        let estMed = personalEstudios[m]; let keys = Object.keys(estMed);
-                        htmlPDF += `<tr><td rowspan="${keys.length}" class="text-left" style="vertical-align:top; color:#4338ca;"><b>${m}</b></td><td class="text-left">${keys[0]}</td><td>${estMed[keys[0]]}</td><td rowspan="${keys.length}" style="vertical-align:middle;">${horasTotalMedico[m] || 0} h</td></tr>`;
-                        for(let i=1; i<keys.length; i++) htmlPDF += `<tr><td class="text-left">${keys[i]}</td><td>${estMed[keys[i]]}</td></tr>`;
-                    }); htmlPDF += `</table>`;
-                }
-
-                htmlPDF += `</div>`; 
-
-                if(chkGraficas) {
-                    htmlPDF += `<div class="print-page"><div class="seccion-titulo" style="margin-top:20px;">Anexo Gráfico del Servicio</div><div class="grafica-container"><canvas id="chart-totales"></canvas></div><div class="grafica-container"><canvas id="chart-personal"></canvas></div></div>`;
-                }
-
-                zona.innerHTML = htmlPDF;
-                
-                if(chkGraficas) {
-                    setTimeout(() => {
-                        new Chart(document.getElementById('chart-totales').getContext('2d'), { type: 'bar', data: { labels: Object.keys(totalesEstudio), datasets: [{ label: 'Total Realizado', data: Object.values(totalesEstudio), backgroundColor: '#f97316' }] }, options: { plugins: { title: { display: true, text: 'Distribución de Estudios' } }, animation: false } });
-                        let labelsPers = Object.keys(personalEstudios); let dataPers = labelsPers.map(m => Object.values(personalEstudios[m]).reduce((a,b)=>a+b, 0));
-                        new Chart(document.getElementById('chart-personal').getContext('2d'), { type: 'doughnut', data: { labels: labelsPers, datasets: [{ data: dataPers, backgroundColor: ['#3b82f6','#10b981','#8b5cf6','#ef4444','#f59e0b'] }] }, options: { plugins: { title: { display: true, text: 'Productividad Global por Personal' } }, animation: false, maintainAspectRatio: false } });
-                    }, 100);
-                }
-
-                cerrarModal('reporte');
-                setTimeout(() => { window.print(); zona.innerHTML = ''; }, 800);
-            } catch (error) { mostrarToast("Error generando PDF.", "error"); }
-            btn.innerHTML = '<i class="fa-solid fa-print"></i> Consultar y Generar PDF'; btn.disabled = false;
+            } catch (error) { mostrarToast("Error consultando registros.", "error"); }
         };
+
+        // ==========================================
+        // CREADOR DE PDF (SOLUCIÓN MÓVIL BLINDADA)
+        // ==========================================
+        window.generarReportePDF = async function() {
+            if(!servicioParaReporte || !datosReporteCache) return;
+            const btn = document.getElementById('btn-visor-pdf');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Creando PDF...'; btn.disabled = true;
+
+            const { diasLaboradosSet, totalesEstudio, diaEstudios, personalEstudios, horasTotalMedico } = datosReporteCache;
+
+            const zona = document.getElementById('zona-impresion');
+            let htmlPDF = `<div class="print-page">
+            <table class="header-reporte"><tr><td class="h-logo"><img src="logoLAPI.png" style="max-height: 45px;"></td><td class="h-title"><h2 style="font-size: 16px; margin:0; text-transform:uppercase;">Reporte de Servicio Foráneo</h2><p style="margin:2px 0 0 0; color:#ea580c;">Folio: ${servicioParaReporte.folio}</p></td></tr></table>
+            <table class="info-grid"><tr><th>Servicio Foráneo:</th><td colspan="3"><b>${servicioParaReporte.nombreComercial}</b></td></tr><tr><th>Razón Social / Ubicación:</th><td colspan="3">${servicioParaReporte.razonSocial} ${servicioParaReporte.ubicacion ? `(${servicioParaReporte.ubicacion})` : ''}</td></tr><tr><th>Periodo Programado:</th><td>${servicioParaReporte.fechaInicio} al ${servicioParaReporte.fechaFin}</td><th>Horario Base:</th><td>${servicioParaReporte.horaInicio} - ${servicioParaReporte.horaFin}</td></tr><tr><th>Días con Actividad Real:</th><td colspan="3">${diasLaboradosSet.size} días (Fechas: ${Array.from(diasLaboradosSet).sort().join(', ') || 'Ninguna'})</td></tr></table>`;
+
+            if(diasLaboradosSet.size === 0) {
+                htmlPDF += `<p style="text-align:center; font-style:italic;">No hay registros operativos capturados para este servicio aún.</p></div>`;
+                ejecutarImpresion(htmlPDF, btn); return;
+            }
+
+            htmlPDF += `<div class="seccion-titulo">Resumen General de Estudios Realizados</div><table class="table-formal"><tr><th class="text-left">Tipo de Estudio</th><th style="width:20%;">Total</th></tr>`;
+            for(let e in totalesEstudio) htmlPDF += `<tr><td class="text-left">${e}</td><td><b>${totalesEstudio[e]}</b></td></tr>`; htmlPDF += `</table>`;
+
+            htmlPDF += `<div class="seccion-titulo">Desglose Operativo por Día</div><table class="table-formal"><tr><th class="text-left">Fecha</th><th>Estudio</th><th style="width:20%;">Cantidad</th></tr>`;
+            let fechasSort = Object.keys(diaEstudios).sort();
+            fechasSort.forEach(f => {
+                let estudiosDia = diaEstudios[f]; let keys = Object.keys(estudiosDia);
+                htmlPDF += `<tr><td rowspan="${keys.length}" class="text-left" style="vertical-align:top;"><b>${f}</b></td><td class="text-left">${keys[0]}</td><td>${estudiosDia[keys[0]]}</td></tr>`;
+                for(let i=1; i<keys.length; i++) htmlPDF += `<tr><td class="text-left">${keys[i]}</td><td>${estudiosDia[keys[i]]}</td></tr>`;
+            }); htmlPDF += `</table>`;
+
+            htmlPDF += `<div class="seccion-titulo">Productividad del Personal Designado</div><table class="table-formal"><tr><th class="text-left">Personal</th><th>Estudio Realizado</th><th style="width:15%;">Estudios Totales</th><th style="width:15%;">Horas Registradas</th></tr>`;
+            let medSort = Object.keys(personalEstudios).sort();
+            medSort.forEach(m => {
+                let estMed = personalEstudios[m]; let keys = Object.keys(estMed);
+                htmlPDF += `<tr><td rowspan="${keys.length}" class="text-left" style="vertical-align:top; color:#4338ca;"><b>${m}</b></td><td class="text-left">${keys[0]}</td><td>${estMed[keys[0]]}</td><td rowspan="${keys.length}" style="vertical-align:middle;">${horasTotalMedico[m] || 0} h</td></tr>`;
+                for(let i=1; i<keys.length; i++) htmlPDF += `<tr><td class="text-left">${keys[i]}</td><td>${estMed[keys[i]]}</td></tr>`;
+            }); htmlPDF += `</table></div>`; 
+
+            // Para solucionar el problema de móviles y gráficas: 
+            // 1. Renderizamos charts ocultos, 2. Los pasamos a imagen base64, 3. Imprimimos el HTML con la imagen.
+            document.getElementById('zona-impresion-graficas').classList.remove('hidden');
+            
+            let cTot = document.getElementById('chart-totales-pdf');
+            let cPer = document.getElementById('chart-personal-pdf');
+            
+            new Chart(cTot.getContext('2d'), { type: 'bar', data: { labels: Object.keys(totalesEstudio), datasets: [{ label: 'Total', data: Object.values(totalesEstudio), backgroundColor: '#f97316' }] }, options: { animation: false, plugins: { title: { display: true, text: 'Distribución de Estudios' } } } });
+            
+            let labelsPers = Object.keys(personalEstudios); let dataPers = labelsPers.map(m => Object.values(personalEstudios[m]).reduce((a,b)=>a+b, 0));
+            new Chart(cPer.getContext('2d'), { type: 'doughnut', data: { labels: labelsPers, datasets: [{ data: dataPers, backgroundColor: ['#3b82f6','#10b981','#8b5cf6','#ef4444','#f59e0b'] }] }, options: { animation: false, plugins: { title: { display: true, text: 'Productividad por Personal' } } } });
+
+            setTimeout(() => {
+                htmlPDF += `<div class="print-page"><div class="seccion-titulo" style="margin-top:20px;">Anexo Gráfico del Servicio</div>`;
+                htmlPDF += `<div class="grafica-container"><img class="img-grafica" src="${cTot.toDataURL("image/png")}"></div>`;
+                htmlPDF += `<div class="grafica-container"><img class="img-grafica" src="${cPer.toDataURL("image/png")}"></div></div>`;
+                
+                document.getElementById('zona-impresion-graficas').classList.add('hidden');
+                ejecutarImpresion(htmlPDF, btn);
+            }, 500); // 500ms asegura que el canvas de Chart.js terminó de dibujar.
+        };
+
+        function ejecutarImpresion(htmlString, btn) {
+            const zona = document.getElementById('zona-impresion');
+            zona.innerHTML = htmlString;
+            
+            // Rebotar al hilo principal para impresión móvil segura
+            setTimeout(() => {
+                window.print();
+                zona.innerHTML = '';
+                btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Generar PDF'; 
+                btn.disabled = false;
+            }, 300);
+        }
     </script>
 </body>
 </html>
