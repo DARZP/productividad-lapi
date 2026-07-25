@@ -294,9 +294,9 @@
         </div>
 
         <!-- DIRECTORIO DE OPERACIONES (100% ANCHO) -->
-        <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col bg-white min-h-[500px]">
+        <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 bg-white min-h-[500px]">
             
-            <div class="flex justify-between items-end border-b border-slate-100 pb-4 mb-4 shrink-0">
+            <div class="flex justify-between items-end border-b border-slate-100 pb-4 mb-4">
                 <div>
                     <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-layer-group text-orange-500 mr-2"></i> Operaciones</h2>
                     <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Directorio y Seguimiento</p>
@@ -307,14 +307,14 @@
             </div>
 
             <!-- TABS DE FILTRO -->
-            <div class="flex gap-4 border-b border-slate-100 mb-4 px-2 shrink-0">
+            <div class="flex gap-4 border-b border-slate-100 mb-4 px-2">
                 <button onclick="filtrarVista('activo')" id="tab-activo" class="tab-btn active pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-circle-play text-emerald-500 mr-1"></i> Activos</button>
                 <button onclick="filtrarVista('pausa')" id="tab-pausa" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-circle-pause text-amber-500 mr-1"></i> En Pausa</button>
                 <button onclick="filtrarVista('finalizado')" id="tab-finalizado" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-box-archive text-slate-400 mr-1"></i> Finalizados</button>
             </div>
 
             <!-- BUSCADOR Y FILTRO DE MES -->
-            <div class="flex flex-col sm:flex-row gap-4 mb-6 px-2 shrink-0">
+            <div class="flex flex-col sm:flex-row gap-4 mb-6 px-2">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-3 text-slate-400"></i>
                     <input type="text" id="buscador-servicios" onkeyup="renderizarLista()" placeholder="Buscar empresa, folio, ubicación..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-orange-400 transition-colors">
@@ -324,12 +324,13 @@
                 </div>
             </div>
 
-            <!-- CONTENEDOR GRID DE SERVICIOS -->
-            <div class="overflow-y-auto scroll-custom flex-1" id="lista-servicios-container">
+            <!-- CONTENEDOR GRID DE SERVICIOS (SIN SCROLL INTERNO) -->
+            <div id="lista-servicios-container">
                 <div class="text-center py-20 text-slate-400 italic">
                     <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-orange-300 block"></i> Cargando base de datos...
                 </div>
             </div>
+            
         </div>
     </main>
 
