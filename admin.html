@@ -73,7 +73,6 @@
 </head>
 <!-- La clase 'hidden' evita que la página parpadee antes de verificar la sesión -->
 <body class="bg-animated min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden hidden">
-
     <!-- BOTÓN CERRAR SESIÓN -->
     <button onclick="cerrarSesionAdmin()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-white/20 hover:bg-red-500/80 transition-colors text-white shadow-sm border border-white/30 z-50" title="Cerrar Sesión">
         <i class="fa-solid fa-right-from-bracket"></i>
@@ -90,59 +89,44 @@
         <p class="text-sm font-medium text-white/80 tracking-widest uppercase drop-shadow">Gestión Operativa</p>
     </div>
 
+    <!-- GRID CENTRAL ORDENADO -->
     <div class="grid grid-cols-3 gap-4 w-full max-w-md mx-auto relative z-10">
         
-        <a href="admin_monitor.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-server text-2xl text-white"></i>
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-white uppercase">Monitor</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Productividad</p>
-            </div>
-        </a>
-
-        <a href="reportes.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-fuchsia-400 to-purple-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-chart-pie text-2xl text-white"></i>
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-white uppercase">Reportes</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Métricas</p>
-            </div>
-        </a>
-
-        <a href="admin_servicios.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-xl">
+        <!-- 1. SERVICIOS -->
+        <a href="admin_servicios.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center shadow-inner relative">
+                <i class="fa-solid fa-truck-medical text-2xl text-white"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-sm text-white uppercase">Servicios</h3>
+                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Foráneos</p>
+            </div>
+        </a>
+
+        <!-- 2. SUCURSALES -->
+        <a href="admin_sucursales.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-inner relative">
                 <i class="fa-solid fa-building text-2xl text-white"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white uppercase">SERVICIOS</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">S. Foráneos indiv</p>
+                <h3 class="font-black text-sm text-white uppercase">Sucursales</h3>
+                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Sedes Fijas</p>
             </div>
         </a>
 
-        <a href="auditoria.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-400 to-red-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-shield-halved text-2xl text-white"></i>
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-white uppercase">Auditoría</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Cruce de Inf</p>
-            </div>
-        </a>
-
-        <a href="admin_biologico.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
+        <!-- 3. CONTROL BIOLÓGICO -->
+        <a href="admin_biologico.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-laptop-medical text-2xl text-white"></i>
+                <i class="fa-solid fa-vial-virus text-2xl text-white"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white uppercase">Equipos</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">C. Biológico</p>
+                <h3 class="font-black text-sm text-white uppercase">C. Biol.</h3>
+                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Equipos</p>
             </div>
         </a>
 
-        <a href="admin_requisiciones.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-xl">
+        <!-- 4. INSUMOS -->
+        <a href="admin_requisiciones.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-inner relative">
                 <i class="fa-solid fa-box-open text-2xl text-white"></i>
             </div>
@@ -152,7 +136,41 @@
             </div>
         </a>
 
-        <a href="index.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-xl">
+        <!-- 5. MONITOR -->
+        <a href="admin_monitor.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-inner relative">
+                <i class="fa-solid fa-server text-2xl text-white"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-sm text-white uppercase">Monitor</h3>
+                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Productividad</p>
+            </div>
+        </a>
+
+        <!-- 6. REPORTES -->
+        <a href="reportes.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-fuchsia-400 to-purple-600 flex items-center justify-center shadow-inner relative">
+                <i class="fa-solid fa-chart-pie text-2xl text-white"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-sm text-white uppercase">Reportes</h3>
+                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Métricas</p>
+            </div>
+        </a>
+
+        <!-- 7. AUDITORÍA -->
+        <a href="auditoria.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-xl">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-400 to-red-600 flex items-center justify-center shadow-inner relative">
+                <i class="fa-solid fa-shield-halved text-2xl text-white"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-sm text-white uppercase">Auditoría</h3>
+                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Seguridad</p>
+            </div>
+        </a>
+
+        <!-- 8. OPERATIVO (Extra) -->
+        <a href="index.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-xl col-span-2 md:col-span-1">
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center shadow-inner relative">
                 <i class="fa-solid fa-house-medical text-2xl text-white"></i>
             </div>
@@ -163,10 +181,5 @@
         </a>
 
     </div>
-
-    <div class="mt-16 text-center animate-fade-in-up delay-300 relative z-10">
-        <p class="text-[10px] font-bold tracking-widest text-white/50 uppercase">&copy; 2026</p>
-    </div>
-
 </body>
 </html>
