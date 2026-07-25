@@ -585,31 +585,73 @@
         };
 
         window.generarImagenCompartir = async function() {
-            // Mismo código para generar imagen (omitido desglose por brevedad, no alterado)
-            const btn = document.getElementById('btn-descargar-sucursal'); const originalHTML = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
+            const btn = document.getElementById('btn-descargar-sucursal'); const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
+
             const sucursal = sesionActual.sucursal.toUpperCase(); const medico = sesionActual.medico.toUpperCase();
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
+
             document.getElementById('cap-sucursal-nombre').innerText = `SUCURSAL: ${sucursal}`;
             document.getElementById('cap-resumen-info').innerHTML = `<p class="mb-1"><b class="text-slate-500">Fecha:</b> ${fechaUI}</p><p><b class="text-slate-500">Personal:</b> <span class="text-orange-600 font-bold">${medico}</span></p>`;
-            document.getElementById('cap-resumen-lista').innerHTML = document.getElementById('resumen-contenido').innerHTML;
+            
+            // Jalar lo que ya está en la vista resumen
+            let listHtml = document.getElementById('resumen-contenido').innerHTML;
+
+            // ANEXAR PROCEDIMIENTOS DE FORMA INDEPENDIENTE
+            if(SUCURSALES_PROCEDIMIENTOS.includes(sesionActual.sucursal)) {
+                try {
+                    const qp = window.query(window.collection(window.db, "procedimientos_sucursales"), 
+                        window.where("sucursal", "==", sesionActual.sucursal),
+                        window.where("fecha", "==", fechaOperativa),
+                        window.where("medico", "==", sesionActual.medico)
+                    );
+                    const snap = await window.getDocs(qp);
+                    if(snap.size > 0) {
+                        listHtml += `<div class="border-t border-slate-200 pt-3 mt-4 flex justify-between items-center text-lg"><span class="font-black text-slate-800">PROCEDIMIENTOS:</span><span class="font-black text-emerald-600">${snap.size}</span></div>`;
+                    }
+                } catch(e) { console.error(e); }
+            }
+
+            document.getElementById('cap-resumen-lista').innerHTML = listHtml;
             document.getElementById('cap-observaciones').innerText = datosDelDia.observaciones || 'Sin observaciones relevantes.';
-            await new Promise(r => setTimeout(r, 100)); await procesarHtml2Canvas(document.getElementById('captura-temp-sucursal'), `LAPI_MiTurno_${sucursal}_${fechaOperativa}`);
+            
+            await new Promise(r => setTimeout(r, 100));
+            await procesarHtml2Canvas(document.getElementById('captura-temp-sucursal'), `LAPI_MiTurno_${sucursal}_${fechaOperativa}`);
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
         window.generarImagenGlobal = async function() {
             const d = window.datosGlobalesTemp; if(!d) return;
-            const btn = document.getElementById('btn-descargar-global'); const originalHTML = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
+            const btn = document.getElementById('btn-descargar-global'); const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
+
             document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal.toUpperCase()}`;
             document.getElementById('cap-glob-info').innerHTML = `<p class="mb-1"><b class="text-slate-500">Fecha:</b> ${fechaUI}</p><p><b class="text-slate-500">Personal Presente:</b> <span class="text-sky-600 font-bold">${d.personal.join(', ')}</span></p>`;
+            
             let listHtml = '';
             for(let est in d.acumulado) { listHtml += `<div class="border-t border-slate-200 pt-3 mt-3 flex justify-between items-center text-slate-800"><span class="font-bold text-sky-700 text-sm">${est}</span><span class="bg-white border border-slate-200 px-3 py-1 rounded-xl font-black shadow-sm">${d.acumulado[est]}</span></div>`; }
             listHtml += `<div class="border-t-2 border-dashed border-slate-300 pt-4 mt-5 flex justify-between items-center text-lg"><span class="font-black text-slate-800">SUMA SUCURSAL:</span><span class="font-black text-sky-600 text-2xl">${d.totalG}</span></div>`;
+
+            // ANEXAR PROCEDIMIENTOS DE FORMA INDEPENDIENTE
+            if(SUCURSALES_PROCEDIMIENTOS.includes(sesionActual.sucursal)) {
+                let countElem = document.getElementById('txt-total-proc-global');
+                if(countElem) {
+                    let totalProcs = parseInt(countElem.innerText) || 0;
+                    if(totalProcs > 0) {
+                        listHtml += `<div class="border-t border-slate-200 pt-3 mt-4 flex justify-between items-center text-lg"><span class="font-black text-slate-800">PROCEDIMIENTOS:</span><span class="font-black text-emerald-600">${totalProcs}</span></div>`;
+                    }
+                }
+            }
+
             document.getElementById('cap-glob-lista').innerHTML = listHtml || '<p class="opacity-60 italic text-center font-bold">Sin estudios en la sucursal.</p>';
-            let obsHtml = ''; d.desgloseIndividual.forEach(ind => { if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-4 border-sky-400 pl-3 bg-white p-3 rounded-r-xl shadow-sm"><p class="text-[10px] text-sky-600 font-black uppercase tracking-widest mb-1">${ind.medico}</p><p class="text-sm font-medium text-slate-700">"${ind.observaciones}"</p></div>`; });
+
+            let obsHtml = '';
+            d.desgloseIndividual.forEach(ind => { if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-4 border-sky-400 pl-3 bg-white p-3 rounded-r-xl shadow-sm"><p class="text-[10px] text-sky-600 font-black uppercase tracking-widest mb-1">${ind.medico}</p><p class="text-sm font-medium text-slate-700">"${ind.observaciones}"</p></div>`; });
             document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones reportadas en la sucursal.';
-            await new Promise(r => setTimeout(r, 100)); await procesarHtml2Canvas(document.getElementById('captura-temp-global'), `LAPI_Global_${d.sucursal.toUpperCase()}_${fechaOperativa}`);
+
+            await new Promise(r => setTimeout(r, 100));
+            await procesarHtml2Canvas(document.getElementById('captura-temp-global'), `LAPI_Global_${d.sucursal.toUpperCase()}_${fechaOperativa}`);
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
