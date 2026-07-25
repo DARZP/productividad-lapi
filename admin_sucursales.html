@@ -206,8 +206,15 @@
                         </div>
                         
                         <div id="vista-general" class="hidden space-y-6">
-                            <div class="flex justify-end">
-                                <button onclick="generarPdfGeneral()" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-black px-4 py-2 rounded-xl shadow-sm transition-all text-xs flex items-center gap-2"><i class="fa-solid fa-file-pdf"></i> PDF Productividad</button>
+                            
+                            <!-- BOTONERA DE DESCARGA PDF -->
+                            <div class="flex justify-end gap-3">
+                                <button id="btn-pdf-procedimientos-gral" onclick="generarPdfProcedimientos()" class="hidden bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 font-black px-4 py-2 rounded-xl shadow-sm transition-all text-xs flex items-center gap-2">
+                                    <i class="fa-solid fa-file-pdf"></i> PDF Procedimientos
+                                </button>
+                                <button onclick="generarPdfGeneral()" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-black px-4 py-2 rounded-xl shadow-sm transition-all text-xs flex items-center gap-2">
+                                    <i class="fa-solid fa-file-pdf"></i> PDF Productividad
+                                </button>
                             </div>
 
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="visor-kpis"></div>
@@ -223,12 +230,13 @@
                                 </div>
                             </div>
 
+                            <!-- TABLAS GENERALES Y RESUMEN DE PROCEDIMIENTOS -->
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                                     <div class="bg-slate-100 p-3 border-b border-slate-200"><h4 class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Desglose Operativo Diario</h4></div>
                                     <div class="overflow-x-auto max-h-64 scroll-custom">
                                         <table class="w-full text-left text-xs">
-                                            <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 border-b border-slate-200 sticky top-0">
+                                            <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 border-b border-slate-200 sticky top-0 z-10">
                                                 <tr><th class="p-3">Fecha</th><th class="p-3">Estudio</th><th class="p-3 text-center">Cantidad</th></tr>
                                             </thead>
                                             <tbody id="visor-tabla-dias" class="divide-y divide-slate-100"></tbody>
@@ -240,7 +248,7 @@
                                     <div class="bg-slate-100 p-3 border-b border-slate-200"><h4 class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Productividad Detallada</h4></div>
                                     <div class="overflow-x-auto max-h-64 scroll-custom">
                                         <table class="w-full text-left text-xs">
-                                            <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 border-b border-slate-200 sticky top-0">
+                                            <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 border-b border-slate-200 sticky top-0 z-10">
                                                 <tr><th class="p-3">Personal</th><th class="p-3">Estudio</th><th class="p-3 text-center">Total Realizado</th></tr>
                                             </thead>
                                             <tbody id="visor-tabla-personal" class="divide-y divide-slate-100"></tbody>
@@ -248,8 +256,32 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- CUADRO DE PROCEDIMIENTOS INTEGRADO -->
+                            <div id="box-procedimientos-gral" class="hidden bg-white border border-emerald-200 rounded-2xl overflow-hidden shadow-sm mt-6">
+                                <div class="bg-emerald-50 p-3 border-b border-emerald-200 flex justify-between items-center">
+                                    <h4 class="text-[10px] font-black text-emerald-700 uppercase tracking-widest"><i class="fa-solid fa-notes-medical mr-1"></i> Resumen de Procedimientos</h4>
+                                    <span id="badge-total-procs" class="bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded-md">0</span>
+                                </div>
+                                <div class="overflow-x-auto max-h-64 scroll-custom">
+                                    <table class="w-full text-left text-xs">
+                                        <thead class="bg-white text-[9px] uppercase text-slate-500 border-b border-slate-200 sticky top-0 z-10">
+                                            <tr>
+                                                <th class="p-3">Fecha</th>
+                                                <th class="p-3">N. Orden</th>
+                                                <th class="p-3">Paciente</th>
+                                                <th class="p-3">Procedimiento</th>
+                                                <th class="p-3">Médico</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="visor-tabla-procedimientos-gral" class="divide-y divide-slate-100"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                         </div>
 
+                        <!-- VISTA COMPLETA PROCEDIMIENTOS (AUN DISPONIBLE POR SI ALGUIEN CLICKEA LA PESTAÑA PARA VER FIRMAS) -->
                         <div id="vista-procedimientos" class="hidden space-y-6 flex-1 flex flex-col">
                             <div class="flex justify-between items-center bg-emerald-50 p-4 rounded-xl border border-emerald-200">
                                 <div>
@@ -292,7 +324,7 @@
         let graficosVisor = {};
         const SUCURSALES_PROCEDIMIENTOS = ["GRAN SUR", "PLATEROS", "MARTIN CARRERA"];
 
-        // MOTOR DE NORMALIZACIÓN (El que nos faltaba para alinear con la DB)
+        // MOTOR DE NORMALIZACIÓN
         window.normalizarTexto = function(texto) { 
             return texto ? texto.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; 
         };
@@ -374,7 +406,6 @@
                 switchTab('general');
             }
 
-            // Iniciar por defecto en HOY tal como solicitaste
             setFiltroTiempo('hoy');
         };
 
@@ -395,16 +426,13 @@
                 iStr = `${yyyy}-${mm}-${dd}`;
                 fStr = iStr;
             } else if (tipo === 'semana') {
-                // Lógica de Lunes a Sábado
-                let day = hoy.getDay(); // 0 = Domingo, 1 = Lunes...
+                let day = hoy.getDay(); 
                 let diffLunes = hoy.getDate() - day + (day === 0 ? -6 : 1);
-                
                 let lunes = new Date(hoy.setDate(diffLunes));
                 iStr = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
                 
                 let sabado = new Date(lunes.setDate(lunes.getDate() + 5));
                 fStr = `${sabado.getFullYear()}-${String(sabado.getMonth()+1).padStart(2,'0')}-${String(sabado.getDate()).padStart(2,'0')}`;
-                
             } else if (tipo === 'mes') {
                 iStr = `${yyyy}-${mm}-01`;
                 fStr = `${yyyy}-${mm}-31`;
@@ -443,7 +471,6 @@
             datosCacheGeneral = { diasLaboradosSet, totalesEstudio, diaEstudios, personalEstudios, fechaIni, fechaFin };
             datosCacheProcedimientos = [];
 
-            // SOLUCIÓN AL PROBLEMA DE FIREBASE: Consulta múltiple usando la función de normalización
             const sucNorm = window.normalizarTexto(sucursalActiva);
             const variaciones = [...new Set([sucursalActiva, sucNorm, sucursalActiva.toUpperCase()])];
 
@@ -538,21 +565,53 @@
             let labelsPers = Object.keys(personalEstudios); let dataPers = labelsPers.map(m => Object.values(personalEstudios[m]).reduce((a,b)=>a+b, 0));
             graficosVisor['pers'] = new Chart(document.getElementById('chart-visor-personal').getContext('2d'), { type: 'doughnut', data: { labels: labelsPers, datasets: [{ data: dataPers, backgroundColor: ['#3b82f6','#10b981','#8b5cf6','#ef4444','#f59e0b'] }] }, options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } } } } });
 
+            // LOGICA DE PROCEDIMIENTOS EN VISTA GENERAL
             if(SUCURSALES_PROCEDIMIENTOS.includes(sucursalActiva)) {
-                let tbProc = document.getElementById('visor-tabla-procedimientos'); tbProc.innerHTML = '';
-                if(datosCacheProcedimientos.length === 0) tbProc.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-slate-400 italic">Sin procedimientos en este periodo</td></tr>`;
+                // Activar Botón y Contenedor Gral
+                document.getElementById('btn-pdf-procedimientos-gral').classList.remove('hidden');
+                document.getElementById('box-procedimientos-gral').classList.remove('hidden');
+                document.getElementById('badge-total-procs').innerText = datosCacheProcedimientos.length;
+
+                // Llenar tabla resumen (sin firmas para ahorrar espacio)
+                let tbProcGral = document.getElementById('visor-tabla-procedimientos-gral'); 
+                tbProcGral.innerHTML = '';
                 
-                datosCacheProcedimientos.forEach(p => {
-                    tbProc.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 text-[10px] font-black text-slate-500 whitespace-nowrap">${p.fecha}</td>
-                        <td class="p-3 font-bold text-slate-700">${p.nOrden}</td>
-                        <td class="p-3 font-black text-slate-800">${p.paciente} <span class="text-slate-400 font-bold ml-1">(${p.edad}a)</span></td>
-                        <td class="p-3 text-emerald-700 font-bold text-[10px] uppercase">${p.procedimiento}</td>
-                        <td class="p-3 font-bold text-slate-600 text-[10px]">${p.medico}</td>
-                        <td class="p-3"><img src="${p.firma}" class="h-8 opacity-80" alt="Firma"></td>
-                    </tr>`;
-                });
+                // Llenar tabla completa (con firmas en la pestaña oculta)
+                let tbProc = document.getElementById('visor-tabla-procedimientos'); 
+                tbProc.innerHTML = '';
+
+                if(datosCacheProcedimientos.length === 0) {
+                    let emptyMsg = `<tr><td colspan="5" class="text-center p-6 text-slate-400 italic">Sin procedimientos en este periodo</td></tr>`;
+                    tbProcGral.innerHTML = emptyMsg;
+                    tbProc.innerHTML = emptyMsg;
+                } else {
+                    datosCacheProcedimientos.forEach(p => {
+                        // Tabla Resumen (Gral)
+                        tbProcGral.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-3 text-[10px] font-black text-slate-500 whitespace-nowrap">${p.fecha}</td>
+                            <td class="p-3 font-bold text-slate-700">${p.nOrden}</td>
+                            <td class="p-3 font-black text-slate-800">${p.paciente}</td>
+                            <td class="p-3 text-emerald-700 font-bold text-[10px] uppercase">${p.procedimiento}</td>
+                            <td class="p-3 text-slate-600 font-bold text-[10px]">${p.medico}</td>
+                        </tr>`;
+
+                        // Tabla Detalle (Tab)
+                        tbProc.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-3 text-[10px] font-black text-slate-500 whitespace-nowrap">${p.fecha}</td>
+                            <td class="p-3 font-bold text-slate-700">${p.nOrden}</td>
+                            <td class="p-3 font-black text-slate-800">${p.paciente} <span class="text-slate-400 font-bold ml-1">(${p.edad}a)</span></td>
+                            <td class="p-3 text-emerald-700 font-bold text-[10px] uppercase">${p.procedimiento}</td>
+                            <td class="p-3 font-bold text-slate-600 text-[10px]">${p.medico}</td>
+                            <td class="p-3"><img src="${p.firma}" class="h-8 opacity-80" alt="Firma"></td>
+                        </tr>`;
+                    });
+                }
+            } else {
+                // Ocultar Botón y Contenedor Gral si no maneja procedimientos
+                document.getElementById('btn-pdf-procedimientos-gral').classList.add('hidden');
+                document.getElementById('box-procedimientos-gral').classList.add('hidden');
             }
 
             document.getElementById('visor-loader').classList.add('hidden');
@@ -611,7 +670,7 @@
         window.generarPdfProcedimientos = function() {
             if(!datosCacheProcedimientos || datosCacheProcedimientos.length === 0) return mostrarToast("No hay procedimientos en el rango de fechas.", "error");
             
-            const btn = document.querySelector('#vista-procedimientos .fa-file-pdf').parentNode;
+            const btn = document.getElementById('btn-pdf-procedimientos-gral');
             let prevHtml = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando...'; btn.disabled = true;
 
             const { fechaIni, fechaFin } = datosCacheGeneral;
