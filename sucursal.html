@@ -302,6 +302,37 @@
         </div>
     </div>
 
+    <!-- MODAL FIRMA PANTALLA COMPLETA -->
+    <div id="modal-firma" class="fixed inset-0 z-[400] bg-slate-900/95 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 flex flex-col items-center justify-center p-4">
+        <div id="modal-firma-card" class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl flex flex-col transform scale-95 transition-transform duration-300 overflow-hidden h-[85vh] md:h-[90vh]">
+            
+            <div class="bg-slate-800 text-white p-5 flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="text-xl font-black leading-tight"><i class="fa-solid fa-pen-nib text-orange-400 mr-2"></i> Firma del Paciente</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Conformidad del Procedimiento Médico</p>
+                </div>
+                <button type="button" onclick="cerrarModalFirma()" class="w-10 h-10 rounded-full bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- PAD AREA - PROPORCIÓN MAXIMIZADA -->
+            <div class="flex-1 bg-slate-100 p-4 relative flex flex-col w-full h-full">
+                <p class="absolute top-8 left-1/2 transform -translate-x-1/2 text-slate-300 font-black text-2xl md:text-4xl uppercase tracking-widest opacity-40 pointer-events-none text-center w-full px-4 select-none">
+                    Área de Firma
+                </p>
+                <canvas id="signature-pad-fullscreen" class="flex-1 w-full bg-white border-2 border-dashed border-slate-300 rounded-2xl cursor-crosshair shadow-inner touch-none"></canvas>
+            </div>
+
+            <div class="p-5 border-t border-slate-100 flex gap-4 shrink-0 bg-white">
+                <button type="button" onclick="limpiarFirmaPantalla()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black py-4 rounded-xl transition-all shadow-sm active:scale-95 text-sm">
+                    <i class="fa-solid fa-eraser mr-1"></i> Limpiar
+                </button>
+                <button type="button" onclick="guardarFirmaPantalla()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl transition-all shadow-md active:scale-95 text-sm">
+                    <i class="fa-solid fa-check mr-1"></i> Aceptar Firma
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ZONA OCULTA PARA IMPRESIÓN PDF -->
     <div id="zona-impresion-pdf" class="hidden"></div>
 
@@ -325,8 +356,11 @@
         const SUCURSALES_PROCEDIMIENTOS = ["GRAN SUR", "PLATEROS", "MARTIN CARRERA"];
         let procedimientosCargados = [];
 
-        // FIRMA LOGIC
-        let canvas, ctx, isDrawing = false, firmaVacia = true;
+        // =====================================
+        // LÓGICA DE FIRMA PANTALLA COMPLETA
+        // =====================================
+        let firmaActualBase64 = null; 
+        let canvasFirma, ctxFirma, isDrawingFirma = false, isFirmaVacia = true;
 
         document.addEventListener("DOMContentLoaded", () => {
             const medicosForaneos = window.LAPI_CONFIG.medicos;
@@ -343,25 +377,24 @@
             versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
             document.body.appendChild(versionDiv);
 
-            // Init Canvas
-            canvas = document.getElementById('signature-pad');
-            if(canvas) {
-                ctx = canvas.getContext('2d');
-                canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+            // Init Canvas Gigante
+            canvasFirma = document.getElementById('signature-pad-fullscreen');
+            if(canvasFirma) {
+                ctxFirma = canvasFirma.getContext('2d');
                 
                 const getCoords = (e) => {
-                    const rect = canvas.getBoundingClientRect();
+                    const rect = canvasFirma.getBoundingClientRect();
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
                     return { x: clientX - rect.left, y: clientY - rect.top };
                 };
 
-                const startDraw = (e) => { e.preventDefault(); isDrawing = true; firmaVacia = false; ctx.beginPath(); const coords = getCoords(e); ctx.moveTo(coords.x, coords.y); };
-                const draw = (e) => { if(!isDrawing) return; e.preventDefault(); const coords = getCoords(e); ctx.lineTo(coords.x, coords.y); ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0f172a'; ctx.stroke(); };
-                const stopDraw = () => { isDrawing = false; };
+                const startDraw = (e) => { e.preventDefault(); isDrawingFirma = true; isFirmaVacia = false; ctxFirma.beginPath(); const coords = getCoords(e); ctxFirma.moveTo(coords.x, coords.y); };
+                const draw = (e) => { if(!isDrawingFirma) return; e.preventDefault(); const coords = getCoords(e); ctxFirma.lineTo(coords.x, coords.y); ctxFirma.lineWidth = 3.5; ctxFirma.lineCap = 'round'; ctxFirma.lineJoin = 'round'; ctxFirma.strokeStyle = '#0f172a'; ctxFirma.stroke(); };
+                const stopDraw = () => { isDrawingFirma = false; };
 
-                canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stopDraw); canvas.addEventListener('mouseout', stopDraw);
-                canvas.addEventListener('touchstart', startDraw, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false}); canvas.addEventListener('touchend', stopDraw);
+                canvasFirma.addEventListener('mousedown', startDraw); canvasFirma.addEventListener('mousemove', draw); canvasFirma.addEventListener('mouseup', stopDraw); canvasFirma.addEventListener('mouseout', stopDraw);
+                canvasFirma.addEventListener('touchstart', startDraw, {passive: false}); canvasFirma.addEventListener('touchmove', draw, {passive: false}); canvasFirma.addEventListener('touchend', stopDraw);
             }
 
             // Set default month for procedures
@@ -369,6 +402,55 @@
             document.getElementById('filtro-mes-proc').value = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
         });
 
+        // NUEVAS FUNCIONES PARA CONTROLAR EL MODAL DE FIRMA
+        window.abrirModalFirma = function() {
+            const modal = document.getElementById('modal-firma');
+            const card = document.getElementById('modal-firma-card');
+            modal.classList.remove('hidden');
+            
+            setTimeout(() => { 
+                modal.classList.remove('opacity-0'); 
+                card.classList.remove('scale-95'); 
+                
+                if(canvasFirma) {
+                    const rect = canvasFirma.parentElement.getBoundingClientRect();
+                    canvasFirma.width = rect.width - 32; 
+                    canvasFirma.height = rect.height - 32;
+                    ctxFirma.clearRect(0, 0, canvasFirma.width, canvasFirma.height);
+                    isFirmaVacia = true;
+                }
+            }, 10);
+        };
+
+        window.cerrarModalFirma = function() {
+            const modal = document.getElementById('modal-firma');
+            const card = document.getElementById('modal-firma-card');
+            modal.classList.add('opacity-0'); 
+            card.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        };
+
+        window.limpiarFirmaPantalla = function() {
+            if(!ctxFirma) return; 
+            ctxFirma.clearRect(0, 0, canvasFirma.width, canvasFirma.height); 
+            isFirmaVacia = true;
+        };
+
+        window.guardarFirmaPantalla = function() {
+            if(isFirmaVacia) return mostrarToast("Por favor, que el paciente firme antes de aceptar.", "error");
+            
+            firmaActualBase64 = canvasFirma.toDataURL('image/png');
+            document.getElementById('preview-firma-img').src = firmaActualBase64;
+            document.getElementById('preview-firma-container').classList.remove('hidden');
+            document.getElementById('txt-btn-firmar').innerText = "Volver a Firmar";
+            
+            cerrarModalFirma();
+            mostrarToast("Firma anexada exitosamente.", "exito", 2500);
+        };
+
+        // =====================================
+        // FUNCIONES GLOBALES INTACTAS
+        // =====================================
         window.addEventListener('offline', () => { mostrarToast("Modo Offline Activo. Guardando local.", "info", 4000); });
         window.addEventListener('online', () => { mostrarToast("Conexión recuperada. Sincronizando...", "exito", 3000); });
 
@@ -385,7 +467,6 @@
 
         function abrirModalPWA() { const modal = document.getElementById('modal-pwa'); const card = document.getElementById('modal-pwa-card'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10); }
         function cerrarModalPWA() { const modal = document.getElementById('modal-pwa'); const card = document.getElementById('modal-pwa-card'); modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300); }
-
         window.onload = function() {
             const guardado = localStorage.getItem('lapi_sesion_sucursal');
             if(guardado) {
