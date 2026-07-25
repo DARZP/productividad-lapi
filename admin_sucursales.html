@@ -359,25 +359,52 @@
             }
         };
 
-        window.inicializarSucursales = function() {
-            let lista = [];
-            if (window.LAPI_CONFIG && window.LAPI_CONFIG.sucursales) {
-                lista = window.LAPI_CONFIG.sucursales;
-            } else {
-                lista = ["GRAN SUR", "PLATEROS", "MARTIN CARRERA", "CENTRO", "POLANCO", "COYOACAN"];
-            }
+        window.inicializarSucursales = async function() {
+            let lista = (window.LAPI_CONFIG && window.LAPI_CONFIG.sucursales) ? window.LAPI_CONFIG.sucursales : ["GRAN SUR", "PLATEROS", "MARTIN CARRERA", "CENTRO", "POLANCO", "COYOACAN"];
+            lista.sort(); // Orden alfabético por defecto
 
             const grid = document.getElementById('grid-sucursales');
-            let html = '';
+            grid.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-bold"><i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-orange-400 block"></i> Verificando estatus operativo de hoy...</div>';
+
+            // Determinar la fecha de hoy para el semáforo
+            const hoy = new Date();
+            const yyyy = hoy.getFullYear();
+            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dd = String(hoy.getDate()).padStart(2, '0');
+            const fechaHoy = `${yyyy}-${mm}-${dd}`;
+
+            let sucursalesActivasHoy = new Set();
+            try {
+                const qHoy = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", "==", fechaHoy));
+                const snapHoy = await window.getDocs(qHoy);
+                snapHoy.forEach(doc => {
+                    let d = doc.data();
+                    if(d.sucursal) {
+                        sucursalesActivasHoy.add(window.normalizarTexto(d.sucursal));
+                        sucursalesActivasHoy.add(d.sucursal); 
+                    }
+                });
+            } catch(e) { console.error("Error verificando estatus de hoy:", e); }
+
+            let htmlCon = ''; let countCon = 0;
+            let htmlSin = ''; let countSin = 0;
+
             lista.forEach(suc => {
-                let badgeProcedimientos = SUCURSALES_PROCEDIMIENTOS.includes(suc) 
-                    ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase mt-2 inline-block"><i class="fa-solid fa-notes-medical mr-1"></i> Procs. Especiales</span>` 
-                    : '';
+                let sucNorm = window.normalizarTexto(suc);
+                let tieneReporte = sucursalesActivasHoy.has(suc) || sucursalesActivasHoy.has(sucNorm);
                 
-                html += `
-                <div onclick="abrirVisorSucursal('${suc}')" class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm transition hover:shadow-md hover:border-orange-300 cursor-pointer group flex flex-col justify-between">
+                let checkProcedimientos = SUCURSALES_PROCEDIMIENTOS.includes(suc) || SUCURSALES_PROCEDIMIENTOS.includes(sucNorm);
+                let badgeProcedimientos = checkProcedimientos ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase mt-2 inline-block"><i class="fa-solid fa-notes-medical mr-1"></i> Procs. Especiales</span>` : '';
+                
+                // Semáforo Visual
+                let semaforoClass = tieneReporte ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-50 text-slate-400 border-slate-200';
+                let dot = tieneReporte ? '<span class="absolute top-3 right-3 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white shadow-sm" title="Activo Hoy"></span>' : '';
+
+                let card = `
+                <div onclick="abrirVisorSucursal('${suc}')" class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm transition hover:shadow-md hover:border-orange-300 cursor-pointer group flex flex-col justify-between relative">
+                    ${dot}
                     <div>
-                        <div class="w-10 h-10 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-hospital"></i></div>
+                        <div class="w-10 h-10 ${semaforoClass} rounded-xl flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-hospital"></i></div>
                         <h3 class="font-black text-slate-800 text-lg leading-tight uppercase group-hover:text-orange-600 transition-colors">${suc}</h3>
                         ${badgeProcedimientos}
                     </div>
@@ -385,10 +412,25 @@
                         Ver Analítica <i class="fa-solid fa-arrow-right ml-1"></i>
                     </div>
                 </div>`;
+
+                if(tieneReporte) { htmlCon += card; countCon++; }
+                else { htmlSin += card; countSin++; }
             });
-            grid.innerHTML = html;
+
+            let finalHtml = '';
+            if(countCon > 0) {
+                finalHtml += `<div class="col-span-full border-b border-emerald-100 pb-2 mb-2 mt-2"><h3 class="text-xs font-black text-emerald-600 uppercase tracking-widest"><i class="fa-solid fa-circle-check mr-1"></i> Con Actividad Hoy (${countCon})</h3></div>`;
+                finalHtml += htmlCon;
+            }
+            if(countSin > 0) {
+                finalHtml += `<div class="col-span-full border-b border-slate-100 pb-2 mb-2 mt-4"><h3 class="text-xs font-black text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-clock mr-1"></i> Pendientes de Actividad (${countSin})</h3></div>`;
+                finalHtml += htmlSin;
+            }
+
+            grid.innerHTML = finalHtml;
         };
 
+        
         window.abrirVisorSucursal = function(sucursal) {
             sucursalActiva = sucursal;
             document.getElementById('v-titulo-sucursal').innerHTML = `<i class="fa-solid fa-building text-orange-500 mr-2"></i> ${sucursal}`;
@@ -464,28 +506,24 @@
             document.getElementById('visor-loader').classList.remove('hidden');
 
             let diasLaboradosSet = new Set();
-            let totalesEstudio = {};
-            let diaEstudios = {}; 
-            let personalEstudios = {}; 
+            let totalesEstudio = {}; let diaEstudios = {}; let personalEstudios = {}; 
             
             datosCacheGeneral = { diasLaboradosSet, totalesEstudio, diaEstudios, personalEstudios, fechaIni, fechaFin };
             datosCacheProcedimientos = [];
 
             const sucNorm = window.normalizarTexto(sucursalActiva);
             const variaciones = [sucursalActiva, sucNorm, sucursalActiva.toUpperCase()];
+            const evalProcedimientos = SUCURSALES_PROCEDIMIENTOS.includes(sucursalActiva) || SUCURSALES_PROCEDIMIENTOS.includes(sucNorm);
 
-            // 1. CARGA GENERAL (Filtrando sucursal de forma local para evitar fallos de Firebase)
+            // 1. CARGA GENERAL (Bypass de índices de Firebase)
             try {
-                const qG = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
-                    window.where("fecha", ">=", fechaIni), 
-                    window.where("fecha", "<=", fechaFin)
-                );
+                const qG = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", ">=", fechaIni), window.where("fecha", "<=", fechaFin));
                 const snapG = await window.getDocs(qG);
 
                 snapG.forEach(doc => {
                     let d = doc.data();
                     let dSucNorm = window.normalizarTexto(d.sucursal);
-                    // Verificamos si la sucursal coincide
+                    // Filtramos la sucursal de forma local (Infalible)
                     if(variaciones.includes(d.sucursal) || variaciones.includes(dSucNorm)) {
                         let hayEstudios = false;
                         if(d.estudios) {
@@ -494,10 +532,8 @@
                                 if(cant > 0) {
                                     hayEstudios = true;
                                     datosCacheGeneral.totalesEstudio[est] = (datosCacheGeneral.totalesEstudio[est] || 0) + cant;
-                                    
                                     if(!datosCacheGeneral.diaEstudios[d.fecha]) datosCacheGeneral.diaEstudios[d.fecha] = {};
                                     datosCacheGeneral.diaEstudios[d.fecha][est] = (datosCacheGeneral.diaEstudios[d.fecha][est] || 0) + cant;
-                                    
                                     let medicoNorm = d.medico ? d.medico.toUpperCase() : "DESCONOCIDO";
                                     if(!datosCacheGeneral.personalEstudios[medicoNorm]) datosCacheGeneral.personalEstudios[medicoNorm] = {};
                                     datosCacheGeneral.personalEstudios[medicoNorm][est] = (datosCacheGeneral.personalEstudios[medicoNorm][est] || 0) + cant;
@@ -507,31 +543,29 @@
                         if(hayEstudios) datosCacheGeneral.diasLaboradosSet.add(d.fecha);
                     }
                 });
-
             } catch(e) { console.error("Firebase Error General:", e); }
 
-            // 2. CARGA PROCEDIMIENTOS (Igual, filtrado local anti-errores)
-            if(SUCURSALES_PROCEDIMIENTOS.includes(sucursalActiva)) {
+            // 2. CARGA PROCEDIMIENTOS (Bypass absoluto: trae todo y filtra en JS)
+            if(evalProcedimientos) {
                 try {
-                    const qP = window.query(window.collection(window.db, "procedimientos_sucursales"), 
-                        window.where("fecha", ">=", fechaIni), 
-                        window.where("fecha", "<=", fechaFin)
-                    );
+                    const qP = window.query(window.collection(window.db, "procedimientos_sucursales"));
                     const snapP = await window.getDocs(qP);
                     snapP.forEach(doc => { 
                         let p = doc.data();
                         let pSucNorm = window.normalizarTexto(p.sucursal);
+                        // Filtramos Sucursal y Fecha de forma local
                         if(variaciones.includes(p.sucursal) || variaciones.includes(pSucNorm)) {
-                            datosCacheProcedimientos.push(p); 
+                            if(p.fecha >= fechaIni && p.fecha <= fechaFin) {
+                                datosCacheProcedimientos.push(p); 
+                            }
                         }
                     });
                     datosCacheProcedimientos.sort((a,b) => b.fecha.localeCompare(a.fecha));
-                } catch(e) { console.error("Firebase Error Procedimientos:", e); }
+                } catch(e) { console.error("Firebase Error en Procedimientos:", e); }
             }
 
             renderizarVistas();
         }
-        
 
         function renderizarVistas() {
             const { diasLaboradosSet, totalesEstudio, diaEstudios, personalEstudios } = datosCacheGeneral;
