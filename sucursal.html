@@ -22,20 +22,32 @@
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Ocultar flechas nativas del input number */
         input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
-
         .shadow-soft { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+
+        /* Estilos Pad de Firma */
+        #signature-pad { border: 2px dashed #cbd5e1; border-radius: 0.75rem; background-color: #ffffff; cursor: crosshair; touch-action: none; width: 100%; height: 150px; }
+        
+        .tab-proc.active { border-bottom: 3px solid #ea580c; color: #ea580c; font-weight: 900; }
+        
+        /* PDF de Impresión de Procedimientos */
+        @media print {
+            body * { visibility: hidden; }
+            #zona-impresion-pdf, #zona-impresion-pdf * { visibility: visible; }
+            #zona-impresion-pdf { position: absolute; left: 0; top: 0; width: 100%; display: block !important; padding: 10mm; background: white; }
+            .pdf-header { border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 20px; }
+            .pdf-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+            .pdf-table th, .pdf-table td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; vertical-align: middle; }
+            .pdf-table th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; font-weight: bold; text-transform: uppercase; }
+            .pdf-firma-img { max-height: 40px; }
+        }
     </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where, orderBy, enableIndexedDbPersistence, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
@@ -50,23 +62,18 @@
         window.db = getFirestore(app);
         enableIndexedDbPersistence(window.db).catch((err) => console.error(err));
 
-        window.doc = doc;
-        window.setDoc = setDoc;
-        window.getDoc = getDoc;
-        window.getDocs = getDocs;
-        window.collection = collection;
-        window.query = query;
-        window.where = where;
+        window.doc = doc; window.setDoc = setDoc; window.getDoc = getDoc; window.getDocs = getDocs; window.collection = collection; window.query = query; window.where = where; window.orderBy = orderBy; window.addDoc = addDoc;
     </script>
 </head>
 <body class="min-h-screen p-4 flex flex-col pt-6 text-slate-800 pb-10 relative">
 
-    <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-4 right-4 z-[300] flex flex-col gap-2 pointer-events-none"></div>
 
     <a href="index.html" class="absolute top-4 left-4 z-[100] w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-orange-600 hover:border-orange-300 transition-all active:scale-95 shadow-sm" title="Volver al Portal">
         <i class="fa-solid fa-house"></i>
     </a>
 
+    <!-- LOGIN -->
     <div id="pantalla-login" class="flex-1 flex flex-col items-center justify-center p-4 gap-4 w-full max-w-md mx-auto relative">
         <div class="bg-white p-8 rounded-3xl shadow-soft w-full text-center border border-slate-200 border-t-4 border-t-orange-500 mt-8">
             <div class="w-16 h-16 bg-slate-50 text-orange-500 border border-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm"><i class="fa-solid fa-user-doctor"></i></div>
@@ -84,9 +91,7 @@
                         <select id="login-sucursal" class="w-full p-3 bg-slate-50 text-slate-700 placeholder-slate-400 border border-slate-200 rounded-xl outline-none focus:border-orange-400 transition uppercase font-bold appearance-none cursor-pointer shadow-sm">
                             <option value="" disabled selected class="text-slate-400">SELECCIONA UNA SUCURSAL...</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </div>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400"><i class="fa-solid fa-chevron-down"></i></div>
                     </div>
                 </div>
                 <button id="btn-login" onclick="iniciarSesion()" class="w-full bg-orange-600 text-white hover:bg-orange-700 font-black py-4 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-95 mt-4 flex justify-center items-center gap-2">
@@ -94,17 +99,14 @@
                 </button>
             </div>
         </div>
-
         <div class="mt-2 mb-4 text-center w-full">
-            <button onclick="abrirModalPWA()" class="text-slate-500 hover:text-orange-600 text-sm font-bold underline transition-all active:scale-95">
-                <i class="fa-solid fa-mobile-screen mr-1"></i> ¿Cómo instalar esta App?
-            </button>
+            <button onclick="abrirModalPWA()" class="text-slate-500 hover:text-orange-600 text-sm font-bold underline transition-all active:scale-95"><i class="fa-solid fa-mobile-screen mr-1"></i> ¿Cómo instalar esta App?</button>
         </div>
     </div>
 
-    <div id="pantalla-app" class="hidden w-full max-w-3xl mx-auto flex-1 mt-4">
+    <!-- APP PRINCIPAL -->
+    <div id="pantalla-app" class="hidden w-full max-w-3xl mx-auto flex-1 mt-4 relative">
         
-        <!-- ENCABEZADO DE TURNO -->
         <div class="bg-white border border-slate-200 text-slate-800 p-4 shadow-sm sticky top-2 z-50 rounded-2xl mx-2 mb-4">
             <div class="flex justify-between items-center">
                 <div>
@@ -112,15 +114,14 @@
                     <h2 id="ui-fecha" class="text-lg font-black leading-tight text-slate-800">Cargando...</h2>
                 </div>
                 <div class="flex gap-2">
-                    <a href="index.html" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 p-2.5 rounded-lg text-sm font-bold transition-all active:scale-95 flex items-center justify-center" title="Volver al Portal"><i class="fa-solid fa-house"></i></a>
-                    <button onclick="location.reload()" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 p-2.5 rounded-lg text-sm font-bold transition-all active:scale-95" title="Recargar Sesión"><i class="fa-solid fa-rotate-right"></i></button>
+                    <a href="index.html" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 p-2.5 rounded-lg text-sm font-bold transition-all active:scale-95 flex items-center justify-center"><i class="fa-solid fa-house"></i></a>
+                    <button onclick="location.reload()" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 p-2.5 rounded-lg text-sm font-bold transition-all active:scale-95"><i class="fa-solid fa-rotate-right"></i></button>
                     <button onclick="cerrarSesion()" class="bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 p-2.5 rounded-lg text-sm font-bold transition-all active:scale-95"><i class="fa-solid fa-right-from-bracket"></i></button>
                 </div>
             </div>
         </div>
 
         <div class="px-2 mt-2">
-            <!-- TARJETA MÉDICO -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-sky-500 flex items-center justify-between mb-6">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-sky-50 border border-sky-100 text-sky-600 rounded-full flex items-center justify-center text-xl shadow-sm"><i class="fa-solid fa-user-md"></i></div>
@@ -130,240 +131,174 @@
                     </div>
                 </div>
                 <div class="flex flex-col items-end gap-2">
-                    <button onclick="abrirMiHistorial()" class="text-[10px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-3 py-2 rounded-lg font-bold transition active:scale-95 shadow-sm flex items-center gap-1 uppercase tracking-wider">
-                        <i class="fa-solid fa-chart-user"></i> Perfil
-                    </button>
+                    <button onclick="abrirMiHistorial()" class="text-[10px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-3 py-2 rounded-lg font-bold transition active:scale-95 shadow-sm flex items-center gap-1 uppercase tracking-wider"><i class="fa-solid fa-chart-user"></i> Perfil</button>
                     <div id="indicador-guardado" class="text-[10px] font-black text-white bg-emerald-500 px-2.5 py-1 rounded-md opacity-0 transition-all duration-300 shadow-sm"></div>
                 </div>
             </div>
 
             <div id="vista-captura-principal" class="animate-fade-in">
-                <!-- CONTENEDOR GRID DE ESTUDIOS -->
                 <div id="contenedor-estudios" class="space-y-4"></div>
                 
                 <div class="bg-white p-5 rounded-3xl shadow-sm mb-6 mt-6 border border-slate-200">
                     <label class="block mb-3 font-black text-[10px] text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-pen text-orange-500 mr-1"></i> Observaciones</label>
-                    <textarea id="obs-principal" oninput="actualizarObservaciones(this.value)" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none placeholder-slate-400 text-slate-700 font-medium shadow-inner focus:border-orange-400 transition-colors" rows="3" placeholder="Ej. Equipo de audiometría falló, paciente pendiente..."></textarea>
+                    <textarea id="obs-principal" oninput="actualizarObservaciones(this.value)" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none placeholder-slate-400 text-slate-700 font-medium shadow-inner focus:border-orange-400 transition-colors" rows="3" placeholder="Ej. Equipo de audiometría falló..."></textarea>
                 </div>
 
                 <div class="flex flex-col gap-3 mb-6">
-                    <button onclick="mostrarResumen()" class="w-full bg-orange-600 text-white font-black py-4 rounded-xl shadow-md transition-all hover:bg-orange-700 active:scale-95 flex justify-center items-center gap-2 text-sm">
-                        Ver Resumen De Turno <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                    <button id="btn-ver-global" onclick="mostrarResumenSucursal()" class="w-full bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white font-black py-4 rounded-xl shadow-md transition-all active:scale-95 flex justify-center items-center gap-2 text-sm">
-                        <i class="fa-solid fa-globe"></i> Ver Resumen de Sucursal
-                    </button>
+                    <button onclick="mostrarResumen()" class="w-full bg-orange-600 text-white font-black py-4 rounded-xl shadow-md transition-all hover:bg-orange-700 active:scale-95 flex justify-center items-center gap-2 text-sm">Ver Resumen De Turno <i class="fa-solid fa-arrow-right"></i></button>
+                    <button id="btn-ver-global" onclick="mostrarResumenSucursal()" class="w-full bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white font-black py-4 rounded-xl shadow-md transition-all active:scale-95 flex justify-center items-center gap-2 text-sm"><i class="fa-solid fa-globe"></i> Ver Resumen de Sucursal</button>
                 </div>
             </div>
 
-            <!-- VISTA: RESUMEN INDIVIDUAL -->
+            <!-- VISTAS RESUMEN, GLOBAL, HISTORIAL (SE MANTIENEN IGUAL) -->
             <div id="vista-resumen-final" class="hidden bg-white p-6 rounded-3xl shadow-soft border border-slate-200 animate-fade-in">
-                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
-                    <h2 class="font-black text-xl text-slate-800"><i class="fa-solid fa-clipboard-check text-emerald-500 mr-2"></i> Reporte Individual </h2>
-                </div>
-                
+                <!-- Contenido Resumen... -->
+                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4"><h2 class="font-black text-xl text-slate-800"><i class="fa-solid fa-clipboard-check text-emerald-500 mr-2"></i> Reporte Individual </h2></div>
                 <div id="resumen-contenido" class="bg-slate-50 p-5 rounded-2xl mb-6 space-y-3 border border-slate-200 text-slate-700 text-sm shadow-inner font-medium"></div>
-
-                <div class="mb-6">
-                    <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Mis Observaciones:</label>
-                    <textarea id="obs-resumen" oninput="actualizarObservaciones(this.value)" class="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 outline-none placeholder-slate-400 text-slate-700 font-medium focus:border-orange-400 shadow-sm" rows="3"></textarea>
-                </div>
-
-                <div class="flex gap-3">
-                    <button onclick="ocultarResumen()" class="w-1/3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-black py-4 rounded-xl shadow-sm transition-all active:scale-95 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-arrow-left"></i> Volver
-                    </button>
-                    <button id="btn-descargar-sucursal" onclick="generarImagenCompartir()" class="w-2/3 bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-download"></i> Descargar Reporte
-                    </button>
-                </div>
+                <div class="mb-6"><label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Mis Observaciones:</label><textarea id="obs-resumen" oninput="actualizarObservaciones(this.value)" class="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 outline-none placeholder-slate-400 text-slate-700 font-medium focus:border-orange-400 shadow-sm" rows="3"></textarea></div>
+                <div class="flex gap-3"><button onclick="ocultarResumen()" class="w-1/3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-black py-4 rounded-xl shadow-sm transition-all active:scale-95"><i class="fa-solid fa-arrow-left"></i> Volver</button><button id="btn-descargar-sucursal" onclick="generarImagenCompartir()" class="w-2/3 bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl shadow-md transition-all active:scale-95"><i class="fa-solid fa-download"></i> Descargar Reporte</button></div>
             </div>
 
-            <!-- VISTA: RESUMEN SUCURSAL GLOBAL -->
             <div id="vista-resumen-sucursal" class="hidden bg-white p-6 rounded-3xl shadow-soft border border-slate-200 animate-fade-in relative overflow-hidden">
-                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 relative z-10">
-                    <h2 class="font-black text-xl text-slate-800 leading-tight"><i class="fa-solid fa-globe text-sky-500 mr-1"></i> Global<br><span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Acumulado del día</span></h2>
-                    <div class="flex gap-2">
-                        <button onclick="copiarResumenTexto()" class="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-4 py-2 rounded-xl transition hover:scale-[1.02] active:scale-95 flex items-center gap-2 font-black text-[11px] uppercase tracking-widest shadow-sm" title="Copiar Texto">
-                            <i class="fa-solid fa-copy"></i> Copiar
-                        </button>
+                <!-- Contenido Global... -->
+                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 relative z-10"><h2 class="font-black text-xl text-slate-800 leading-tight"><i class="fa-solid fa-globe text-sky-500 mr-1"></i> Global<br><span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Acumulado del día</span></h2><button onclick="copiarResumenTexto()" class="bg-slate-100 border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-[11px] font-black uppercase"><i class="fa-solid fa-copy"></i> Copiar</button></div>
+                
+                <div id="resumen-global-contenido" class="space-y-4 mb-6 max-h-[55vh] overflow-y-auto pr-2 scroll-custom relative z-10"></div>
+                
+                <!-- Extra: Resumen de procedimientos en global -->
+                <div id="resumen-procedimientos-global" class="mb-6 relative z-10 hidden">
+                    <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl">
+                        <h4 class="font-black text-[10px] text-emerald-600 uppercase tracking-widest mb-1"><i class="fa-solid fa-notes-medical"></i> Procedimientos Especiales</h4>
+                        <p class="text-sm font-bold text-slate-700">Total registrados hoy: <span id="txt-total-proc-global" class="text-emerald-700 font-black text-lg ml-1">0</span></p>
                     </div>
                 </div>
 
-                <div id="resumen-global-contenido" class="space-y-4 mb-6 max-h-[55vh] overflow-y-auto pr-2 scroll-custom relative z-10"></div>
-
-                <div class="flex gap-3 relative z-10">
-                    <button onclick="ocultarResumenSucursal()" class="w-1/3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-black py-4 rounded-xl shadow-sm transition-all active:scale-95 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-arrow-left"></i> Volver
-                    </button>
-                    <button id="btn-descargar-global" onclick="generarImagenGlobal()" class="w-2/3 bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-download"></i> Descargar Reporte
-                    </button>
-                </div>
+                <div class="flex gap-3 relative z-10"><button onclick="ocultarResumenSucursal()" class="w-1/3 bg-slate-100 border border-slate-200 text-slate-600 font-black py-4 rounded-xl shadow-sm"><i class="fa-solid fa-arrow-left"></i> Volver</button><button id="btn-descargar-global" onclick="generarImagenGlobal()" class="w-2/3 bg-slate-800 text-white font-black py-4 rounded-xl shadow-md"><i class="fa-solid fa-download"></i> Descargar Reporte</button></div>
             </div>
 
-            <!-- VISTA: MI HISTORIAL -->
             <div id="vista-mi-historial" class="hidden w-full max-w-2xl mx-auto space-y-6 animate-fade-in pb-12">
+                <!-- Contenido Historial Igual... (Omitido visualmente, mantenido en código) -->
                 <div class="bg-white border border-slate-200 p-5 rounded-3xl text-slate-800 shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="font-black text-xl leading-tight text-slate-800"><i class="fa-solid fa-chart-line mr-1 text-orange-500"></i> Mis Registros<br><span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" id="lbl-nombre-historial"></span></h2>
-                        <button onclick="cerrarHistorial()" class="text-[10px] uppercase tracking-widest bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-xl font-bold transition"><i class="fa-solid fa-xmark mr-1"></i> Cerrar</button>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2 text-xs font-bold mt-2">
-                        <button id="btn-filtro-hoy" onclick="filtrarHistorial('hoy')" class="btn-filtro bg-orange-600 text-white py-2.5 rounded-xl shadow-sm transition">Hoy</button>
-                        <button id="btn-filtro-semana" onclick="filtrarHistorial('semana')" class="btn-filtro bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 py-2.5 rounded-xl transition">Semana</button>
-                        <button id="btn-filtro-mes" onclick="filtrarHistorial('mes')" class="btn-filtro bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 py-2.5 rounded-xl transition">Mes</button>
-                    </div>
-                    <div class="flex gap-2 mt-3 pt-3 border-t border-slate-100">
-                        <div class="flex-1">
-                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Desde</label>
-                            <input type="date" id="historial-fecha-inicio" onchange="filtrarHistorial('custom')" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none text-slate-700 focus:border-orange-400 transition-colors">
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Hasta</label>
-                            <input type="date" id="historial-fecha-fin" onchange="filtrarHistorial('custom')" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none text-slate-700 focus:border-orange-400 transition-colors">
-                        </div>
-                    </div>
+                    <div class="flex justify-between items-center mb-4"><h2 class="font-black text-xl leading-tight text-slate-800"><i class="fa-solid fa-chart-line mr-1 text-orange-500"></i> Mis Registros<br><span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" id="lbl-nombre-historial"></span></h2><button onclick="cerrarHistorial()" class="text-[10px] uppercase bg-slate-100 border border-slate-200 text-slate-600 px-3 py-2 rounded-xl font-bold"><i class="fa-solid fa-xmark mr-1"></i> Cerrar</button></div>
+                    <div class="grid grid-cols-3 gap-2 text-xs font-bold mt-2"><button id="btn-filtro-hoy" onclick="filtrarHistorial('hoy')" class="btn-filtro bg-orange-600 text-white py-2.5 rounded-xl shadow-sm">Hoy</button><button id="btn-filtro-semana" onclick="filtrarHistorial('semana')" class="btn-filtro bg-slate-50 border border-slate-200 text-slate-600 py-2.5 rounded-xl">Semana</button><button id="btn-filtro-mes" onclick="filtrarHistorial('mes')" class="btn-filtro bg-slate-50 border border-slate-200 text-slate-600 py-2.5 rounded-xl">Mes</button></div>
+                    <div class="flex gap-2 mt-3 pt-3 border-t border-slate-100"><div class="flex-1"><label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Desde</label><input type="date" id="historial-fecha-inicio" onchange="filtrarHistorial('custom')" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none text-slate-700"></div><div class="flex-1"><label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Hasta</label><input type="date" id="historial-fecha-fin" onchange="filtrarHistorial('custom')" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold outline-none text-slate-700"></div></div>
                 </div>
-
-                <div id="loader-historial" class="hidden text-center py-10">
-                    <i class="fa-solid fa-spinner fa-spin text-4xl text-orange-400 mb-3 block"></i>
-                    <p class="text-sm font-bold text-slate-500">Consultando Base de Datos...</p>
-                </div>
-
+                <div id="loader-historial" class="hidden text-center py-10"><i class="fa-solid fa-spinner fa-spin text-4xl text-orange-400 mb-3 block"></i><p class="text-sm font-bold text-slate-500">Consultando Base de Datos...</p></div>
                 <div id="contenido-historial" class="space-y-5">
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white p-5 rounded-3xl text-slate-800 shadow-sm text-center border-b-4 border-orange-500 flex flex-col justify-center">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estudios Totales</p>
-                            <p id="mi-kpi-total" class="text-4xl font-black text-slate-800 mt-1">0</p>
-                        </div>
-                        <div class="bg-white p-5 rounded-3xl text-slate-800 shadow-sm text-center border-b-4 border-sky-500 flex flex-col justify-center">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Volumen Sucursal</p>
-                            <p id="mi-kpi-sucursal" class="text-3xl font-black text-sky-600 mt-1">0</p>
-                        </div>
-                        <div id="card-kpi-foraneos" class="bg-white p-5 rounded-3xl text-slate-800 shadow-sm col-span-2 text-center border-b-4 border-emerald-500 flex justify-around items-center hidden">
-                            <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Volumen Foráneos</p>
-                                <p id="mi-kpi-foraneos" class="text-2xl font-black text-emerald-600 mt-1">0</p>
-                            </div>
-                            <div class="h-10 w-px bg-slate-200"></div>
-                            <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Empresas (Ruta)</p>
-                                <p id="mi-kpi-empresas" class="text-2xl font-black text-emerald-600 mt-1">0</p>
-                            </div>
-                        </div>
+                        <div class="bg-white p-5 rounded-3xl text-slate-800 shadow-sm text-center border-b-4 border-orange-500 flex flex-col justify-center"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estudios Totales</p><p id="mi-kpi-total" class="text-4xl font-black text-slate-800 mt-1">0</p></div>
+                        <div class="bg-white p-5 rounded-3xl text-slate-800 shadow-sm text-center border-b-4 border-sky-500 flex flex-col justify-center"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Volumen Sucursal</p><p id="mi-kpi-sucursal" class="text-3xl font-black text-sky-600 mt-1">0</p></div>
+                        <div id="card-kpi-foraneos" class="bg-white p-5 rounded-3xl text-slate-800 shadow-sm col-span-2 text-center border-b-4 border-emerald-500 flex justify-around items-center hidden"><div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Volumen Foráneos</p><p id="mi-kpi-foraneos" class="text-2xl font-black text-emerald-600 mt-1">0</p></div><div class="h-10 w-px bg-slate-200"></div><div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Empresas (Ruta)</p><p id="mi-kpi-empresas" class="text-2xl font-black text-emerald-600 mt-1">0</p></div></div>
                     </div>
-
-                    <div class="bg-white p-6 rounded-3xl text-slate-800 shadow-sm border border-slate-200 space-y-8">
-                        <div>
-                            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Distribución por Tipo de Estudio</h3>
-                            <div class="relative h-48 w-full"><canvas id="mi-chart-tipos"></canvas></div>
-                        </div>
-                        <div id="card-grafica-tendencia">
-                            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Tendencia de Carga Diaria</h3>
-                            <div class="relative h-48 w-full"><canvas id="mi-chart-tendencia"></canvas></div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-3xl text-slate-800 shadow-sm overflow-hidden border border-slate-200">
-                        <div class="bg-slate-50 px-5 py-3 border-b border-slate-200">
-                            <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-table-list text-orange-500 mr-1"></i> Bitácora de Capturas</h3>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs border-collapse">
-                                <thead class="bg-white text-[9px] uppercase text-slate-400 border-b border-slate-100">
-                                    <tr>
-                                        <th class="p-3">Fecha</th>
-                                        <th class="p-3">Sede/Origen</th>
-                                        <th class="p-3 text-right">Detalle</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="mi-tabla-bitacora" class="divide-y divide-slate-100 font-medium text-slate-600 bg-white">
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <p class="text-[9px] text-slate-400 text-center italic px-4 mt-6 leading-relaxed">
-                        * Los datos registrados antes de la creación de la plataforma fueron generados en base al registro histórico de los concentrados de Excel.
-                    </p>
+                    <div class="bg-white p-6 rounded-3xl text-slate-800 shadow-sm border border-slate-200 space-y-8"><div><h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Distribución por Tipo de Estudio</h3><div class="relative h-48 w-full"><canvas id="mi-chart-tipos"></canvas></div></div><div id="card-grafica-tendencia"><h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Tendencia de Carga Diaria</h3><div class="relative h-48 w-full"><canvas id="mi-chart-tendencia"></canvas></div></div></div>
+                    <div class="bg-white rounded-3xl text-slate-800 shadow-sm overflow-hidden border border-slate-200"><div class="bg-slate-50 px-5 py-3 border-b border-slate-200"><h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-table-list text-orange-500 mr-1"></i> Bitácora de Capturas</h3></div><div class="overflow-x-auto"><table class="w-full text-left text-xs border-collapse"><thead class="bg-white text-[9px] uppercase text-slate-400 border-b border-slate-100"><tr><th class="p-3">Fecha</th><th class="p-3">Sede/Origen</th><th class="p-3 text-right">Detalle</th></tr></thead><tbody id="mi-tabla-bitacora" class="divide-y divide-slate-100 font-medium text-slate-600 bg-white"></tbody></table></div></div>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <!-- PWA MODAL -->
-    <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-pwa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300">
-            <h3 class="text-xl font-black mb-5 text-center text-orange-600"><i class="fa-solid fa-download mr-2"></i> Instalar Aplicación</h3>
-            <div class="mb-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <h4 class="font-black border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-apple mr-1 text-lg"></i> iOS (iPhone/iPad)</h4>
-                <ol class="text-xs space-y-2 list-decimal list-inside font-medium text-slate-600">
-                    <li>Abre esta página en <b>Safari</b>.</li>
-                    <li>Toca el botón Compartir <i class="fa-solid fa-arrow-up-from-bracket mx-1"></i> abajo.</li>
-                    <li>Selecciona <b>Agregar a inicio</b> <i class="fa-solid fa-square-plus mx-1"></i>.</li>
-                </ol>
+    <!-- BOTÓN FLOTANTE PROCEDIMIENTOS (SOLO SUCURSALES ESPECÍFICAS) -->
+    <button id="btn-flotante-procedimientos" onclick="abrirModalProcedimientos()" class="fixed bottom-6 right-4 z-50 bg-emerald-600 text-white w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-2xl hover:bg-emerald-700 transition-all active:scale-90 hidden border-2 border-emerald-400">
+        <i class="fa-solid fa-notes-medical"></i>
+    </button>
+
+    <!-- MODAL HERRAMIENTA PROCEDIMIENTOS -->
+    <div id="modal-procedimientos" class="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 flex items-end sm:items-center justify-center sm:p-4 pb-0">
+        <div id="modal-procedimientos-card" class="bg-white w-full max-w-2xl sm:rounded-3xl rounded-t-3xl shadow-2xl h-[90vh] sm:h-auto sm:max-h-[90vh] flex flex-col transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 relative">
+            
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 shrink-0">
+                <div>
+                    <h3 class="text-lg font-black text-slate-800 leading-tight"><i class="fa-solid fa-notes-medical text-emerald-500 mr-2"></i> Procedimientos</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Control Clínico</p>
+                </div>
+                <button onclick="cerrarModalProcedimientos()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <h4 class="font-black border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-android mr-1 text-lg"></i> Android</h4>
-                <ol class="text-xs space-y-2 list-decimal list-inside font-medium text-slate-600">
-                    <li>Abre esta página en <b>Chrome</b>.</li>
-                    <li>Toca el menú <i class="fa-solid fa-ellipsis-vertical mx-1"></i> arriba a la derecha.</li>
-                    <li>Selecciona <b>Instalar aplicación</b>.</li>
-                </ol>
+
+            <div class="flex border-b border-slate-100 shrink-0 px-4 pt-2">
+                <button onclick="switchTabProc('registro')" id="tab-proc-registro" class="tab-proc active flex-1 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest transition-colors"><i class="fa-solid fa-plus-circle mr-1"></i> Nuevo Registro</button>
+                <button onclick="switchTabProc('historial')" id="tab-proc-historial" class="tab-proc flex-1 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest transition-colors"><i class="fa-solid fa-list mr-1"></i> Base de Datos</button>
             </div>
-            <button onclick="cerrarModalPWA()" class="w-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-black py-3 rounded-xl transition-all active:scale-95 shadow-sm">Entendido</button>
+
+            <div class="flex-1 overflow-y-auto scroll-custom p-5 bg-slate-50/50">
+                
+                <!-- TAB: NUEVO REGISTRO -->
+                <div id="view-proc-registro" class="space-y-4 animate-fade-in pb-10">
+                    <form id="form-procedimiento" onsubmit="guardarProcedimiento(event)">
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="col-span-2">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Procedimiento Realizado <span class="text-red-500">*</span></label>
+                                <select id="proc-tipo" required class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-emerald-500">
+                                    <option value="" disabled selected>SELECCIONA PROCEDIMIENTO...</option>
+                                    <option value="LAVADO ÓTICO">LAVADO ÓTICO</option>
+                                    <option value="RETIRO DE PUNTOS">RETIRO DE PUNTOS</option>
+                                    <option value="CURACIÓN MENOR">CURACIÓN MENOR</option>
+                                    <option value="CURACIÓN MAYOR">CURACIÓN MAYOR</option>
+                                    <option value="APLICACIÓN DE INYECCIÓN">APLICACIÓN DE INYECCIÓN</option>
+                                    <option value="RETIRO DE DIU">RETIRO DE DIU</option>
+                                    <option value="TOMA DE PRESIÓN">TOMA DE PRESIÓN</option>
+                                    <option value="RETIRO DE YESO">RETIRO DE YESO</option>
+                                    <option value="APLICACIÓN DE VACUNA">APLICACIÓN DE VACUNA</option>
+                                    <option value="SONDA FOLEY">SONDA FOLEY</option>
+                                    <option value="OTRO">OTRO (ESPECIFICAR EN NOTAS)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">N. Orden <span class="text-red-500">*</span></label>
+                                <input type="text" id="proc-orden" required class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-emerald-500 uppercase">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Edad <span class="text-red-500">*</span></label>
+                                <input type="number" id="proc-edad" required min="0" max="120" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-emerald-500">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Nombre Completo del Paciente <span class="text-red-500">*</span></label>
+                                <input type="text" id="proc-paciente" required class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-emerald-500 uppercase">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Indicaciones / Notas Clínicas</label>
+                                <textarea id="proc-notas" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium outline-none text-slate-700 focus:border-emerald-500" rows="2"></textarea>
+                            </div>
+                            
+                            <div class="col-span-2 mt-2">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase mb-1 flex justify-between">
+                                    <span>Firma de Conformidad (Paciente) <span class="text-red-500">*</span></span>
+                                    <button type="button" onclick="limpiarFirma()" class="text-red-500 underline text-[9px]">Limpiar</button>
+                                </label>
+                                <canvas id="signature-pad"></canvas>
+                            </div>
+                        </div>
+                        <button type="submit" id="btn-guardar-proc" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl transition-all shadow-md active:scale-95 text-xs flex justify-center items-center gap-2 mt-4">
+                            <i class="fa-solid fa-floppy-disk"></i> Registrar Procedimiento
+                        </button>
+                    </form>
+                </div>
+
+                <!-- TAB: HISTORIAL -->
+                <div id="view-proc-historial" class="hidden space-y-4 animate-fade-in">
+                    <div class="flex gap-2 mb-4 bg-white p-3 rounded-xl border border-slate-200">
+                        <input type="month" id="filtro-mes-proc" onchange="cargarProcedimientos()" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700">
+                        <button onclick="generarPdfProcedimientos()" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition flex items-center gap-1 shadow-sm"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                    </div>
+
+                    <div id="lista-proc-container" class="space-y-3">
+                        <div class="text-center py-10 text-slate-400 italic font-bold text-sm"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-emerald-400 block"></i> Cargando...</div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
-    <!-- TPL CAPTURA IMAGEN PROFESIONAL SUCURSAL -->
-    <div id="captura-temp-sucursal" class="fixed -top-[3000px] -left-[3000px] w-[550px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
-        <div class="bg-slate-50 min-h-screen p-8 rounded-[2rem] border border-slate-200">
-            <div class="bg-white p-6 rounded-3xl text-slate-800 mb-6 shadow-sm border-t-4 border-orange-500">
-                <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-building text-orange-500 mr-2"></i> REGISTRO SUCURSAL</h1>
-                <p id="cap-sucursal-nombre" class="text-sm font-bold uppercase tracking-widest text-slate-400"></p>
-            </div>
-            <div class="bg-white p-6 rounded-3xl text-slate-800 shadow-sm border border-slate-100">
-                <h2 class="font-black mb-6 text-center flex items-center justify-center gap-2 text-2xl border-b border-slate-100 pb-4">
-                    <i class="fa-solid fa-file-contract text-orange-500"></i> Resumen de Turno
-                </h2>
-                <div id="cap-resumen-info" class="text-sm bg-slate-50 p-5 rounded-2xl mb-4 border border-slate-200 text-slate-600 font-medium"></div>
-                <div id="cap-resumen-lista" class="text-base bg-slate-50 p-5 rounded-2xl mb-6 space-y-3 border border-slate-200 text-slate-700 font-medium"></div>
-                
-                <p class="text-[11px] font-black uppercase tracking-widest mb-2 text-slate-400">Observaciones Reportadas</p>
-                <div id="cap-observaciones" class="text-sm bg-slate-50 p-5 rounded-2xl min-h-[60px] border border-slate-200 italic text-slate-600 font-medium leading-relaxed">Sin observaciones.</div>
-                
-                <div class="text-center w-full pt-6 mt-6 border-t border-slate-100 text-slate-400 text-[10px] font-black tracking-widest uppercase">GENERADO POR PWA OPERATIVA</div>
-            </div>
-        </div>
-    </div>
+    <!-- ZONA OCULTA PARA IMPRESIÓN PDF -->
+    <div id="zona-impresion-pdf" class="hidden"></div>
 
-    <!-- TPL CAPTURA IMAGEN PROFESIONAL GLOBAL -->
-    <div id="captura-temp-global" class="fixed -top-[3000px] -left-[3000px] w-[550px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
-        <div class="bg-slate-50 min-h-screen p-8 rounded-[2rem] border border-slate-200">
-            <div class="bg-white p-6 rounded-3xl text-slate-800 mb-6 shadow-sm border-t-4 border-sky-500">
-                <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-globe text-sky-500 mr-2"></i> REPORTE GLOBAL</h1>
-                <p id="cap-glob-sucursal" class="text-sm font-bold uppercase tracking-widest text-slate-400"></p>
-            </div>
-            <div class="bg-white p-6 rounded-3xl text-slate-800 shadow-sm border border-slate-100">
-                <h2 class="font-black mb-6 text-center flex items-center justify-center gap-2 text-2xl border-b border-slate-100 pb-4">
-                    <i class="fa-solid fa-camera-viewfinder text-sky-500"></i> Acumulado de Sucursal
-                </h2>
-                
-                <div id="cap-glob-info" class="text-sm bg-slate-50 p-5 rounded-2xl mb-4 border border-slate-200 text-slate-600 font-medium"></div>
-                
-                <h3 class="font-black text-[11px] text-sky-600 uppercase tracking-widest mt-6 border-b border-slate-200 pb-2 mb-3">Cantidades Totales</h3>
-                <div id="cap-glob-lista" class="text-base bg-slate-50 p-5 rounded-2xl mb-6 space-y-3 border border-slate-200 text-slate-700 font-medium"></div>
-                
-                <h3 class="font-black text-[11px] text-sky-600 uppercase tracking-widest mt-6 border-b border-slate-200 pb-2 mb-3">Observaciones</h3>
-                <div id="cap-glob-obs" class="text-sm bg-slate-50 p-5 rounded-2xl min-h-[60px] border border-slate-200 italic text-slate-600 font-medium leading-relaxed"></div>
-                
-                <div class="text-center w-full pt-6 mt-6 border-t border-slate-100 text-slate-400 text-[10px] font-black tracking-widest uppercase">GENERADO POR LAPI SUITE OPERATIVA</div>
-            </div>
-        </div>
-    </div>
+    <!-- ZONAS DE CAPTURA PWA MANTENIDAS IGUALES -->
+    <div id="captura-temp-sucursal" class="fixed -top-[3000px] -left-[3000px] w-[550px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;"><div class="bg-slate-50 min-h-screen p-8 rounded-[2rem] border border-slate-200"><div class="bg-white p-6 rounded-3xl text-slate-800 mb-6 shadow-sm border-t-4 border-orange-500"><h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-building text-orange-500 mr-2"></i> REGISTRO SUCURSAL</h1><p id="cap-sucursal-nombre" class="text-sm font-bold uppercase tracking-widest text-slate-400"></p></div><div class="bg-white p-6 rounded-3xl text-slate-800 shadow-sm border border-slate-100"><h2 class="font-black mb-6 text-center flex items-center justify-center gap-2 text-2xl border-b border-slate-100 pb-4"><i class="fa-solid fa-file-contract text-orange-500"></i> Resumen de Turno</h2><div id="cap-resumen-info" class="text-sm bg-slate-50 p-5 rounded-2xl mb-4 border border-slate-200 text-slate-600 font-medium"></div><div id="cap-resumen-lista" class="text-base bg-slate-50 p-5 rounded-2xl mb-6 space-y-3 border border-slate-200 text-slate-700 font-medium"></div><p class="text-[11px] font-black uppercase tracking-widest mb-2 text-slate-400">Observaciones Reportadas</p><div id="cap-observaciones" class="text-sm bg-slate-50 p-5 rounded-2xl min-h-[60px] border border-slate-200 italic text-slate-600 font-medium leading-relaxed">Sin observaciones.</div><div class="text-center w-full pt-6 mt-6 border-t border-slate-100 text-slate-400 text-[10px] font-black tracking-widest uppercase">GENERADO POR PWA OPERATIVA</div></div></div></div>
+    <div id="captura-temp-global" class="fixed -top-[3000px] -left-[3000px] w-[550px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;"><div class="bg-slate-50 min-h-screen p-8 rounded-[2rem] border border-slate-200"><div class="bg-white p-6 rounded-3xl text-slate-800 mb-6 shadow-sm border-t-4 border-sky-500"><h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-globe text-sky-500 mr-2"></i> REPORTE GLOBAL</h1><p id="cap-glob-sucursal" class="text-sm font-bold uppercase tracking-widest text-slate-400"></p></div><div class="bg-white p-6 rounded-3xl text-slate-800 shadow-sm border border-slate-100"><h2 class="font-black mb-6 text-center flex items-center justify-center gap-2 text-2xl border-b border-slate-100 pb-4"><i class="fa-solid fa-camera-viewfinder text-sky-500"></i> Acumulado de Sucursal</h2><div id="cap-glob-info" class="text-sm bg-slate-50 p-5 rounded-2xl mb-4 border border-slate-200 text-slate-600 font-medium"></div><h3 class="font-black text-[11px] text-sky-600 uppercase tracking-widest mt-6 border-b border-slate-200 pb-2 mb-3">Cantidades Totales</h3><div id="cap-glob-lista" class="text-base bg-slate-50 p-5 rounded-2xl mb-6 space-y-3 border border-slate-200 text-slate-700 font-medium"></div><h3 class="font-black text-[11px] text-sky-600 uppercase tracking-widest mt-6 border-b border-slate-200 pb-2 mb-3">Observaciones</h3><div id="cap-glob-obs" class="text-sm bg-slate-50 p-5 rounded-2xl min-h-[60px] border border-slate-200 italic text-slate-600 font-medium leading-relaxed"></div><div class="text-center w-full pt-6 mt-6 border-t border-slate-100 text-slate-400 text-[10px] font-black tracking-widest uppercase">GENERADO POR LAPI SUITE OPERATIVA</div></div></div></div>
 
+    <!-- Modales Restantes... -->
+    <div id="modal-pwa" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"><div id="modal-pwa-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300"><h3 class="text-xl font-black mb-5 text-center text-orange-600"><i class="fa-solid fa-download mr-2"></i> Instalar Aplicación</h3><div class="mb-4 bg-slate-50 p-4 rounded-2xl border border-slate-200"><h4 class="font-black border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-apple mr-1 text-lg"></i> iOS (iPhone/iPad)</h4><ol class="text-xs space-y-2 list-decimal list-inside font-medium text-slate-600"><li>Abre esta página en <b>Safari</b>.</li><li>Toca el botón Compartir abajo.</li><li>Selecciona <b>Agregar a inicio</b>.</li></ol></div><div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200"><h4 class="font-black border-b border-slate-200 pb-2 mb-3 text-slate-700"><i class="fa-brands fa-android mr-1 text-lg"></i> Android</h4><ol class="text-xs space-y-2 list-decimal list-inside font-medium text-slate-600"><li>Abre esta página en <b>Chrome</b>.</li><li>Toca el menú arriba a la derecha.</li><li>Selecciona <b>Instalar aplicación</b>.</li></ol></div><button onclick="cerrarModalPWA()" class="w-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-black py-3 rounded-xl transition-all active:scale-95 shadow-sm">Entendido</button></div></div>
     <datalist id="lista-medicos"></datalist>
 
     <script>
@@ -375,24 +310,51 @@
         let timerGuardado = null;
         window.datosGlobalesTemp = null; 
 
+        const SUCURSALES_PROCEDIMIENTOS = ["GRAN SUR", "PLATEROS", "MARTIN CARRERA"];
+        let procedimientosCargados = [];
+
+        // FIRMA LOGIC
+        let canvas, ctx, isDrawing = false, firmaVacia = true;
+
         document.addEventListener("DOMContentLoaded", () => {
             const medicosForaneos = window.LAPI_CONFIG.medicos;
             const sucursalesOficiales = window.LAPI_CONFIG.sucursales;
 
             const datalistMedicos = document.getElementById('lista-medicos');
-            if(datalistMedicos) {
-                datalistMedicos.innerHTML = medicosForaneos.map(m => `<option value="${m}">`).join('');
-            }
+            if(datalistMedicos) datalistMedicos.innerHTML = medicosForaneos.map(m => `<option value="${m}">`).join('');
             
             const selectSucursal = document.getElementById('login-sucursal');
-            if(selectSucursal) {
-                selectSucursal.innerHTML += sucursalesOficiales.map(s => `<option value="${s}" class="text-slate-700">${s}</option>`).join('');
-            }
+            if(selectSucursal) selectSucursal.innerHTML += sucursalesOficiales.map(s => `<option value="${s}" class="text-slate-700">${s}</option>`).join('');
 
             const versionDiv = document.createElement('div');
             versionDiv.className = 'fixed bottom-2 right-4 z-50 text-[10px] text-slate-400 font-bold tracking-widest pointer-events-none opacity-60';
             versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
             document.body.appendChild(versionDiv);
+
+            // Init Canvas
+            canvas = document.getElementById('signature-pad');
+            if(canvas) {
+                ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+                
+                const getCoords = (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    return { x: clientX - rect.left, y: clientY - rect.top };
+                };
+
+                const startDraw = (e) => { e.preventDefault(); isDrawing = true; firmaVacia = false; ctx.beginPath(); const coords = getCoords(e); ctx.moveTo(coords.x, coords.y); };
+                const draw = (e) => { if(!isDrawing) return; e.preventDefault(); const coords = getCoords(e); ctx.lineTo(coords.x, coords.y); ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0f172a'; ctx.stroke(); };
+                const stopDraw = () => { isDrawing = false; };
+
+                canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stopDraw); canvas.addEventListener('mouseout', stopDraw);
+                canvas.addEventListener('touchstart', startDraw, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false}); canvas.addEventListener('touchend', stopDraw);
+            }
+
+            // Set default month for procedures
+            const hoy = new Date();
+            document.getElementById('filtro-mes-proc').value = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
         });
 
         window.addEventListener('offline', () => { mostrarToast("Modo Offline Activo. Guardando local.", "info", 4000); });
@@ -409,14 +371,8 @@
             if (duracion > 0) { setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, duracion); }
         }
 
-        function abrirModalPWA() {
-            const modal = document.getElementById('modal-pwa'); const card = document.getElementById('modal-pwa-card');
-            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
-        }
-        function cerrarModalPWA() {
-            const modal = document.getElementById('modal-pwa'); const card = document.getElementById('modal-pwa-card');
-            modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
+        function abrirModalPWA() { const modal = document.getElementById('modal-pwa'); const card = document.getElementById('modal-pwa-card'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10); }
+        function cerrarModalPWA() { const modal = document.getElementById('modal-pwa'); const card = document.getElementById('modal-pwa-card'); modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300); }
 
         window.onload = function() {
             const guardado = localStorage.getItem('lapi_sesion_sucursal');
@@ -443,65 +399,42 @@
         }
 
         window.iniciarSesion = function() {
-            const rawMedico = document.getElementById('login-medico').value;
-            const rawSuc = document.getElementById('login-sucursal').value;
-            
+            const rawMedico = document.getElementById('login-medico').value; const rawSuc = document.getElementById('login-sucursal').value;
             if(!rawMedico || !rawSuc) return mostrarToast("Selecciona tu nombre y sucursal.", "error");
             
-            const medInputNorm = normalizarTexto(rawMedico);
-            const sucValidado = normalizarTexto(rawSuc); 
+            const medInputNorm = normalizarTexto(rawMedico); const sucValidado = normalizarTexto(rawSuc); 
             const medicosOficiales = window.LAPI_CONFIG.medicos;
-            
             let medicoValidado = null;
             
             let exactMatch = medicosOficiales.find(m => normalizarTexto(m) === medInputNorm);
-            if (exactMatch) {
-                medicoValidado = exactMatch;
-            } else {
+            if (exactMatch) medicoValidado = exactMatch;
+            else {
                 let inputWords = medInputNorm.split(/\s+/).filter(w => w.length > 2);
                 if(inputWords.length === 0) inputWords = medInputNorm.split(/\s+/);
-                
-                let posibles = medicosOficiales.filter(m => {
-                    let mNorm = normalizarTexto(m);
-                    return inputWords.every(word => mNorm.includes(word));
-                });
+                let posibles = medicosOficiales.filter(m => { let mNorm = normalizarTexto(m); return inputWords.every(word => mNorm.includes(word)); });
                 if (posibles.length > 0) medicoValidado = posibles[0]; 
             }
-            
             if (!medicoValidado) return mostrarToast("Nombre no reconocido. Verifica o intenta con un apellido diferente.", "error");
 
-            medicoValidado = normalizarTexto(medicoValidado);
-            document.getElementById('login-medico').value = medicoValidado;
+            medicoValidado = normalizarTexto(medicoValidado); document.getElementById('login-medico').value = medicoValidado;
+            const btn = document.getElementById('btn-login'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando...'; btn.disabled = true;
 
-            const btn = document.getElementById('btn-login');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando...';
-            btn.disabled = true;
-
-            setTimeout(() => {
-                sesionActual = { medico: medicoValidado, sucursal: sucValidado };
-                localStorage.setItem('lapi_sesion_sucursal', JSON.stringify(sesionActual));
-                iniciarApp();
-            }, 500);
+            setTimeout(() => { sesionActual = { medico: medicoValidado, sucursal: sucValidado }; localStorage.setItem('lapi_sesion_sucursal', JSON.stringify(sesionActual)); iniciarApp(); }, 500);
         }
 
-        window.cerrarSesion = function() {
-            if(confirm("¿Seguro que quieres salir de la sesión operativa?")) {
-                localStorage.removeItem('lapi_sesion_sucursal');
-                location.reload();
-            }
-        }
+        window.cerrarSesion = function() { if(confirm("¿Seguro que quieres salir de la sesión operativa?")) { localStorage.removeItem('lapi_sesion_sucursal'); location.reload(); } }
 
         async function iniciarApp() {
-            document.getElementById('pantalla-login').classList.add('hidden');
-            document.getElementById('pantalla-app').classList.remove('hidden');
-            document.getElementById('ui-medico').innerText = sesionActual.medico;
-            document.getElementById('ui-sucursal').innerText = sesionActual.sucursal;
+            document.getElementById('pantalla-login').classList.add('hidden'); document.getElementById('pantalla-app').classList.remove('hidden');
+            document.getElementById('ui-medico').innerText = sesionActual.medico; document.getElementById('ui-sucursal').innerText = sesionActual.sucursal;
             
-            const fechas = obtenerFechaOperativaYFormato();
-            fechaOperativa = fechas.idFormat;
-            
-            const sucId = normalizarTexto(sesionActual.sucursal).replace(/\s+/g,'');
-            const medId = normalizarTexto(sesionActual.medico).replace(/\s+/g,'');
+            // Lógica de Procedimientos
+            if(SUCURSALES_PROCEDIMIENTOS.includes(sesionActual.sucursal)) {
+                document.getElementById('btn-flotante-procedimientos').classList.remove('hidden');
+            }
+
+            const fechas = obtenerFechaOperativaYFormato(); fechaOperativa = fechas.idFormat;
+            const sucId = normalizarTexto(sesionActual.sucursal).replace(/\s+/g,''); const medId = normalizarTexto(sesionActual.medico).replace(/\s+/g,'');
             docId = `SUC_${fechaOperativa}_${sucId}_${medId}`;
             
             document.getElementById('ui-fecha').innerText = fechas.idFormat === new Date().toISOString().split('T')[0] ? "Hoy, " + fechas.uiFormat : "Turno del " + fechas.uiFormat;
@@ -509,447 +442,364 @@
             try {
                 const docSnap = await window.getDoc(window.doc(window.db, "registros_diarios_sucursales", docId));
                 if (docSnap.exists()) {
-                    datosDelDia = docSnap.data();
-                    if(!datosDelDia.estudios) datosDelDia.estudios = {}; 
-                    if(!datosDelDia.observaciones) datosDelDia.observaciones = ""; 
-
-                    datosDelDia.tipo = "sucursal_agrupada";
-                    datosDelDia.fecha = fechaOperativa;
-                    datosDelDia.sucursal = sesionActual.sucursal; 
-                    datosDelDia.medico = sesionActual.medico; 
-                    
-                } else {
-                    datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
-                }
+                    datosDelDia = docSnap.data(); if(!datosDelDia.estudios) datosDelDia.estudios = {}; if(!datosDelDia.observaciones) datosDelDia.observaciones = ""; 
+                    datosDelDia.tipo = "sucursal_agrupada"; datosDelDia.fecha = fechaOperativa; datosDelDia.sucursal = sesionActual.sucursal; datosDelDia.medico = sesionActual.medico; 
+                } else { datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" }; }
                 if(navigator.onLine) mostrarToast(`Turno de ${sesionActual.medico} Listo.`, 'exito');
-            } catch (error) { 
-                datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" };
-                mostrarToast("Modo Local Activo.", "info");
-            } finally {
-                document.getElementById('obs-principal').value = datosDelDia.observaciones || '';
-                renderizarTablero();
-            }
+            } catch (error) { datosDelDia = { tipo: "sucursal_agrupada", fecha: fechaOperativa, sucursal: sesionActual.sucursal, medico: sesionActual.medico, estudios: {}, observaciones: "" }; mostrarToast("Modo Local Activo.", "info");
+            } finally { document.getElementById('obs-principal').value = datosDelDia.observaciones || ''; renderizarTablero(); }
         }
 
-        // CONTROL HÍBRIDO (BOTONES + MANUAL)
         window.cambiarContador = function(estudio, quantity) {
             if (navigator.vibrate) navigator.vibrate(15);
             if(!datosDelDia.estudios[estudio]) datosDelDia.estudios[estudio] = 0;
-            datosDelDia.estudios[estudio] += quantity;
-            if(datosDelDia.estudios[estudio] < 0) datosDelDia.estudios[estudio] = 0;
-            
-            const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
-            const counterElement = document.getElementById(idHTML);
-            if(counterElement) {
-                counterElement.value = datosDelDia.estudios[estudio];
-                counterElement.classList.add('scale-110', 'text-orange-500');
-                setTimeout(() => counterElement.classList.remove('scale-110', 'text-orange-500'), 200);
-            }
+            datosDelDia.estudios[estudio] += quantity; if(datosDelDia.estudios[estudio] < 0) datosDelDia.estudios[estudio] = 0;
+            const idHTML = `count_${estudio.replace(/\s+/g,'')}`; const counterElement = document.getElementById(idHTML);
+            if(counterElement) { counterElement.value = datosDelDia.estudios[estudio]; counterElement.classList.add('scale-110', 'text-orange-500'); setTimeout(() => counterElement.classList.remove('scale-110', 'text-orange-500'), 200); }
             sincronizarConNube();
         }
 
         window.setContador = function(estudio, value) {
-            let num = parseInt(value);
-            if(isNaN(num) || num < 0) num = 0;
-            datosDelDia.estudios[estudio] = num;
-            
-            const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
-            const counterElement = document.getElementById(idHTML);
-            if(counterElement) {
-                counterElement.value = num;
-                counterElement.classList.add('scale-110', 'text-orange-500');
-                setTimeout(() => counterElement.classList.remove('scale-110', 'text-orange-500'), 200);
-            }
+            let num = parseInt(value); if(isNaN(num) || num < 0) num = 0; datosDelDia.estudios[estudio] = num;
+            const idHTML = `count_${estudio.replace(/\s+/g,'')}`; const counterElement = document.getElementById(idHTML);
+            if(counterElement) { counterElement.value = num; counterElement.classList.add('scale-110', 'text-orange-500'); setTimeout(() => counterElement.classList.remove('scale-110', 'text-orange-500'), 200); }
             sincronizarConNube();
         }
 
-        window.actualizarObservaciones = function(texto) {
-            datosDelDia.observaciones = texto;
-            document.getElementById('obs-principal').value = texto;
-            document.getElementById('obs-resumen').value = texto;
-            sincronizarConNube();
-        }
+        window.actualizarObservaciones = function(texto) { datosDelDia.observaciones = texto; document.getElementById('obs-principal').value = texto; document.getElementById('obs-resumen').value = texto; sincronizarConNube(); }
 
         function renderizarTablero() {
-            const contenedor = document.getElementById('contenedor-estudios');
-            let htmlEstudios = "";
+            const contenedor = document.getElementById('contenedor-estudios'); let htmlEstudios = "";
             listaEstudiosOficial.forEach(estudio => {
-                const cantidadAct = datosDelDia.estudios[estudio] || 0;
-                const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
-                
-                // NUEVO: Diseño de 2 Columnas responsivo, Input manual central, alineado a la derecha
-                htmlEstudios += `
-                    <div class="flex items-center justify-between p-3 rounded-2xl bg-white border border-slate-200 hover:border-orange-300 transition-colors shadow-sm gap-2 group">
-                        <span class="text-xs font-black text-slate-700 leading-tight flex-1 uppercase">${estudio}</span>
-                        <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-1 shrink-0 shadow-sm group-hover:border-orange-200 transition-colors">
-                            <button onclick="cambiarContador('${estudio}', -1)" class="w-8 h-8 rounded bg-slate-100 text-slate-600 font-black hover:bg-slate-200 active:scale-90 transition-all flex items-center justify-center">-</button>
-                            <input type="number" id="${idHTML}" value="${cantidadAct}" min="0" onchange="setContador('${estudio}', this.value)" class="w-10 text-center font-black text-slate-800 bg-transparent outline-none appearance-none m-0 p-0 text-base transition-transform focus:ring-0">
-                            <button onclick="cambiarContador('${estudio}', 1)" class="w-8 h-8 rounded bg-orange-100 text-orange-600 font-black hover:bg-orange-200 active:scale-90 transition-all flex items-center justify-center">+</button>
-                        </div>
-                    </div>
-                `;
+                const cantidadAct = datosDelDia.estudios[estudio] || 0; const idHTML = `count_${estudio.replace(/\s+/g,'')}`;
+                htmlEstudios += `<div class="flex items-center justify-between p-3 rounded-2xl bg-white border border-slate-200 hover:border-orange-300 transition-colors shadow-sm gap-2 group"><span class="text-xs font-black text-slate-700 leading-tight flex-1 uppercase">${estudio}</span><div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-1 shrink-0 shadow-sm group-hover:border-orange-200 transition-colors"><button onclick="cambiarContador('${estudio}', -1)" class="w-8 h-8 rounded bg-slate-100 text-slate-600 font-black hover:bg-slate-200 active:scale-90 transition-all flex items-center justify-center">-</button><input type="number" id="${idHTML}" value="${cantidadAct}" min="0" onchange="setContador('${estudio}', this.value)" class="w-10 text-center font-black text-slate-800 bg-transparent outline-none appearance-none m-0 p-0 text-base transition-transform focus:ring-0"><button onclick="cambiarContador('${estudio}', 1)" class="w-8 h-8 rounded bg-orange-100 text-orange-600 font-black hover:bg-orange-200 active:scale-90 transition-all flex items-center justify-center">+</button></div></div>`;
             });
-            contenedor.innerHTML = `
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="bg-slate-50 text-slate-700 px-5 py-4 border-b border-slate-200 flex justify-between items-center">
-                        <h3 class="font-black text-xs tracking-widest uppercase"><i class="fa-solid fa-list-check text-orange-500 mr-2"></i> Conteo de Estudios</h3>
-                    </div>
-                    <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50/50">${htmlEstudios}</div>
-                </div>
-            `;
+            contenedor.innerHTML = `<div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"><div class="bg-slate-50 text-slate-700 px-5 py-4 border-b border-slate-200 flex justify-between items-center"><h3 class="font-black text-xs tracking-widest uppercase"><i class="fa-solid fa-list-check text-orange-500 mr-2"></i> Conteo de Estudios</h3></div><div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50/50">${htmlEstudios}</div></div>`;
         }
 
         window.mostrarResumen = function() {
-            document.getElementById('vista-captura-principal').classList.add('hidden');
-            document.getElementById('vista-resumen-final').classList.remove('hidden');
-            
+            document.getElementById('vista-captura-principal').classList.add('hidden'); document.getElementById('vista-resumen-final').classList.remove('hidden');
             let totalEstudios = 0; let listHtml = '';
-            for (const [estudio, cant] of Object.entries(datosDelDia.estudios)) {
-                if (cant > 0) {
-                    listHtml += `<div class="border-t border-slate-200 pt-3 mt-3 flex justify-between items-center">
-                                    <span class="font-bold text-orange-600 text-sm">${estudio}</span>
-                                    <span class="bg-white border border-slate-200 px-4 py-1.5 rounded-xl font-black text-lg text-slate-800 shadow-sm">${cant}</span>
-                                 </div>`;
-                    totalEstudios += cant;
-                }
-            }
+            for (const [estudio, cant] of Object.entries(datosDelDia.estudios)) { if (cant > 0) { listHtml += `<div class="border-t border-slate-200 pt-3 mt-3 flex justify-between items-center"><span class="font-bold text-orange-600 text-sm">${estudio}</span><span class="bg-white border border-slate-200 px-4 py-1.5 rounded-xl font-black text-lg text-slate-800 shadow-sm">${cant}</span></div>`; totalEstudios += cant; } }
             if (totalEstudios === 0) listHtml += `<p class="text-center italic text-slate-400 font-medium py-4">El día está en blanco.</p>`;
-            else listHtml += `<div class="border-t-2 border-dashed border-slate-300 pt-4 mt-5 flex justify-between items-center text-lg">
-                                <span class="font-black text-slate-800">REPORTE PERSONAL:</span>
-                                <span class="font-black text-emerald-600">${totalEstudios}</span>
-                             </div>`;
-            document.getElementById('resumen-contenido').innerHTML = listHtml;
-            document.getElementById('obs-resumen').value = datosDelDia.observaciones || '';
+            else listHtml += `<div class="border-t-2 border-dashed border-slate-300 pt-4 mt-5 flex justify-between items-center text-lg"><span class="font-black text-slate-800">REPORTE PERSONAL:</span><span class="font-black text-emerald-600">${totalEstudios}</span></div>`;
+            document.getElementById('resumen-contenido').innerHTML = listHtml; document.getElementById('obs-resumen').value = datosDelDia.observaciones || '';
         }
 
-        window.ocultarResumen = function() {
-            document.getElementById('vista-resumen-final').classList.add('hidden');
-            document.getElementById('vista-captura-principal').classList.remove('hidden');
-        }
+        window.ocultarResumen = function() { document.getElementById('vista-resumen-final').classList.add('hidden'); document.getElementById('vista-captura-principal').classList.remove('hidden'); }
 
         async function sincronizarConNube() {
             const indicador = document.getElementById('indicador-guardado');
-            if(indicador) {
-                indicador.classList.remove('opacity-0');
-                indicador.className = "text-[10px] font-black text-white bg-orange-500 px-2.5 py-1 rounded-md shadow-sm transition-all";
-                indicador.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
-            }
-
+            if(indicador) { indicador.classList.remove('opacity-0'); indicador.className = "text-[10px] font-black text-white bg-orange-500 px-2.5 py-1 rounded-md shadow-sm transition-all"; indicador.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...'; }
             clearTimeout(timerGuardado);
             timerGuardado = setTimeout(async () => {
-                try {
-                    datosDelDia.ultimaActualizacion = new Date();
-                    await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
-                    
-                    if (indicador) {
-                        indicador.className = navigator.onLine ? "text-[10px] font-black text-white bg-emerald-500 px-2.5 py-1 rounded-md shadow-sm transition-all" : "text-[10px] font-black text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md shadow-sm transition-all";
-                        indicador.innerHTML = navigator.onLine ? '<i class="fa-solid fa-cloud-check"></i> ¡Guardado en la Nube!' : '<i class="fa-solid fa-hard-drive"></i> Guardado Local';
-                        setTimeout(() => indicador.classList.add('opacity-0'), 2500);
-                    }
+                try { datosDelDia.ultimaActualizacion = new Date(); await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
+                    if (indicador) { indicador.className = navigator.onLine ? "text-[10px] font-black text-white bg-emerald-500 px-2.5 py-1 rounded-md shadow-sm transition-all" : "text-[10px] font-black text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md shadow-sm transition-all"; indicador.innerHTML = navigator.onLine ? '<i class="fa-solid fa-cloud-check"></i> ¡Guardado en la Nube!' : '<i class="fa-solid fa-hard-drive"></i> Guardado Local'; setTimeout(() => indicador.classList.add('opacity-0'), 2500); }
                 } catch (error) { console.error("Error en sincronización:", error); }
             }, 800);
         }
 
         window.mostrarResumenSucursal = async function() {
-            const btn = document.getElementById('btn-ver-global');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Consultando Red...';
-            btn.disabled = true;
-
-            if(!navigator.onLine) {
-                mostrarToast("Necesitas internet para ver el acumulado.", "error");
-                btn.innerHTML = originalHTML; btn.disabled = false; return;
-            }
+            const btn = document.getElementById('btn-ver-global'); const originalHTML = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Consultando Red...'; btn.disabled = true;
+            if(!navigator.onLine) { mostrarToast("Necesitas internet para ver el acumulado.", "error"); btn.innerHTML = originalHTML; btn.disabled = false; return; }
 
             try {
                 datosDelDia.ultimaActualizacion = new Date();
                 await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true });
 
-                const q = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
-                    window.where("fecha", "==", fechaOperativa));
+                const q = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", "==", fechaOperativa));
                 const qs = await window.getDocs(q);
 
-                let acumulado = {};
-                let totalG = 0;
-                let miSucursalNorm = normalizarTexto(sesionActual.sucursal);
-                
-                let agrupacionMedicos = {};
+                let acumulado = {}; let totalG = 0; let miSucursalNorm = normalizarTexto(sesionActual.sucursal); let agrupacionMedicos = {};
 
                 qs.forEach(doc => {
                     const data = doc.data();
                     if(normalizarTexto(data.sucursal) !== miSucursalNorm) return;
-
                     let medNorm = normalizarTexto(data.medico);
-                    if(!agrupacionMedicos[medNorm]) {
-                        agrupacionMedicos[medNorm] = { estudios: {}, observaciones: [] };
-                    }
-
+                    if(!agrupacionMedicos[medNorm]) agrupacionMedicos[medNorm] = { estudios: {}, observaciones: [] };
                     let obs = data.observaciones ? data.observaciones.trim() : "";
-                    if(obs !== "" && obs !== ".") {
-                        agrupacionMedicos[medNorm].observaciones.push(obs);
-                    }
-
+                    if(obs !== "" && obs !== ".") agrupacionMedicos[medNorm].observaciones.push(obs);
                     if(data.estudios) {
                         for(let est in data.estudios) {
                             let cant = parseInt(data.estudios[est]) || 0;
-                            if(cant > 0) {
-                                agrupacionMedicos[medNorm].estudios[est] = (agrupacionMedicos[medNorm].estudios[est] || 0) + cant;
-                                acumulado[est] = (acumulado[est] || 0) + cant;
-                                totalG += cant;
-                            }
+                            if(cant > 0) { agrupacionMedicos[medNorm].estudios[est] = (agrupacionMedicos[medNorm].estudios[est] || 0) + cant; acumulado[est] = (acumulado[est] || 0) + cant; totalG += cant; }
                         }
                     }
                 });
 
-                let personal = [];
-                let desgloseIndividual = [];
-
+                let personal = []; let desgloseIndividual = [];
                 Object.keys(agrupacionMedicos).sort().forEach(medKey => {
-                    let obj = agrupacionMedicos[medKey];
-                    personal.push(medKey);
-                    
-                    let estInd = "";
-                    let tieneEst = false;
-                    for(let est in obj.estudios) {
-                        let cant = obj.estudios[est];
-                        tieneEst = true;
-                        estInd += `<div class="flex justify-between text-xs text-slate-600 font-bold mb-1"><span>${est}</span><b class="text-slate-800 bg-slate-100 px-2 rounded">${cant}</b></div>`;
-                    }
-                    
+                    let obj = agrupacionMedicos[medKey]; personal.push(medKey);
+                    let estInd = ""; let tieneEst = false;
+                    for(let est in obj.estudios) { let cant = obj.estudios[est]; tieneEst = true; estInd += `<div class="flex justify-between text-xs text-slate-600 font-bold mb-1"><span>${est}</span><b class="text-slate-800 bg-slate-100 px-2 rounded">${cant}</b></div>`; }
                     let obsFinal = obj.observaciones.join(" | ");
-                    if(tieneEst || obsFinal !== "") {
-                        desgloseIndividual.push({ medico: medKey, htmlEstudios: estInd, observaciones: obsFinal });
-                    }
+                    if(tieneEst || obsFinal !== "") desgloseIndividual.push({ medico: medKey, htmlEstudios: estInd, observaciones: obsFinal });
                 });
 
                 window.datosGlobalesTemp = { acumulado, personal, totalG, desgloseIndividual, fechaOperativa, sucursal: sesionActual.sucursal };
                 
                 let htmlAcumulado = '';
-                for(let est in acumulado) {
-                    htmlAcumulado += `<div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-2">
-                                        <span class="text-sm font-bold text-sky-700">${est}</span>
-                                        <span class="font-black bg-white border border-slate-200 px-3 py-1 rounded-xl text-base text-slate-800 shadow-sm">${acumulado[est]}</span>
-                                      </div>`;
-                }
+                for(let est in acumulado) { htmlAcumulado += `<div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-2"><span class="text-sm font-bold text-sky-700">${est}</span><span class="font-black bg-white border border-slate-200 px-3 py-1 rounded-xl text-base text-slate-800 shadow-sm">${acumulado[est]}</span></div>`; }
                 
                 let htmlIndividual = '';
-                desgloseIndividual.forEach(ind => {
-                    htmlIndividual += `<div class="bg-white p-4 rounded-2xl border border-slate-200 mb-3 shadow-sm">
-                                          <h4 class="font-black text-sm text-sky-600 border-b border-slate-100 pb-2 mb-3"><i class="fa-solid fa-user-md mr-1"></i> ${ind.medico}</h4>
-                                          ${ind.htmlEstudios || '<p class="text-xs text-slate-400 italic">Sin estudios registrados.</p>'}
-                                          ${ind.observaciones ? `<div class="mt-3 text-xs italic bg-slate-50 p-3 rounded-xl text-slate-600 border border-slate-200 font-medium">"${ind.observaciones}"</div>` : ''}
-                                       </div>`;
-                });
+                desgloseIndividual.forEach(ind => { htmlIndividual += `<div class="bg-white p-4 rounded-2xl border border-slate-200 mb-3 shadow-sm"><h4 class="font-black text-sm text-sky-600 border-b border-slate-100 pb-2 mb-3"><i class="fa-solid fa-user-md mr-1"></i> ${ind.medico}</h4>${ind.htmlEstudios || '<p class="text-xs text-slate-400 italic">Sin estudios registrados.</p>'}${ind.observaciones ? `<div class="mt-3 text-xs italic bg-slate-50 p-3 rounded-xl text-slate-600 border border-slate-200 font-medium">"${ind.observaciones}"</div>` : ''}</div>`; });
 
-                document.getElementById('resumen-global-contenido').innerHTML = `
-                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
-                        <h3 class="font-black text-slate-800 mb-4 text-center border-b border-slate-200 pb-3 uppercase tracking-widest text-sm">SUMA TOTAL: <span class="text-sky-600 ml-2 text-2xl">${totalG}</span></h3>
-                        ${htmlAcumulado || '<p class="text-center text-sm text-slate-400 italic font-bold">Nadie ha registrado estudios aún.</p>'}
-                    </div>
-                    <div class="mt-6 relative">
-                        <h3 class="font-black text-xs uppercase tracking-widest text-slate-400 mb-3 ml-2">Desglose Global por Personal</h3>
-                        ${htmlIndividual || '<p class="text-center text-sm text-slate-400 italic font-bold">Sin datos individuales.</p>'}
-                    </div>
-                `;
+                document.getElementById('resumen-global-contenido').innerHTML = `<div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner"><h3 class="font-black text-slate-800 mb-4 text-center border-b border-slate-200 pb-3 uppercase tracking-widest text-sm">SUMA TOTAL: <span class="text-sky-600 ml-2 text-2xl">${totalG}</span></h3>${htmlAcumulado || '<p class="text-center text-sm text-slate-400 italic font-bold">Nadie ha registrado estudios aún.</p>'}</div><div class="mt-6 relative"><h3 class="font-black text-xs uppercase tracking-widest text-slate-400 mb-3 ml-2">Desglose Global por Personal</h3>${htmlIndividual || '<p class="text-center text-sm text-slate-400 italic font-bold">Sin datos individuales.</p>'}</div>`;
 
-                document.getElementById('vista-captura-principal').classList.add('hidden');
-                document.getElementById('vista-resumen-sucursal').classList.remove('hidden');
+                // PROCEDIMIENTOS TOTAL
+                if(SUCURSALES_PROCEDIMIENTOS.includes(sesionActual.sucursal)) {
+                    let totalProcHoy = 0;
+                    try {
+                        const qp = window.query(window.collection(window.db, "procedimientos_sucursales"), window.where("sucursal", "==", sesionActual.sucursal), window.where("fecha", "==", fechaOperativa));
+                        const qsp = await window.getDocs(qp);
+                        totalProcHoy = qsp.size;
+                    } catch(ep) { console.error(ep); }
+                    
+                    document.getElementById('resumen-procedimientos-global').classList.remove('hidden');
+                    document.getElementById('txt-total-proc-global').innerText = totalProcHoy;
+                } else { document.getElementById('resumen-procedimientos-global').classList.add('hidden'); }
 
+                document.getElementById('vista-captura-principal').classList.add('hidden'); document.getElementById('vista-resumen-sucursal').classList.remove('hidden');
             } catch(e) { console.error(e); mostrarToast("Hubo un error cargando el global. Intenta de nuevo.", "error"); }
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
-        window.ocultarResumenSucursal = function() {
-            document.getElementById('vista-resumen-sucursal').classList.add('hidden');
-            document.getElementById('vista-captura-principal').classList.remove('hidden');
-        };
+        window.ocultarResumenSucursal = function() { document.getElementById('vista-resumen-sucursal').classList.add('hidden'); document.getElementById('vista-captura-principal').classList.remove('hidden'); };
 
         window.copiarResumenTexto = function() {
-            if(!window.datosGlobalesTemp) return;
-            const d = window.datosGlobalesTemp;
+            if(!window.datosGlobalesTemp) return; const d = window.datosGlobalesTemp;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
-            
             let texto = `*REPORTE SUCURSAL LAPI*\n🏥 Sucursal: ${d.sucursal}\n📅 Fecha: ${fechaUI}\n👥 Personal: ${d.personal.join(', ')}\n\n📊 *ACUMULADO GLOBAL (Total: ${d.totalG})*\n`;
             for(let est in d.acumulado) { texto += `- ${est}: ${d.acumulado[est]}\n`; }
+            
+            if(SUCURSALES_PROCEDIMIENTOS.includes(sesionActual.sucursal)) {
+                let count = document.getElementById('txt-total-proc-global').innerText;
+                texto += `\n💉 *PROCEDIMIENTOS ESPECIALES*\n- Total: ${count}\n`;
+            }
+
             texto += `\n📝 *OBSERVACIONES*\n`;
             let hayObs = false;
-            d.desgloseIndividual.forEach(ind => {
-                if(ind.observaciones) { texto += `[${ind.medico}]: ${ind.observaciones}\n`; hayObs = true; }
-            });
+            d.desgloseIndividual.forEach(ind => { if(ind.observaciones) { texto += `[${ind.medico}]: ${ind.observaciones}\n`; hayObs = true; } });
             if(!hayObs) texto += `Sin observaciones relevantes.\n`;
-
-            navigator.clipboard.writeText(texto).then(() => { mostrarToast("¡Texto copiado al portapapeles!", "exito"); })
-            .catch(err => { mostrarToast("Error al copiar texto.", "error"); });
+            navigator.clipboard.writeText(texto).then(() => { mostrarToast("¡Texto copiado al portapapeles!", "exito"); }).catch(err => { mostrarToast("Error al copiar texto.", "error"); });
         };
 
         window.generarImagenCompartir = async function() {
-            const btn = document.getElementById('btn-descargar-sucursal'); const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
-
+            // Mismo código para generar imagen (omitido desglose por brevedad, no alterado)
+            const btn = document.getElementById('btn-descargar-sucursal'); const originalHTML = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
             const sucursal = sesionActual.sucursal.toUpperCase(); const medico = sesionActual.medico.toUpperCase();
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
-
             document.getElementById('cap-sucursal-nombre').innerText = `SUCURSAL: ${sucursal}`;
             document.getElementById('cap-resumen-info').innerHTML = `<p class="mb-1"><b class="text-slate-500">Fecha:</b> ${fechaUI}</p><p><b class="text-slate-500">Personal:</b> <span class="text-orange-600 font-bold">${medico}</span></p>`;
             document.getElementById('cap-resumen-lista').innerHTML = document.getElementById('resumen-contenido').innerHTML;
             document.getElementById('cap-observaciones').innerText = datosDelDia.observaciones || 'Sin observaciones relevantes.';
-            
-            await new Promise(r => setTimeout(r, 100));
-            await procesarHtml2Canvas(document.getElementById('captura-temp-sucursal'), `LAPI_MiTurno_${sucursal}_${fechaOperativa}`);
+            await new Promise(r => setTimeout(r, 100)); await procesarHtml2Canvas(document.getElementById('captura-temp-sucursal'), `LAPI_MiTurno_${sucursal}_${fechaOperativa}`);
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
         window.generarImagenGlobal = async function() {
             const d = window.datosGlobalesTemp; if(!d) return;
-            const btn = document.getElementById('btn-descargar-global'); const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
+            const btn = document.getElementById('btn-descargar-global'); const originalHTML = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
-
             document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal.toUpperCase()}`;
             document.getElementById('cap-glob-info').innerHTML = `<p class="mb-1"><b class="text-slate-500">Fecha:</b> ${fechaUI}</p><p><b class="text-slate-500">Personal Presente:</b> <span class="text-sky-600 font-bold">${d.personal.join(', ')}</span></p>`;
-            
             let listHtml = '';
             for(let est in d.acumulado) { listHtml += `<div class="border-t border-slate-200 pt-3 mt-3 flex justify-between items-center text-slate-800"><span class="font-bold text-sky-700 text-sm">${est}</span><span class="bg-white border border-slate-200 px-3 py-1 rounded-xl font-black shadow-sm">${d.acumulado[est]}</span></div>`; }
             listHtml += `<div class="border-t-2 border-dashed border-slate-300 pt-4 mt-5 flex justify-between items-center text-lg"><span class="font-black text-slate-800">SUMA SUCURSAL:</span><span class="font-black text-sky-600 text-2xl">${d.totalG}</span></div>`;
             document.getElementById('cap-glob-lista').innerHTML = listHtml || '<p class="opacity-60 italic text-center font-bold">Sin estudios en la sucursal.</p>';
-
-            let obsHtml = '';
-            d.desgloseIndividual.forEach(ind => { if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-4 border-sky-400 pl-3 bg-white p-3 rounded-r-xl shadow-sm"><p class="text-[10px] text-sky-600 font-black uppercase tracking-widest mb-1">${ind.medico}</p><p class="text-sm font-medium text-slate-700">"${ind.observaciones}"</p></div>`; });
+            let obsHtml = ''; d.desgloseIndividual.forEach(ind => { if(ind.observaciones) obsHtml += `<div class="mb-3 border-l-4 border-sky-400 pl-3 bg-white p-3 rounded-r-xl shadow-sm"><p class="text-[10px] text-sky-600 font-black uppercase tracking-widest mb-1">${ind.medico}</p><p class="text-sm font-medium text-slate-700">"${ind.observaciones}"</p></div>`; });
             document.getElementById('cap-glob-obs').innerHTML = obsHtml || 'Sin observaciones reportadas en la sucursal.';
-
-            await new Promise(r => setTimeout(r, 100));
-            await procesarHtml2Canvas(document.getElementById('captura-temp-global'), `LAPI_Global_${d.sucursal.toUpperCase()}_${fechaOperativa}`);
+            await new Promise(r => setTimeout(r, 100)); await procesarHtml2Canvas(document.getElementById('captura-temp-global'), `LAPI_Global_${d.sucursal.toUpperCase()}_${fechaOperativa}`);
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
         async function procesarHtml2Canvas(target, nombreArchivo) {
             try {
                 const canvas = await html2canvas(target, { scale: 2, useCORS: true, logging: false, backgroundColor: null, onclone: (clonedDoc) => { const el = clonedDoc.getElementById(target.id); el.style.position = 'static'; el.style.display = 'block'; } });
-                const link = document.createElement('a'); link.download = `${nombreArchivo}.png`;
-                link.href = canvas.toDataURL("image/png"); link.click(); 
-                mostrarToast("Descarga exitosa. Revisa tu galería o descargas.", "exito");
+                const link = document.createElement('a'); link.download = `${nombreArchivo}.png`; link.href = canvas.toDataURL("image/png"); link.click(); mostrarToast("Descarga exitosa. Revisa tu galería o descargas.", "exito");
             } catch(e) { console.error("Error captura:", e); mostrarToast("Falló la generación de imagen.", "error"); }
         }
 
-        let misGraficos = {};
-
-        window.abrirMiHistorial = function() {
-            if(!navigator.onLine) return mostrarToast("Necesitas internet para cargar tu historial de nube.", "error");
-            document.getElementById('vista-captura-principal').classList.add('hidden');
-            document.getElementById('vista-resumen-final').classList.add('hidden');
-            document.getElementById('vista-resumen-sucursal').classList.add('hidden');
-            document.getElementById('lbl-nombre-historial').innerText = sesionActual.medico;
-            document.getElementById('vista-mi-historial').classList.remove('hidden');
-            filtrarHistorial('semana');
-        };
-
-        window.cerrarHistorial = function() {
-            document.getElementById('vista-mi-historial').classList.add('hidden');
-            document.getElementById('vista-captura-principal').classList.remove('hidden');
-        };
-
-        window.filtrarHistorial = async function(periodo) {
-            const hoy = new Date();
-            let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
+        // =====================================
+        // LÓGICA PROCEDIMIENTOS
+        // =====================================
+        window.abrirModalProcedimientos = function() {
+            const modal = document.getElementById('modal-procedimientos'); const card = document.getElementById('modal-procedimientos-card');
+            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('translate-y-full', 'sm:scale-95'); }, 10);
             
-            if (periodo === 'hoy') iStr = fStr;
-            else if (periodo === 'semana') {
-                const diff = hoy.getDate() - hoy.getDay() + 1; 
-                const inicioSemana = new Date(hoy.setDate(diff));
-                iStr = `${inicioSemana.getFullYear()}-${String(inicioSemana.getMonth()+1).padStart(2,'0')}-${String(inicioSemana.getDate()).padStart(2,'0')}`;
-            }
-            else if (periodo === 'mes') { iStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-01`; }
-            else if (periodo === 'custom') {
-                iStr = document.getElementById('historial-fecha-inicio').value;
-                fStr = document.getElementById('historial-fecha-fin').value;
-                if(!iStr || !fStr) return;
-            }
+            // Re-ajustar canvas por si acaso cambió de tamaño al estar hidden
+            if(canvas) { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+            limpiarFirma();
+        };
 
+        window.cerrarModalProcedimientos = function() {
+            const modal = document.getElementById('modal-procedimientos'); const card = document.getElementById('modal-procedimientos-card');
+            modal.classList.add('opacity-0'); card.classList.add('translate-y-full', 'sm:scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        };
+
+        window.switchTabProc = function(tabId) {
+            document.querySelectorAll('.tab-proc').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-proc-${tabId}`).classList.add('active');
+            if(tabId === 'registro') { document.getElementById('view-proc-registro').classList.remove('hidden'); document.getElementById('view-proc-historial').classList.add('hidden'); if(canvas) { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; } } 
+            else { document.getElementById('view-proc-registro').classList.add('hidden'); document.getElementById('view-proc-historial').classList.remove('hidden'); cargarProcedimientos(); }
+        };
+
+        window.limpiarFirma = function() { if(!ctx) return; ctx.clearRect(0, 0, canvas.width, canvas.height); firmaVacia = true; };
+
+        window.guardarProcedimiento = async function(e) {
+            e.preventDefault();
+            if(firmaVacia) return mostrarToast("El paciente debe firmar de conformidad.", "error");
+            
+            const btn = document.getElementById('btn-guardar-proc'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Guardando...'; btn.disabled = true;
+
+            const base64Firma = canvas.toDataURL('image/png');
+            const dataProc = {
+                sucursal: sesionActual.sucursal, medico: sesionActual.medico, fecha: fechaOperativa, timestamp: new Date(),
+                procedimiento: document.getElementById('proc-tipo').value,
+                nOrden: document.getElementById('proc-orden').value.toUpperCase().trim(),
+                edad: document.getElementById('proc-edad').value,
+                paciente: document.getElementById('proc-paciente').value.toUpperCase().trim(),
+                notas: document.getElementById('proc-notas').value,
+                firma: base64Firma
+            };
+
+            try {
+                await window.addDoc(window.collection(window.db, "procedimientos_sucursales"), dataProc);
+                mostrarToast("Procedimiento registrado con éxito", "exito");
+                document.getElementById('form-procedimiento').reset(); limpiarFirma();
+                switchTabProc('historial');
+            } catch(err) { console.error(err); mostrarToast("Error al guardar el registro", "error"); }
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Registrar Procedimiento'; btn.disabled = false;
+        };
+
+        window.cargarProcedimientos = async function() {
+            const container = document.getElementById('lista-proc-container');
+            container.innerHTML = '<div class="text-center py-10 text-slate-400 italic font-bold text-sm"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-emerald-400 block"></i> Cargando...</div>';
+            
+            const mesSelected = document.getElementById('filtro-mes-proc').value; // Ej: 2026-07
+            if(!mesSelected) return;
+            const inicioMes = `${mesSelected}-01`;
+            const finMes = `${mesSelected}-31`; // Suficiente para rango de string Firestore
+            
+            try {
+                const q = window.query(window.collection(window.db, "procedimientos_sucursales"), 
+                    window.where("sucursal", "==", sesionActual.sucursal),
+                    window.where("fecha", ">=", inicioMes), window.where("fecha", "<=", finMes),
+                    window.orderBy("fecha", "desc")
+                );
+                
+                const snap = await window.getDocs(q);
+                procedimientosCargados = [];
+                snap.forEach(doc => { procedimientosCargados.push({id: doc.id, ...doc.data()}); });
+
+                if(procedimientosCargados.length === 0) {
+                    container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10">Sin procedimientos registrados en este mes.</p>';
+                    return;
+                }
+
+                let htmlList = '';
+                procedimientosCargados.forEach(p => {
+                    htmlList += `
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-2 relative">
+                        <div class="flex justify-between items-start mb-1 border-b border-slate-100 pb-2">
+                            <div class="w-3/4">
+                                <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[9px] font-black uppercase mb-1 inline-block">${p.procedimiento}</span>
+                                <h4 class="font-black text-xs text-slate-800 leading-tight">${p.paciente} <span class="text-slate-400 font-bold ml-1">(${p.edad}a)</span></h4>
+                            </div>
+                            <span class="text-[9px] font-bold text-slate-400 whitespace-nowrap"><i class="fa-regular fa-calendar mr-1"></i>${p.fecha}</span>
+                        </div>
+                        <p class="text-[10px] font-bold text-slate-500"><i class="fa-solid fa-hashtag text-slate-300 mr-1"></i> Orden: ${p.nOrden}</p>
+                        ${p.notas ? `<p class="text-[10px] text-slate-500 italic bg-slate-50 p-2 rounded-lg font-medium">"${p.notas}"</p>` : ''}
+                        <div class="mt-2 text-right">
+                            <img src="${p.firma}" class="h-8 inline-block opacity-80" alt="Firma">
+                        </div>
+                    </div>`;
+                });
+                container.innerHTML = htmlList;
+
+            } catch(e) { console.error(e); container.innerHTML = '<p class="text-center text-xs font-bold text-red-500 py-6">Error de conexión</p>'; }
+        };
+
+        window.generarPdfProcedimientos = function() {
+            if(procedimientosCargados.length === 0) return mostrarToast("No hay registros para exportar.", "error");
+            
+            const mesSelected = document.getElementById('filtro-mes-proc').value;
+            const zona = document.getElementById('zona-impresion-pdf');
+            
+            let htmlPdf = `
+            <div class="pdf-header">
+                <table style="width:100%;">
+                    <tr>
+                        <td style="width: 25%;"><img src="logoLAPI.png" style="max-height: 40px;"></td>
+                        <td style="text-align: right;">
+                            <h2 style="font-size: 16px; margin:0; text-transform:uppercase; color:#ea580c;">Bitácora de Procedimientos</h2>
+                            <p style="margin:2px 0 0 0; font-size: 10px; font-weight:bold;">Sucursal: ${sesionActual.sucursal} | Periodo: ${mesSelected}</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <table class="pdf-table">
+                <thead>
+                    <tr><th>Fecha</th><th>N. Orden</th><th>Paciente</th><th>Edad</th><th>Procedimiento</th><th>Notas</th><th style="width:15%;">Firma</th></tr>
+                </thead>
+                <tbody>
+            `;
+
+            procedimientosCargados.forEach(p => {
+                htmlPdf += `<tr>
+                    <td>${p.fecha}</td>
+                    <td>${p.nOrden}</td>
+                    <td><b>${p.paciente}</b></td>
+                    <td>${p.edad}</td>
+                    <td>${p.procedimiento}</td>
+                    <td>${p.notas || '-'}</td>
+                    <td style="text-align:center;"><img src="${p.firma}" class="pdf-firma-img"></td>
+                </tr>`;
+            });
+
+            htmlPdf += `</tbody></table>`;
+            zona.innerHTML = htmlPdf;
+            
+            setTimeout(() => { window.print(); zona.innerHTML = ''; }, 300);
+        };
+
+        // Gráficos de Historial... (Omitidos los detalles por brevedad, se mantienen intactos)
+        let misGraficos = {};
+        window.abrirMiHistorial = function() { /* ... Mismo código ... */ 
+            if(!navigator.onLine) return mostrarToast("Necesitas internet para cargar tu historial de nube.", "error");
+            document.getElementById('vista-captura-principal').classList.add('hidden'); document.getElementById('vista-resumen-final').classList.add('hidden'); document.getElementById('vista-resumen-sucursal').classList.add('hidden');
+            document.getElementById('lbl-nombre-historial').innerText = sesionActual.medico; document.getElementById('vista-mi-historial').classList.remove('hidden'); filtrarHistorial('semana');
+        };
+        window.cerrarHistorial = function() { document.getElementById('vista-mi-historial').classList.add('hidden'); document.getElementById('vista-captura-principal').classList.remove('hidden'); };
+        window.filtrarHistorial = async function(periodo) { /* ... Mismo código ... */ 
+            const hoy = new Date(); let iStr = '', fStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
+            if (periodo === 'hoy') iStr = fStr; else if (periodo === 'semana') { const diff = hoy.getDate() - hoy.getDay() + 1; const inicioSemana = new Date(hoy.setDate(diff)); iStr = `${inicioSemana.getFullYear()}-${String(inicioSemana.getMonth()+1).padStart(2,'0')}-${String(inicioSemana.getDate()).padStart(2,'0')}`; } else if (periodo === 'mes') { iStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-01`; } else if (periodo === 'custom') { iStr = document.getElementById('historial-fecha-inicio').value; fStr = document.getElementById('historial-fecha-fin').value; if(!iStr || !fStr) return; }
             document.querySelectorAll('.btn-filtro').forEach(b => { b.classList.remove('bg-orange-600', 'text-white', 'shadow-sm'); b.classList.add('bg-slate-50', 'text-slate-600'); });
-            if (periodo !== 'custom') {
-                const btnFiltro = document.getElementById(`btn-filtro-${periodo}`);
-                if(btnFiltro) { btnFiltro.classList.remove('bg-slate-50', 'text-slate-600'); btnFiltro.classList.add('bg-orange-600', 'text-white', 'shadow-sm'); }
-                document.getElementById('historial-fecha-inicio').value = iStr; document.getElementById('historial-fecha-fin').value = fStr;
-            }
-
-            document.getElementById('contenido-historial').classList.add('hidden');
-            document.getElementById('loader-historial').classList.remove('hidden');
-            const medicoBuscado = sesionActual.medico.toUpperCase();
-            let totSucursal = 0; let totForaneos = 0; let empresasSet = new Set();
-            let conteoEstudios = {}; let tendencia = {}; let bitacora = [];
-
+            if (periodo !== 'custom') { const btnFiltro = document.getElementById(`btn-filtro-${periodo}`); if(btnFiltro) { btnFiltro.classList.remove('bg-slate-50', 'text-slate-600'); btnFiltro.classList.add('bg-orange-600', 'text-white', 'shadow-sm'); } document.getElementById('historial-fecha-inicio').value = iStr; document.getElementById('historial-fecha-fin').value = fStr; }
+            document.getElementById('contenido-historial').classList.add('hidden'); document.getElementById('loader-historial').classList.remove('hidden');
+            const medicoBuscado = sesionActual.medico.toUpperCase(); let totSucursal = 0; let totForaneos = 0; let empresasSet = new Set(); let conteoEstudios = {}; let tendencia = {}; let bitacora = [];
             try {
                 let qSuc = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("medico", "==", medicoBuscado), window.where("fecha", ">=", iStr), window.where("fecha", "<=", fStr));
                 const qsSuc = await window.getDocs(qSuc);
-                qsSuc.forEach(doc => {
-                    const data = doc.data(); let sumDia = 0;
-                    if (data.estudios) {
-                        for(let est in data.estudios) {
-                            if (data.estudios[est] > 0) {
-                                totSucursal += data.estudios[est]; sumDia += data.estudios[est];
-                                conteoEstudios[est] = (conteoEstudios[est] || 0) + data.estudios[est];
-                                bitacora.push({ fecha: data.fecha, origen: `Suc. ${data.sucursal}`, detalle: `${data.estudios[est]}x ${est}` });
-                            }
-                        }
-                    }
-                    if(sumDia > 0) tendencia[data.fecha] = (tendencia[data.fecha] || 0) + sumDia;
-                });
-
+                qsSuc.forEach(doc => { const data = doc.data(); let sumDia = 0; if (data.estudios) { for(let est in data.estudios) { if (data.estudios[est] > 0) { totSucursal += data.estudios[est]; sumDia += data.estudios[est]; conteoEstudios[est] = (conteoEstudios[est] || 0) + data.estudios[est]; bitacora.push({ fecha: data.fecha, origen: `Suc. ${data.sucursal}`, detalle: `${data.estudios[est]}x ${est}` }); } } } if(sumDia > 0) tendencia[data.fecha] = (tendencia[data.fecha] || 0) + sumDia; });
                 let qFor = window.query(window.collection(window.db, "registros"), window.where("fecha", ">=", iStr), window.where("fecha", "<=", fStr));
                 const qsFor = await window.getDocs(qFor);
-                qsFor.forEach(doc => {
-                    const data = doc.data(); let sumDiaForaneo = 0;
-                    if (data.detalles) {
-                        data.detalles.forEach(d => {
-                            if (d.medico && normalizarTexto(d.medico) === medicoBuscado) {
-                                let cant = parseInt(d.cant) || 0;
-                                if (cant > 0) {
-                                    totForaneos += cant; sumDiaForaneo += cant;
-                                    conteoEstudios[d.estudio] = (conteoEstudios[d.estudio] || 0) + cant;
-                                    empresasSet.add(normalizarTexto(data.empresa));
-                                    bitacora.push({ fecha: data.fecha, origen: `Ruta: ${normalizarTexto(data.empresa)}`, detalle: `${cant}x ${d.estudio}` });
-                                }
-                            }
-                        });
-                    }
-                    if(sumDiaForaneo > 0) tendencia[data.fecha] = (tendencia[data.fecha] || 0) + sumDiaForaneo;
-                });
-
-                document.getElementById('mi-kpi-total').innerText = totSucursal + totForaneos;
-                document.getElementById('mi-kpi-sucursal').innerText = totSucursal;
-                if (totForaneos === 0) { document.getElementById('card-kpi-foraneos').classList.add('hidden'); } 
-                else {
-                    document.getElementById('card-kpi-foraneos').classList.remove('hidden');
-                    document.getElementById('mi-kpi-foraneos').innerText = totForaneos; document.getElementById('mi-kpi-empresas').innerText = empresasSet.size;
-                }
-
-                let labelsTipos = Object.keys(conteoEstudios); let dataTipos = Object.values(conteoEstudios);
-                dibujarMiGrafico('mi-chart-tipos', 'doughnut', labelsTipos, dataTipos, ['#ea580c', '#0ea5e9', '#10b981', '#8b5cf6', '#f43f5e']);
-                let fechasOrdenadas = Object.keys(tendencia).sort(); let dataTendencia = fechasOrdenadas.map(f => tendencia[f]);
-                dibujarMiGrafico('mi-chart-tendencia', 'line', fechasOrdenadas, dataTendencia, ['#ea580c']);
-
-                bitacora.sort((a,b) => b.fecha.localeCompare(a.fecha));
-                let tbody = document.getElementById('mi-tabla-bitacora'); tbody.innerHTML = '';
-                if (bitacora.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="text-center p-6 text-slate-400 italic font-bold">Sin actividad en este periodo</td></tr>'; } 
-                else {
-                    bitacora.forEach(b => {
-                        tbody.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-100"><td class="p-3 text-[10px] font-black whitespace-nowrap text-slate-400">${b.fecha}</td><td class="p-3 text-xs font-bold text-slate-700">${b.origen}</td><td class="p-3 text-xs text-orange-600 font-black text-right">${b.detalle}</td></tr>`;
-                    });
-                }
+                qsFor.forEach(doc => { const data = doc.data(); let sumDiaForaneo = 0; if (data.detalles) { data.detalles.forEach(d => { if (d.medico && normalizarTexto(d.medico) === medicoBuscado) { let cant = parseInt(d.cant) || 0; if (cant > 0) { totForaneos += cant; sumDiaForaneo += cant; conteoEstudios[d.estudio] = (conteoEstudios[d.estudio] || 0) + cant; empresasSet.add(normalizarTexto(data.empresa)); bitacora.push({ fecha: data.fecha, origen: `Ruta: ${normalizarTexto(data.empresa)}`, detalle: `${cant}x ${d.estudio}` }); } } }); } if(sumDiaForaneo > 0) tendencia[data.fecha] = (tendencia[data.fecha] || 0) + sumDiaForaneo; });
+                document.getElementById('mi-kpi-total').innerText = totSucursal + totForaneos; document.getElementById('mi-kpi-sucursal').innerText = totSucursal;
+                if (totForaneos === 0) { document.getElementById('card-kpi-foraneos').classList.add('hidden'); } else { document.getElementById('card-kpi-foraneos').classList.remove('hidden'); document.getElementById('mi-kpi-foraneos').innerText = totForaneos; document.getElementById('mi-kpi-empresas').innerText = empresasSet.size; }
+                let labelsTipos = Object.keys(conteoEstudios); let dataTipos = Object.values(conteoEstudios); dibujarMiGrafico('mi-chart-tipos', 'doughnut', labelsTipos, dataTipos, ['#ea580c', '#0ea5e9', '#10b981', '#8b5cf6', '#f43f5e']);
+                let fechasOrdenadas = Object.keys(tendencia).sort(); let dataTendencia = fechasOrdenadas.map(f => tendencia[f]); dibujarMiGrafico('mi-chart-tendencia', 'line', fechasOrdenadas, dataTendencia, ['#ea580c']);
+                bitacora.sort((a,b) => b.fecha.localeCompare(a.fecha)); let tbody = document.getElementById('mi-tabla-bitacora'); tbody.innerHTML = '';
+                if (bitacora.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="text-center p-6 text-slate-400 italic font-bold">Sin actividad en este periodo</td></tr>'; } else { bitacora.forEach(b => { tbody.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-100"><td class="p-3 text-[10px] font-black whitespace-nowrap text-slate-400">${b.fecha}</td><td class="p-3 text-xs font-bold text-slate-700">${b.origen}</td><td class="p-3 text-xs text-orange-600 font-black text-right">${b.detalle}</td></tr>`; }); }
             } catch(e) { console.error(e); mostrarToast("Error calculando tu historial.", "error"); }
             document.getElementById('loader-historial').classList.add('hidden'); document.getElementById('contenido-historial').classList.remove('hidden');
         };
-
-        function dibujarMiGrafico(canvasId, tipo, labels, data, colores) {
+        function dibujarMiGrafico(canvasId, tipo, labels, data, colores) { /* ... Mismo código ... */ 
             if(misGraficos[canvasId]) misGraficos[canvasId].destroy();
             let colorFondo = tipo === 'line' ? colores[0] + '30' : colores;
-            let conf = {
-                type: tipo,
-                data: { labels: labels, datasets: [{ data: data, backgroundColor: colorFondo, borderColor: colores[0], borderWidth: 2, fill: tipo === 'line', tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: tipo === 'doughnut', position: 'bottom' } } }
-            };
-            if (tipo === 'doughnut') { conf.data.datasets[0].borderWidth = 0; conf.options.cutout = '70%'; } 
-            else if (tipo === 'line') { conf.options.scales = { y: { beginAtZero: true, grid: { color: '#f8fafc' } }, x: { grid: { display: false } } }; }
+            let conf = { type: tipo, data: { labels: labels, datasets: [{ data: data, backgroundColor: colorFondo, borderColor: colores[0], borderWidth: 2, fill: tipo === 'line', tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: tipo === 'doughnut', position: 'bottom' } } } };
+            if (tipo === 'doughnut') { conf.data.datasets[0].borderWidth = 0; conf.options.cutout = '70%'; } else if (tipo === 'line') { conf.options.scales = { y: { beginAtZero: true, grid: { color: '#f8fafc' } }, x: { grid: { display: false } } }; }
             misGraficos[canvasId] = new Chart(document.getElementById(canvasId), conf);
         }
 
