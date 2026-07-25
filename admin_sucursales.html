@@ -332,6 +332,15 @@
             return texto ? texto.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; 
         };
 
+        // NUEVA FUNCIÓN DE AYUDA (Para solucionar el error de mayúsculas/minúsculas)
+        window.esSucursalProcedimientos = function(sucursal) {
+            if(!sucursal) return false;
+            const norm = window.normalizarTexto(sucursal);
+            return SUCURSALES_PROCEDIMIENTOS.includes(sucursal) || 
+                   SUCURSALES_PROCEDIMIENTOS.includes(norm) || 
+                   SUCURSALES_PROCEDIMIENTOS.includes(sucursal.toUpperCase());
+        };
+
         window.mostrarToast = function(mensaje, tipo = 'info') {
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-orange-600');
@@ -362,7 +371,7 @@
             }
         };
 
-        // INTEGRACIÓN DEL SEMÁFORO OPERATIVO
+        // SEMÁFORO ACTUALIZADO USANDO LA NUEVA FUNCIÓN
         window.inicializarSucursales = async function() {
             let lista = (window.LAPI_CONFIG && window.LAPI_CONFIG.sucursales) ? window.LAPI_CONFIG.sucursales : ["GRAN SUR", "PLATEROS", "MARTIN CARRERA", "CENTRO", "POLANCO", "COYOACAN"];
             lista.sort(); 
@@ -396,7 +405,8 @@
                 let sucNorm = window.normalizarTexto(suc);
                 let tieneReporte = sucursalesActivasHoy.has(suc) || sucursalesActivasHoy.has(sucNorm);
                 
-                let checkProcedimientos = SUCURSALES_PROCEDIMIENTOS.includes(suc) || SUCURSALES_PROCEDIMIENTOS.includes(sucNorm);
+                // Usamos la nueva función infalible
+                let checkProcedimientos = window.esSucursalProcedimientos(suc);
                 let badgeProcedimientos = checkProcedimientos ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase mt-2 inline-block"><i class="fa-solid fa-notes-medical mr-1"></i> Procs. Especiales</span>` : '';
                 
                 let semaforoClass = tieneReporte ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-50 text-slate-400 border-slate-200';
@@ -441,7 +451,8 @@
             modal.classList.remove('hidden');
             setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
 
-            if(SUCURSALES_PROCEDIMIENTOS.includes(sucursal)) {
+            // Usamos la nueva función infalible
+            if(window.esSucursalProcedimientos(sucursal)) {
                 document.getElementById('contenedor-tabs').classList.remove('hidden');
                 switchTab('general');
             } else {
@@ -501,7 +512,6 @@
             cargarDatosVisor(iStr, fStr);
         };
 
-        // BYPASS DIRECTO PARA FIREBASE
         async function cargarDatosVisor(fechaIni, fechaFin) {
             document.getElementById('vista-general').classList.add('hidden');
             document.getElementById('vista-procedimientos').classList.add('hidden');
@@ -517,9 +527,9 @@
 
             const sucNorm = window.normalizarTexto(sucursalActiva);
             const variaciones = [sucursalActiva, sucNorm, sucursalActiva.toUpperCase()];
-            const evalProcedimientos = SUCURSALES_PROCEDIMIENTOS.includes(sucursalActiva) || SUCURSALES_PROCEDIMIENTOS.includes(sucNorm);
+            const evalProcedimientos = window.esSucursalProcedimientos(sucursalActiva);
 
-            // 1. CARGA GENERAL (Solo filtramos fechas en Firebase para evitar errores de índice)
+            // 1. CARGA GENERAL
             try {
                 const qG = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
                     window.where("fecha", ">=", fechaIni), 
@@ -530,7 +540,6 @@
                 snapG.forEach(doc => {
                     let d = doc.data();
                     let dSucNorm = window.normalizarTexto(d.sucursal);
-                    // JS se encarga del filtro exacto de la sucursal
                     if(variaciones.includes(d.sucursal) || variaciones.includes(dSucNorm)) {
                         let hayEstudios = false;
                         if(d.estudios) {
@@ -555,7 +564,7 @@
 
             } catch(e) { console.error("Firebase Error General:", e); }
 
-            // 2. CARGA PROCEDIMIENTOS
+            // 2. CARGA PROCEDIMIENTOS 
             if(evalProcedimientos) {
                 try {
                     const qP = window.query(window.collection(window.db, "procedimientos_sucursales"), 
@@ -581,13 +590,16 @@
             const { diasLaboradosSet, totalesEstudio, diaEstudios, personalEstudios } = datosCacheGeneral;
             let totalEstudios = Object.values(totalesEstudio).reduce((a,b) => a+b, 0);
             let personalCount = Object.keys(personalEstudios).length;
+            
+            // Usamos la nueva función infalible
+            const evalProcedimientos = window.esSucursalProcedimientos(sucursalActiva);
 
             let kpiHtml = `
                 <div class="bg-white border-l-4 border-orange-500 p-4 rounded-xl shadow-sm text-center"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estudios Totales</p><p class="text-2xl font-black text-slate-800">${totalEstudios}</p></div>
                 <div class="bg-white border-l-4 border-sky-500 p-4 rounded-xl shadow-sm text-center"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Días con Actividad</p><p class="text-2xl font-black text-sky-600">${diasLaboradosSet.size}</p></div>
                 <div class="bg-white border-l-4 border-emerald-500 p-4 rounded-xl shadow-sm text-center"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Personal Activo</p><p class="text-2xl font-black text-emerald-600">${personalCount}</p></div>
             `;
-            if(SUCURSALES_PROCEDIMIENTOS.includes(sucursalActiva)) {
+            if(evalProcedimientos) {
                 kpiHtml += `<div class="bg-white border-l-4 border-indigo-500 p-4 rounded-xl shadow-sm text-center"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Procedimientos</p><p class="text-2xl font-black text-indigo-600">${datosCacheProcedimientos.length}</p></div>`;
             } else {
                 kpiHtml += `<div class="bg-white border-l-4 border-slate-300 p-4 rounded-xl shadow-sm text-center opacity-50"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Procedimientos</p><p class="text-2xl font-black text-slate-400">N/A</p></div>`;
@@ -619,25 +631,22 @@
             let labelsPers = Object.keys(personalEstudios); let dataPers = labelsPers.map(m => Object.values(personalEstudios[m]).reduce((a,b)=>a+b, 0));
             graficosVisor['pers'] = new Chart(document.getElementById('chart-visor-personal').getContext('2d'), { type: 'doughnut', data: { labels: labelsPers, datasets: [{ data: dataPers, backgroundColor: ['#3b82f6','#10b981','#8b5cf6','#ef4444','#f59e0b'] }] }, options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } } } } });
 
-            // LOGICA DE PROCEDIMIENTOS EN VISTA GENERAL
-            if(SUCURSALES_PROCEDIMIENTOS.includes(sucursalActiva)) {
-                // Activar Botón y Contenedor Gral
+            // LÓGICA DE PROCEDIMIENTOS EN VISTA GENERAL
+            if(evalProcedimientos) {
                 document.getElementById('btn-pdf-procedimientos-gral').classList.remove('hidden');
                 document.getElementById('box-procedimientos-gral').classList.remove('hidden');
                 document.getElementById('badge-total-procs').innerText = datosCacheProcedimientos.length;
 
-                // Llenar tabla resumen (sin firmas para ahorrar espacio)
                 let tbProcGral = document.getElementById('visor-tabla-procedimientos-gral'); 
                 tbProcGral.innerHTML = '';
                 
-                // Llenar tabla completa (con firmas en la pestaña oculta)
                 let tbProc = document.getElementById('visor-tabla-procedimientos'); 
                 tbProc.innerHTML = '';
 
                 if(datosCacheProcedimientos.length === 0) {
                     let emptyMsg = `<tr><td colspan="5" class="text-center p-6 text-slate-400 italic">Sin procedimientos en este periodo</td></tr>`;
                     tbProcGral.innerHTML = emptyMsg;
-                    tbProc.innerHTML = emptyMsg;
+                    tbProc.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-slate-400 italic">Sin procedimientos en este periodo</td></tr>`;
                 } else {
                     datosCacheProcedimientos.forEach(p => {
                         // Tabla Resumen (Gral)
@@ -663,16 +672,18 @@
                     });
                 }
             } else {
-                // Ocultar Botón y Contenedor Gral si no maneja procedimientos
                 document.getElementById('btn-pdf-procedimientos-gral').classList.add('hidden');
                 document.getElementById('box-procedimientos-gral').classList.add('hidden');
             }
 
             document.getElementById('visor-loader').classList.add('hidden');
-            if(document.getElementById('tab-general').classList.contains('active')) document.getElementById('vista-general').classList.remove('hidden');
-            else document.getElementById('vista-procedimientos').classList.remove('hidden');
+            if(document.getElementById('tab-general').classList.contains('active')) {
+                document.getElementById('vista-general').classList.remove('hidden');
+            } else {
+                document.getElementById('vista-procedimientos').classList.remove('hidden');
+            }
         }
-
+        
         window.generarPdfGeneral = async function() {
             if(!datosCacheGeneral) return;
             const btn = document.querySelector('#vista-general .fa-file-pdf').parentNode;
