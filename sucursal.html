@@ -168,7 +168,7 @@
                 <!-- Extra: Resumen de procedimientos en global -->
                 <div id="resumen-procedimientos-global" class="mb-6 relative z-10 hidden">
                     <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl">
-                        <h4 class="font-black text-[10px] text-emerald-600 uppercase tracking-widest mb-1"><i class="fa-solid fa-notes-medical"></i> Procedimientos Especiales</h4>
+                        <h4 class="font-black text-[10px] text-emerald-600 uppercase tracking-widest mb-1"><i class="fa-solid fa-notes-medical"></i> Procedimientos </h4>
                         <p class="text-sm font-bold text-slate-700">Total registrados hoy: <span id="txt-total-proc-global" class="text-emerald-700 font-black text-lg ml-1">0</span></p>
                     </div>
                 </div>
@@ -574,7 +574,7 @@
             
             if(SUCURSALES_PROCEDIMIENTOS.includes(sesionActual.sucursal)) {
                 let count = document.getElementById('txt-total-proc-global').innerText;
-                texto += `\n💉 *PROCEDIMIENTOS ESPECIALES*\n- Total: ${count}\n`;
+                texto += `\n💉 *PROCEDIMIENTOS*\n- Total: ${count}\n`;
             }
 
             texto += `\n📝 *OBSERVACIONES*\n`;
@@ -625,6 +625,20 @@
             const btn = document.getElementById('btn-descargar-global'); const originalHTML = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
             const fechaUI = document.getElementById('ui-fecha').innerText.replace('Hoy, ', '').replace('Turno del ', '');
+
+            try {
+                if(navigator.onLine) {
+                    const sucIdNorm = window.normalizarTexto(d.sucursal).replace(/\s+/g,'');
+                    const controlId = `CUMPLIMIENTO_${fechaOperativa}_${sucIdNorm}`;
+                    await window.setDoc(window.doc(window.db, "cumplimiento_sucursales", controlId), {
+                        sucursal: d.sucursal,
+                        fecha: fechaOperativa,
+                        generadoPor: sesionActual.medico,
+                        timestamp: new Date().toISOString(),
+                        completado: true
+                    }, { merge: true });
+                }
+            } catch(e) { console.error("Error guardando bandera de cumplimiento:", e); }
 
             document.getElementById('cap-glob-sucursal').innerText = `SUCURSAL: ${d.sucursal.toUpperCase()}`;
             document.getElementById('cap-glob-info').innerHTML = `<p class="mb-1"><b class="text-slate-500">Fecha:</b> ${fechaUI}</p><p><b class="text-slate-500">Personal Presente:</b> <span class="text-sky-600 font-bold">${d.personal.join(', ')}</span></p>`;
