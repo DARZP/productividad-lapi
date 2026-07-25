@@ -191,7 +191,7 @@
 
     <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 flex flex-col xl:flex-row gap-6 items-start relative z-10 no-print">
         
-        <!-- COLUMNA IZQUIERDA: FORMULARIO DE ALTA (COLAPSABLE) -->
+        <!-- COLUMNA IZQUIERDA: FORMULARIOS (COLAPSABLES) -->
         <div class="w-full xl:w-[400px] shrink-0 flex flex-col gap-4">
             <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-3xl shadow-md text-white border border-orange-400">
                 <h1 class="text-2xl font-black tracking-tight flex items-center gap-2 mb-1">
@@ -259,22 +259,30 @@
                 </div>
             </div>
             
-            <!-- TARJETA ROL DEL DÍA -->
-            <div class="glass p-5 rounded-3xl shadow-sm border border-slate-200 bg-white">
-                <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-3">
-                    <div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center"><i class="fa-solid fa-image"></i></div>
-                    Rol Operativo (IA)
-                </h3>
-                <p class="text-[10px] text-slate-500 font-bold mb-4 leading-tight">Sube la imagen del Rol de Servicios para identificar qué empresas operan hoy y rastrear el cumplimiento de su reporte.</p>
-                <button onclick="abrirModalRol()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 text-xs flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-robot"></i> Cargar Imagen de Rol
-                </button>
+            <!-- ACORDEÓN ROL DEL DÍA (IA) -->
+            <div class="glass p-5 rounded-3xl shadow-sm border border-slate-200 transition-all bg-white" id="contenedor-rol">
+                <div class="flex justify-between items-center cursor-pointer group" onclick="toggleFormRol()">
+                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                        <div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center"><i class="fa-solid fa-image"></i></div>
+                        Rol Operativo (IA)
+                    </h3>
+                    <i id="icono-rol" class="fa-solid fa-chevron-down text-slate-400 group-hover:text-indigo-500 transition-transform rotate-180"></i>
+                </div>
                 
-                <div id="status-rol-activo" class="hidden mt-4 pt-3 border-t border-slate-100 relative">
-                    <button onclick="limpiarRol()" class="absolute top-3 right-0 text-slate-400 hover:text-red-500 transition-colors" title="Limpiar Rol Activo"><i class="fa-solid fa-trash"></i></button>
-                    <p class="text-[10px] font-black uppercase text-indigo-600 mb-1">Rol Activo Cargado</p>
-                    <p id="txt-fecha-rol" class="text-xs font-bold text-slate-700">Para: YYYY-MM-DD</p>
-                    <p id="txt-cantidad-rol" class="text-xs text-slate-500 font-bold">X empresas detectadas</p>
+                <div id="form-rol-body" class="max-h-[800px] opacity-100 overflow-hidden transition-all duration-300">
+                    <div class="pt-5 mt-3 border-t border-slate-100">
+                        <p class="text-[10px] text-slate-500 font-bold mb-4 leading-tight">Sube la imagen del Rol de Servicios para identificar qué empresas operan hoy y rastrear el cumplimiento de su reporte.</p>
+                        <button onclick="abrirModalRol()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 text-xs flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-robot"></i> Cargar Imagen de Rol
+                        </button>
+                        
+                        <div id="status-rol-activo" class="hidden mt-4 pt-3 border-t border-slate-100 relative">
+                            <button onclick="limpiarRol()" class="absolute top-3 right-0 text-slate-400 hover:text-red-500 transition-colors" title="Limpiar Rol Activo"><i class="fa-solid fa-trash"></i></button>
+                            <p class="text-[10px] font-black uppercase text-indigo-600 mb-1">Rol Activo Cargado</p>
+                            <p id="txt-fecha-rol" class="text-xs font-bold text-slate-700">Para: YYYY-MM-DD</p>
+                            <p id="txt-cantidad-rol" class="text-xs text-slate-500 font-bold">X empresas detectadas</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -295,9 +303,9 @@
 
                 <!-- TABS DE FILTRO -->
                 <div class="flex gap-4 border-b border-slate-100 mb-3 px-2 shrink-0">
-                    <button onclick="filtrarVista('activo')" id="tab-activo" class="tab-btn active pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-2 border-transparent"><i class="fa-solid fa-circle-play text-emerald-500 mr-1"></i> Activos</button>
-                    <button onclick="filtrarVista('pausa')" id="tab-pausa" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-2 border-transparent"><i class="fa-solid fa-circle-pause text-amber-500 mr-1"></i> En Pausa</button>
-                    <button onclick="filtrarVista('finalizado')" id="tab-finalizado" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-2 border-transparent"><i class="fa-solid fa-box-archive text-slate-400 mr-1"></i> Finalizados</button>
+                    <button onclick="filtrarVista('activo')" id="tab-activo" class="tab-btn active pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-circle-play text-emerald-500 mr-1"></i> Activos</button>
+                    <button onclick="filtrarVista('pausa')" id="tab-pausa" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-circle-pause text-amber-500 mr-1"></i> En Pausa</button>
+                    <button onclick="filtrarVista('finalizado')" id="tab-finalizado" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-box-archive text-slate-400 mr-1"></i> Finalizados</button>
                 </div>
 
                 <!-- BUSCADOR Y FILTRO DE MES -->
@@ -311,8 +319,8 @@
                     </div>
                 </div>
 
-                <!-- LISTA DE SERVICIOS -->
-                <div class="overflow-y-auto scroll-custom flex-1 pr-2 flex flex-col gap-3" id="lista-servicios-container">
+                <!-- CONTENEDOR GRID DE SERVICIOS -->
+                <div class="overflow-y-auto scroll-custom flex-1 pr-2" id="lista-servicios-container">
                     <div class="text-center py-20 text-slate-400 italic">
                         <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-orange-300 block"></i> Cargando base de datos...
                     </div>
@@ -504,10 +512,25 @@
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
         };
 
-        // UI Colapsable
+        // UI Colapsable (Alta)
         window.toggleFormAlta = function() {
             const body = document.getElementById('form-servicio-body');
             const icono = document.getElementById('icono-alta');
+            if(body.classList.contains('max-h-0')) {
+                body.classList.remove('max-h-0', 'opacity-0');
+                body.classList.add('max-h-[800px]', 'opacity-100');
+                icono.classList.add('rotate-180');
+            } else {
+                body.classList.add('max-h-0', 'opacity-0');
+                body.classList.remove('max-h-[800px]', 'opacity-100');
+                icono.classList.remove('rotate-180');
+            }
+        };
+
+        // UI Colapsable (Rol IA)
+        window.toggleFormRol = function() {
+            const body = document.getElementById('form-rol-body');
+            const icono = document.getElementById('icono-rol');
             if(body.classList.contains('max-h-0')) {
                 body.classList.remove('max-h-0', 'opacity-0');
                 body.classList.add('max-h-[800px]', 'opacity-100');
@@ -583,7 +606,7 @@
      
         window.cargarServicios = async function() {
             const container = document.getElementById('lista-servicios-container');
-            container.innerHTML = '<div class="text-center py-20 text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-orange-300 block"></i></div>';
+            container.innerHTML = '<div class="text-center py-20 text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-orange-300 block"></i> Cargando base de datos...</div>';
             
             try {
                 const q = window.query(window.collection(window.db, "directorio_servicios"));
@@ -641,7 +664,6 @@
                 }
 
                 if (mesBuscado) {
-                    // Validar si el mes cae dentro del rango de la campaña
                     const mesInicio = s.fechaInicio.substring(0, 7);
                     const mesFin = s.fechaFin.substring(0, 7);
                     if (mesBuscado < mesInicio || mesBuscado > mesFin) return false;
@@ -651,73 +673,116 @@
             });
             
             if(filtrados.length === 0) {
-                container.innerHTML = `<p class="text-center text-xs text-slate-400 py-10">No hay servicios que coincidan.</p>`;
+                container.innerHTML = `<p class="text-center text-xs text-slate-400 py-10">No hay servicios que coincidan en esta pestaña.</p>`;
                 return;
             }
 
-            let html = '';
+            let htmlConReporte = ''; let countCon = 0;
+            let htmlSinReporte = ''; let countSin = 0;
+
             filtrados.forEach(data => {
-                let badgeClass = data.estado === 'activo' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
-                                 data.estado === 'pausa' ? 'bg-amber-100 text-amber-700 border-amber-200' : 
-                                 'bg-slate-100 text-slate-500 border-slate-200';
+                let tieneReporte = reportesHechosEnRol.has(data.id);
                 
-                let selectSemaforo = `
-                    <select onchange="cambiarEstado('${data.id}', this.value); event.stopPropagation();" onclick="event.stopPropagation();" class="${badgeClass} border px-2 py-1 rounded text-[9px] font-black uppercase outline-none cursor-pointer select-badge w-24">
-                        <option value="activo" ${data.estado === 'activo' ? 'selected' : ''}>🟢 ACTIVO</option>
-                        <option value="pausa" ${data.estado === 'pausa' ? 'selected' : ''}>🟠 EN PAUSA</option>
-                        <option value="finalizado" ${data.estado === 'finalizado' ? 'selected' : ''}>⚪ FINALIZADO</option>
+                // Variables de Diseño para la Tarjeta
+                let iconBoxClass = '';
+                let cardBorder = '';
+                let visualCue = '';
+                
+                if (vistaActual === 'activo') {
+                    if(fechaRolOperativo && tieneReporte) {
+                        // REPORTE RECIBIDO (Verde)
+                        iconBoxClass = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                        cardBorder = 'border-emerald-300 ring-2 ring-emerald-50';
+                        visualCue = `<span class="absolute top-3 right-3 bg-emerald-500 text-white text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10"><i class="fa-solid fa-check-double"></i> REPORTE RECIBIDO</span>`;
+                    } else if (fechaRolOperativo && !tieneReporte) {
+                        let nombreNorm = normalizarTexto(data.nombreComercial);
+                        let asignadoEnRol = empresasEnRol.some(empRol => {
+                            let rolNorm = normalizarTexto(empRol);
+                            return nombreNorm.includes(rolNorm) || rolNorm.includes(nombreNorm);
+                        });
+                        
+                        if (asignadoEnRol) {
+                            // EN ROL PERO SIN REPORTE (Rojo/Naranja Parpadeante)
+                            iconBoxClass = 'bg-red-50 text-red-600 border-red-200';
+                            cardBorder = 'border-red-200';
+                            visualCue = `<span class="absolute top-3 right-3 w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-sm animate-pulse z-10" title="Pendiente de Reporte"></span>`;
+                        } else {
+                            // ACTIVO FUERA DE ROL (Azul)
+                            iconBoxClass = 'bg-sky-50 text-sky-600 border-sky-200';
+                            cardBorder = 'border-slate-200 hover:border-sky-300';
+                            visualCue = `<span class="absolute top-3 right-3 w-2 h-2 bg-sky-400 rounded-full z-10" title="Activo (Fuera de rol)"></span>`;
+                        }
+                    } else {
+                        // ACTIVO SIN ROL CARGADO
+                        iconBoxClass = 'bg-sky-50 text-sky-600 border-sky-200';
+                        cardBorder = 'border-slate-200 hover:border-sky-300';
+                    }
+                } else if (vistaActual === 'pausa') {
+                    iconBoxClass = 'bg-amber-50 text-amber-600 border-amber-200';
+                    cardBorder = 'border-slate-200 hover:border-amber-300';
+                } else {
+                    // FINALIZADO
+                    iconBoxClass = 'bg-slate-100 text-slate-400 border-slate-200';
+                    cardBorder = 'border-slate-200';
+                }
+
+                // El selector de estado ahora vive elegantemente dentro de la tarjeta
+                let badgeSelect = `
+                    <select onchange="cambiarEstado('${data.id}', this.value); event.stopPropagation();" onclick="event.stopPropagation();" class="mt-2 bg-slate-50 text-slate-500 border border-slate-200 px-2 py-1 rounded-lg text-[9px] font-black uppercase outline-none cursor-pointer w-[140px] text-center hover:bg-slate-100 transition-colors shadow-sm">
+                        <option value="activo" ${data.estado === 'activo' ? 'selected' : ''}>🟢 Estado: ACTIVO</option>
+                        <option value="pausa" ${data.estado === 'pausa' ? 'selected' : ''}>🟠 Estado: EN PAUSA</option>
+                        <option value="finalizado" ${data.estado === 'finalizado' ? 'selected' : ''}>⚪ Estado: FINALIZADO</option>
                     </select>
                 `;
 
-                let statusHtml = '';
-                if(fechaRolOperativo && vistaActual === 'activo') {
-                    let nombreNorm = normalizarTexto(data.nombreComercial);
-                    let asigandoEnRol = empresasEnRol.some(empRol => {
-                        let rolNorm = normalizarTexto(empRol);
-                        return nombreNorm.includes(rolNorm) || rolNorm.includes(nombreNorm);
-                    });
+                let card = `
+                <div onclick="abrirVisor('${data.id}')" class="bg-white border ${cardBorder} rounded-2xl p-4 shadow-sm transition hover:shadow-md cursor-pointer group flex flex-col justify-between relative overflow-hidden">
+                    ${visualCue}
+                    <button onclick="event.stopPropagation(); prepararEdicion('${data.id}')" class="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-slate-50 hover:bg-orange-100 text-slate-400 hover:text-orange-500 flex items-center justify-center transition-colors z-10 shadow-sm border border-slate-100" title="Editar Servicio">
+                        <i class="fa-solid fa-pen text-xs"></i>
+                    </button>
 
-                    if(asigandoEnRol) {
-                        if(reportesHechosEnRol.has(data.id)) {
-                            statusHtml = `<span class="flex items-center gap-1 text-[10px] font-bold text-emerald-600"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-inner block"></span> Reporte Exitoso (${fechaRolOperativo})</span>`;
-                        } else {
-                            statusHtml = `<span class="flex items-center gap-1 text-[10px] font-bold text-red-600"><span class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-inner block animate-pulse"></span> Faltante de Reporte (${fechaRolOperativo})</span>`;
-                        }
-                    } else {
-                        statusHtml = `<span class="flex items-center gap-1 text-[10px] font-bold text-slate-400"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 shadow-inner block"></span> Sin rol programado</span>`;
-                    }
-                } else if(vistaActual === 'activo') {
-                    statusHtml = `<span class="flex items-center gap-1 text-[10px] font-bold text-slate-400"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 shadow-inner block"></span> Sube un rol para evaluar</span>`;
-                }
-
-                let textoUbicacion = data.ubicacion ? ` | Ubicación: ${data.ubicacion}` : '';
-                
-                html += `
-                <div onclick="abrirVisor('${data.id}')" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative transition hover:shadow-md cursor-pointer group">
-                    <div class="flex justify-between items-start mb-1">
-                        <h4 class="font-black text-sm text-slate-800 w-3/4 group-hover:text-orange-600 transition-colors">${data.nombreComercial}</h4>
-                        <div class="flex gap-2">
-                            <button onclick="event.stopPropagation(); prepararEdicion('${data.id}')" class="text-slate-400 hover:text-orange-500 transition" title="Editar Servicio"><i class="fa-solid fa-pen"></i></button>
+                    <div>
+                        <div class="w-10 h-10 ${iconBoxClass} rounded-xl flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-truck-medical"></i></div>
+                        <h3 class="font-black text-slate-800 text-sm leading-tight uppercase group-hover:text-sky-600 transition-colors pr-6">${data.nombreComercial}</h3>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase mt-1 truncate">Folio: ${data.folio} ${data.ubicacion ? `| ${data.ubicacion}` : ''}</p>
+                        
+                        <div class="flex flex-wrap gap-1 text-[9px] font-bold text-slate-500 mt-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100 w-fit">
+                            <span><i class="fa-solid fa-calendar-day text-orange-400 mr-1"></i> ${data.fechaInicio.substring(5)} al ${data.fechaFin.substring(5)}</span> 
                         </div>
                     </div>
                     
-                    <p class="text-[9px] text-slate-400 font-bold uppercase mb-2">Folio: ${data.folio} | Razón: ${data.razonSocial}${textoUbicacion}</p>
-                    
-                    <div class="flex flex-wrap gap-2 text-[10px] font-bold text-slate-600 mb-3 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                        <span><i class="fa-solid fa-calendar-day text-orange-400 mr-1"></i> ${data.fechaInicio} al ${data.fechaFin}</span> <span>|</span>
-                        <span><i class="fa-solid fa-clock text-sky-400 mr-1"></i> ${data.horaInicio} - ${data.horaFin}</span>
-                    </div>
-
-                    <div class="flex gap-2 items-center mb-2 justify-between">
-                        ${selectSemaforo}
-                    </div>
-
-                    <div class="pt-2 border-t border-slate-100 mt-2">
-                        ${statusHtml}
+                    <div class="mt-1 relative z-10">
+                        ${badgeSelect}
                     </div>
                 </div>`;
+
+                if(vistaActual === 'activo') {
+                    if (tieneReporte) { htmlConReporte += card; countCon++; }
+                    else { htmlSinReporte += card; countSin++; }
+                } else {
+                    htmlSinReporte += card; countSin++; 
+                }
             });
-            container.innerHTML = html;
+
+            // Grid Layout (1 columna en móvil, 2 en computadoras)
+            let finalHtml = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">';
+            
+            if (vistaActual === 'activo') {
+                if(countCon > 0) {
+                    finalHtml += `<div class="col-span-full border-b border-emerald-100 pb-2 mt-2"><h3 class="text-xs font-black text-emerald-600 uppercase tracking-widest"><i class="fa-solid fa-check-double mr-1"></i> Reportes Recibidos Hoy (${countCon})</h3></div>`;
+                    finalHtml += htmlConReporte;
+                }
+                if(countSin > 0) {
+                    finalHtml += `<div class="col-span-full border-b border-slate-100 pb-2 mt-2"><h3 class="text-xs font-black text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-clock mr-1"></i> Pendientes de Reporte / Activos (${countSin})</h3></div>`;
+                    finalHtml += htmlSinReporte;
+                }
+            } else {
+                finalHtml += htmlSinReporte;
+            }
+            
+            finalHtml += '</div>';
+            container.innerHTML = finalHtml;
         }
 
         window.cambiarEstado = async function(id, nuevoEstado) {
