@@ -27,9 +27,7 @@
         input[type=number] { -moz-appearance: textfield; }
         .shadow-soft { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
 
-        /* Estilos Pad de Firma */
-        #signature-pad { border: 2px dashed #cbd5e1; border-radius: 0.75rem; background-color: #ffffff; cursor: crosshair; touch-action: none; width: 100%; height: 150px; }
-        
+         
         .tab-proc.active { border-bottom: 3px solid #ea580c; color: #ea580c; font-weight: 900; }
         
         /* PDF de Impresión de Procedimientos */
@@ -226,6 +224,8 @@
                 <div id="view-proc-registro" class="space-y-4 animate-fade-in pb-10">
                     <form id="form-procedimiento" onsubmit="guardarProcedimiento(event)">
                         <div class="grid grid-cols-2 gap-3 mb-4">
+                            
+                            <!-- SECCIÓN DE SERVICIOS (INTACTA) -->
                             <div class="col-span-2">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Procedimiento Realizado <span class="text-red-500">*</span></label>
                                 <select id="proc-tipo" required class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-emerald-500">
@@ -243,6 +243,8 @@
                                     <option value="OTRO">OTRO (ESPECIFICAR EN NOTAS)</option>
                                 </select>
                             </div>
+                            
+                            <!-- DATOS DEL PACIENTE (INTACTOS) -->
                             <div>
                                 <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">N. Orden <span class="text-red-500">*</span></label>
                                 <input type="text" id="proc-orden" required class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-emerald-500 uppercase">
@@ -260,14 +262,24 @@
                                 <textarea id="proc-notas" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium outline-none text-slate-700 focus:border-emerald-500" rows="2"></textarea>
                             </div>
                             
-                            <div class="col-span-2 mt-2">
-                                <label class="block text-[10px] font-black text-slate-500 uppercase mb-1 flex justify-between">
-                                    <span>Firma de Conformidad (Paciente) <span class="text-red-500">*</span></span>
-                                    <button type="button" onclick="limpiarFirma()" class="text-red-500 underline text-[9px]">Limpiar</button>
+                            <!-- NUEVA ÁREA DE FIRMA (EL BOTÓN QUE ABRE EL MODAL GIGANTE) -->
+                            <div class="col-span-2 mt-2 border border-slate-200 rounded-xl p-5 bg-slate-50 text-center shadow-inner">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase mb-3">
+                                    Firma de Conformidad (Paciente) <span class="text-red-500">*</span>
                                 </label>
-                                <canvas id="signature-pad"></canvas>
+                                
+                                <!-- Contenedor de Vista Previa (Aparece cuando ya firmaron) -->
+                                <div id="preview-firma-container" class="hidden mb-4">
+                                    <img id="preview-firma-img" src="" class="mx-auto h-28 w-auto border border-slate-300 rounded-xl bg-white shadow-sm" alt="Firma Paciente">
+                                </div>
+
+                                <button type="button" onclick="abrirModalFirma()" class="bg-slate-800 hover:bg-slate-700 text-white font-black py-3.5 px-6 rounded-xl transition-all shadow-md active:scale-95 text-xs flex justify-center items-center gap-2 mx-auto w-full md:w-auto">
+                                    <i class="fa-solid fa-signature text-lg text-orange-400"></i> <span id="txt-btn-firmar">Capturar Firma del Paciente</span>
+                                </button>
                             </div>
+                            
                         </div>
+                        
                         <button type="submit" id="btn-guardar-proc" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl transition-all shadow-md active:scale-95 text-xs flex justify-center items-center gap-2 mt-4">
                             <i class="fa-solid fa-floppy-disk"></i> Registrar Procedimiento
                         </button>
@@ -705,11 +717,10 @@
 
         window.guardarProcedimiento = async function(e) {
             e.preventDefault();
-            if(firmaVacia) return mostrarToast("El paciente debe firmar de conformidad.", "error");
+            if(!firmaActualBase64) return mostrarToast("El paciente debe firmar de conformidad.", "error");
             
             const btn = document.getElementById('btn-guardar-proc'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Guardando...'; btn.disabled = true;
 
-            const base64Firma = canvas.toDataURL('image/png');
             const dataProc = {
                 sucursal: sesionActual.sucursal, medico: sesionActual.medico, fecha: fechaOperativa, timestamp: new Date(),
                 procedimiento: document.getElementById('proc-tipo').value,
@@ -717,13 +728,19 @@
                 edad: document.getElementById('proc-edad').value,
                 paciente: document.getElementById('proc-paciente').value.toUpperCase().trim(),
                 notas: document.getElementById('proc-notas').value,
-                firma: base64Firma
+                firma: firmaActualBase64
             };
 
             try {
                 await window.addDoc(window.collection(window.db, "procedimientos_sucursales"), dataProc);
                 mostrarToast("Procedimiento registrado con éxito", "exito");
-                document.getElementById('form-procedimiento').reset(); limpiarFirma();
+                
+                // Reset de todo el form y firma
+                document.getElementById('form-procedimiento').reset();
+                firmaActualBase64 = null;
+                document.getElementById('preview-firma-container').classList.add('hidden');
+                document.getElementById('txt-btn-firmar').innerText = "Capturar Firma del Paciente";
+                
                 switchTabProc('historial');
             } catch(err) { console.error(err); mostrarToast("Error al guardar el registro", "error"); }
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Registrar Procedimiento'; btn.disabled = false;
