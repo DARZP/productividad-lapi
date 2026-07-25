@@ -472,56 +472,66 @@
             datosCacheProcedimientos = [];
 
             const sucNorm = window.normalizarTexto(sucursalActiva);
-            const variaciones = [...new Set([sucursalActiva, sucNorm, sucursalActiva.toUpperCase()])];
+            const variaciones = [sucursalActiva, sucNorm, sucursalActiva.toUpperCase()];
 
+            // 1. CARGA GENERAL (Filtrando sucursal de forma local para evitar fallos de Firebase)
             try {
                 const qG = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
-                    window.where("sucursal", "in", variaciones),
-                    window.where("fecha", ">=", fechaIni),
+                    window.where("fecha", ">=", fechaIni), 
                     window.where("fecha", "<=", fechaFin)
                 );
                 const snapG = await window.getDocs(qG);
 
                 snapG.forEach(doc => {
                     let d = doc.data();
-                    let hayEstudios = false;
-
-                    if(d.estudios) {
-                        for(let est in d.estudios) {
-                            let cant = parseInt(d.estudios[est]) || 0;
-                            if(cant > 0) {
-                                hayEstudios = true;
-                                datosCacheGeneral.totalesEstudio[est] = (datosCacheGeneral.totalesEstudio[est] || 0) + cant;
-                                
-                                if(!datosCacheGeneral.diaEstudios[d.fecha]) datosCacheGeneral.diaEstudios[d.fecha] = {};
-                                datosCacheGeneral.diaEstudios[d.fecha][est] = (datosCacheGeneral.diaEstudios[d.fecha][est] || 0) + cant;
-                                
-                                let medicoNorm = d.medico ? d.medico.toUpperCase() : "DESCONOCIDO";
-                                if(!datosCacheGeneral.personalEstudios[medicoNorm]) datosCacheGeneral.personalEstudios[medicoNorm] = {};
-                                datosCacheGeneral.personalEstudios[medicoNorm][est] = (datosCacheGeneral.personalEstudios[medicoNorm][est] || 0) + cant;
+                    let dSucNorm = window.normalizarTexto(d.sucursal);
+                    // Verificamos si la sucursal coincide
+                    if(variaciones.includes(d.sucursal) || variaciones.includes(dSucNorm)) {
+                        let hayEstudios = false;
+                        if(d.estudios) {
+                            for(let est in d.estudios) {
+                                let cant = parseInt(d.estudios[est]) || 0;
+                                if(cant > 0) {
+                                    hayEstudios = true;
+                                    datosCacheGeneral.totalesEstudio[est] = (datosCacheGeneral.totalesEstudio[est] || 0) + cant;
+                                    
+                                    if(!datosCacheGeneral.diaEstudios[d.fecha]) datosCacheGeneral.diaEstudios[d.fecha] = {};
+                                    datosCacheGeneral.diaEstudios[d.fecha][est] = (datosCacheGeneral.diaEstudios[d.fecha][est] || 0) + cant;
+                                    
+                                    let medicoNorm = d.medico ? d.medico.toUpperCase() : "DESCONOCIDO";
+                                    if(!datosCacheGeneral.personalEstudios[medicoNorm]) datosCacheGeneral.personalEstudios[medicoNorm] = {};
+                                    datosCacheGeneral.personalEstudios[medicoNorm][est] = (datosCacheGeneral.personalEstudios[medicoNorm][est] || 0) + cant;
+                                }
                             }
                         }
+                        if(hayEstudios) datosCacheGeneral.diasLaboradosSet.add(d.fecha);
                     }
-                    if(hayEstudios) datosCacheGeneral.diasLaboradosSet.add(d.fecha);
                 });
 
-            } catch(e) { console.error("Firebase Error:", e); }
+            } catch(e) { console.error("Firebase Error General:", e); }
 
+            // 2. CARGA PROCEDIMIENTOS (Igual, filtrado local anti-errores)
             if(SUCURSALES_PROCEDIMIENTOS.includes(sucursalActiva)) {
                 try {
                     const qP = window.query(window.collection(window.db, "procedimientos_sucursales"), 
-                        window.where("sucursal", "in", variaciones),
-                        window.where("fecha", ">=", fechaIni),
+                        window.where("fecha", ">=", fechaIni), 
                         window.where("fecha", "<=", fechaFin)
                     );
                     const snapP = await window.getDocs(qP);
-                    snapP.forEach(doc => { datosCacheProcedimientos.push(doc.data()); });
+                    snapP.forEach(doc => { 
+                        let p = doc.data();
+                        let pSucNorm = window.normalizarTexto(p.sucursal);
+                        if(variaciones.includes(p.sucursal) || variaciones.includes(pSucNorm)) {
+                            datosCacheProcedimientos.push(p); 
+                        }
+                    });
                     datosCacheProcedimientos.sort((a,b) => b.fecha.localeCompare(a.fecha));
-                } catch(e) { console.error("Firebase Error en Procedimientos:", e); }
+                } catch(e) { console.error("Firebase Error Procedimientos:", e); }
             }
 
             renderizarVistas();
         }
+        
 
         function renderizarVistas() {
             const { diasLaboradosSet, totalesEstudio, diaEstudios, personalEstudios } = datosCacheGeneral;
