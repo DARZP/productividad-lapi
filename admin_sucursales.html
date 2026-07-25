@@ -371,7 +371,7 @@
             }
         };
 
-        // SEMÁFORO ACTUALIZADO USANDO LA NUEVA FUNCIÓN
+        // SEMÁFORO ACTUALIZADO: ACTIVIDAD + REPORTE FINALIZADO
         window.inicializarSucursales = async function() {
             let lista = (window.LAPI_CONFIG && window.LAPI_CONFIG.sucursales) ? window.LAPI_CONFIG.sucursales : ["GRAN SUR", "PLATEROS", "MARTIN CARRERA", "CENTRO", "POLANCO", "COYOACAN"];
             lista.sort(); 
@@ -386,15 +386,23 @@
             const fechaHoy = `${yyyy}-${mm}-${dd}`;
 
             let sucursalesActivasHoy = new Set();
+            let sucursalesConReporte = new Set();
+
             try {
+                // 1. Verificamos quién tiene actividad (Registros diarios)
                 const qHoy = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", "==", fechaHoy));
                 const snapHoy = await window.getDocs(qHoy);
                 snapHoy.forEach(doc => {
                     let d = doc.data();
-                    if(d.sucursal) {
-                        sucursalesActivasHoy.add(window.normalizarTexto(d.sucursal));
-                        sucursalesActivasHoy.add(d.sucursal); 
-                    }
+                    if(d.sucursal) sucursalesActivasHoy.add(window.normalizarTexto(d.sucursal));
+                });
+
+                // 2. Verificamos quién ya generó su reporte (Cumplimiento)
+                const qCumplimiento = window.query(window.collection(window.db, "cumplimiento_sucursales"), window.where("fecha", "==", fechaHoy));
+                const snapCumplimiento = await window.getDocs(qCumplimiento);
+                snapCumplimiento.forEach(doc => {
+                    let d = doc.data();
+                    if(d.sucursal && d.completado) sucursalesConReporte.add(window.normalizarTexto(d.sucursal));
                 });
             } catch(e) { console.error("Error verificando estatus de hoy:", e); }
 
@@ -403,20 +411,34 @@
 
             lista.forEach(suc => {
                 let sucNorm = window.normalizarTexto(suc);
-                let tieneReporte = sucursalesActivasHoy.has(suc) || sucursalesActivasHoy.has(sucNorm);
+                let tieneActividad = sucursalesActivasHoy.has(sucNorm);
+                let reporteFinalizado = sucursalesConReporte.has(sucNorm);
                 
-                // Usamos la nueva función infalible
                 let checkProcedimientos = window.esSucursalProcedimientos(suc);
-                let badgeProcedimientos = checkProcedimientos ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase mt-2 inline-block"><i class="fa-solid fa-notes-medical mr-1"></i> Procsedimientos</span>` : '';
+                let badgeProcedimientos = checkProcedimientos ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase mt-2 inline-block"><i class="fa-solid fa-notes-medical mr-1"></i> Procedimientos</span>` : '';
                 
-                let semaforoClass = tieneReporte ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-50 text-slate-400 border-slate-200';
-                let dot = tieneReporte ? '<span class="absolute top-3 right-3 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white shadow-sm" title="Activo Hoy"></span>' : '';
+                // Variables para el diseño de la tarjeta
+                let iconBoxClass = 'bg-slate-50 text-slate-400 border-slate-200';
+                let cardBorder = 'border-slate-200';
+                let visualCue = '';
+                
+                if (reporteFinalizado) {
+                    // SUCURSAL FINALIZADA (Todo en verde con etiqueta)
+                    iconBoxClass = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                    cardBorder = 'border-emerald-300 ring-2 ring-emerald-50';
+                    visualCue = '<span class="absolute top-3 right-3 bg-emerald-500 text-white text-[9px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10"><i class="fa-solid fa-check-double"></i> FINALIZADO</span>';
+                } else if (tieneActividad) {
+                    // SUCURSAL EN PROCESO (Naranja con punto parpadeante)
+                    iconBoxClass = 'bg-orange-50 text-orange-600 border-orange-200';
+                    cardBorder = 'border-orange-200';
+                    visualCue = '<span class="absolute top-3 right-3 w-3 h-3 bg-orange-500 rounded-full border-2 border-white shadow-sm animate-pulse z-10" title="Activo (En Proceso)"></span>';
+                }
 
                 let card = `
-                <div onclick="abrirVisorSucursal('${suc}')" class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm transition hover:shadow-md hover:border-orange-300 cursor-pointer group flex flex-col justify-between relative">
-                    ${dot}
+                <div onclick="abrirVisorSucursal('${suc}')" class="bg-white border ${cardBorder} rounded-2xl p-5 shadow-sm transition hover:shadow-md hover:border-orange-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden">
+                    ${visualCue}
                     <div>
-                        <div class="w-10 h-10 ${semaforoClass} rounded-xl flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-hospital"></i></div>
+                        <div class="w-10 h-10 ${iconBoxClass} rounded-xl flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-hospital"></i></div>
                         <h3 class="font-black text-slate-800 text-lg leading-tight uppercase group-hover:text-orange-600 transition-colors">${suc}</h3>
                         ${badgeProcedimientos}
                     </div>
@@ -425,13 +447,13 @@
                     </div>
                 </div>`;
 
-                if(tieneReporte) { htmlCon += card; countCon++; }
+                if(tieneActividad || reporteFinalizado) { htmlCon += card; countCon++; }
                 else { htmlSin += card; countSin++; }
             });
 
             let finalHtml = '';
             if(countCon > 0) {
-                finalHtml += `<div class="col-span-full border-b border-emerald-100 pb-2 mb-2 mt-2"><h3 class="text-xs font-black text-emerald-600 uppercase tracking-widest"><i class="fa-solid fa-circle-check mr-1"></i> Con Actividad Hoy (${countCon})</h3></div>`;
+                finalHtml += `<div class="col-span-full border-b border-sky-100 pb-2 mb-2 mt-2"><h3 class="text-xs font-black text-sky-600 uppercase tracking-widest"><i class="fa-solid fa-bolt mr-1"></i> Con Actividad Hoy (${countCon})</h3></div>`;
                 finalHtml += htmlCon;
             }
             if(countSin > 0) {
