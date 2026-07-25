@@ -12,7 +12,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Incluimos config.js para jalar la lista central de sucursales -->
     <script src="config.js"></script> 
     
     <script type="module">
@@ -64,7 +63,6 @@
         
         .tab-btn.active { border-bottom-color: #ea580c; color: #ea580c; font-weight: 900; }
         
-        /* IMPRESIÓN PDF BLINDADA MÓVIL */
         @media print {
             @page { size: letter portrait; margin: 12mm 15mm; } 
             body * { visibility: hidden; }
@@ -114,7 +112,6 @@
             <span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span>
         </a>
 
-        <!-- BOTÓN DE CERRAR SESIÓN -->
         <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
         <button onclick="cerrarSesionAdmin()" class="flex flex-col items-center p-1 md:p-2 text-red-400 hover:text-red-600 group transition-all w-full">
             <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-red-50 transition-all"><i class="fa-solid fa-right-from-bracket text-base md:text-xl"></i></div>
@@ -126,7 +123,6 @@
 
     <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 flex flex-col gap-6 relative z-10 no-print">
         
-        <!-- ENCABEZADO -->
         <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-8 rounded-3xl shadow-md text-white border border-orange-400 flex justify-between items-center">
             <div>
                 <h1 class="text-3xl font-black tracking-tight flex items-center gap-2 mb-1">
@@ -137,17 +133,13 @@
             <i class="fa-solid fa-chart-pie text-5xl opacity-20"></i>
         </div>
 
-        <!-- DIRECTORIO DE SUCURSALES -->
         <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 bg-white min-h-[500px]">
             <h2 class="text-xl font-black text-slate-800 mb-6"><i class="fa-solid fa-list-ul text-orange-500 mr-2"></i> Directorio de Sedes</h2>
-            <div id="grid-sucursales" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                <!-- Se llenan por JS -->
-            </div>
+            <div id="grid-sucursales" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
         </div>
-
     </main>
 
-    <!-- ZONA OCULTA PARA HTML DE IMPRESIÓN (PDF) GENERAL -->
+    <!-- ZONAS DE IMPRESIÓN OCULTAS -->
     <div id="zona-impresion-general" class="hidden print-zone"></div>
     <div id="zona-impresion-procedimientos" class="hidden print-zone"></div>
     <div id="zona-impresion-graficas" class="hidden">
@@ -155,27 +147,28 @@
         <canvas id="chart-personal-pdf"></canvas>
     </div>
 
-    <!-- MODALES -->
+    <!-- MODAL VISOR -->
     <div class="modales">
-        
-        <!-- MODAL VISOR SUCURSAL -->
         <div id="modal-visor" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
             <div id="modal-visor-card" class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl h-[95vh] flex flex-col transform scale-95 transition-transform duration-300 border border-slate-200">
                 
-                <!-- HEADER MODAL -->
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center p-6 border-b border-slate-100 shrink-0 gap-4">
                     <div id="visor-header">
                         <h3 class="text-2xl font-black text-slate-800" id="v-titulo-sucursal"><i class="fa-solid fa-building text-orange-500 mr-2"></i> SUCURSAL</h3>
                         <p class="text-xs font-bold text-slate-400 tracking-widest uppercase mt-1">Análisis de Productividad</p>
                     </div>
                     
+                    <!-- NUEVA BOTONERA DE FILTROS -->
                     <div class="flex items-center gap-2 flex-wrap bg-slate-50 p-2 rounded-xl border border-slate-200">
-                        <button onclick="setFiltroTiempo('mes')" id="btn-f-mes" class="btn-tiempo bg-orange-600 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-sm transition-colors">Mes Actual</button>
-                        <button onclick="setFiltroTiempo('anio')" id="btn-f-anio" class="btn-tiempo bg-white text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-black hover:bg-slate-100 transition-colors">Año Actual</button>
+                        <button onclick="setFiltroTiempo('hoy')" id="btn-f-hoy" class="btn-tiempo bg-orange-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black shadow-sm transition-colors uppercase tracking-widest">Hoy</button>
+                        <button onclick="setFiltroTiempo('semana')" id="btn-f-semana" class="btn-tiempo bg-white text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-slate-100 transition-colors uppercase tracking-widest">Semana</button>
+                        <button onclick="setFiltroTiempo('mes')" id="btn-f-mes" class="btn-tiempo bg-white text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-slate-100 transition-colors uppercase tracking-widest">Mes</button>
+                        <button onclick="setFiltroTiempo('anio')" id="btn-f-anio" class="btn-tiempo bg-white text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-slate-100 transition-colors uppercase tracking-widest">Año</button>
+                        
                         <div class="flex items-center gap-1 border-l border-slate-300 pl-2 ml-1">
-                            <input type="date" id="f-fecha-ini" onchange="setFiltroTiempo('custom')" class="bg-white border border-slate-200 rounded p-1 text-[10px] font-bold text-slate-600">
+                            <input type="date" id="f-fecha-ini" onchange="setFiltroTiempo('custom')" class="bg-white border border-slate-200 rounded p-1 text-[10px] font-bold text-slate-600 outline-none focus:border-orange-400">
                             <span class="text-slate-400 text-[10px]">al</span>
-                            <input type="date" id="f-fecha-fin" onchange="setFiltroTiempo('custom')" class="bg-white border border-slate-200 rounded p-1 text-[10px] font-bold text-slate-600">
+                            <input type="date" id="f-fecha-fin" onchange="setFiltroTiempo('custom')" class="bg-white border border-slate-200 rounded p-1 text-[10px] font-bold text-slate-600 outline-none focus:border-orange-400">
                         </div>
                     </div>
 
@@ -184,7 +177,6 @@
                 
                 <div id="visor-content" class="flex-1 overflow-y-auto scroll-custom bg-slate-50/50 flex flex-col relative">
                     
-                    <!-- PESTAÑAS (General / Procedimientos) -->
                     <div class="flex border-b border-slate-200 bg-white shrink-0 px-6 pt-2 sticky top-0 z-10 hidden" id="contenedor-tabs">
                         <button onclick="switchTab('general')" id="tab-general" class="tab-btn active pb-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-chart-pie mr-1"></i> Productividad General</button>
                         <button onclick="switchTab('procedimientos')" id="tab-procedimientos" class="tab-btn pb-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-notes-medical mr-1"></i> Procedimientos Especiales</button>
@@ -195,17 +187,13 @@
                             <i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-orange-400 block"></i> Consultando base de datos...
                         </div>
                         
-                        <!-- VISTA GENERAL -->
                         <div id="vista-general" class="hidden space-y-6">
-                            <!-- Controles PDF General -->
                             <div class="flex justify-end">
                                 <button onclick="generarPdfGeneral()" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-black px-4 py-2 rounded-xl shadow-sm transition-all text-xs flex items-center gap-2"><i class="fa-solid fa-file-pdf"></i> PDF Productividad</button>
                             </div>
 
-                            <!-- KPIs -->
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="visor-kpis"></div>
 
-                            <!-- Gráficas -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
                                     <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Total por Estudio</h4>
@@ -217,7 +205,6 @@
                                 </div>
                             </div>
 
-                            <!-- Tablas -->
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                                     <div class="bg-slate-100 p-3 border-b border-slate-200"><h4 class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Desglose Operativo Diario</h4></div>
@@ -245,7 +232,6 @@
                             </div>
                         </div>
 
-                        <!-- VISTA PROCEDIMIENTOS -->
                         <div id="vista-procedimientos" class="hidden space-y-6 flex-1 flex flex-col">
                             <div class="flex justify-between items-center bg-emerald-50 p-4 rounded-xl border border-emerald-200">
                                 <div>
@@ -288,7 +274,6 @@
         let graficosVisor = {};
         const SUCURSALES_PROCEDIMIENTOS = ["GRAN SUR", "PLATEROS", "MARTIN CARRERA"];
 
-        // UI Modales y Toasts
         window.mostrarToast = function(mensaje, tipo = 'info') {
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-orange-600');
@@ -319,14 +304,11 @@
             }
         };
 
-        // INICIALIZACIÓN
         window.inicializarSucursales = function() {
-            // Obtenemos lista de sucursales de config.js
             let lista = [];
             if (window.LAPI_CONFIG && window.LAPI_CONFIG.sucursales) {
                 lista = window.LAPI_CONFIG.sucursales;
             } else {
-                // Fallback de seguridad
                 lista = ["GRAN SUR", "PLATEROS", "MARTIN CARRERA", "CENTRO", "POLANCO", "COYOACAN"];
             }
 
@@ -352,7 +334,6 @@
             grid.innerHTML = html;
         };
 
-        // VISOR Y FILTROS
         window.abrirVisorSucursal = function(sucursal) {
             sucursalActiva = sucursal;
             document.getElementById('v-titulo-sucursal').innerHTML = `<i class="fa-solid fa-building text-orange-500 mr-2"></i> ${sucursal}`;
@@ -362,17 +343,16 @@
             modal.classList.remove('hidden');
             setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
 
-            // Gestionar pestañas según sucursal
             if(SUCURSALES_PROCEDIMIENTOS.includes(sucursal)) {
                 document.getElementById('contenedor-tabs').classList.remove('hidden');
                 switchTab('general');
             } else {
                 document.getElementById('contenedor-tabs').classList.add('hidden');
-                switchTab('general'); // Forzamos general y ocultamos tabs
+                switchTab('general');
             }
 
-            // Iniciar por defecto en MES
-            setFiltroTiempo('mes');
+            // Iniciar por defecto en HOY
+            setFiltroTiempo('hoy');
         };
 
         window.setFiltroTiempo = function(tipo) {
@@ -384,28 +364,44 @@
             const hoy = new Date();
             let yyyy = hoy.getFullYear();
             let mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            let dd = String(hoy.getDate()).padStart(2, '0');
+            
             let iStr, fStr;
 
-            if (tipo === 'mes') {
+            if (tipo === 'hoy') {
+                iStr = `${yyyy}-${mm}-${dd}`;
+                fStr = iStr;
+            } else if (tipo === 'semana') {
+                // Lógica Lunes a Sábado
+                let day = hoy.getDay(); // 0 = Domingo, 1 = Lunes...
+                let diffLunes = hoy.getDate() - day + (day === 0 ? -6 : 1);
+                
+                let lunes = new Date(hoy.setDate(diffLunes));
+                iStr = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
+                
+                let sabado = new Date(lunes.setDate(lunes.getDate() + 5));
+                fStr = `${sabado.getFullYear()}-${String(sabado.getMonth()+1).padStart(2,'0')}-${String(sabado.getDate()).padStart(2,'0')}`;
+                
+            } else if (tipo === 'mes') {
                 iStr = `${yyyy}-${mm}-01`;
                 fStr = `${yyyy}-${mm}-31`;
-                let btn = document.getElementById('btn-f-mes');
-                btn.classList.add('bg-orange-600', 'text-white', 'shadow-sm');
-                btn.classList.remove('bg-white', 'text-slate-500');
-                document.getElementById('f-fecha-ini').value = iStr;
-                document.getElementById('f-fecha-fin').value = fStr;
             } else if (tipo === 'anio') {
                 iStr = `${yyyy}-01-01`;
                 fStr = `${yyyy}-12-31`;
-                let btn = document.getElementById('btn-f-anio');
-                btn.classList.add('bg-orange-600', 'text-white', 'shadow-sm');
-                btn.classList.remove('bg-white', 'text-slate-500');
-                document.getElementById('f-fecha-ini').value = iStr;
-                document.getElementById('f-fecha-fin').value = fStr;
             } else if (tipo === 'custom') {
                 iStr = document.getElementById('f-fecha-ini').value;
                 fStr = document.getElementById('f-fecha-fin').value;
-                if(!iStr || !fStr) return; // Esperar a que el usuario llene ambas
+                if(!iStr || !fStr) return; 
+            }
+            
+            if (tipo !== 'custom') {
+                let btn = document.getElementById(`btn-f-${tipo}`);
+                if(btn) {
+                    btn.classList.add('bg-orange-600', 'text-white', 'shadow-sm');
+                    btn.classList.remove('bg-white', 'text-slate-500');
+                }
+                document.getElementById('f-fecha-ini').value = iStr;
+                document.getElementById('f-fecha-fin').value = fStr;
             }
             
             cargarDatosVisor(iStr, fStr);
@@ -416,11 +412,14 @@
             document.getElementById('vista-procedimientos').classList.add('hidden');
             document.getElementById('visor-loader').classList.remove('hidden');
 
-            // 1. CARGAR DATOS GENERALES
+            // BLINDAJE INICIAL: Asignamos valores vacíos por defecto antes de consultar Firebase
             let diasLaboradosSet = new Set();
             let totalesEstudio = {};
             let diaEstudios = {}; 
             let personalEstudios = {}; 
+            
+            datosCacheGeneral = { diasLaboradosSet, totalesEstudio, diaEstudios, personalEstudios, fechaIni, fechaFin };
+            datosCacheProcedimientos = [];
 
             try {
                 const qG = window.query(window.collection(window.db, "registros_diarios_sucursales"), 
@@ -439,26 +438,25 @@
                             let cant = parseInt(d.estudios[est]) || 0;
                             if(cant > 0) {
                                 hayEstudios = true;
-                                totalesEstudio[est] = (totalesEstudio[est] || 0) + cant;
+                                datosCacheGeneral.totalesEstudio[est] = (datosCacheGeneral.totalesEstudio[est] || 0) + cant;
                                 
-                                if(!diaEstudios[d.fecha]) diaEstudios[d.fecha] = {};
-                                diaEstudios[d.fecha][est] = (diaEstudios[d.fecha][est] || 0) + cant;
+                                if(!datosCacheGeneral.diaEstudios[d.fecha]) datosCacheGeneral.diaEstudios[d.fecha] = {};
+                                datosCacheGeneral.diaEstudios[d.fecha][est] = (datosCacheGeneral.diaEstudios[d.fecha][est] || 0) + cant;
                                 
                                 let medicoNorm = d.medico ? d.medico.toUpperCase() : "DESCONOCIDO";
-                                if(!personalEstudios[medicoNorm]) personalEstudios[medicoNorm] = {};
-                                personalEstudios[medicoNorm][est] = (personalEstudios[medicoNorm][est] || 0) + cant;
+                                if(!datosCacheGeneral.personalEstudios[medicoNorm]) datosCacheGeneral.personalEstudios[medicoNorm] = {};
+                                datosCacheGeneral.personalEstudios[medicoNorm][est] = (datosCacheGeneral.personalEstudios[medicoNorm][est] || 0) + cant;
                             }
                         }
                     }
-                    if(hayEstudios) diasLaboradosSet.add(d.fecha);
+                    if(hayEstudios) datosCacheGeneral.diasLaboradosSet.add(d.fecha);
                 });
 
-                datosCacheGeneral = { diasLaboradosSet, totalesEstudio, diaEstudios, personalEstudios, fechaIni, fechaFin };
+            } catch(e) { 
+                console.error("Firebase Error: Posible falta de índice compuesto.", e); 
+                console.log("Revisa el enlace en el mensaje de error de arriba para crear el índice.");
+            }
 
-            } catch(e) { console.error(e); }
-
-            // 2. CARGAR PROCEDIMIENTOS (Solo si aplica)
-            datosCacheProcedimientos = [];
             if(SUCURSALES_PROCEDIMIENTOS.includes(sucursalActiva)) {
                 try {
                     const qP = window.query(window.collection(window.db, "procedimientos_sucursales"), 
@@ -468,8 +466,8 @@
                     );
                     const snapP = await window.getDocs(qP);
                     snapP.forEach(doc => { datosCacheProcedimientos.push(doc.data()); });
-                    datosCacheProcedimientos.sort((a,b) => b.fecha.localeCompare(a.fecha)); // Más reciente primero
-                } catch(e) { console.error(e); }
+                    datosCacheProcedimientos.sort((a,b) => b.fecha.localeCompare(a.fecha));
+                } catch(e) { console.error("Firebase Error en Procedimientos:", e); }
             }
 
             renderizarVistas();
@@ -480,7 +478,6 @@
             let totalEstudios = Object.values(totalesEstudio).reduce((a,b) => a+b, 0);
             let personalCount = Object.keys(personalEstudios).length;
 
-            // KPIS Generales
             let kpiHtml = `
                 <div class="bg-white border-l-4 border-orange-500 p-4 rounded-xl shadow-sm text-center"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estudios Totales</p><p class="text-2xl font-black text-slate-800">${totalEstudios}</p></div>
                 <div class="bg-white border-l-4 border-sky-500 p-4 rounded-xl shadow-sm text-center"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Días con Actividad</p><p class="text-2xl font-black text-sky-600">${diasLaboradosSet.size}</p></div>
@@ -493,10 +490,9 @@
             }
             document.getElementById('visor-kpis').innerHTML = kpiHtml;
 
-            // Tablas Generales
             let tbDias = document.getElementById('visor-tabla-dias'); tbDias.innerHTML = '';
-            let fechasSort = Object.keys(diaEstudios).sort((a,b)=>b.localeCompare(a)); // Más recientes arriba
-            if(fechasSort.length === 0) tbDias.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400 italic">Sin registros</td></tr>`;
+            let fechasSort = Object.keys(diaEstudios).sort((a,b)=>b.localeCompare(a));
+            if(fechasSort.length === 0) tbDias.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400 italic">Sin registros en este periodo</td></tr>`;
             fechasSort.forEach(f => {
                 let keys = Object.keys(diaEstudios[f]);
                 tbDias.innerHTML += `<tr><td rowspan="${keys.length}" class="p-3 font-black text-slate-700 align-top border-b border-slate-100">${f}</td><td class="p-3 font-bold text-slate-600">${keys[0]}</td><td class="p-3 text-center text-orange-600 font-black">${diaEstudios[f][keys[0]]}</td></tr>`;
@@ -505,14 +501,13 @@
 
             let tbPersonal = document.getElementById('visor-tabla-personal'); tbPersonal.innerHTML = '';
             let persSort = Object.keys(personalEstudios).sort();
-            if(persSort.length === 0) tbPersonal.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400 italic">Sin registros</td></tr>`;
+            if(persSort.length === 0) tbPersonal.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400 italic">Sin registros en este periodo</td></tr>`;
             persSort.forEach(m => {
                 let keys = Object.keys(personalEstudios[m]);
                 tbPersonal.innerHTML += `<tr><td rowspan="${keys.length}" class="p-3 font-black text-sky-700 align-top border-b border-slate-100">${m}</td><td class="p-3 font-bold text-slate-600">${keys[0]}</td><td class="p-3 text-center text-sky-600 font-black">${personalEstudios[m][keys[0]]}</td></tr>`;
                 for(let i=1; i<keys.length; i++) tbPersonal.innerHTML += `<tr><td class="p-3 font-bold text-slate-600">${keys[i]}</td><td class="p-3 text-center text-sky-600 font-black">${personalEstudios[m][keys[i]]}</td></tr>`;
             });
 
-            // Gráficos Generales
             if(graficosVisor['tot']) graficosVisor['tot'].destroy();
             graficosVisor['tot'] = new Chart(document.getElementById('chart-visor-totales').getContext('2d'), { type: 'bar', data: { labels: Object.keys(totalesEstudio), datasets: [{ label: 'Total', data: Object.values(totalesEstudio), backgroundColor: '#f97316', borderRadius: 4 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } });
 
@@ -520,7 +515,6 @@
             let labelsPers = Object.keys(personalEstudios); let dataPers = labelsPers.map(m => Object.values(personalEstudios[m]).reduce((a,b)=>a+b, 0));
             graficosVisor['pers'] = new Chart(document.getElementById('chart-visor-personal').getContext('2d'), { type: 'doughnut', data: { labels: labelsPers, datasets: [{ data: dataPers, backgroundColor: ['#3b82f6','#10b981','#8b5cf6','#ef4444','#f59e0b'] }] }, options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } } } } });
 
-            // Tabla Procedimientos
             if(SUCURSALES_PROCEDIMIENTOS.includes(sucursalActiva)) {
                 let tbProc = document.getElementById('visor-tabla-procedimientos'); tbProc.innerHTML = '';
                 if(datosCacheProcedimientos.length === 0) tbProc.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-slate-400 italic">Sin procedimientos en este periodo</td></tr>`;
@@ -539,14 +533,10 @@
             }
 
             document.getElementById('visor-loader').classList.add('hidden');
-            // Mantenemos visible la pestaña activa correspondiente
             if(document.getElementById('tab-general').classList.contains('active')) document.getElementById('vista-general').classList.remove('hidden');
             else document.getElementById('vista-procedimientos').classList.remove('hidden');
         }
 
-        // ==========================================
-        // CREADOR DE PDF (SOLUCIÓN MÓVIL BLINDADA)
-        // ==========================================
         window.generarPdfGeneral = async function() {
             if(!datosCacheGeneral) return;
             const btn = document.querySelector('#vista-general .fa-file-pdf').parentNode;
@@ -578,7 +568,6 @@
                 for(let i=1; i<keys.length; i++) htmlPDF += `<tr><td class="text-left">${keys[i]}</td><td>${estMed[keys[i]]}</td></tr>`;
             }); htmlPDF += `</table></div>`; 
 
-            // Gráficas
             document.getElementById('zona-impresion-graficas').classList.remove('hidden');
             let cTot = document.getElementById('chart-totales-pdf'); let cPer = document.getElementById('chart-personal-pdf');
             new Chart(cTot.getContext('2d'), { type: 'bar', data: { labels: Object.keys(totalesEstudio), datasets: [{ label: 'Total', data: Object.values(totalesEstudio), backgroundColor: '#f97316' }] }, options: { animation: false, plugins: { title: { display: true, text: 'Distribución de Estudios' } } } });
