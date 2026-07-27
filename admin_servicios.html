@@ -1289,6 +1289,73 @@ No devuelvas ningún texto extra ni formato Markdown.`;
                 contenedor.scrollTop = contenedor.scrollHeight;
             }
         }
+        // Función para cargar alertas reales desde Firestore en el Widget
+        async function cargarAlertasWidget() {
+            const contenedorAlertas = document.querySelector('#bot-view-alertas > div');
+            if (!contenedorAlertas) return;
+
+            try {
+                // Consultamos la colección 'alertas_sistema' ordenada por fecha descendente
+                const q = window.query(
+                    window.collection(window.db, "alertas_sistema"), 
+                    window.orderBy("timestamp", "desc")
+                );
+                const querySnapshot = await window.getDocs(q);
+
+                if (querySnapshot.empty) {
+                    contenedorAlertas.innerHTML = `
+                        <div class="p-6 text-center text-slate-400 text-xs italic">
+                            No hay alertas registradas por el momento.
+                        </div>`;
+                    return;
+                }
+
+                let htmlAlertas = '';
+                querySnapshot.forEach((doc) => {
+                    let alerta = doc.data();
+                    
+                    let borderColor = alerta.prioridad === 'alta' ? 'border-red-500' : 'border-amber-500';
+                    let badgeBg = alerta.prioridad === 'alta' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700';
+                    let iconoTipo = alerta.tipo === 'VESPERTINO' ? 'fa-clock' : 'fa-triangle-exclamation';
+
+                    let fechaStr = 'Hace un momento';
+                    if (alerta.timestamp && alerta.timestamp.toDate) {
+                        let diffMins = Math.floor((new Date() - alerta.timestamp.toDate()) / 60000);
+                        if (diffMins > 60) {
+                            let diffHoras = Math.floor(diffMins / 60);
+                            fechaStr = `Hace ${diffHoras} hr${diffHoras > 1 ? 's' : ''}`;
+                        } else {
+                            fechaStr = `Hace ${diffMins} min`;
+                        }
+                    }
+
+                    let mensajeCorto = alerta.mensaje.length > 120 ? alerta.mensaje.substring(0, 120) + '...' : alerta.mensaje;
+
+                    htmlAlertas += `
+                        <div class="p-4 bg-white hover:bg-slate-50 transition cursor-pointer border-l-4 ${borderColor}">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="${badgeBg} text-[8px] font-black uppercase px-2 py-0.5 rounded tracking-widest">
+                                    <i class="fa-solid ${iconoTipo} mr-1"></i> ${alerta.tipo}
+                                </span>
+                                <span class="text-[9px] text-slate-400 font-bold">${fechaStr}</span>
+                            </div>
+                            <h4 class="text-xs font-black text-slate-800 leading-tight">${alerta.titulo}</h4>
+                            <p class="text-[10px] text-slate-500 mt-1 font-medium leading-relaxed">${mensajeCorto}</p>
+                        </div>
+                    `;
+                });
+
+                contenedorAlertas.innerHTML = htmlAlertas;
+
+            } catch (error) {
+                console.error("Error al cargar alertas en el widget:", error);
+            }
+        }
+
+        // Ejecutar la carga de alertas al iniciar la página
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(cargarAlertasWidget, 1000);
+        });
     </script>
 </body>
 </html>
