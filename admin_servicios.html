@@ -1211,7 +1211,7 @@ No devuelvas ningún texto extra ni formato Markdown.`;
             }
         }
 
-        function enviarMensajeBot(e) {
+        async function enviarMensajeBot(e) {
             e.preventDefault();
             const input = document.getElementById('bot-input');
             const texto = input.value.trim();
@@ -1219,9 +1219,9 @@ No devuelvas ningún texto extra ni formato Markdown.`;
 
             const contenedor = document.getElementById('bot-mensajes');
             
-            // Añadir mensaje del usuario
+            // 1. Mostrar el mensaje del usuario
             contenedor.innerHTML += `
-                <div class="flex items-start gap-2 justify-end">
+                <div class="flex items-start gap-2 justify-end animate-fade-in">
                     <div class="bg-orange-100 p-3 rounded-2xl rounded-tr-none text-xs text-orange-900 font-medium border border-orange-200">
                         ${texto}
                     </div>
@@ -1230,18 +1230,64 @@ No devuelvas ningún texto extra ni formato Markdown.`;
             input.value = '';
             contenedor.scrollTop = contenedor.scrollHeight;
 
-            // TODO: Conectar con Firebase Functions / Gemini API aquí
-            setTimeout(() => {
+            // 2. Mostrar indicador de "Escribiendo..."
+            const idLoader = 'loader-' + Date.now();
+            contenedor.innerHTML += `
+                <div id="${idLoader}" class="flex items-start gap-2 animate-fade-in">
+                    <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center shrink-0 text-xs"><i class="fa-solid fa-robot"></i></div>
+                    <div class="bg-slate-100 p-3 rounded-2xl rounded-tl-none text-xs text-slate-500 italic font-medium border border-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-notch fa-spin text-orange-500"></i> Analizando datos...
+                    </div>
+                </div>
+            `;
+            contenedor.scrollTop = contenedor.scrollHeight;
+
+            // 3. Conectar con nuestra API de Firebase
+            try {
+                // Reemplaza esto con tu URL de Firebase Functions
+                const endpoint = "https://us-central1-lapi-productividad.cloudfunctions.net/apiLapiBot"; 
+                
+                const respuesta = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensaje: texto })
+                });
+
+                const data = await respuesta.json();
+                
+                // Formatear negritas simples y saltos de línea para el HTML
+                let textoBotFormateado = data.respuesta
+                    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // Negritas
+                    .replace(/\*(.*?)\*/g, '<i>$1</i>')     // Cursivas
+                    .replace(/\n/g, '<br>');                // Saltos de línea
+
+                // Quitar el "Escribiendo..."
+                document.getElementById(idLoader).remove();
+
+                // 4. Mostrar respuesta final del Bot
                 contenedor.innerHTML += `
-                    <div class="flex items-start gap-2">
-                        <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center shrink-0 text-xs"><i class="fa-solid fa-robot"></i></div>
-                        <div class="bg-slate-100 p-3 rounded-2xl rounded-tl-none text-xs text-slate-500 italic font-medium border border-slate-200">
-                            Conectando con la base de datos...
+                    <div class="flex items-start gap-2 animate-fade-in">
+                        <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center shrink-0 text-xs shadow-md"><i class="fa-solid fa-robot"></i></div>
+                        <div class="bg-white p-3 rounded-2xl rounded-tl-none text-xs text-slate-700 font-medium border border-slate-200 shadow-sm leading-relaxed">
+                            ${textoBotFormateado}
                         </div>
                     </div>
                 `;
                 contenedor.scrollTop = contenedor.scrollHeight;
-            }, 500);
+
+            } catch (error) {
+                console.error("Error de conexión:", error);
+                document.getElementById(idLoader).remove();
+                contenedor.innerHTML += `
+                    <div class="flex items-start gap-2 animate-fade-in">
+                        <div class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0 text-xs"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="bg-red-50 p-3 rounded-2xl rounded-tl-none text-xs text-red-700 font-medium border border-red-200">
+                            Ups, perdí conexión con el servidor. Intenta de nuevo en unos segundos.
+                        </div>
+                    </div>
+                `;
+                contenedor.scrollTop = contenedor.scrollHeight;
+            }
         }
     </script>
 </body>
