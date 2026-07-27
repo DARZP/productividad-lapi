@@ -614,9 +614,25 @@
             container.innerHTML = '<div class="text-center py-20 text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-orange-300 block"></i> Cargando base de datos...</div>';
             
             try {
+                // 1. OBTENER SERVICIOS
                 const q = window.query(window.collection(window.db, "directorio_servicios"));
                 const qs = await window.getDocs(q);
                 
+                // 2. OBTENER REPORTES REALES DE HOY
+                const tzDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+                const hoyStr = tzDate.getFullYear() + "-" + String(tzDate.getMonth() + 1).padStart(2, '0') + "-" + String(tzDate.getDate()).padStart(2, '0');
+                
+                window.reportesHoy = new Set();
+                try {
+                    const qRep = window.query(window.collection(window.db, "registros"), window.where("fecha", "==", hoyStr));
+                    const snapRep = await window.getDocs(qRep);
+                    snapRep.forEach(doc => {
+                        let d = doc.data();
+                        if(d.idServicio) window.reportesHoy.add(d.idServicio);
+                        if(d.empresa) window.reportesHoy.add(d.empresa); // Respaldo por nombre
+                    });
+                } catch(e) { console.log("Error obteniendo reportes de hoy", e); }
+
                 let listaTemporal = [];
                 const hoy = new Date();
                 let promesasActualizacion = [];
@@ -682,56 +698,82 @@
                 return;
             }
 
+            // Contenedores para las 4 categorías visuales
             let htmlConReporte = ''; let countCon = 0;
-            let htmlSinReporte = ''; let countSin = 0;
+            let htmlRetrasado = ''; let countRet = 0;
+            let htmlEnCurso = ''; let countCur = 0;
+            let htmlNoEsperado = ''; let countNo = 0;
+            let htmlPausaFin = '';
+
+            // Fecha y hora actual
+            const tzDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+            const horaActual = tzDate.getHours().toString().padStart(2, '0') + ":" + tzDate.getMinutes().toString().padStart(2, '0');
+            const hoyStr = tzDate.getFullYear() + "-" + String(tzDate.getMonth() + 1).padStart(2, '0') + "-" + String(tzDate.getDate()).padStart(2, '0');
+
+            // LÓGICA HÍBRIDA: ¿Subiste el rol de IA hoy?
+            let hayRolHoy = (fechaRolOperativo === hoyStr);
 
             filtrados.forEach(data => {
-                let tieneReporte = reportesHechosEnRol.has(data.id);
+                let tieneReporte = (window.reportesHoy && (window.reportesHoy.has(data.id) || window.reportesHoy.has(data.nombreComercial)));
                 
-                // Variables de Diseño para la Tarjeta
                 let iconBoxClass = '';
                 let cardBorder = '';
                 let visualCue = '';
+                let categoriaActivo = ''; 
                 
                 if (vistaActual === 'activo') {
-                    if(fechaRolOperativo && tieneReporte) {
-                        // REPORTE RECIBIDO (Verde)
+                    if (tieneReporte) {
+                        // ✅ REPORTE RECIBIDO
                         iconBoxClass = 'bg-emerald-50 text-emerald-600 border-emerald-200';
                         cardBorder = 'border-emerald-300 ring-2 ring-emerald-50';
-                        visualCue = `<span class="absolute top-3 right-3 bg-emerald-500 text-white text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10"><i class="fa-solid fa-check-double"></i> REPORTE RECIBIDO</span>`;
-                    } else if (fechaRolOperativo && !tieneReporte) {
-                        let nombreNorm = normalizarTexto(data.nombreComercial);
-                        let asignadoEnRol = empresasEnRol.some(empRol => {
-                            let rolNorm = normalizarTexto(empRol);
-                            return nombreNorm.includes(rolNorm) || rolNorm.includes(nombreNorm);
-                        });
-                        
-                        if (asignadoEnRol) {
-                            // EN ROL PERO SIN REPORTE (Rojo/Naranja Parpadeante)
-                            iconBoxClass = 'bg-red-50 text-red-600 border-red-200';
-                            cardBorder = 'border-red-200';
-                            visualCue = `<span class="absolute top-3 right-3 w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-sm animate-pulse z-10" title="Pendiente de Reporte"></span>`;
-                        } else {
-                            // ACTIVO FUERA DE ROL (Azul)
-                            iconBoxClass = 'bg-sky-50 text-sky-600 border-sky-200';
-                            cardBorder = 'border-slate-200 hover:border-sky-300';
-                            visualCue = `<span class="absolute top-3 right-3 w-2 h-2 bg-sky-400 rounded-full z-10" title="Activo (Fuera de rol)"></span>`;
-                        }
+                        visualCue = `<span class="absolute top-3 right-3 bg-emerald-500 text-white text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10"><i class="fa-solid fa-check-double"></i> REPORTE HOY</span>`;
+                        categoriaActivo = 'con_reporte';
                     } else {
-                        // ACTIVO SIN ROL CARGADO
-                        iconBoxClass = 'bg-sky-50 text-sky-600 border-sky-200';
-                        cardBorder = 'border-slate-200 hover:border-sky-300';
+                        // SISTEMA HÍBRIDO: Evaluamos si esperamos su reporte hoy
+                        let esperadoHoy = true; // Por defecto asumimos que sí (Falla Segura)
+                        
+                        if (hayRolHoy) {
+                            // Si la IA procesó el rol, la IA decide quién trabaja hoy
+                            let nombreNorm = normalizarTexto(data.nombreComercial);
+                            esperadoHoy = empresasEnRol.some(empRol => {
+                                let rolNorm = normalizarTexto(empRol);
+                                return nombreNorm.includes(rolNorm) || rolNorm.includes(nombreNorm);
+                            });
+                        }
+
+                        if (!esperadoHoy) {
+                            // 💤 SIN ASIGNACIÓN HOY (No está en el Rol)
+                            iconBoxClass = 'bg-slate-50 text-slate-400 border-slate-200';
+                            cardBorder = 'border-slate-200 opacity-75';
+                            visualCue = `<span class="absolute top-3 right-3 bg-slate-100 text-slate-500 text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10" title="Activo global, pero sin operación en el rol de hoy"><i class="fa-solid fa-bed"></i> SIN ROL HOY</span>`;
+                            categoriaActivo = 'no_esperado';
+                        } else {
+                            // ⏳ SÍ ES ESPERADO HOY (Cruzamos su horario)
+                            const estaRetrasado = data.horaFin && (horaActual > data.horaFin);
+                            
+                            if (estaRetrasado) {
+                                // 🔴 RETRASADO
+                                iconBoxClass = 'bg-red-50 text-red-600 border-red-200';
+                                cardBorder = 'border-red-200 ring-2 ring-red-50';
+                                visualCue = `<span class="absolute top-3 right-3 bg-red-500 text-white text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10 animate-pulse" title="Fuera de horario sin reporte"><i class="fa-solid fa-clock"></i> RETRASADO</span>`;
+                                categoriaActivo = 'retrasado';
+                            } else {
+                                // 🔵 EN CURSO
+                                iconBoxClass = 'bg-sky-50 text-sky-600 border-sky-200';
+                                cardBorder = 'border-sky-200 ring-2 ring-sky-50 hover:border-sky-400';
+                                visualCue = `<span class="absolute top-3 right-3 bg-sky-500 text-white text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10 animate-pulse" title="Operación en curso / A tiempo"><i class="fa-solid fa-truck-fast"></i> EN CURSO</span>`;
+                                categoriaActivo = 'en_curso';
+                            }
+                        }
                     }
                 } else if (vistaActual === 'pausa') {
                     iconBoxClass = 'bg-amber-50 text-amber-600 border-amber-200';
                     cardBorder = 'border-slate-200 hover:border-amber-300';
                 } else {
-                    // FINALIZADO
                     iconBoxClass = 'bg-slate-100 text-slate-400 border-slate-200';
                     cardBorder = 'border-slate-200';
                 }
 
-                // El selector de estado ahora vive elegantemente dentro de la tarjeta
                 let badgeSelect = `
                     <select onchange="cambiarEstado('${data.id}', this.value); event.stopPropagation();" onclick="event.stopPropagation();" class="mt-2 bg-slate-50 text-slate-500 border border-slate-200 px-2 py-1 rounded-lg text-[9px] font-black uppercase outline-none cursor-pointer w-[140px] text-center hover:bg-slate-100 transition-colors shadow-sm">
                         <option value="activo" ${data.estado === 'activo' ? 'selected' : ''}>🟢 Estado: ACTIVO</option>
@@ -746,44 +788,45 @@
                     <button onclick="event.stopPropagation(); prepararEdicion('${data.id}')" class="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-slate-50 hover:bg-orange-100 text-slate-400 hover:text-orange-500 flex items-center justify-center transition-colors z-10 shadow-sm border border-slate-100" title="Editar Servicio">
                         <i class="fa-solid fa-pen text-xs"></i>
                     </button>
-
                     <div>
                         <div class="w-10 h-10 ${iconBoxClass} rounded-xl flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-truck-medical"></i></div>
                         <h3 class="font-black text-slate-800 text-sm leading-tight uppercase group-hover:text-sky-600 transition-colors pr-6">${data.nombreComercial}</h3>
                         <p class="text-[9px] text-slate-400 font-bold uppercase mt-1 truncate">Folio: ${data.folio} ${data.ubicacion ? `| ${data.ubicacion}` : ''}</p>
-                        
                         <div class="flex flex-wrap gap-1 text-[9px] font-bold text-slate-500 mt-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100 w-fit">
                             <span><i class="fa-solid fa-calendar-day text-orange-400 mr-1"></i> ${data.fechaInicio.substring(5)} al ${data.fechaFin.substring(5)}</span> 
                         </div>
                     </div>
-                    
-                    <div class="mt-1 relative z-10">
-                        ${badgeSelect}
-                    </div>
+                    <div class="mt-1 relative z-10">${badgeSelect}</div>
                 </div>`;
 
                 if(vistaActual === 'activo') {
-                    if (tieneReporte) { htmlConReporte += card; countCon++; }
-                    else { htmlSinReporte += card; countSin++; }
+                    if (categoriaActivo === 'con_reporte') { htmlConReporte += card; countCon++; }
+                    else if (categoriaActivo === 'retrasado') { htmlRetrasado += card; countRet++; }
+                    else if (categoriaActivo === 'en_curso') { htmlEnCurso += card; countCur++; }
+                    else if (categoriaActivo === 'no_esperado') { htmlNoEsperado += card; countNo++; }
                 } else {
-                    htmlSinReporte += card; countSin++; 
+                    htmlPausaFin += card;
                 }
             });
             
-            // Grid Layout Expandido (1, 2, 3 o 4 columnas dependiendo del monitor)
+            // Construcción del Grid con Encabezados de Categoría
             let finalHtml = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">';
             
             if (vistaActual === 'activo') {
-                if(countCon > 0) {
-                    finalHtml += `<div class="col-span-full border-b border-emerald-100 pb-2 mt-2"><h3 class="text-xs font-black text-emerald-600 uppercase tracking-widest"><i class="fa-solid fa-check-double mr-1"></i> Reportes Recibidos Hoy (${countCon})</h3></div>`;
-                    finalHtml += htmlConReporte;
+                if(countRet > 0) {
+                    finalHtml += `<div class="col-span-full border-b border-red-100 pb-2 mt-2"><h3 class="text-xs font-black text-red-600 uppercase tracking-widest"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Retrasados (${countRet})</h3></div>` + htmlRetrasado;
                 }
-                if(countSin > 0) {
-                    finalHtml += `<div class="col-span-full border-b border-slate-100 pb-2 mt-2"><h3 class="text-xs font-black text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-clock mr-1"></i> Pendientes de Reporte / Activos (${countSin})</h3></div>`;
-                    finalHtml += htmlSinReporte;
+                if(countCur > 0) {
+                    finalHtml += `<div class="col-span-full border-b border-sky-100 pb-2 mt-2"><h3 class="text-xs font-black text-sky-600 uppercase tracking-widest"><i class="fa-solid fa-truck-fast mr-1"></i> Operando / En Curso (${countCur})</h3></div>` + htmlEnCurso;
+                }
+                if(countCon > 0) {
+                    finalHtml += `<div class="col-span-full border-b border-emerald-100 pb-2 mt-2"><h3 class="text-xs font-black text-emerald-600 uppercase tracking-widest"><i class="fa-solid fa-check-double mr-1"></i> Reportes Recibidos Hoy (${countCon})</h3></div>` + htmlConReporte;
+                }
+                if(countNo > 0) {
+                    finalHtml += `<div class="col-span-full border-b border-slate-100 pb-2 mt-2"><h3 class="text-xs font-black text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-bed mr-1"></i> Sin Asignación Hoy (${countNo})</h3></div>` + htmlNoEsperado;
                 }
             } else {
-                finalHtml += htmlSinReporte;
+                finalHtml += htmlPausaFin;
             }
             
             finalHtml += '</div>';
