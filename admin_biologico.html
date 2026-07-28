@@ -3,42 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Biológico</title>
+    <title>Admin - Control Biológico LAPI</title>
     
-    <link rel="manifest" href="manifest_captura.json">
+    <link rel="manifest" href="manifest_admin.json">
     <meta name="theme-color" content="#ea580c">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="config.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
+            authDomain: "lapi-productividad.firebaseapp.com",
+            projectId: "lapi-productividad",
+            storageBucket: "lapi-productividad.firebasestorage.app",
+            messagingSenderId: "1077149571149",
+            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.replace('index.html');
+            else document.body.classList.remove('hidden');
+        });
+
+        window.cerrarSesionAdmin = () => {
+            signOut(auth).then(() => { window.location.replace('index.html'); }).catch((e) => console.error(e));
+        };
+
+        window.db = getFirestore(app);
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.where = where;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if(typeof window.cargarDatosGlobales === "function"){
+                window.cargarDatosGlobales(); 
+            }
+        });
+    </script>
+    
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; background-color: #f8fafc; }
-        .scroll-custom::-webkit-scrollbar { width: 4px; }
-        .scroll-custom::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.2); border-radius: 10px; }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(254, 215, 170, 0.5); }
+        .scroll-custom::-webkit-scrollbar { height: 6px; width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: #f1f5f9; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 50px); }
         
-        #canvas-firma { touch-action: none; background-color: #ffffff; cursor: crosshair; }
-        
-        /* Ocultar flechas nativas del input number */
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        input[type=number] { -moz-appearance: textfield; }
+        .acordeon-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; opacity: 0; }
+        .acordeon-content.open { max-height: 5000px; padding-top: 1.5rem; padding-bottom: 1.5rem; opacity: 1; }
+        .tab-btn.active { border-bottom-color: #ea580c; color: #ea580c; font-weight: 900; }
 
-        .shadow-soft { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
-
-        /* REGLAS DE IMPRESIÓN DEL PDF */
         @media print {
             @page { size: landscape; margin: 10mm; } 
             body, html { background-color: white !important; height: auto !important; }
-            #nav-back, #contenedor-principal, #toast-container, #captura-temp-biologico { display: none !important; }
+            nav, main, #modal-audio, #modal-reporte-avanzado, #toast-container { display: none !important; }
             #zona-impresion { display: block !important; position: relative !important; width: 100% !important; background: white !important; color: black !important; }
-            
             .servicio-print-block { break-after: always; page-break-after: always; margin-bottom: 20px; width: 100%; }
-            .header-box, .print-table { break-inside: avoid; page-break-inside: avoid; }
+            .header-box, .info-grid { break-inside: avoid; page-break-inside: avoid; }
             .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; font-family: Arial, sans-serif; text-align: center; }
             .print-table th, .print-table td { border: 1px solid #000; padding: 4px; }
             .print-table tr { break-inside: avoid; page-break-inside: avoid; }
@@ -51,672 +86,456 @@
             .firma-img { max-height: 30px; vertical-align: middle; display: block; margin: 0 auto; }
         }
     </style>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, arrayUnion, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDW-KIxM3m5QXnfzpOUmwhuLILLAk6u5rA",
-            authDomain: "lapi-productividad.firebaseapp.com",
-            projectId: "lapi-productividad",
-            storageBucket: "lapi-productividad.firebasestorage.app",
-            messagingSenderId: "1077149571149",
-            appId: "1:1077149571149:web:e1423dde4a8de6f8562404"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        window.db = getFirestore(app);
-        window.addDoc = addDoc; window.getDocs = getDocs; window.doc = doc; 
-        window.updateDoc = updateDoc; window.arrayUnion = arrayUnion;
-        window.collection = collection; window.query = query; window.where = where; window.orderBy = orderBy;
-    </script>
 </head>
-<body class="min-h-screen text-slate-800 pb-20 relative flex flex-col items-center pt-6">
+<body class="text-slate-800 flex h-screen overflow-hidden hidden">
 
-    <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+    <!-- NAVEGACIÓN LATERAL -->
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-orange-200 z-50 md:relative md:w-24 md:h-screen md:border-t-0 md:border-r flex md:flex-col justify-around md:justify-start items-center pb-2 pt-1 md:pb-4 md:pt-8 gap-0 md:gap-4 shadow-sm overflow-y-auto scroll-custom no-print">
+        <div class="hidden md:flex mb-2 text-3xl"><i id="logo-snake-2" class="fa-solid fa-staff-snake transition-colors duration-500 text-orange-500"></i></div>
+        <a href="admin.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all"><div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-border-all text-base md:text-xl"></i></div><span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Panel</span></a>
+        <a href="admin_servicios.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all"><div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-truck-medical text-base md:text-xl"></i></div><span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Servicios</span></a>
+        <a href="admin_sucursales.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all"><div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-building text-base md:text-xl"></i></div><span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Sucursales</span></a>
+        <!-- ACTIVO -->
+        <a href="admin_biologico.html" class="flex flex-col items-center p-1 md:p-2 text-orange-600 group transition-all"><div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-orange-100 text-orange-600 transition-all shadow-sm"><i class="fa-solid fa-vial-virus text-base md:text-xl"></i></div><span class="text-[8px] md:text-[10px] font-black mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Control<br>Biol.</span></a>
+        <a href="admin_requisiciones.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all"><div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-box-open text-base md:text-xl"></i></div><span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Insumos</span></a>
+        <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
+        <a href="admin_monitor.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all"><div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-server text-base md:text-xl"></i></div><span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Monitor</span></a>
+        <a href="reportes.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all"><div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-chart-pie text-base md:text-xl"></i></div><span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Reportes</span></a>
+        <a href="auditoria.html" class="flex flex-col items-center p-1 md:p-2 text-slate-400 hover:text-orange-600 group transition-all"><div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-orange-50 transition-all"><i class="fa-solid fa-shield-halved text-base md:text-xl"></i></div><span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Auditoría</span></a>
+        <div class="hidden md:block w-10 border-b border-slate-200 my-2"></div>
+        <button onclick="cerrarSesionAdmin()" class="flex flex-col items-center p-1 md:p-2 text-red-400 hover:text-red-600 group transition-all w-full"><div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-red-50 transition-all"><i class="fa-solid fa-right-from-bracket text-base md:text-xl"></i></div><span class="text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 tracking-widest uppercase text-center leading-tight">Salir</span></button>
+    </nav>
 
-    <a href="index.html" id="nav-back" class="absolute top-4 left-4 z-[100] w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-orange-600 hover:border-orange-300 transition-all active:scale-95 shadow-sm" title="Volver al Portal">
-        <i class="fa-solid fa-house"></i>
-    </a>
+    <div id="toast-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
 
-    <div id="contenedor-principal" class="w-full max-w-md flex-1 mt-12 px-4">
-
-        <!-- 1. VISTA MENÚ PRINCIPAL -->
-        <div id="vista-menu" class="animate-fade-in flex flex-col gap-6 pt-10">
-            <div class="text-center mb-6">
-                <div class="w-20 h-20 bg-orange-100 text-orange-600 rounded-3xl mx-auto flex items-center justify-center text-4xl mb-4 shadow-inner">
-                    <i class="fa-solid fa-wave-square"></i>
-                </div>
-                <h1 class="text-2xl font-black text-slate-800 tracking-tight">Control Biológico</h1>
-                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Selecciona una Operación</p>
+    <main class="flex-1 overflow-y-auto scroll-custom p-4 md:p-8 pb-safe md:pb-8">
+        
+        <!-- BANNER CABECERA -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-3xl shadow-md text-white gap-4">
+            <div>
+                <h1 class="text-3xl font-black tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-tower-broadcast text-orange-200"></i> CONTROL BIOLÓGICO
+                </h1>
+                <p class="opacity-90 text-sm font-medium mt-1 uppercase tracking-widest text-orange-100">Auditoría y Gestión de Equipos</p>
             </div>
-
-            <button onclick="abrirOpcionesInstalacion()" class="bg-slate-800 hover:bg-slate-700 text-white rounded-3xl p-6 shadow-md transition-all active:scale-95 text-left relative overflow-hidden group">
-                <i class="fa-solid fa-boxes-packing absolute -right-4 -bottom-4 text-7xl text-slate-600 opacity-30 group-hover:scale-110 transition-transform"></i>
-                <h2 class="text-xl font-black relative z-10"><i class="fa-solid fa-plus-circle text-orange-400 mr-2"></i> INSTALAR EQUIPO</h2>
-                <p class="text-xs text-slate-300 font-medium mt-2 relative z-10 w-4/5">Registra un nuevo equipo, asígnale un servicio y realiza su primera calibración.</p>
-            </button>
-
-            <button onclick="abrirCalibracionDiaria()" class="bg-white border-2 border-slate-200 hover:border-orange-300 rounded-3xl p-6 shadow-soft transition-all active:scale-95 text-left relative overflow-hidden group">
-                <i class="fa-solid fa-clipboard-check absolute -right-4 -bottom-4 text-7xl text-slate-100 group-hover:scale-110 transition-transform"></i>
-                <h2 class="text-xl font-black text-slate-800 relative z-10"><i class="fa-solid fa-clock-rotate-left text-orange-500 mr-2"></i> CALIBRACIÓN DIARIA</h2>
-                <p class="text-xs text-slate-500 font-medium mt-2 relative z-10 w-4/5">Captura los valores de control diarios para equipos que ya están operando.</p>
+            <button onclick="cargarDatosGlobales()" class="bg-black/20 hover:bg-black/30 text-white px-4 py-2 rounded-xl font-bold transition shadow-sm text-sm flex items-center gap-2">
+                <i class="fa-solid fa-rotate-right text-emerald-300"></i> Sincronizar Nube
             </button>
         </div>
 
-        <!-- 2. VISTA SELECCIÓN DE EQUIPO PARA INSTALAR -->
-        <div id="vista-tipo-equipo" class="hidden animate-fade-in flex flex-col gap-6 pt-10">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-4">
-                <h2 class="text-lg font-black text-slate-800"><i class="fa-solid fa-microchip text-orange-500 mr-2"></i> Tipo de Equipo</h2>
-                <button onclick="volverMenu()" class="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-xl font-bold hover:bg-slate-200 transition-colors"><i class="fa-solid fa-arrow-left"></i> Volver</button>
-            </div>
+        <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 bg-white flex flex-col h-fit min-h-[500px]">
             
-            <button onclick="iniciarFormularioInstalacion('audiometria')" class="bg-white border-2 border-orange-200 hover:border-orange-400 rounded-3xl p-6 shadow-soft transition-all active:scale-95 text-center group">
-                <i class="fa-solid fa-headphones text-5xl text-orange-500 mb-3 group-hover:scale-110 transition-transform"></i>
-                <h3 class="font-black text-slate-800 text-lg">Audiometría</h3>
-            </button>
-
-            <button onclick="iniciarFormularioInstalacion('espirometria')" class="bg-white border-2 border-sky-200 hover:border-sky-400 rounded-3xl p-6 shadow-soft transition-all active:scale-95 text-center group">
-                <i class="fa-solid fa-lungs text-5xl text-sky-500 mb-3 group-hover:scale-110 transition-transform"></i>
-                <h3 class="font-black text-slate-800 text-lg">Espirometría</h3>
-            </button>
-        </div>
-
-        <!-- 3. VISTA CALIBRACIÓN DIARIA (LISTADO DE EMPRESAS) -->
-        <div id="vista-lista-diaria" class="hidden animate-fade-in">
-            <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4 mt-2">
+            <div class="flex justify-between items-end border-b border-slate-100 pb-4 mb-4">
                 <div>
-                    <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-clipboard-list text-orange-500 mr-2"></i> Control Diario</h2>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Servicios Activos</p>
+                    <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-layer-group text-orange-500 mr-2"></i> Operaciones</h2>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Directorio y Seguimiento</p>
                 </div>
-                <button onclick="volverMenu()" class="text-xs bg-slate-100 text-slate-600 px-3 py-2 rounded-xl font-bold hover:bg-slate-200 transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
-            </div>
-            
-            <div id="contenedor-servicios" class="space-y-5 pb-6">
-                <!-- Se llena mediante JS -->
-            </div>
-        </div>
-
-        <!-- 4. VISTA FORMULARIO ÚNICO (INSTALACIÓN Y DIARIA) -->
-        <div id="vista-formulario" class="hidden animate-fade-in">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-4 mt-2">
-                <div>
-                    <h2 id="form-titulo" class="text-xl font-black text-slate-800"><i class="fa-solid fa-pen-to-square text-orange-500 mr-2"></i> Captura</h2>
-                    <p id="form-subtitulo" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Instalación / Diaria</p>
-                </div>
-                <button id="btn-volver-form" onclick="volverMenu()" class="text-xs bg-slate-100 text-slate-600 px-3 py-2 rounded-xl font-bold hover:bg-slate-200 transition-colors"><i class="fa-solid fa-arrow-left"></i> Cancelar</button>
-            </div>
-
-            <!-- SECCIÓN: DATOS DE INSTALACIÓN (Solo visible al instalar) -->
-            <div id="sec-instalacion" class="bg-white p-5 rounded-3xl shadow-sm mb-6 border border-slate-200 space-y-4 hidden">
-                <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest border-b border-slate-100 pb-2"><i class="fa-solid fa-link text-orange-400 mr-1"></i> Vinculación del Equipo</h3>
-                
-                <div>
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Campaña / Servicio Asignado</label>
-                    <select id="ins-servicio" class="w-full p-3 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl outline-none font-bold text-xs shadow-inner cursor-pointer"></select>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Marca / Modelo</label>
-                        <select id="ins-marca" class="w-full p-3 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl outline-none font-bold text-xs shadow-inner"></select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Número de Serie</label>
-                        <input type="text" id="ins-ns" placeholder="Ej. SN-123" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-xs uppercase shadow-inner text-orange-600 placeholder-slate-400">
-                    </div>
-                </div>
-                <div id="ins-cabina-box" class="hidden">
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">N/S Cabina Sonora</label>
-                    <input type="text" id="ins-cab" placeholder="Ej. CAB-456" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-xs uppercase shadow-inner text-slate-700 placeholder-slate-400">
-                </div>
-            </div>
-
-            <!-- SECCIÓN: DATOS DE LECTURA (Solo visible en Diaria) -->
-            <div id="sec-lectura" class="bg-slate-800 p-5 rounded-3xl shadow-sm mb-6 border border-slate-700 hidden text-white">
-                <p id="lec-empresa" class="font-black text-lg leading-tight uppercase mb-2 text-orange-400">EMPRESA</p>
-                <div class="grid grid-cols-2 gap-3 text-xs font-medium">
-                    <p class="col-span-2 bg-slate-700/50 p-2.5 rounded-xl border border-slate-600"><i id="lec-icon" class="fa-solid fa-headphones text-slate-300 mr-2"></i> <span id="lec-equipo" class="font-bold"></span></p>
-                    <p class="bg-slate-700/50 p-2.5 rounded-xl border border-slate-600"><span class="text-[9px] text-slate-400 uppercase tracking-widest block mb-0.5">N/S Equipo</span><span id="lec-ns" class="font-black"></span></p>
-                    <p id="lec-cab-box" class="bg-slate-700/50 p-2.5 rounded-xl border border-slate-600"><span class="text-[9px] text-slate-400 uppercase tracking-widest block mb-0.5">N/S Cabina</span><span id="lec-cab" class="font-black"></span></p>
-                </div>
-            </div>
-
-            <!-- SECCIÓN: VALORES DE CALIBRACIÓN -->
-            <div class="bg-white p-6 rounded-3xl shadow-soft border border-slate-200 space-y-6">
-                
-                <!-- MÓDULO AUDIOMETRÍA -->
-                <div id="modulo-audiometria" class="space-y-4 hidden">
-                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
-                        <h4 class="font-black text-red-500 text-xs text-center mb-4 uppercase tracking-widest"><i class="fa-solid fa-ear-listen mr-1"></i> Oído Derecho (dB)</h4>
-                        <div class="grid grid-cols-4 gap-3">
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">250</label><input type="number" id="od-250" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">500</label><input type="number" id="od-500" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">1000</label><input type="number" id="od-1000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">2000</label><input type="number" id="od-2000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">3000</label><input type="number" id="od-3000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">4000</label><input type="number" id="od-4000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">6000</label><input type="number" id="od-6000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">8000</label><input type="number" id="od-8000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
-                        <h4 class="font-black text-blue-500 text-xs text-center mb-4 uppercase tracking-widest"><i class="fa-solid fa-ear-listen mr-1"></i> Oído Izquierdo (dB)</h4>
-                        <div class="grid grid-cols-4 gap-3">
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">250</label><input type="number" id="oi-250" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">500</label><input type="number" id="oi-500" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">1000</label><input type="number" id="oi-1000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">2000</label><input type="number" id="oi-2000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">3000</label><input type="number" id="oi-3000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">4000</label><input type="number" id="oi-4000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">6000</label><input type="number" id="oi-6000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">8000</label><input type="number" id="oi-8000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MÓDULO ESPIROMETRÍA -->
-                <div id="modulo-espirometria" class="hidden space-y-4">
-                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
-                        <h4 class="font-black text-sky-500 text-xs text-center mb-4 uppercase tracking-widest"><i class="fa-solid fa-wind mr-1"></i> Diferencia Relativa al Volumen</h4>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-[10px] text-center block text-slate-500 uppercase tracking-widest font-bold mb-2">Inspirar %</label>
-                                <input type="number" step="0.1" id="espiro-insp" placeholder="Ej. 0.1" class="w-full text-center p-3 rounded-xl bg-white border border-slate-200 focus:border-sky-400 outline-none text-lg font-black text-slate-700 shadow-sm transition-colors">
-                            </div>
-                            <div>
-                                <label class="text-[10px] text-center block text-slate-500 uppercase tracking-widest font-bold mb-2">Espirar %</label>
-                                <input type="number" step="0.1" id="espiro-esp" placeholder="Ej. -1.4" class="w-full text-center p-3 rounded-xl bg-white border border-slate-200 focus:border-sky-400 outline-none text-lg font-black text-slate-700 shadow-sm transition-colors">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- FIRMA Y GUARDADO -->
-                <div class="border-t border-slate-100 pt-5 mt-2">
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Realizó (Técnico / Médico)</label>
-                    <input type="text" id="cap-medico" list="lista-medicos" placeholder="Seleccione su nombre..." class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-orange-400 transition-colors font-bold uppercase text-xs mb-5 shadow-sm text-slate-700">
-                    
-                    <div class="flex justify-between items-end mb-2">
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest">Firma Digital</label>
-                        <button onclick="limpiarFirma()" class="text-[10px] text-orange-500 hover:text-orange-700 font-bold underline transition-colors"><i class="fa-solid fa-eraser mr-1"></i> Limpiar</button>
-                    </div>
-                    <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 overflow-hidden relative touch-none">
-                        <canvas id="canvas-firma" height="150" class="w-full rounded-lg touch-none"></canvas>
-                    </div>
-                </div>
-
-                <button id="btn-guardar-form" onclick="procesarGuardado()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl shadow-md transition-all active:scale-95 text-sm flex justify-center items-center gap-2 mt-6">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Finalizar y Guardar
+                <button onclick="abrirModalReporte()" class="bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 font-black px-4 py-2.5 rounded-xl shadow-sm transition-all active:scale-95 text-xs flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf"></i> Generador PDF
                 </button>
             </div>
-        </div>
 
-        <!-- 5. PANTALLA DE ÉXITO Y COMPARTIR -->
-        <div id="vista-exito" class="hidden animate-fade-in text-center max-w-md mx-auto mt-4 w-full flex-1">
-            <div class="bg-white p-8 rounded-3xl mb-6 border border-slate-200 shadow-soft border-t-4 border-t-emerald-500">
-                <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-4 block"></i>
-                <h2 class="text-2xl font-black mb-2 text-slate-800">¡Registro Exitoso!</h2>
-                <p id="exito-msg" class="text-sm text-slate-500 font-medium mb-4">El control ha sido guardado en la base de datos.</p>
+            <!-- TABS DE FILTRO -->
+            <div class="flex gap-4 border-b border-slate-100 mb-4 px-2">
+                <button onclick="filtrarVista('activo')" id="tab-activo" class="tab-btn active pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-circle-play text-emerald-500 mr-1"></i> Empresas Activas</button>
+                <button onclick="filtrarVista('pausa')" id="tab-pausa" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-circle-pause text-amber-500 mr-1"></i> En Pausa</button>
+                <button onclick="filtrarVista('finalizado')" id="tab-finalizado" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-box-archive text-slate-400 mr-1"></i> Finalizadas</button>
             </div>
-            <div class="flex flex-col gap-3">
-                <button onclick="generarImagenControl()" id="btn-compartir-bio" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl shadow-md flex justify-center items-center gap-2 active:scale-95 transition-all">
-                    <i class="fa-solid fa-arrow-up-from-bracket"></i> Generar Comprobante (Imagen)
-                </button>
-                <button onclick="volverMenu()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-xl active:scale-95 transition-all shadow-sm">
-                    Ir al Menú Principal
-                </button>
+
+            <!-- BUSCADOR SIMPLIFICADO -->
+            <div class="flex flex-col sm:flex-row gap-4 mb-6 px-2">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3 text-slate-400"></i>
+                    <input type="text" id="buscador-equipos" autocomplete="off" onkeyup="renderizarLista()" placeholder="Buscar empresa, N/S de equipo..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-orange-400 transition-colors">
+                </div>
+                <div class="w-full sm:w-48 relative" title="Buscar por mes y año">
+                    <input type="month" id="filtro-mes" onchange="renderizarLista()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-orange-400 transition-colors text-slate-600">
+                </div>
             </div>
+
+            <!-- CONTENEDOR RESULTADOS (AGRUPADO POR EMPRESA) -->
+            <div id="contenedor-resultados" class="flex flex-col gap-4 pb-12">
+                <div class="text-center py-20 text-slate-400 italic">
+                    <i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-orange-400 block"></i>
+                    Sincronizando con Servicios...
+                </div>
+            </div>
+
         </div>
+    </main>
 
-    </div>
-
-    <!-- DATALIST MÉDICOS -->
-    <datalist id="lista-medicos"></datalist>
-
-    <!-- ZONA OCULTA PARA HTML DE IMPRESIÓN (PDF) -->
+    <!-- ZONA OCULTA PARA GENERACIÓN DE PDF -->
     <div id="zona-impresion" class="hidden"></div>
 
-    <!-- TPL CAPTURA IMAGEN COMPROBANTE -->
-    <div id="captura-temp-biologico" class="fixed -top-[3000px] -left-[3000px] w-[500px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
-        <div class="bg-slate-50 min-h-screen p-8 rounded-[2rem] border border-slate-200">
-            <div class="bg-white p-6 rounded-3xl text-slate-800 mb-6 shadow-sm border-t-4 border-orange-500">
-                <h1 class="text-3xl font-black mb-1"><i class="fa-solid fa-wave-square text-orange-500 mr-2"></i> CONTROL BIOLÓGICO</h1>
-                <p id="cap-bio-tipo" class="text-sm font-bold uppercase tracking-widest text-slate-400">INSTALACIÓN / CALIBRACIÓN</p>
+    <!-- MODALES -->
+    
+    <!-- MODAL PARA VER AUDIOMETRÍA -->
+    <div id="modal-audio" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-audio-card" class="bg-white border border-slate-200 p-6 rounded-3xl shadow-2xl max-w-md w-full text-slate-800 transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                <h3 class="text-lg font-black text-orange-600"><i class="fa-solid fa-ear-listen mr-2"></i> Valores de Captura</h3>
+                <button onclick="cerrarModalAudio()" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            <div class="bg-white p-6 rounded-3xl text-slate-800 shadow-sm border border-slate-100">
-                <h2 id="cap-bio-empresa" class="font-black mb-4 text-center text-2xl border-b border-slate-100 pb-4 text-sky-600 uppercase tracking-tight">EMPRESA</h2>
-                
-                <div class="bg-slate-50 p-5 rounded-2xl mb-5 border border-slate-200 text-sm text-slate-700 font-medium shadow-inner">
-                    <p class="mb-2"><b class="text-slate-500 uppercase tracking-widest text-[10px]">Fecha:</b> <br><span id="cap-bio-fecha" class="text-base font-bold text-slate-800"></span></p>
-                    <p class="mb-2"><b class="text-slate-500 uppercase tracking-widest text-[10px]">Realizó:</b> <br><span id="cap-bio-medico" class="text-orange-600 font-black text-lg uppercase"></span></p>
-                    <p class="mb-1"><b class="text-slate-500 uppercase tracking-widest text-[10px]">Equipo Implicado:</b> <br><span id="cap-bio-equipo" class="font-bold"></span> (N/S: <span id="cap-bio-ns" class="font-bold text-orange-500"></span>)</p>
-                </div>
-                
-                <div id="cap-bio-resultados" class="text-sm bg-slate-50 p-5 rounded-2xl border border-slate-200 text-slate-700 font-medium hidden shadow-inner">
-                </div>
-                
-                <div class="text-center w-full pt-6 mt-6 border-t border-slate-100 text-slate-400 text-[10px] font-black tracking-widest uppercase">GENERADO POR LAPI SUITE OPERATIVA</div>
+            
+            <p id="mod-audio-fecha" class="text-xs text-slate-500 mb-4 uppercase tracking-widest font-bold"></p>
+            
+            <div class="bg-slate-50 p-4 rounded-2xl mb-4 border border-slate-200 shadow-sm">
+                <h4 class="text-red-500 font-bold text-xs text-center mb-2 tracking-widest">OÍDO DERECHO (dB)</h4>
+                <div class="grid grid-cols-4 gap-1 text-center" id="grid-od"></div>
             </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <h4 class="text-blue-500 font-bold text-xs text-center mb-2 tracking-widest">OÍDO IZQUIERDO (dB)</h4>
+                <div class="grid grid-cols-4 gap-1 text-center" id="grid-oi"></div>
+            </div>
+            
+            <button onclick="cerrarModalAudio()" class="w-full mt-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-all active:scale-95">Cerrar</button>
         </div>
-    </div> 
+    </div>
+
+    <!-- MODAL GENERADOR DE REPORTE AVANZADO (SE MANTIENE INTACTO) -->
+    <div id="modal-reporte-avanzado" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-reporte-avanzado-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                <h3 class="text-lg font-black text-slate-800"><i class="fa-solid fa-file-pdf text-red-500 mr-2"></i> Creador de Reportes</h3>
+                <button onclick="cerrarModalReporte()" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="space-y-4 mb-6 text-left">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Tipo de Consulta</label>
+                    <select id="rep-modo" onchange="cambiarModoReporte()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400 cursor-pointer">
+                        <option value="estudio">Por Tipo de Estudio</option>
+                        <option value="ns">Historial por N/S de Equipo</option>
+                    </select>
+                </div>
+                
+                <div id="rep-box-estudio">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Seleccionar Control</label>
+                    <select id="rep-estudio-val" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                        <option value="audiometria">Audiometría (General)</option>
+                        <option value="espirometria">Espirometría (General)</option>
+                    </select>
+                </div>
+
+                <div id="rep-box-ns" class="hidden">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">N/S Exacto del Equipo</label>
+                    <input type="text" id="rep-ns-val" placeholder="Ej. SN-4920" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 uppercase focus:border-orange-400">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Desde</label>
+                        <input type="date" id="rep-f-ini" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Hasta</label>
+                        <input type="date" id="rep-f-fin" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="ejecutarReportePersonalizado()" id="btn-generar-pdf-avanzado" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 text-xs flex justify-center items-center gap-2">
+                <i class="fa-solid fa-print"></i> Consultar e Imprimir
+            </button>
+        </div>
+    </div>
 
     <script>
-        // VARIABLES GLOBALES
-        let directorioActivo = []; 
-        let mapaServiciosActivos = {}; // Para cruces rápidos
-        let equiposGlobales = []; // Todos los equipos activos
+        let mapaDirectorioServicios = {}; 
+        let equiposGlobales = [];
+        let vistaActual = 'activo';
 
-        let modoFormulario = null; // "INSTALACION" o "DIARIA"
-        let tipoEquipoForm = null; // "audiometria" o "espirometria"
-        let idFirebaseUpdate = null; // Si es DIARIA, el ID del documento a actualizar
-
-        // FIRMA DIGITAL VARIABLES
-        const canvas = document.getElementById('canvas-firma');
-        const ctx = canvas.getContext('2d');
-        let dibujando = false;
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const datalistMedicos = document.getElementById('lista-medicos');
-            if(window.LAPI_CONFIG && window.LAPI_CONFIG.medicos) {
-                datalistMedicos.innerHTML = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">`).join('');
-            }
-            configurarCanvas();
-            cargarDirectorioActivo();
-        });
-
-        // ----------------------------------------------------
-        // UTILIDADES Y FLUJO DE VISTAS
-        // ----------------------------------------------------
-        function mostrarToast(mensaje, tipo = 'error') {
+        window.mostrarToast = function(mensaje, tipo = 'info') {
             const toast = document.createElement('div');
-            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'info' ? 'bg-sky-500' : 'bg-red-500');
-            const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'info' ? 'fa-info-circle' : 'fa-triangle-exclamation');
-            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-2xl font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 z-[300] max-w-xs`;
-            toast.innerHTML = `<i class="fa-solid ${icono} text-lg"></i> <span class="leading-tight">${mensaje}</span>`;
+            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-orange-600');
+            const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-triangle-exclamation' : 'fa-info-circle');
+            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-lg font-bold text-xs flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
+            toast.innerHTML = `<i class="fa-solid ${icono} text-base"></i> <span class="leading-tight">${mensaje}</span>`;
             document.getElementById('toast-container').appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
-        }
+        };
 
-        function ocultarTodasLasVistas() {
-            document.getElementById('vista-menu').classList.add('hidden');
-            document.getElementById('vista-tipo-equipo').classList.add('hidden');
-            document.getElementById('vista-lista-diaria').classList.add('hidden');
-            document.getElementById('vista-formulario').classList.add('hidden');
-            document.getElementById('vista-exito').classList.add('hidden');
-        }
+        window.filtrarVista = function(estado) {
+            vistaActual = estado;
+            ['activo', 'pausa', 'finalizado'].forEach(e => document.getElementById(`tab-${e}`).classList.remove('active'));
+            document.getElementById(`tab-${estado}`).classList.add('active');
+            renderizarLista();
+        };
 
-        window.volverMenu = () => {
-            ocultarTodasLasVistas();
-            document.getElementById('vista-menu').classList.remove('hidden');
-            modoFormulario = null; tipoEquipoForm = null; idFirebaseUpdate = null;
-        }
-
-        // ----------------------------------------------------
-        // CARGA DE BASE DE DATOS (SERVICIOS ACTIVOS)
-        // ----------------------------------------------------
-        async function cargarDirectorioActivo() {
+        // ===============================================
+        // EXTRACCIÓN Y CRUCE DE DATOS
+        // ===============================================
+        window.cargarDatosGlobales = async function() {
+            const container = document.getElementById('contenedor-resultados');
+            container.innerHTML = '<div class="text-center py-20 text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-orange-400 block"></i> Sincronizando con Directorio de Servicios...</div>';
+            
             try {
-                const q = window.query(window.collection(window.db, "directorio_servicios"), window.where("estado", "==", "activo"));
-                const qs = await window.getDocs(q);
-                directorioActivo = []; mapaServiciosActivos = {};
-                
-                qs.forEach(doc => {
-                    let d = doc.data(); d.id = doc.id;
-                    directorioActivo.push(d);
-                    mapaServiciosActivos[d.id] = d.nombreComercial;
+                // 1. OBTENEMOS EL DIRECTORIO MAESTRO DE SERVICIOS
+                const qDir = window.query(window.collection(window.db, "directorio_servicios"));
+                const snapDir = await window.getDocs(qDir);
+                mapaDirectorioServicios = {};
+                snapDir.forEach(doc => {
+                    let d = doc.data();
+                    mapaDirectorioServicios[doc.id] = { estado: d.estado, empresa: d.nombreComercial };
                 });
-                directorioActivo.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
-            } catch (e) { console.error("Error cargando directorio:", e); }
-        }
 
-        // ----------------------------------------------------
-        // FLUJO: INSTALAR EQUIPO
-        // ----------------------------------------------------
-        window.abrirOpcionesInstalacion = () => {
-            ocultarTodasLasVistas();
-            document.getElementById('vista-tipo-equipo').classList.remove('hidden');
-        }
-
-        window.iniciarFormularioInstalacion = (tipo) => {
-            modoFormulario = "INSTALACION";
-            tipoEquipoForm = tipo;
-
-            // Llenar Selector de Empresas
-            const selServicio = document.getElementById('ins-servicio');
-            if (directorioActivo.length === 0) {
-                selServicio.innerHTML = '<option value="" disabled selected>No hay campañas activas.</option>';
-            } else {
-                let html = '<option value="" disabled selected>Selecciona la empresa...</option>';
-                directorioActivo.forEach(d => { html += `<option value="${d.id}">${d.nombreComercial}</option>`; });
-                selServicio.innerHTML = html;
-            }
-
-            // Llenar Marcas según tipo
-            const selMarca = document.getElementById('ins-marca');
-            if(tipo === 'audiometria') {
-                selMarca.innerHTML = `<option value="INTERACOUSTICS">INTERACOUSTICS</option><option value="MADSEN ITERA II">MADSEN ITERA II</option>`;
-                document.getElementById('ins-cabina-box').classList.remove('hidden');
-            } else {
-                selMarca.innerHTML = `<option value="MEDKRO- PRO">MEDKRO- PRO</option>`;
-                document.getElementById('ins-cabina-box').classList.add('hidden');
-            }
-
-            // Limpiar campos
-            document.getElementById('ins-ns').value = '';
-            document.getElementById('ins-cab').value = '';
-            document.querySelectorAll('#vista-formulario input[type="number"]').forEach(inp => inp.value = '');
-            document.getElementById('cap-medico').value = '';
-            limpiarFirma();
-
-            // Configurar Vistas del Formulario
-            document.getElementById('form-titulo').innerHTML = `<i class="fa-solid fa-boxes-packing text-orange-500 mr-2"></i> Instalación`;
-            document.getElementById('form-subtitulo').innerText = "VINCULACIÓN Y PRIMER CALIBRACIÓN";
-            
-            document.getElementById('sec-instalacion').classList.remove('hidden');
-            document.getElementById('sec-lectura').classList.add('hidden');
-
-            if(tipo === 'audiometria') {
-                document.getElementById('modulo-audiometria').classList.remove('hidden');
-                document.getElementById('modulo-espirometria').classList.add('hidden');
-            } else {
-                document.getElementById('modulo-audiometria').classList.add('hidden');
-                document.getElementById('modulo-espirometria').classList.remove('hidden');
-            }
-
-            document.getElementById('btn-volver-form').onclick = window.abrirOpcionesInstalacion;
-            document.getElementById('btn-guardar-form').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Finalizar Instalación';
-
-            ocultarTodasLasVistas();
-            document.getElementById('vista-formulario').classList.remove('hidden');
-            ajustarCanvas();
-        }
-
-        // ----------------------------------------------------
-        // FLUJO: CALIBRACIÓN DIARIA
-        // ----------------------------------------------------
-        window.abrirCalibracionDiaria = async () => {
-            ocultarTodasLasVistas();
-            document.getElementById('vista-lista-diaria').classList.remove('hidden');
-            
-            const cont = document.getElementById('contenedor-servicios');
-            cont.innerHTML = '<div class="text-center py-10 opacity-70"><i class="fa-solid fa-spinner fa-spin text-3xl mb-2 text-slate-400"></i><p class="text-sm font-bold text-slate-500">Sincronizando Operaciones...</p></div>';
-            
-            if (Object.keys(mapaServiciosActivos).length === 0) await cargarDirectorioActivo();
-
-            try {
-                const q = window.query(window.collection(window.db, "control_biologico"), window.where("estado", "==", "activo"));
-                const qs = await window.getDocs(q);
+                // 2. OBTENEMOS LOS EQUIPOS DE CONTROL BIOLÓGICO
+                const qBio = window.query(window.collection(window.db, "control_biologico"));
+                const snapBio = await window.getDocs(qBio);
                 equiposGlobales = [];
-                
-                let agrupados = {};
-                qs.forEach(doc => {
-                    let d = doc.data(); d.id = doc.id;
-                    // CRUZAMOS CON SERVICIOS ACTIVOS. Si el servicio ya se finalizó, no lo mostramos.
-                    if(mapaServiciosActivos[d.idServicio]) {
-                        d.empresa_actualizada = mapaServiciosActivos[d.idServicio];
-                        equiposGlobales.push(d);
-                        if(!agrupados[d.idServicio]) agrupados[d.idServicio] = { empresa: d.empresa_actualizada, equipos: [] };
-                        agrupados[d.idServicio].equipos.push(d);
+
+                snapBio.forEach(doc => {
+                    let eq = doc.data();
+                    eq.id = doc.id;
+                    
+                    // Sincronización Automática: Heredar el estado del Servicio Matriz
+                    if (eq.idServicio && mapaDirectorioServicios[eq.idServicio]) {
+                        eq.estado_real = mapaDirectorioServicios[eq.idServicio].estado;
+                        eq.empresa_real = mapaDirectorioServicios[eq.idServicio].empresa;
+                    } else {
+                        // Fallback si por alguna razón el servicio se borró o es antiguo
+                        eq.estado_real = 'finalizado';
+                        eq.empresa_real = eq.empresa;
                     }
+                    
+                    equiposGlobales.push(eq);
                 });
 
-                if(Object.keys(agrupados).length === 0) {
-                    cont.innerHTML = `<div class="text-center py-8 bg-white border border-slate-200 rounded-2xl shadow-sm"><p class="text-sm font-bold text-slate-400">No hay equipos instalados en servicios activos.</p></div>`;
-                    return;
+                renderizarLista();
+
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = '<p class="text-center text-xs text-red-500 py-10 font-bold">Error de conexión con la base de datos.</p>';
+            }
+        };
+
+        // ===============================================
+        // RENDERIZADO VISUAL
+        // ===============================================
+        window.renderizarLista = function() {
+            const container = document.getElementById('contenedor-resultados');
+            const textoBuscado = (document.getElementById('buscador-equipos').value || '').toLowerCase();
+            const mesBuscado = document.getElementById('filtro-mes').value; // Formato YYYY-MM
+            
+            // 1. Filtrar Equipos
+            let filtrados = equiposGlobales.filter(eq => {
+                if (eq.estado_real !== vistaActual) return false;
+
+                if (textoBuscado) {
+                    const str = `${eq.empresa_real} ${eq.ns_equipo} ${eq.tipo}`.toLowerCase();
+                    if (!str.includes(textoBuscado)) return false;
                 }
 
-                cont.innerHTML = "";
-                const hoy = new Date().toISOString().split('T')[0];
+                if (mesBuscado) {
+                    let caeEnMes = false;
+                    const mesInicio = eq.fecha_inicio ? eq.fecha_inicio.substring(0, 7) : '';
+                    if (mesInicio === mesBuscado) caeEnMes = true;
+                    if (!caeEnMes && eq.bitacora) {
+                        caeEnMes = eq.bitacora.some(b => b.fecha.substring(0, 7) === mesBuscado);
+                    }
+                    if (!caeEnMes) return false;
+                }
 
-                for(let idServ in agrupados) {
-                    let grupo = agrupados[idServ];
-                    let totalEquipos = grupo.equipos.length;
-                    let calibradosHoy = 0;
-                    let htmlEquipos = "";
+                return true;
+            });
+            
+            if(filtrados.length === 0) {
+                container.innerHTML = `<p class="text-center text-xs text-slate-400 py-10">No hay empresas con equipos registrados en esta pestaña.</p>`;
+                return;
+            }
 
-                    grupo.equipos.sort((a,b) => a.tipo.localeCompare(b.tipo));
+            // 2. Agrupar Equipos por Empresa
+            let agrupados = {};
+            filtrados.forEach(eq => {
+                let emp = eq.empresa_real;
+                if(!agrupados[emp]) agrupados[emp] = [];
+                agrupados[emp].push(eq);
+            });
 
-                    grupo.equipos.forEach(eq => {
-                        let reportoHoy = eq.bitacora && eq.bitacora.some(b => b.fecha === hoy);
-                        if(reportoHoy) calibradosHoy++;
+            // 3. Generar HTML
+            let finalHtml = '';
+            
+            // Ordenar las empresas alfabéticamente
+            Object.keys(agrupados).sort().forEach((empresaNombre, indexEmpresa) => {
+                let equiposEmpresa = agrupados[empresaNombre];
+                let htmlEquipos = '';
 
-                        let estadoTxt = reportoHoy ? `CALIBRADO` : "PENDIENTE"; 
-                        let estadoColor = reportoHoy ? "text-emerald-600 bg-emerald-50 border-emerald-200" : "text-red-500 bg-red-50 border-red-200"; 
-                        const iconoEq = eq.tipo === 'audiometria' ? 'fa-headphones text-orange-500' : 'fa-lungs text-blue-500';
-                        
-                        htmlEquipos += `
-                            <div onclick="iniciarFormularioDiario('${eq.id}', '${eq.tipo}', '${grupo.empresa}', '${eq.equipo}', '${eq.ns_equipo}', '${eq.ns_cabina || ''}')" 
-                                 class="flex items-center justify-between p-4 border-t border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors active:scale-95 group ${reportoHoy ? 'bg-slate-50/50 opacity-80' : ''}">
-                                <div>
-                                    <p class="text-xs font-black text-slate-700 uppercase tracking-wide"><i class="fa-solid ${iconoEq} mr-1.5"></i> ${eq.equipo}</p>
-                                    <p class="text-[9px] font-bold text-slate-500 tracking-wider mt-1"><i class="fa-solid fa-barcode mr-1 opacity-70"></i> N/S: <span class="text-orange-600">${eq.ns_equipo}</span></p>
-                                </div>
-                                <div class="text-right flex flex-col items-end">
-                                    <span class="px-2 py-0.5 rounded-lg border text-[9px] font-black tracking-widest ${estadoColor} shadow-sm">${estadoTxt}</span>
-                                    <span class="text-[10px] text-sky-500 mt-1.5 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Capturar <i class="fa-solid fa-arrow-right"></i></span>
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    let semaforoGlobal = "";
-                    if(calibradosHoy === totalEquipos) {
-                        semaforoGlobal = `<div class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 shadow-sm"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Listo</div>`;
+                equiposEmpresa.forEach((eq, indexEquipo) => {
+                    const icono = eq.tipo === 'audiometria' ? 'fa-headphones text-orange-500' : 'fa-lungs text-blue-500';
+                    const numRegs = eq.bitacora ? eq.bitacora.length : 0;
+                    let cabinaBadge = eq.tipo === 'audiometria' && eq.ns_cabina ? `<span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-600">Cabina: <b>${eq.ns_cabina}</b></span>` : '';
+                    
+                    let thHtml = ''; let trHtml = '';
+                    if(numRegs === 0) {
+                        trHtml = `<tr><td colspan="5" class="py-4 text-center text-xs text-slate-400 italic font-bold">No hay calibraciones registradas para este equipo.</td></tr>`;
                     } else {
-                        semaforoGlobal = `<div class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-50 px-3 py-1.5 rounded-xl border border-red-200 shadow-sm"><span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Faltan ${totalEquipos - calibradosHoy}</div>`;
+                        if(eq.tipo === 'audiometria') {
+                            thHtml = `<tr><th class="py-2 px-3 text-left">Fecha</th><th class="py-2 px-3 text-center">Frec. OD Prom</th><th class="py-2 px-3 text-center">Frec. OI Prom</th><th class="py-2 px-3 text-right">Técnico/Médico</th></tr>`;
+                            eq.bitacora.forEach((b, indexBitacora) => {
+                                let promOD = b.od ? Object.values(b.od).filter(v=>v).length : 0; 
+                                let promOI = b.oi ? Object.values(b.oi).filter(v=>v).length : 0;
+                                // Inyectamos temporalmente los índices para el botón
+                                eq.indexEmpresaTemp = indexEmpresa; eq.indexEquipoTemp = indexEquipo;
+                                
+                                let btnOD = `<button onclick="abrirDetalleAudio('${eq.id}', ${indexBitacora})" class="text-red-500 hover:text-red-700 underline decoration-red-300 underline-offset-2 transition-colors"><i class="fa-solid fa-up-right-from-square mr-1"></i>${promOD}/8 capt.</button>`;
+                                let btnOI = `<button onclick="abrirDetalleAudio('${eq.id}', ${indexBitacora})" class="text-blue-500 hover:text-blue-700 underline decoration-blue-300 underline-offset-2 transition-colors"><i class="fa-solid fa-up-right-from-square mr-1"></i>${promOI}/8 capt.</button>`;
+                                trHtml += `<tr class="border-t border-slate-100 hover:bg-slate-50 transition"><td class="py-2 px-3 text-[10px] font-black text-slate-500">${b.fecha}</td><td class="py-2 px-3 text-center text-xs font-bold">${btnOD}</td><td class="py-2 px-3 text-center text-xs font-bold">${btnOI}</td><td class="py-2 px-3 text-right text-[9px] font-bold text-slate-400 uppercase tracking-widest">${b.medico}</td></tr>`;
+                            });
+                        } else {
+                            thHtml = `<tr><th class="py-2 px-3 text-left">Fecha</th><th class="py-2 px-3 text-center">Inspirar %</th><th class="py-2 px-3 text-center">Espirar %</th><th class="py-2 px-3 text-right">Técnico/Médico</th></tr>`;
+                            eq.bitacora.forEach(b => {
+                                trHtml += `<tr class="border-t border-slate-100 hover:bg-slate-50 transition"><td class="py-2 px-3 text-[10px] font-black text-slate-500">${b.fecha}</td><td class="py-2 px-3 text-center text-xs text-sky-600 font-bold">${b.inspirar_porcentaje}%</td><td class="py-2 px-3 text-center text-xs text-sky-600 font-bold">${b.espirar_porcentaje}%</td><td class="py-2 px-3 text-right text-[9px] font-bold text-slate-400 uppercase tracking-widest">${b.medico}</td></tr>`;
+                            });
+                        }
                     }
 
-                    cont.innerHTML += `
-                        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-5">
-                            <div class="p-4 bg-slate-50 flex justify-between items-center border-b border-slate-200 shadow-inner">
-                                <h3 class="font-black text-sm uppercase text-slate-800 tracking-tight flex items-center gap-2">
-                                    <button onclick="generarPDFEmpresa('${idServ}')" class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors shadow-sm flex items-center justify-center" title="Generar PDF de Bitácoras"><i class="fa-solid fa-file-pdf"></i></button>
-                                    ${grupo.empresa}
-                                </h3>
-                                ${semaforoGlobal}
+                    htmlEquipos += `
+                        <div class="bg-white border border-slate-200 rounded-2xl mb-4 overflow-hidden shadow-sm">
+                            <div class="p-4 bg-slate-50 flex flex-wrap gap-2 text-[10px] font-bold text-slate-500 tracking-wider items-center border-b border-slate-100">
+                                <span class="bg-white px-2 py-1 rounded border border-slate-200 shadow-sm text-slate-700 text-xs uppercase"><i class="fa-solid ${icono} mr-1"></i> ${eq.equipo}</span>
+                                <span class="bg-white px-2 py-1 rounded border border-slate-200 shadow-sm"><i class="fa-solid fa-barcode mr-1 text-slate-400"></i> N/S: <b class="text-orange-500">${eq.ns_equipo}</b></span>
+                                ${cabinaBadge}
                             </div>
-                            <div class="flex flex-col">
-                                ${htmlEquipos}
+                            <div class="p-4">
+                                <h4 class="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-2 pb-1 border-b border-slate-100">Bitácora de Calibraciones (${numRegs})</h4>
+                                <div class="overflow-x-auto bg-white rounded-xl border border-slate-100">
+                                    <table class="w-full text-left">
+                                        <thead class="bg-slate-50 text-[9px] uppercase text-slate-500">${thHtml}</thead>
+                                        <tbody>${trHtml}</tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     `;
-                }
-            } catch(e) { cont.innerHTML = `<div class="text-center text-red-400 text-xs font-bold">Error sincronizando datos.</div>`; }
-        };
+                });
 
-        window.iniciarFormularioDiario = (idFb, tipo, emp, eq, ns, cab) => {
-            modoFormulario = "DIARIA";
-            tipoEquipoForm = tipo;
-            idFirebaseUpdate = idFb;
-
-            // Limpiar campos
-            document.querySelectorAll('#vista-formulario input[type="number"]').forEach(inp => inp.value = '');
-            document.getElementById('cap-medico').value = '';
-            limpiarFirma();
-
-            // Configurar Vistas del Formulario
-            document.getElementById('form-titulo').innerHTML = `<i class="fa-solid fa-clock-rotate-left text-orange-500 mr-2"></i> Captura`;
-            document.getElementById('form-subtitulo').innerText = "CALIBRACIÓN DIARIA";
-
-            document.getElementById('sec-instalacion').classList.add('hidden');
-            document.getElementById('sec-lectura').classList.remove('hidden');
-
-            document.getElementById('lec-empresa').innerText = emp;
-            document.getElementById('lec-equipo').innerText = eq;
-            document.getElementById('lec-ns').innerText = ns;
-            
-            if(tipo === 'audiometria') {
-                document.getElementById('lec-icon').className = "fa-solid fa-headphones text-slate-300 mr-2";
-                document.getElementById('lec-cab-box').classList.remove('hidden');
-                document.getElementById('lec-cab').innerText = cab || 'N/A';
-                document.getElementById('modulo-audiometria').classList.remove('hidden');
-                document.getElementById('modulo-espirometria').classList.add('hidden');
-            } else {
-                document.getElementById('lec-icon').className = "fa-solid fa-lungs text-slate-300 mr-2";
-                document.getElementById('lec-cab-box').classList.add('hidden');
-                document.getElementById('modulo-audiometria').classList.add('hidden');
-                document.getElementById('modulo-espirometria').classList.remove('hidden');
-            }
-
-            document.getElementById('btn-volver-form').onclick = window.abrirCalibracionDiaria;
-            document.getElementById('btn-guardar-form').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Guardar Calibración';
-
-            ocultarTodasLasVistas();
-            document.getElementById('vista-formulario').classList.remove('hidden');
-            ajustarCanvas();
-        };
-
-        // ----------------------------------------------------
-        // PROCESAMIENTO CENTRALIZADO (GUARDAR)
-        // ----------------------------------------------------
-        window.procesarGuardado = async function() {
-            // 1. Validaciones Comunes (Firma y Valores)
-            const med = document.getElementById('cap-medico').value.trim().toUpperCase();
-            if(!med) return mostrarToast("Indica tu nombre.");
-            
-            const blank = document.createElement('canvas');
-            blank.width = canvas.width; blank.height = canvas.height;
-            if(canvas.toDataURL() === blank.toDataURL()) return mostrarToast("La firma es obligatoria.", "error");
-
-            const fec = new Date().toISOString().split('T')[0];
-            let registroHoy = { fecha: fec, timestamp: new Date(), medico: med, firma: canvas.toDataURL('image/png', 0.5) };
-            let detallesHtml = "";
-
-            if (tipoEquipoForm === 'audiometria') {
-                const frecs = [250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
-                let od = {}, oi = {};
-                for(let f of frecs) { od[f] = document.getElementById(`od-${f}`).value; oi[f] = document.getElementById(`oi-${f}`).value; }
-                registroHoy.od = od; registroHoy.oi = oi;
-                
-                let countOD = Object.values(od).filter(v=>v).length;
-                let countOI = Object.values(oi).filter(v=>v).length;
-                detallesHtml = `<p class="font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-200 pb-2 text-[10px]">RESULTADOS DE CALIBRACIÓN:</p>
-                                <p class="mb-1 text-slate-600"><b class="text-orange-500 mr-1">OD Registrados:</b> ${countOD}/8 frecuencias</p>
-                                <p class="text-slate-600"><b class="text-blue-500 mr-1">OI Registrados:</b> ${countOI}/8 frecuencias</p>`;
-            } else {
-                const insp = document.getElementById('espiro-insp').value;
-                const esp = document.getElementById('espiro-esp').value;
-                if(!insp || !esp) return mostrarToast("Llena los campos Inspirar y Espirar.", "error");
-                registroHoy.inspirar_porcentaje = insp; registroHoy.espirar_porcentaje = esp;
-                detallesHtml = `<p class="font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-200 pb-2 text-[10px]">RESULTADOS DE CALIBRACIÓN:</p>
-                                <p class="mb-1 text-slate-600"><b class="text-sky-600 mr-1">Inspirar:</b> ${insp}%</p>
-                                <p class="text-slate-600"><b class="text-sky-600 mr-1">Espirar:</b> ${esp}%</p>`;
-            }
-
-            const btn = document.getElementById('btn-guardar-form');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
-
-            try {
-                if (modoFormulario === "INSTALACION") {
-                    // Validaciones extra Instalacion
-                    const selServicio = document.getElementById('ins-servicio');
-                    if(!selServicio.value) { btn.disabled=false; return mostrarToast("Selecciona el servicio asignado."); }
-                    
-                    const idServicio = selServicio.value;
-                    const empresa = selServicio.options[selServicio.selectedIndex].text;
-                    const marca = document.getElementById('ins-marca').value;
-                    const ns = document.getElementById('ins-ns').value.trim().toUpperCase();
-                    const cab = tipoEquipoForm === 'audiometria' ? document.getElementById('ins-cab').value.trim().toUpperCase() : '';
-
-                    if(!ns || (tipoEquipoForm==='audiometria' && !cab)) { btn.disabled=false; return mostrarToast("Falta N/S de equipo o cabina."); }
-
-                    let nuevoEquipo = {
-                        tipo: tipoEquipoForm, estado: "activo", idServicio: idServicio, empresa: empresa, equipo: marca, 
-                        ns_equipo: ns, ns_cabina: cab, fecha_inicio: fec, bitacora: [registroHoy], timestamp: new Date()
-                    };
-
-                    await window.addDoc(window.collection(window.db, "control_biologico"), nuevoEquipo);
-
-                    window.datosComprobante = { tipoMsg: "INSTALACIÓN DE EQUIPO", empresa: empresa, fecha: fec, medico: med, equipo: marca, ns: ns, detallesHtml: detallesHtml };
-                    document.getElementById('exito-msg').innerHTML = "El equipo fue instalado y calibrado correctamente en la ruta activa.";
-
-                } else {
-                    // DIARIA: Update de Documento Existente
-                    const docRef = window.doc(window.db, "control_biologico", idFirebaseUpdate);
-                    await window.updateDoc(docRef, { bitacora: window.arrayUnion(registroHoy) });
-                    
-                    const empresa = document.getElementById('lec-empresa').innerText;
-                    const eqTxt = document.getElementById('lec-equipo').innerText;
-                    const nsTxt = document.getElementById('lec-ns').innerText;
-
-                    window.datosComprobante = { tipoMsg: "CALIBRACIÓN DIARIA", empresa: empresa, fecha: fec, medico: med, equipo: eqTxt, ns: nsTxt, detallesHtml: detallesHtml };
-                    document.getElementById('exito-msg').innerHTML = "La calibración diaria ha sido registrada con éxito.";
-                }
-
-                ocultarTodasLasVistas();
-                document.getElementById('vista-exito').classList.remove('hidden');
-
-            } catch(e) { console.log(e); mostrarToast("Error guardando en la nube."); }
-            
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Finalizar y Guardar'; btn.disabled = false;
-        };
-
-        // ----------------------------------------------------
-        // COMPROBANTES (IMÁGEN Y PDF DEL SERVICIO)
-        // ----------------------------------------------------
-        window.generarImagenControl = async function() {
-            const btn = document.getElementById('btn-compartir-bio');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generando...'; btn.disabled = true;
-
-            const d = window.datosComprobante;
-            document.getElementById('cap-bio-tipo').innerText = d.tipoMsg;
-            document.getElementById('cap-bio-empresa').innerText = d.empresa;
-            document.getElementById('cap-bio-fecha').innerText = d.fecha;
-            document.getElementById('cap-bio-medico').innerText = d.medico;
-            document.getElementById('cap-bio-equipo').innerText = d.equipo;
-            document.getElementById('cap-bio-ns').innerText = d.ns;
-
-            const divResultados = document.getElementById('cap-bio-resultados');
-            if(d.detallesHtml) { divResultados.innerHTML = d.detallesHtml; divResultados.classList.remove('hidden'); } 
-            else { divResultados.classList.add('hidden'); }
-
-            await new Promise(r => setTimeout(r, 100));
-            const target = document.getElementById('captura-temp-biologico');
-            
-            try {
-                const canvasC = await html2canvas(target, { scale: 2, useCORS: true, logging: false, backgroundColor: null, onclone: (clonedDoc) => { clonedDoc.getElementById('captura-temp-biologico').style.position = 'static'; clonedDoc.getElementById('captura-temp-biologico').style.display = 'block'; } });
-                
-                if (navigator.share && navigator.canShare) {
-                    canvasC.toBlob(async (blob) => {
-                        const file = new File([blob], `LAPI_ControlBio.png`, { type: 'image/png' });
-                        if (navigator.canShare({ files: [file] })) {
-                            try { await navigator.share({ files: [file], title: `Control Biológico`, text: `Comprobante de ${d.tipoMsg}` }); } 
-                            catch (err) { if(err.name !== 'AbortError') forzarDescarga(canvasC); }
-                        } else { forzarDescarga(canvasC); }
-                    });
-                } else { forzarDescarga(canvasC); }
-            } catch(e) { mostrarToast("Error generando imagen.", "error"); }
-
-            btn.innerHTML = originalHTML; btn.disabled = false;
-        };
-
-        function forzarDescarga(canvasObj) {
-            const link = document.createElement('a'); link.download = `LAPI_ControlBio.png`;
-            link.href = canvasObj.toDataURL("image/png"); link.click();
-            mostrarToast("Descarga iniciada. Revisa tu galería.", "info");
-        }
-
-        // --- CREADOR DE PDF PARA EMPRESA COMPLETA ---
-        window.generarPDFEmpresa = function(idServicio) {
-            const zona = document.getElementById('zona-impresion');
-            let htmlPDF = '';
-            
-            let equiposEmpresa = equiposGlobales.filter(e => e.idServicio === idServicio);
-            if(equiposEmpresa.length === 0) return mostrarToast("No hay equipos vinculados a este servicio.", "error");
-
-            equiposEmpresa.forEach(data => {
-                htmlPDF += '<div class="servicio-print-block">';
-                if(data.tipo === 'audiometria') htmlPDF += renderizarPDF_Audiometria(data);
-                else htmlPDF += renderizarPDF_Espirometria(data);
-                htmlPDF += '</div>';
+                finalHtml += `
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-2">
+                        <div onclick="toggleAcordeon('empresa-${indexEmpresa}')" class="p-5 bg-slate-50 cursor-pointer hover:bg-slate-100 transition relative select-none border-b border-slate-200 flex justify-between items-center group">
+                            <div>
+                                <h3 class="font-black text-lg text-slate-800 uppercase leading-tight group-hover:text-orange-600 transition-colors"><i class="fa-solid fa-building mr-2 text-slate-400"></i>${empresaNombre}</h3>
+                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1"><i class="fa-solid fa-microchip mr-1"></i> ${equiposEmpresa.length} Equipos Vinculados</p>
+                            </div>
+                            <div class="text-slate-300 text-xl group-hover:text-orange-500 transition-colors"><i class="fa-solid fa-chevron-down"></i></div>
+                        </div>
+                        <div id="empresa-${indexEmpresa}" class="acordeon-content bg-slate-50/50 px-5">
+                            ${htmlEquipos}
+                        </div>
+                    </div>
+                `;
             });
             
-            zona.innerHTML = htmlPDF;
-            setTimeout(() => { window.print(); }, 500);
+            container.innerHTML = finalHtml;
+        }
+
+        window.toggleAcordeon = function(idDOM) {
+            const el = document.getElementById(idDOM);
+            el.classList.toggle('open');
+        };
+
+        window.abrirDetalleAudio = function(idFirebase, indexBitacora) {
+            const eq = equiposGlobales.find(e => e.id === idFirebase);
+            const b = eq.bitacora[indexBitacora];
+            document.getElementById('mod-audio-fecha').innerText = `Calibración del: ${b.fecha}`;
+            
+            const gridOD = document.getElementById('grid-od'); const gridOI = document.getElementById('grid-oi');
+            gridOD.innerHTML = ''; gridOI.innerHTML = '';
+            const frecs = [250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
+            frecs.forEach(f => {
+                let valOD = (b.od && b.od[f]) ? b.od[f] : '-'; let valOI = (b.oi && b.oi[f]) ? b.oi[f] : '-';
+                gridOD.innerHTML += `<div class="bg-white border border-slate-200 p-2 rounded-lg text-xs shadow-sm"><p class="text-[9px] text-slate-400 mb-0.5 font-bold">${f}</p><b class="text-slate-700">${valOD}</b></div>`;
+                gridOI.innerHTML += `<div class="bg-white border border-slate-200 p-2 rounded-lg text-xs shadow-sm"><p class="text-[9px] text-slate-400 mb-0.5 font-bold">${f}</p><b class="text-slate-700">${valOI}</b></div>`;
+            });
+
+            const modal = document.getElementById('modal-audio'); const card = document.getElementById('modal-audio-card');
+            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
+        };
+
+        window.cerrarModalAudio = function() {
+            const modal = document.getElementById('modal-audio'); const card = document.getElementById('modal-audio-card');
+            modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        };
+
+        // =========================================================
+        // MOTOR AVANZADO DE REPORTE PDF (INTACTO)
+        // =========================================================
+        window.abrirModalReporte = function() {
+            const modal = document.getElementById('modal-reporte-avanzado'); const card = document.getElementById('modal-reporte-avanzado-card');
+            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
+        };
+        window.cerrarModalReporte = function() {
+            const modal = document.getElementById('modal-reporte-avanzado'); const card = document.getElementById('modal-reporte-avanzado-card');
+            modal.classList.add('opacity-0'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        };
+
+        window.cambiarModoReporte = function() {
+            const modo = document.getElementById('rep-modo').value;
+            if(modo === 'estudio') {
+                document.getElementById('rep-box-estudio').classList.remove('hidden');
+                document.getElementById('rep-box-ns').classList.add('hidden');
+            } else {
+                document.getElementById('rep-box-estudio').classList.add('hidden');
+                document.getElementById('rep-box-ns').classList.remove('hidden');
+            }
+        };
+
+        window.ejecutarReportePersonalizado = async function() {
+            const btn = document.getElementById('btn-generar-pdf-avanzado');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Construyendo...'; btn.disabled = true;
+
+            const modo = document.getElementById('rep-modo').value;
+            const fIni = document.getElementById('rep-f-ini').value;
+            const fFin = document.getElementById('rep-f-fin').value;
+            const zona = document.getElementById('zona-impresion');
+            
+            try {
+                // Consultar DB fresca para imprimir
+                const q = window.query(window.collection(window.db, "control_biologico"), window.orderBy("timestamp", "asc"));
+                const qs = await window.getDocs(q);
+                let equiposAImprimir = [];
+
+                qs.forEach(doc => {
+                    let s = doc.data();
+                    let pasaFiltro = true;
+
+                    if(modo === 'estudio') {
+                        if(s.tipo !== document.getElementById('rep-estudio-val').value) pasaFiltro = false;
+                    } else {
+                        if(s.ns_equipo.toUpperCase() !== document.getElementById('rep-ns-val').value.trim().toUpperCase()) pasaFiltro = false;
+                    }
+
+                    if(pasaFiltro) {
+                        if(fIni && fFin && s.bitacora) {
+                            s.bitacora = s.bitacora.filter(b => b.fecha >= fIni && b.fecha <= fFin);
+                        }
+                        if(s.bitacora && s.bitacora.length > 0) {
+                            equiposAImprimir.push(s);
+                        }
+                    }
+                });
+
+                if(equiposAImprimir.length === 0) {
+                    mostrarToast("No se encontraron registros de calibración con los parámetros ingresados.", "error");
+                    btn.innerHTML = '<i class="fa-solid fa-print"></i> Consultar e Imprimir'; btn.disabled = false;
+                    return;
+                }
+
+                zona.innerHTML = ''; let htmlPDF = '';
+                equiposAImprimir.forEach(data => {
+                    htmlPDF += '<div class="servicio-print-block">';
+                    if(data.tipo === 'audiometria') htmlPDF += renderizarPDF_Audiometria(data);
+                    else htmlPDF += renderizarPDF_Espirometria(data);
+                    htmlPDF += '</div>';
+                });
+                zona.innerHTML = htmlPDF;
+
+                cerrarModalReporte();
+                setTimeout(() => { window.print(); }, 800);
+
+            } catch(e) { mostrarToast("Error extrayendo información.", "error"); }
+            btn.innerHTML = '<i class="fa-solid fa-print"></i> Consultar e Imprimir'; btn.disabled = false;
         };
 
         function renderizarPDF_Audiometria(data) {
@@ -728,8 +547,7 @@
                     <tr>
                         <td style="font-weight: bold;">${b.fecha}</td>
                         <td>${od[250]||''}</td><td>${od[500]||''}</td><td>${od[1000]||''}</td><td>${od[2000]||''}</td><td>${od[3000]||''}</td><td>${od[4000]||''}</td><td>${od[6000]||''}</td><td>${od[8000]||''}</td>
-                        <td style="border-top: none; border-bottom: none;"></td> 
-                        <td>${oi[250]||''}</td><td>${oi[500]||''}</td><td>${oi[1000]||''}</td><td>${oi[2000]||''}</td><td>${oi[3000]||''}</td><td>${oi[4000]||''}</td><td>${oi[6000]||''}</td><td>${oi[8000]||''}</td>
+                        <td style="border-top: none; border-bottom: none;"></td> <td>${oi[250]||''}</td><td>${oi[500]||''}</td><td>${oi[1000]||''}</td><td>${oi[2000]||''}</td><td>${oi[3000]||''}</td><td>${oi[4000]||''}</td><td>${oi[6000]||''}</td><td>${oi[8000]||''}</td>
                         <td style="padding: 2px;">
                             <div style="font-size: 8px; line-height: 1; font-weight: bold;">${b.medico}</div>
                             ${b.firma ? `<img src="${b.firma}" class="firma-img">` : ''}
@@ -748,7 +566,7 @@
                             <table style="width: 100%; height: 100%; border-collapse: collapse; text-align: center; border: none;">
                                 <tr><td style="border-top: none; border-left: none; font-weight: bold; width: 50%;">Código:</td><td style="border-top: none; border-right: none;">F-55-P11</td></tr>
                                 <tr><td style="border-left: none; font-weight: bold;">Versión:</td><td style="border-right: none;">1</td></tr>
-                                <tr><td style="border-left: none; font-weight: bold;">Fecha de<br>act.:</td><td style="border-right: none;">05-Agosto-23</td></tr>
+                                <tr><td style="border-left: none; font-weight: bold;">Fecha de<br>actualización:</td><td style="border-right: none;">05-Agosto-23</td></tr>
                                 <tr><td style="border-bottom: none; border-left: none; font-weight: bold;">Página:</td><td style="border-bottom: none; border-right: none;">1 de 1</td></tr>
                             </table>
                         </td>
@@ -760,7 +578,7 @@
                         <td style="width: 12%; font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S:</td><td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_equipo}</td>
                     </tr>
                     <tr>
-                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa_actualizada || data.empresa}</td>
+                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa}</td>
                         <td style="font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S CABINA:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_cabina || ''}</td>
                     </tr>
                 </table>
@@ -805,7 +623,7 @@
                             <table style="width: 100%; height: 100%; border-collapse: collapse; text-align: center; border: none;">
                                 <tr><td style="border-top: none; border-left: none; font-weight: bold; width: 50%;">Código:</td><td style="border-top: none; border-right: none;">F-56-P11</td></tr>
                                 <tr><td style="border-left: none; font-weight: bold;">Versión:</td><td style="border-right: none;">1</td></tr>
-                                <tr><td style="border-left: none; font-weight: bold;">Fecha de<br>act.:</td><td style="border-right: none;">05-Agosto-23</td></tr>
+                                <tr><td style="border-left: none; font-weight: bold;">Fecha de<br>actualización:</td><td style="border-right: none;">05-Agosto-23</td></tr>
                                 <tr><td style="border-bottom: none; border-left: none; font-weight: bold;">Página:</td><td style="border-bottom: none; border-right: none;">1 de 1</td></tr>
                             </table>
                         </td>
@@ -817,8 +635,8 @@
                         <td style="width: 12%; font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S:</td><td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_equipo}</td>
                     </tr>
                     <tr>
-                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa_actualizada || data.empresa}</td>
-                        <td style="font-weight: bold; padding: 3px 0; padding-left: 15px;"></td><td style="border-bottom: 1px solid #000; padding: 3px 5px;"></td>
+                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa}</td>
+                        <td style="font-weight: bold; padding: 3px 0; padding-left: 15px;">FECHAS:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;"></td>
                     </tr>
                 </table>
                 <table class="print-table" style="font-size: 12px;">
@@ -830,50 +648,6 @@
                 </table>
             `;
         }
-
-        // ==========================================
-        // LÓGICA DE FIRMA DIGITAL EN CANVAS
-        // ==========================================
-        function configurarCanvas() {
-            ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#0f172a';
-            canvas.addEventListener('mousedown', iniciarDibujo);
-            canvas.addEventListener('mousemove', dibujar);
-            canvas.addEventListener('mouseup', detenerDibujo);
-            canvas.addEventListener('mouseout', detenerDibujo);
-
-            canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault(); const touch = e.touches[0];
-                const mouseEvent = new MouseEvent("mousedown", { clientX: touch.clientX, clientY: touch.clientY });
-                canvas.dispatchEvent(mouseEvent);
-            }, { passive: false });
-            
-            canvas.addEventListener('touchmove', (e) => {
-                e.preventDefault(); const touch = e.touches[0];
-                const mouseEvent = new MouseEvent("mousemove", { clientX: touch.clientX, clientY: touch.clientY });
-                canvas.dispatchEvent(mouseEvent);
-            }, { passive: false });
-
-            canvas.addEventListener('touchend', () => canvas.dispatchEvent(new MouseEvent("mouseup")));
-            window.addEventListener('resize', ajustarCanvas);
-        }
-
-        function ajustarCanvas() {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height || 150;
-            ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#0f172a';
-        }
-
-        function obtenerPosicion(e) {
-            const rect = canvas.getBoundingClientRect();
-            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-        }
-
-        function iniciarDibujo(e) { dibujando = true; ctx.beginPath(); const pos = obtenerPosicion(e); ctx.moveTo(pos.x, pos.y); }
-        function dibujar(e) { if (!dibujando) return; const pos = obtenerPosicion(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); }
-        function detenerDibujo() { dibujando = false; ctx.closePath(); }
-        window.limpiarFirma = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-
     </script>
 </body>
 </html>
