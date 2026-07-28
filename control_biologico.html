@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Biológico</title>
+    <title>Admin - Control Biológico</title>
     
     <link rel="manifest" href="manifest_captura.json">
     <meta name="theme-color" content="#ea580c">
@@ -153,7 +153,7 @@
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest border-b border-slate-100 pb-2"><i class="fa-solid fa-link text-orange-400 mr-1"></i> Vinculación del Equipo</h3>
                 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Campaña / Servicio Asignado</label>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1"> Servicio / Empresa</label>
                     <select id="ins-servicio" class="w-full p-3 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl outline-none font-bold text-xs shadow-inner cursor-pointer"></select>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -297,7 +297,7 @@
                 <div id="cap-bio-resultados" class="text-sm bg-slate-50 p-5 rounded-2xl border border-slate-200 text-slate-700 font-medium hidden shadow-inner">
                 </div>
                 
-                <div class="text-center w-full pt-6 mt-6 border-t border-slate-100 text-slate-400 text-[10px] font-black tracking-widest uppercase">GENERADO POR LAPI SUITE OPERATIVA</div>
+                <div class="text-center w-full pt-6 mt-6 border-t border-slate-100 text-slate-400 text-[10px] font-black tracking-widest uppercase">GENERADO POR PWA SUITE OPERATIVA</div>
             </div>
         </div>
     </div> 
@@ -387,7 +387,7 @@
             // Llenar Selector de Empresas
             const selServicio = document.getElementById('ins-servicio');
             if (directorioActivo.length === 0) {
-                selServicio.innerHTML = '<option value="" disabled selected>No hay campañas activas.</option>';
+                selServicio.innerHTML = '<option value="" disabled selected>No hay servicios activos.</option>';
             } else {
                 let html = '<option value="" disabled selected>Selecciona la empresa...</option>';
                 directorioActivo.forEach(d => { html += `<option value="${d.id}">${d.nombreComercial}</option>`; });
