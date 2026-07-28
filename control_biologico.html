@@ -29,6 +29,27 @@
         input[type=number] { -moz-appearance: textfield; }
 
         .shadow-soft { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+
+        /* REGLAS DE IMPRESIÓN DEL PDF */
+        @media print {
+            @page { size: landscape; margin: 10mm; } 
+            body, html { background-color: white !important; height: auto !important; }
+            #nav-back, #contenedor-principal, #toast-container, #captura-temp-biologico { display: none !important; }
+            #zona-impresion { display: block !important; position: relative !important; width: 100% !important; background: white !important; color: black !important; }
+            
+            .servicio-print-block { break-after: always; page-break-after: always; margin-bottom: 20px; width: 100%; }
+            .header-box, .print-table { break-inside: avoid; page-break-inside: avoid; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; font-family: Arial, sans-serif; text-align: center; }
+            .print-table th, .print-table td { border: 1px solid #000; padding: 4px; }
+            .print-table tr { break-inside: avoid; page-break-inside: avoid; }
+            .print-table th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; color-adjust: exact; font-weight: bold; }
+            .bg-verde-lapi { background-color: #a3e635 !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
+            .bg-rojo-lapi { background-color: #fca5a5 !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
+            .header-box { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-family: Arial, sans-serif; font-size: 12px; }
+            .header-box td { border: 1px solid #000; padding: 5px; }
+            .header-title { font-weight: bold; font-size: 16px; text-align: center; }
+            .firma-img { max-height: 30px; vertical-align: middle; display: block; margin: 0 auto; }
+        }
     </style>
 
     <script type="module">
@@ -55,129 +76,142 @@
 
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
-    <a href="index.html" class="absolute top-4 left-4 z-[100] w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-orange-600 hover:border-orange-300 transition-all active:scale-95 shadow-sm" title="Volver al Portal">
+    <a href="index.html" id="nav-back" class="absolute top-4 left-4 z-[100] w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-orange-600 hover:border-orange-300 transition-all active:scale-95 shadow-sm" title="Volver al Portal">
         <i class="fa-solid fa-house"></i>
     </a>
 
     <div id="contenedor-principal" class="w-full max-w-md flex-1 mt-12 px-4">
 
-        <!-- VISTA LISTA: AGRUPADA POR SERVICIOS -->
-        <div id="vista-lista" class="animate-fade-in">
-            <button onclick="abrirNuevoServicio()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl shadow-md transition-all active:scale-95 mb-8 flex justify-center items-center gap-2">
-                <i class="fa-solid fa-folder-plus text-lg"></i> Instalación de Equipos
+        <!-- 1. VISTA MENÚ PRINCIPAL -->
+        <div id="vista-menu" class="animate-fade-in flex flex-col gap-6 pt-10">
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-orange-100 text-orange-600 rounded-3xl mx-auto flex items-center justify-center text-4xl mb-4 shadow-inner">
+                    <i class="fa-solid fa-wave-square"></i>
+                </div>
+                <h1 class="text-2xl font-black text-slate-800 tracking-tight">Control Biológico</h1>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Selecciona una Operación</p>
+            </div>
+
+            <button onclick="abrirOpcionesInstalacion()" class="bg-slate-800 hover:bg-slate-700 text-white rounded-3xl p-6 shadow-md transition-all active:scale-95 text-left relative overflow-hidden group">
+                <i class="fa-solid fa-boxes-packing absolute -right-4 -bottom-4 text-7xl text-slate-600 opacity-30 group-hover:scale-110 transition-transform"></i>
+                <h2 class="text-xl font-black relative z-10"><i class="fa-solid fa-plus-circle text-orange-400 mr-2"></i> INSTALAR EQUIPO</h2>
+                <p class="text-xs text-slate-300 font-medium mt-2 relative z-10 w-4/5">Registra un nuevo equipo, asígnale un servicio y realiza su primera calibración.</p>
             </button>
 
-            <h2 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 border-b border-slate-200 pb-2 ml-2">
-                <i class="fa-solid fa-tower-cell mr-1"></i> Operaciones Activas
-            </h2>
-            
-            <div id="contenedor-servicios" class="space-y-4">
-                <div class="text-center py-10 opacity-70">
-                    <i class="fa-solid fa-spinner fa-spin text-3xl mb-2 text-slate-400"></i>
-                    <p class="text-sm font-bold text-slate-500">Cargando...</p>
-                </div>
-            </div>
+            <button onclick="abrirCalibracionDiaria()" class="bg-white border-2 border-slate-200 hover:border-orange-300 rounded-3xl p-6 shadow-soft transition-all active:scale-95 text-left relative overflow-hidden group">
+                <i class="fa-solid fa-clipboard-check absolute -right-4 -bottom-4 text-7xl text-slate-100 group-hover:scale-110 transition-transform"></i>
+                <h2 class="text-xl font-black text-slate-800 relative z-10"><i class="fa-solid fa-clock-rotate-left text-orange-500 mr-2"></i> CALIBRACIÓN DIARIA</h2>
+                <p class="text-xs text-slate-500 font-medium mt-2 relative z-10 w-4/5">Captura los valores de control diarios para equipos que ya están operando.</p>
+            </button>
         </div>
 
-        <!-- VISTA NUEVA INSTALACIÓN WIZARD (LOTE) -->
-        <div id="vista-nuevo" class="hidden animate-fade-in bg-white p-6 rounded-3xl shadow-soft border border-slate-200 w-full">
-            <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
-                <h2 class="font-black text-xl text-slate-800"><i class="fa-solid fa-boxes-packing text-orange-500 mr-2"></i> Alta de Equipos</h2>
-                <button onclick="volverLista()" class="bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 px-3 py-1.5 rounded-xl font-bold transition-colors active:scale-95 shadow-sm"><i class="fa-solid fa-xmark"></i></button>
+        <!-- 2. VISTA SELECCIÓN DE EQUIPO PARA INSTALAR -->
+        <div id="vista-tipo-equipo" class="hidden animate-fade-in flex flex-col gap-6 pt-10">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-4">
+                <h2 class="text-lg font-black text-slate-800"><i class="fa-solid fa-microchip text-orange-500 mr-2"></i> Tipo de Equipo</h2>
+                <button onclick="volverMenu()" class="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-xl font-bold hover:bg-slate-200 transition-colors"><i class="fa-solid fa-arrow-left"></i> Volver</button>
             </div>
             
-            <!-- PASO 1: CANTIDADES -->
-            <div id="alta-paso-1" class="space-y-5 text-left transition-all">
+            <button onclick="iniciarFormularioInstalacion('audiometria')" class="bg-white border-2 border-orange-200 hover:border-orange-400 rounded-3xl p-6 shadow-soft transition-all active:scale-95 text-center group">
+                <i class="fa-solid fa-headphones text-5xl text-orange-500 mb-3 group-hover:scale-110 transition-transform"></i>
+                <h3 class="font-black text-slate-800 text-lg">Audiometría</h3>
+            </button>
+
+            <button onclick="iniciarFormularioInstalacion('espirometria')" class="bg-white border-2 border-sky-200 hover:border-sky-400 rounded-3xl p-6 shadow-soft transition-all active:scale-95 text-center group">
+                <i class="fa-solid fa-lungs text-5xl text-sky-500 mb-3 group-hover:scale-110 transition-transform"></i>
+                <h3 class="font-black text-slate-800 text-lg">Espirometría</h3>
+            </button>
+        </div>
+
+        <!-- 3. VISTA CALIBRACIÓN DIARIA (LISTADO DE EMPRESAS) -->
+        <div id="vista-lista-diaria" class="hidden animate-fade-in">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4 mt-2">
                 <div>
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Campaña / Empresa Asignada</label>
-                    <div class="relative">
-                        <select id="ns-servicio" class="w-full p-3.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl outline-none focus:border-orange-400 transition-colors font-bold text-xs appearance-none cursor-pointer shadow-sm">
-                            <option value="" disabled selected class="text-slate-400">Cargando servicios...</option>
-                        </select>
-                        <i class="fa-solid fa-chevron-down absolute right-4 top-4 pointer-events-none text-slate-400"></i>
-                    </div>
+                    <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-clipboard-list text-orange-500 mr-2"></i> Control Diario</h2>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Servicios Activos</p>
                 </div>
-
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 text-center">¿Cuántos equipos se instalarán?</label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="text-center bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <p class="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2"><i class="fa-solid fa-headphones text-orange-500"></i> Audios</p>
-                            <input type="number" id="ns-cant-audio" min="0" value="0" class="w-full text-center py-2 bg-white rounded-lg border border-slate-200 font-black text-xl text-slate-800 shadow-inner focus:border-orange-400 outline-none">
-                        </div>
-                        <div class="text-center bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <p class="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2"><i class="fa-solid fa-lungs text-blue-500"></i> Espiros</p>
-                            <input type="number" id="ns-cant-espiro" min="0" value="0" class="w-full text-center py-2 bg-white rounded-lg border border-slate-200 font-black text-xl text-slate-800 shadow-inner focus:border-orange-400 outline-none">
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="prepararFormulariosEquipos()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-xl shadow-md transition-all active:scale-95 mt-2 text-sm flex justify-center items-center gap-2">
-                    Continuar a Registro de N/S <i class="fa-solid fa-arrow-right text-orange-400"></i>
-                </button>
+                <button onclick="volverMenu()" class="text-xs bg-slate-100 text-slate-600 px-3 py-2 rounded-xl font-bold hover:bg-slate-200 transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
             </div>
-
-            <!-- PASO 2: N/S INDIVIDUALES -->
-            <div id="alta-paso-2" class="hidden space-y-4 text-left transition-all">
-                <div id="contenedor-formularios-equipos" class="space-y-4 max-h-[50vh] overflow-y-auto pr-2 scroll-custom"></div>
-                
-                <div class="flex gap-3 pt-4 border-t border-slate-100">
-                    <button onclick="document.getElementById('alta-paso-2').classList.add('hidden'); document.getElementById('alta-paso-1').classList.remove('hidden');" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black py-3 rounded-xl border border-slate-200 transition-all active:scale-95 text-xs">Atrás</button>
-                    <button id="btn-guardar-instalacion" onclick="guardarMultiplesEquipos()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 text-sm flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Finalizar Instalación
-                    </button>
-                </div>
+            
+            <div id="contenedor-servicios" class="space-y-5 pb-6">
+                <!-- Se llena mediante JS -->
             </div>
         </div>
 
-        <!-- VISTA CAPTURA DIARIA INDIVIDUAL -->
-        <div id="vista-captura" class="hidden animate-fade-in">
-            
-            <div class="bg-white p-5 rounded-3xl shadow-sm mb-6 border border-slate-200 border-l-4 border-l-orange-500">
-                <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
-                    <div>
-                        <p id="cap-empresa" class="font-black text-lg leading-tight text-slate-800 uppercase pr-2">EMPRESA</p>
-                        <p id="cap-estado-lbl" class="text-[9px] font-black uppercase tracking-widest text-orange-500 mt-1">ESTADO</p>
-                    </div>
-                    <button onclick="volverLista()" class="text-xs bg-slate-50 border border-slate-200 text-slate-600 px-3 py-1.5 rounded-xl font-bold hover:bg-slate-100 shrink-0 transition-colors active:scale-95 shadow-sm"><i class="fa-solid fa-arrow-left mr-1"></i> Cancelar</button>
+        <!-- 4. VISTA FORMULARIO ÚNICO (INSTALACIÓN Y DIARIA) -->
+        <div id="vista-formulario" class="hidden animate-fade-in">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-4 mt-2">
+                <div>
+                    <h2 id="form-titulo" class="text-xl font-black text-slate-800"><i class="fa-solid fa-pen-to-square text-orange-500 mr-2"></i> Captura</h2>
+                    <p id="form-subtitulo" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Instalación / Diaria</p>
                 </div>
-                <div class="grid grid-cols-2 gap-3 text-xs font-medium text-slate-600">
-                    <p id="p-tipo-icon" class="col-span-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center shadow-inner"><i id="icon-equipo" class="fa-solid fa-headphones text-orange-500 mr-1"></i> <span id="cap-equipo" class="font-black text-slate-700"></span></p>
-                    <p class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center shadow-inner"><i class="fa-solid fa-barcode mr-1 text-slate-400"></i> N/S: <br><span id="cap-ns" class="font-black text-orange-600 text-sm"></span></p>
-                    <p id="p-cabina" class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center shadow-inner"><i class="fa-solid fa-box mr-1 text-slate-400"></i> Cabina: <br><span id="cap-cab" class="font-black text-orange-600 text-sm"></span></p>
+                <button id="btn-volver-form" onclick="volverMenu()" class="text-xs bg-slate-100 text-slate-600 px-3 py-2 rounded-xl font-bold hover:bg-slate-200 transition-colors"><i class="fa-solid fa-arrow-left"></i> Cancelar</button>
+            </div>
+
+            <!-- SECCIÓN: DATOS DE INSTALACIÓN (Solo visible al instalar) -->
+            <div id="sec-instalacion" class="bg-white p-5 rounded-3xl shadow-sm mb-6 border border-slate-200 space-y-4 hidden">
+                <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest border-b border-slate-100 pb-2"><i class="fa-solid fa-link text-orange-400 mr-1"></i> Vinculación del Equipo</h3>
+                
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Campaña / Servicio Asignado</label>
+                    <select id="ins-servicio" class="w-full p-3 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl outline-none font-bold text-xs shadow-inner cursor-pointer"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Marca / Modelo</label>
+                        <select id="ins-marca" class="w-full p-3 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl outline-none font-bold text-xs shadow-inner"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Número de Serie</label>
+                        <input type="text" id="ins-ns" placeholder="Ej. SN-123" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-xs uppercase shadow-inner text-orange-600 placeholder-slate-400">
+                    </div>
+                </div>
+                <div id="ins-cabina-box" class="hidden">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">N/S Cabina Sonora</label>
+                    <input type="text" id="ins-cab" placeholder="Ej. CAB-456" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-xs uppercase shadow-inner text-slate-700 placeholder-slate-400">
                 </div>
             </div>
 
+            <!-- SECCIÓN: DATOS DE LECTURA (Solo visible en Diaria) -->
+            <div id="sec-lectura" class="bg-slate-800 p-5 rounded-3xl shadow-sm mb-6 border border-slate-700 hidden text-white">
+                <p id="lec-empresa" class="font-black text-lg leading-tight uppercase mb-2 text-orange-400">EMPRESA</p>
+                <div class="grid grid-cols-2 gap-3 text-xs font-medium">
+                    <p class="col-span-2 bg-slate-700/50 p-2.5 rounded-xl border border-slate-600"><i id="lec-icon" class="fa-solid fa-headphones text-slate-300 mr-2"></i> <span id="lec-equipo" class="font-bold"></span></p>
+                    <p class="bg-slate-700/50 p-2.5 rounded-xl border border-slate-600"><span class="text-[9px] text-slate-400 uppercase tracking-widest block mb-0.5">N/S Equipo</span><span id="lec-ns" class="font-black"></span></p>
+                    <p id="lec-cab-box" class="bg-slate-700/50 p-2.5 rounded-xl border border-slate-600"><span class="text-[9px] text-slate-400 uppercase tracking-widest block mb-0.5">N/S Cabina</span><span id="lec-cab" class="font-black"></span></p>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: VALORES DE CALIBRACIÓN -->
             <div class="bg-white p-6 rounded-3xl shadow-soft border border-slate-200 space-y-6">
-                <h3 class="font-black text-lg text-center border-b border-slate-100 pb-3 mb-4 text-slate-800"><i class="fa-solid fa-pen-to-square text-orange-500 mr-2"></i> Captura de Calibración</h3>
                 
                 <!-- MÓDULO AUDIOMETRÍA -->
-                <div id="modulo-audiometria" class="space-y-4">
+                <div id="modulo-audiometria" class="space-y-4 hidden">
                     <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
                         <h4 class="font-black text-red-500 text-xs text-center mb-4 uppercase tracking-widest"><i class="fa-solid fa-ear-listen mr-1"></i> Oído Derecho (dB)</h4>
                         <div class="grid grid-cols-4 gap-3">
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">250</label><input type="number" id="od-250" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">500</label><input type="number" id="od-500" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">1000</label><input type="number" id="od-1000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">2000</label><input type="number" id="od-2000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">3000</label><input type="number" id="od-3000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">4000</label><input type="number" id="od-4000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">6000</label><input type="number" id="od-6000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">8000</label><input type="number" id="od-8000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">250</label><input type="number" id="od-250" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">500</label><input type="number" id="od-500" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">1000</label><input type="number" id="od-1000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">2000</label><input type="number" id="od-2000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">3000</label><input type="number" id="od-3000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">4000</label><input type="number" id="od-4000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">6000</label><input type="number" id="od-6000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">8000</label><input type="number" id="od-8000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-red-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
                         </div>
                     </div>
 
                     <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
                         <h4 class="font-black text-blue-500 text-xs text-center mb-4 uppercase tracking-widest"><i class="fa-solid fa-ear-listen mr-1"></i> Oído Izquierdo (dB)</h4>
                         <div class="grid grid-cols-4 gap-3">
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">250</label><input type="number" id="oi-250" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">500</label><input type="number" id="oi-500" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">1000</label><input type="number" id="oi-1000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">2000</label><input type="number" id="oi-2000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">3000</label><input type="number" id="oi-3000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">4000</label><input type="number" id="oi-4000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">6000</label><input type="number" id="oi-6000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
-                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">8000</label><input type="number" id="oi-8000" class="w-full text-center p-2.5 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">250</label><input type="number" id="oi-250" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">500</label><input type="number" id="oi-500" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">1000</label><input type="number" id="oi-1000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">2000</label><input type="number" id="oi-2000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">3000</label><input type="number" id="oi-3000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">4000</label><input type="number" id="oi-4000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">6000</label><input type="number" id="oi-6000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
+                            <div><label class="text-[9px] text-center block text-slate-500 font-bold mb-1">8000</label><input type="number" id="oi-8000" class="w-full text-center p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-400 outline-none text-sm font-black text-slate-700 shadow-sm transition-colors"></div>
                         </div>
                     </div>
                 </div>
@@ -199,7 +233,7 @@
                     </div>
                 </div>
 
-                <!-- FIRMA -->
+                <!-- FIRMA Y GUARDADO -->
                 <div class="border-t border-slate-100 pt-5 mt-2">
                     <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Realizó (Técnico / Médico)</label>
                     <input type="text" id="cap-medico" list="lista-medicos" placeholder="Seleccione su nombre..." class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-orange-400 transition-colors font-bold uppercase text-xs mb-5 shadow-sm text-slate-700">
@@ -213,13 +247,13 @@
                     </div>
                 </div>
 
-                <button id="btn-enviar-bitacora" onclick="guardarBitacoraDiaria()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl shadow-md transition-all active:scale-95 text-sm flex justify-center items-center gap-2 mt-6">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Guardar Control Biológico
+                <button id="btn-guardar-form" onclick="procesarGuardado()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl shadow-md transition-all active:scale-95 text-sm flex justify-center items-center gap-2 mt-6">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Finalizar y Guardar
                 </button>
             </div>
         </div>
 
-        <!-- PANTALLA DE ÉXITO Y COMPARTIR -->
+        <!-- 5. PANTALLA DE ÉXITO Y COMPARTIR -->
         <div id="vista-exito" class="hidden animate-fade-in text-center max-w-md mx-auto mt-4 w-full flex-1">
             <div class="bg-white p-8 rounded-3xl mb-6 border border-slate-200 shadow-soft border-t-4 border-t-emerald-500">
                 <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-4 block"></i>
@@ -230,15 +264,19 @@
                 <button onclick="generarImagenControl()" id="btn-compartir-bio" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl shadow-md flex justify-center items-center gap-2 active:scale-95 transition-all">
                     <i class="fa-solid fa-arrow-up-from-bracket"></i> Generar Comprobante (Imagen)
                 </button>
-                <button id="btn-exito-accion" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-xl active:scale-95 transition-all shadow-sm">
-                    Continuar
+                <button onclick="volverMenu()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-xl active:scale-95 transition-all shadow-sm">
+                    Ir al Menú Principal
                 </button>
             </div>
         </div>
 
     </div>
 
+    <!-- DATALIST MÉDICOS -->
     <datalist id="lista-medicos"></datalist>
+
+    <!-- ZONA OCULTA PARA HTML DE IMPRESIÓN (PDF) -->
+    <div id="zona-impresion" class="hidden"></div>
 
     <!-- TPL CAPTURA IMAGEN COMPROBANTE -->
     <div id="captura-temp-biologico" class="fixed -top-[3000px] -left-[3000px] w-[500px] max-w-none p-4" style="font-family: 'Inter', sans-serif; pointer-events: none;">
@@ -265,11 +303,15 @@
     </div> 
 
     <script>
-        let docIdActivo = null;
-        let tipoControlActivo = null; 
-        let idServicioActivo = null;
-        let estadoEquipoActivo = null;
-        
+        // VARIABLES GLOBALES
+        let directorioActivo = []; 
+        let mapaServiciosActivos = {}; // Para cruces rápidos
+        let equiposGlobales = []; // Todos los equipos activos
+
+        let modoFormulario = null; // "INSTALACION" o "DIARIA"
+        let tipoEquipoForm = null; // "audiometria" o "espirometria"
+        let idFirebaseUpdate = null; // Si es DIARIA, el ID del documento a actualizar
+
         // FIRMA DIGITAL VARIABLES
         const canvas = document.getElementById('canvas-firma');
         const ctx = canvas.getContext('2d');
@@ -280,11 +322,13 @@
             if(window.LAPI_CONFIG && window.LAPI_CONFIG.medicos) {
                 datalistMedicos.innerHTML = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">`).join('');
             }
-            cargarDirectorioServicios();
-            cargarEquiposActivos();
             configurarCanvas();
+            cargarDirectorioActivo();
         });
 
+        // ----------------------------------------------------
+        // UTILIDADES Y FLUJO DE VISTAS
+        // ----------------------------------------------------
         function mostrarToast(mensaje, tipo = 'error') {
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'info' ? 'bg-sky-500' : 'bg-red-500');
@@ -296,50 +340,133 @@
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
         }
 
-        // CARGAR DIRECTORIO PARA EL SELECTOR AL GENERAR NUEVA INSTALACIÓN
-        async function cargarDirectorioServicios() {
-            const select = document.getElementById('ns-servicio');
+        function ocultarTodasLasVistas() {
+            document.getElementById('vista-menu').classList.add('hidden');
+            document.getElementById('vista-tipo-equipo').classList.add('hidden');
+            document.getElementById('vista-lista-diaria').classList.add('hidden');
+            document.getElementById('vista-formulario').classList.add('hidden');
+            document.getElementById('vista-exito').classList.add('hidden');
+        }
+
+        window.volverMenu = () => {
+            ocultarTodasLasVistas();
+            document.getElementById('vista-menu').classList.remove('hidden');
+            modoFormulario = null; tipoEquipoForm = null; idFirebaseUpdate = null;
+        }
+
+        // ----------------------------------------------------
+        // CARGA DE BASE DE DATOS (SERVICIOS ACTIVOS)
+        // ----------------------------------------------------
+        async function cargarDirectorioActivo() {
             try {
                 const q = window.query(window.collection(window.db, "directorio_servicios"), window.where("estado", "==", "activo"));
                 const qs = await window.getDocs(q);
-                if (qs.empty) {
-                    select.innerHTML = '<option value="" disabled selected class="text-slate-400">No hay campañas activas.</option>';
-                    return;
-                }
-                let html = '<option value="" disabled selected class="text-slate-400">Selecciona la campaña para instalar...</option>';
+                directorioActivo = []; mapaServiciosActivos = {};
                 
-                let listaTemporal = [];
                 qs.forEach(doc => {
-                    let d = doc.data(); d.id = doc.id; listaTemporal.push(d);
+                    let d = doc.data(); d.id = doc.id;
+                    directorioActivo.push(d);
+                    mapaServiciosActivos[d.id] = d.nombreComercial;
                 });
-                listaTemporal.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
-                
-                listaTemporal.forEach(d => { html += `<option value="${d.id}" class="text-slate-800">${d.nombreComercial}</option>`; });
-                select.innerHTML = html;
-            } catch (e) {
-                select.innerHTML = '<option value="" disabled selected class="text-red-500">Error cargando servicios.</option>';
-            }
+                directorioActivo.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
+            } catch (e) { console.error("Error cargando directorio:", e); }
         }
 
-        async function cargarEquiposActivos() {
-            const cont = document.getElementById('contenedor-servicios');
-            cont.innerHTML = '<div class="text-center py-10 opacity-70"><i class="fa-solid fa-spinner fa-spin text-3xl mb-2 text-slate-400"></i><p class="text-sm font-bold text-slate-500">Cargando Operaciones...</p></div>';
-            
-            try {
-                const q = window.query(window.collection(window.db, "control_biologico"), window.where("estado", "in", ["activo", "instalacion_pendiente"]));
-                const qs = await window.getDocs(q);
-                
-                if(qs.empty) {
-                    cont.innerHTML = `<div class="text-center py-8 bg-white border border-slate-200 rounded-2xl shadow-sm"><p class="text-sm font-bold text-slate-400">No hay equipos activos ni pendientes en ruta.</p></div>`;
-                    return;
-                }
+        // ----------------------------------------------------
+        // FLUJO: INSTALAR EQUIPO
+        // ----------------------------------------------------
+        window.abrirOpcionesInstalacion = () => {
+            ocultarTodasLasVistas();
+            document.getElementById('vista-tipo-equipo').classList.remove('hidden');
+        }
 
+        window.iniciarFormularioInstalacion = (tipo) => {
+            modoFormulario = "INSTALACION";
+            tipoEquipoForm = tipo;
+
+            // Llenar Selector de Empresas
+            const selServicio = document.getElementById('ins-servicio');
+            if (directorioActivo.length === 0) {
+                selServicio.innerHTML = '<option value="" disabled selected>No hay campañas activas.</option>';
+            } else {
+                let html = '<option value="" disabled selected>Selecciona la empresa...</option>';
+                directorioActivo.forEach(d => { html += `<option value="${d.id}">${d.nombreComercial}</option>`; });
+                selServicio.innerHTML = html;
+            }
+
+            // Llenar Marcas según tipo
+            const selMarca = document.getElementById('ins-marca');
+            if(tipo === 'audiometria') {
+                selMarca.innerHTML = `<option value="INTERACOUSTICS">INTERACOUSTICS</option><option value="MADSEN ITERA II">MADSEN ITERA II</option>`;
+                document.getElementById('ins-cabina-box').classList.remove('hidden');
+            } else {
+                selMarca.innerHTML = `<option value="MEDKRO- PRO">MEDKRO- PRO</option>`;
+                document.getElementById('ins-cabina-box').classList.add('hidden');
+            }
+
+            // Limpiar campos
+            document.getElementById('ins-ns').value = '';
+            document.getElementById('ins-cab').value = '';
+            document.querySelectorAll('#vista-formulario input[type="number"]').forEach(inp => inp.value = '');
+            document.getElementById('cap-medico').value = '';
+            limpiarFirma();
+
+            // Configurar Vistas del Formulario
+            document.getElementById('form-titulo').innerHTML = `<i class="fa-solid fa-boxes-packing text-orange-500 mr-2"></i> Instalación`;
+            document.getElementById('form-subtitulo').innerText = "VINCULACIÓN Y PRIMER CALIBRACIÓN";
+            
+            document.getElementById('sec-instalacion').classList.remove('hidden');
+            document.getElementById('sec-lectura').classList.add('hidden');
+
+            if(tipo === 'audiometria') {
+                document.getElementById('modulo-audiometria').classList.remove('hidden');
+                document.getElementById('modulo-espirometria').classList.add('hidden');
+            } else {
+                document.getElementById('modulo-audiometria').classList.add('hidden');
+                document.getElementById('modulo-espirometria').classList.remove('hidden');
+            }
+
+            document.getElementById('btn-volver-form').onclick = window.abrirOpcionesInstalacion;
+            document.getElementById('btn-guardar-form').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Finalizar Instalación';
+
+            ocultarTodasLasVistas();
+            document.getElementById('vista-formulario').classList.remove('hidden');
+            ajustarCanvas();
+        }
+
+        // ----------------------------------------------------
+        // FLUJO: CALIBRACIÓN DIARIA
+        // ----------------------------------------------------
+        window.abrirCalibracionDiaria = async () => {
+            ocultarTodasLasVistas();
+            document.getElementById('vista-lista-diaria').classList.remove('hidden');
+            
+            const cont = document.getElementById('contenedor-servicios');
+            cont.innerHTML = '<div class="text-center py-10 opacity-70"><i class="fa-solid fa-spinner fa-spin text-3xl mb-2 text-slate-400"></i><p class="text-sm font-bold text-slate-500">Sincronizando Operaciones...</p></div>';
+            
+            if (Object.keys(mapaServiciosActivos).length === 0) await cargarDirectorioActivo();
+
+            try {
+                const q = window.query(window.collection(window.db, "control_biologico"), window.where("estado", "==", "activo"));
+                const qs = await window.getDocs(q);
+                equiposGlobales = [];
+                
                 let agrupados = {};
                 qs.forEach(doc => {
                     let d = doc.data(); d.id = doc.id;
-                    if(!agrupados[d.idServicio]) agrupados[d.idServicio] = { empresa: d.empresa, equipos: [] };
-                    agrupados[d.idServicio].equipos.push(d);
+                    // CRUZAMOS CON SERVICIOS ACTIVOS. Si el servicio ya se finalizó, no lo mostramos.
+                    if(mapaServiciosActivos[d.idServicio]) {
+                        d.empresa_actualizada = mapaServiciosActivos[d.idServicio];
+                        equiposGlobales.push(d);
+                        if(!agrupados[d.idServicio]) agrupados[d.idServicio] = { empresa: d.empresa_actualizada, equipos: [] };
+                        agrupados[d.idServicio].equipos.push(d);
+                    }
                 });
+
+                if(Object.keys(agrupados).length === 0) {
+                    cont.innerHTML = `<div class="text-center py-8 bg-white border border-slate-200 rounded-2xl shadow-sm"><p class="text-sm font-bold text-slate-400">No hay equipos instalados en servicios activos.</p></div>`;
+                    return;
+                }
 
                 cont.innerHTML = "";
                 const hoy = new Date().toISOString().split('T')[0];
@@ -354,36 +481,22 @@
 
                     grupo.equipos.forEach(eq => {
                         let reportoHoy = eq.bitacora && eq.bitacora.some(b => b.fecha === hoy);
-                        let cantidadHoy = reportoHoy ? eq.bitacora.filter(b => b.fecha === hoy).length : 0;
                         if(reportoHoy) calibradosHoy++;
 
-                        let estadoTxt = ""; let estadoColor = "";
-                        
-                        if(eq.estado === 'instalacion_pendiente') {
-                            estadoTxt = "PENDIENTE INSTALACIÓN"; estadoColor = "text-amber-600 bg-amber-50 border-amber-200";
-                        } else if(reportoHoy) {
-                            estadoTxt = `CALIBRADO HOY (${cantidadHoy})`; estadoColor = "text-emerald-600 bg-emerald-50 border-emerald-200";
-                        } else {
-                            estadoTxt = "PENDIENTE CALIBRACIÓN"; estadoColor = "text-red-500 bg-red-50 border-red-200"; 
-                        }
-
+                        let estadoTxt = reportoHoy ? `CALIBRADO` : "PENDIENTE"; 
+                        let estadoColor = reportoHoy ? "text-emerald-600 bg-emerald-50 border-emerald-200" : "text-red-500 bg-red-50 border-red-200"; 
                         const iconoEq = eq.tipo === 'audiometria' ? 'fa-headphones text-orange-500' : 'fa-lungs text-blue-500';
                         
-                        // Si ya calibró, mostramos un botón discreto de "+ Turno" en lugar de bloquear el renglón
-                        const hoverText = reportoHoy 
-                            ? `<span class="text-[10px] text-sky-500 mt-1.5 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-rotate-right"></i> + Turno</span>` 
-                            : `<span class="text-[10px] text-orange-500 mt-1.5 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Capturar <i class="fa-solid fa-arrow-right"></i></span>`;
-
                         htmlEquipos += `
-                            <div onclick="abrirCaptura('${eq.id}', '${eq.tipo}', '${grupo.empresa}', '${eq.equipo}', '${eq.ns_equipo}', '${eq.ns_cabina || ''}', '${eq.fecha_inicio}', '${eq.estado}', '${idServ}')" 
-                                 class="flex items-center justify-between p-4 border-t border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors active:scale-95 group ${reportoHoy ? 'bg-slate-50/50' : ''}">
+                            <div onclick="iniciarFormularioDiario('${eq.id}', '${eq.tipo}', '${grupo.empresa}', '${eq.equipo}', '${eq.ns_equipo}', '${eq.ns_cabina || ''}')" 
+                                 class="flex items-center justify-between p-4 border-t border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors active:scale-95 group ${reportoHoy ? 'bg-slate-50/50 opacity-80' : ''}">
                                 <div>
                                     <p class="text-xs font-black text-slate-700 uppercase tracking-wide"><i class="fa-solid ${iconoEq} mr-1.5"></i> ${eq.equipo}</p>
-                                    <p class="text-[9px] font-bold text-slate-500 tracking-wider mt-1"><i class="fa-solid fa-barcode mr-1 opacity-70"></i> N/S: <span class="text-orange-600">${eq.ns_equipo}</span> ${eq.ns_cabina ? `| Cab: ${eq.ns_cabina}` : ''}</p>
+                                    <p class="text-[9px] font-bold text-slate-500 tracking-wider mt-1"><i class="fa-solid fa-barcode mr-1 opacity-70"></i> N/S: <span class="text-orange-600">${eq.ns_equipo}</span></p>
                                 </div>
                                 <div class="text-right flex flex-col items-end">
                                     <span class="px-2 py-0.5 rounded-lg border text-[9px] font-black tracking-widest ${estadoColor} shadow-sm">${estadoTxt}</span>
-                                    ${hoverText}
+                                    <span class="text-[10px] text-sky-500 mt-1.5 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Capturar <i class="fa-solid fa-arrow-right"></i></span>
                                 </div>
                             </div>
                         `;
@@ -391,17 +504,18 @@
 
                     let semaforoGlobal = "";
                     if(calibradosHoy === totalEquipos) {
-                        semaforoGlobal = `<div class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 shadow-sm"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-inner"></span> Completo</div>`;
-                    } else if(calibradosHoy > 0) {
-                        semaforoGlobal = `<div class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200 shadow-sm"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-inner animate-pulse"></span> Parcial (${calibradosHoy}/${totalEquipos})</div>`;
+                        semaforoGlobal = `<div class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 shadow-sm"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Listo</div>`;
                     } else {
-                        semaforoGlobal = `<div class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-50 px-3 py-1.5 rounded-xl border border-red-200 shadow-sm"><span class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-inner"></span> Pendiente (${totalEquipos} eq.)</div>`;
+                        semaforoGlobal = `<div class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-50 px-3 py-1.5 rounded-xl border border-red-200 shadow-sm"><span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Faltan ${totalEquipos - calibradosHoy}</div>`;
                     }
 
                     cont.innerHTML += `
                         <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-5">
-                            <div class="p-5 bg-slate-50 flex justify-between items-center border-b border-slate-200 shadow-inner">
-                                <h3 class="font-black text-sm uppercase text-slate-800 tracking-tight"><i class="fa-solid fa-building mr-1.5 text-slate-400"></i> ${grupo.empresa}</h3>
+                            <div class="p-4 bg-slate-50 flex justify-between items-center border-b border-slate-200 shadow-inner">
+                                <h3 class="font-black text-sm uppercase text-slate-800 tracking-tight flex items-center gap-2">
+                                    <button onclick="generarPDFEmpresa('${idServ}')" class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors shadow-sm flex items-center justify-center" title="Generar PDF de Bitácoras"><i class="fa-solid fa-file-pdf"></i></button>
+                                    ${grupo.empresa}
+                                </h3>
                                 ${semaforoGlobal}
                             </div>
                             <div class="flex flex-col">
@@ -410,151 +524,58 @@
                         </div>
                     `;
                 }
-            } catch(e) { cont.innerHTML = `<div class="text-center text-red-400 text-xs font-bold">Error cargando nube.</div>`; }
-        }
-
-        window.abrirNuevoServicio = () => { 
-            document.getElementById('vista-lista').classList.add('hidden'); 
-            document.getElementById('vista-nuevo').classList.remove('hidden'); 
-        }
-
-        window.volverLista = () => { 
-            document.getElementById('vista-nuevo').classList.add('hidden'); 
-            document.getElementById('vista-captura').classList.add('hidden'); 
-            document.getElementById('vista-lista').classList.remove('hidden'); 
-            docIdActivo = null; tipoControlActivo = null; idServicioActivo = null; estadoEquipoActivo = null;
-            cargarEquiposActivos(); 
-        }
-
-        window.prepararFormulariosEquipos = function() {
-            const selServicio = document.getElementById('ns-servicio');
-            if(!selServicio.value) return mostrarToast("Seleccione una Campaña.");
-            
-            const cantAudio = parseInt(document.getElementById('ns-cant-audio').value) || 0;
-            const cantEspiro = parseInt(document.getElementById('ns-cant-espiro').value) || 0;
-
-            if(cantAudio === 0 && cantEspiro === 0) return mostrarToast("Debe indicar al menos 1 equipo a instalar.", "error");
-
-            const cont = document.getElementById('contenedor-formularios-equipos');
-            cont.innerHTML = '';
-
-            for(let i=0; i<cantAudio; i++) {
-                cont.innerHTML += `
-                    <div class="bg-orange-50 p-5 rounded-2xl border border-orange-100 shadow-sm eq-form" data-tipo="audiometria">
-                        <h4 class="font-black text-xs text-orange-600 uppercase tracking-widest mb-3 border-b border-orange-200 pb-2"><i class="fa-solid fa-headphones"></i> Audiómetro ${i+1}</h4>
-                        <div class="grid grid-cols-2 gap-3 mb-3">
-                            <select class="eq-marca w-full p-3 bg-white border border-slate-200 rounded-xl outline-none font-bold text-xs text-slate-700 shadow-inner">
-                                <option value="INTERACOUSTICS">INTERACOUSTICS</option>
-                                <option value="MADSEN ITERA II">MADSEN ITERA II</option>
-                            </select>
-                            <input type="text" placeholder="N/S Equipo" class="eq-ns w-full p-3 bg-white border border-slate-200 rounded-xl outline-none font-bold text-xs text-slate-700 uppercase shadow-inner placeholder-slate-400">
-                        </div>
-                        <input type="text" placeholder="N/S Cabina" class="eq-cab w-full p-3 bg-white border border-slate-200 rounded-xl outline-none font-bold text-xs text-slate-700 uppercase shadow-inner placeholder-slate-400">
-                    </div>
-                `;
-            }
-
-            for(let i=0; i<cantEspiro; i++) {
-                cont.innerHTML += `
-                    <div class="bg-sky-50 p-5 rounded-2xl border border-sky-100 shadow-sm eq-form" data-tipo="espirometria">
-                        <h4 class="font-black text-xs text-sky-600 uppercase tracking-widest mb-3 border-b border-sky-200 pb-2"><i class="fa-solid fa-lungs"></i> Espirómetro ${i+1}</h4>
-                        <div class="grid grid-cols-2 gap-3">
-                            <select class="eq-marca w-full p-3 bg-white border border-slate-200 rounded-xl outline-none font-bold text-xs text-slate-700 shadow-inner">
-                                <option value="MEDKRO- PRO">MEDKRO- PRO</option>
-                            </select>
-                            <input type="text" placeholder="N/S Equipo" class="eq-ns w-full p-3 bg-white border border-slate-200 rounded-xl outline-none font-bold text-xs text-slate-700 uppercase shadow-inner placeholder-slate-400">
-                        </div>
-                    </div>
-                `;
-            }
-
-            document.getElementById('alta-paso-1').classList.add('hidden');
-            document.getElementById('alta-paso-2').classList.remove('hidden');
+            } catch(e) { cont.innerHTML = `<div class="text-center text-red-400 text-xs font-bold">Error sincronizando datos.</div>`; }
         };
 
-        window.guardarMultiplesEquipos = async function() {
-            const selServicio = document.getElementById('ns-servicio');
-            const idServicio = selServicio.value;
-            const emp = selServicio.options[selServicio.selectedIndex].text;
-            const fec = new Date().toISOString().split('T')[0];
+        window.iniciarFormularioDiario = (idFb, tipo, emp, eq, ns, cab) => {
+            modoFormulario = "DIARIA";
+            tipoEquipoForm = tipo;
+            idFirebaseUpdate = idFb;
 
-            let equipos = [];
-            let forms = document.querySelectorAll('.eq-form');
-            let error = false;
-
-            forms.forEach(f => {
-                let tipo = f.getAttribute('data-tipo');
-                let marca = f.querySelector('.eq-marca').value;
-                let ns = f.querySelector('.eq-ns').value.trim().toUpperCase();
-                let cab = tipo === 'audiometria' ? f.querySelector('.eq-cab').value.trim().toUpperCase() : '';
-
-                if(!ns || (tipo==='audiometria' && !cab)) error = true;
-                
-                equipos.push({
-                    tipo: tipo, estado: "instalacion_pendiente", idServicio: idServicio, empresa: emp, equipo: marca, ns_equipo: ns, ns_cabina: cab, fecha_inicio: fec, bitacora: [], timestamp: new Date()
-                });
-            });
-
-            if(error) return mostrarToast("Llena todos los N/S de equipos y cabinas.", "error");
-
-            const btn = document.getElementById('btn-guardar-instalacion');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Registrando...'; btn.disabled = true;
-
-            try {
-                let promesas = equipos.map(eq => window.addDoc(window.collection(window.db, "control_biologico"), eq));
-                await Promise.all(promesas);
-                
-                mostrarToast("Instalación creada. Calibre los equipos desde la lista principal.", "exito");
-                
-                document.getElementById('alta-paso-2').classList.add('hidden');
-                document.getElementById('alta-paso-1').classList.remove('hidden');
-                document.getElementById('ns-cant-audio').value = 0; document.getElementById('ns-cant-espiro').value = 0;
-                document.getElementById('ns-servicio').value = '';
-                
-                volverLista();
-
-            } catch(e) {
-                mostrarToast("Error de conexión.", "error"); 
-                btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Finalizar Instalación';
-            }
-        };
-        
-        window.abrirCaptura = (id, tipo, emp, eq, ns, cab, fec, estado, idServicio) => {
-            docIdActivo = id;
-            tipoControlActivo = tipo; 
-            idServicioActivo = idServicio;
-            estadoEquipoActivo = estado;
-
-            document.getElementById('cap-empresa').innerText = emp;
-            document.getElementById('cap-estado-lbl').innerText = estado === 'instalacion_pendiente' ? 'PRIMERA CALIBRACIÓN (INSTALACIÓN)' : 'CALIBRACIÓN DIARIA';
-            document.getElementById('cap-equipo').innerText = eq;
-            document.getElementById('cap-ns').innerText = ns;
-            
-            if(tipo === 'audiometria') {
-                document.getElementById('icon-equipo').className = "fa-solid fa-headphones text-orange-500 mr-1";
-                document.getElementById('p-cabina').classList.remove('hidden');
-                document.getElementById('cap-cab').innerText = cab;
-                document.getElementById('modulo-audiometria').classList.remove('hidden');
-                document.getElementById('modulo-espirometria').classList.add('hidden');
-            } else {
-                document.getElementById('icon-equipo').className = "fa-solid fa-lungs text-orange-500 mr-1";
-                document.getElementById('p-cabina').classList.add('hidden'); 
-                document.getElementById('modulo-audiometria').classList.add('hidden');
-                document.getElementById('modulo-espirometria').classList.remove('hidden');
-            }
-            
-            document.querySelectorAll('#vista-captura input[type="number"]').forEach(inp => inp.value = '');
+            // Limpiar campos
+            document.querySelectorAll('#vista-formulario input[type="number"]').forEach(inp => inp.value = '');
             document.getElementById('cap-medico').value = '';
             limpiarFirma();
 
-            document.getElementById('vista-lista').classList.add('hidden');
-            document.getElementById('vista-captura').classList.remove('hidden');
-            ajustarCanvas(); 
-        }
+            // Configurar Vistas del Formulario
+            document.getElementById('form-titulo').innerHTML = `<i class="fa-solid fa-clock-rotate-left text-orange-500 mr-2"></i> Captura`;
+            document.getElementById('form-subtitulo').innerText = "CALIBRACIÓN DIARIA";
 
-        window.guardarBitacoraDiaria = async function() {
+            document.getElementById('sec-instalacion').classList.add('hidden');
+            document.getElementById('sec-lectura').classList.remove('hidden');
+
+            document.getElementById('lec-empresa').innerText = emp;
+            document.getElementById('lec-equipo').innerText = eq;
+            document.getElementById('lec-ns').innerText = ns;
+            
+            if(tipo === 'audiometria') {
+                document.getElementById('lec-icon').className = "fa-solid fa-headphones text-slate-300 mr-2";
+                document.getElementById('lec-cab-box').classList.remove('hidden');
+                document.getElementById('lec-cab').innerText = cab || 'N/A';
+                document.getElementById('modulo-audiometria').classList.remove('hidden');
+                document.getElementById('modulo-espirometria').classList.add('hidden');
+            } else {
+                document.getElementById('lec-icon').className = "fa-solid fa-lungs text-slate-300 mr-2";
+                document.getElementById('lec-cab-box').classList.add('hidden');
+                document.getElementById('modulo-audiometria').classList.add('hidden');
+                document.getElementById('modulo-espirometria').classList.remove('hidden');
+            }
+
+            document.getElementById('btn-volver-form').onclick = window.abrirCalibracionDiaria;
+            document.getElementById('btn-guardar-form').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Guardar Calibración';
+
+            ocultarTodasLasVistas();
+            document.getElementById('vista-formulario').classList.remove('hidden');
+            ajustarCanvas();
+        };
+
+        // ----------------------------------------------------
+        // PROCESAMIENTO CENTRALIZADO (GUARDAR)
+        // ----------------------------------------------------
+        window.procesarGuardado = async function() {
+            // 1. Validaciones Comunes (Firma y Valores)
             const med = document.getElementById('cap-medico').value.trim().toUpperCase();
-            if(!med) return mostrarToast("Seleccione o escriba el nombre del Técnico/Médico.");
+            if(!med) return mostrarToast("Indica tu nombre.");
             
             const blank = document.createElement('canvas');
             blank.width = canvas.width; blank.height = canvas.height;
@@ -564,7 +585,7 @@
             let registroHoy = { fecha: fec, timestamp: new Date(), medico: med, firma: canvas.toDataURL('image/png', 0.5) };
             let detallesHtml = "";
 
-            if (tipoControlActivo === 'audiometria') {
+            if (tipoEquipoForm === 'audiometria') {
                 const frecs = [250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
                 let od = {}, oi = {};
                 for(let f of frecs) { od[f] = document.getElementById(`od-${f}`).value; oi[f] = document.getElementById(`oi-${f}`).value; }
@@ -578,81 +599,68 @@
             } else {
                 const insp = document.getElementById('espiro-insp').value;
                 const esp = document.getElementById('espiro-esp').value;
-                if(!insp || !esp) return mostrarToast("Llena los campos Inspirar % y Espirar %.", "error");
+                if(!insp || !esp) return mostrarToast("Llena los campos Inspirar y Espirar.", "error");
                 registroHoy.inspirar_porcentaje = insp; registroHoy.espirar_porcentaje = esp;
                 detallesHtml = `<p class="font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-200 pb-2 text-[10px]">RESULTADOS DE CALIBRACIÓN:</p>
                                 <p class="mb-1 text-slate-600"><b class="text-sky-600 mr-1">Inspirar:</b> ${insp}%</p>
                                 <p class="text-slate-600"><b class="text-sky-600 mr-1">Espirar:</b> ${esp}%</p>`;
             }
 
-            const btn = document.getElementById('btn-enviar-bitacora');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Guardando...'; btn.disabled = true;
+            const btn = document.getElementById('btn-guardar-form');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Procesando...'; btn.disabled = true;
 
             try {
-                const docRef = window.doc(window.db, "control_biologico", docIdActivo);
-                let payloadUpdate = { bitacora: window.arrayUnion(registroHoy) };
-                if(estadoEquipoActivo === 'instalacion_pendiente') payloadUpdate.estado = 'activo';
-                
-                await window.updateDoc(docRef, payloadUpdate);
-
-                const empresa = document.getElementById('cap-empresa').innerText;
-                const equipoTxt = document.getElementById('cap-equipo').innerText;
-                const nsTxt = document.getElementById('cap-ns').innerText;
-
-                if (estadoEquipoActivo === 'instalacion_pendiente') {
-                    // Evaluar si es el último de la INSTALACIÓN
-                    const q = window.query(window.collection(window.db, "control_biologico"), window.where("idServicio", "==", idServicioActivo));
-                    const qs = await window.getDocs(q);
+                if (modoFormulario === "INSTALACION") {
+                    // Validaciones extra Instalacion
+                    const selServicio = document.getElementById('ins-servicio');
+                    if(!selServicio.value) { btn.disabled=false; return mostrarToast("Selecciona el servicio asignado."); }
                     
-                    let equiposInstaladosHoy = [];
-                    let todosTienenBitacoraHoy = true;
+                    const idServicio = selServicio.value;
+                    const empresa = selServicio.options[selServicio.selectedIndex].text;
+                    const marca = document.getElementById('ins-marca').value;
+                    const ns = document.getElementById('ins-ns').value.trim().toUpperCase();
+                    const cab = tipoEquipoForm === 'audiometria' ? document.getElementById('ins-cab').value.trim().toUpperCase() : '';
 
-                    qs.forEach(d => {
-                        let eqData = d.data();
-                        if(eqData.estado === 'activo' || eqData.estado === 'instalacion_pendiente' || d.id === docIdActivo) {
-                            let tieneRegistro = (d.id === docIdActivo) || (eqData.bitacora && eqData.bitacora.some(b => b.fecha === fec));
-                            if(!tieneRegistro) todosTienenBitacoraHoy = false;
-                            if(tieneRegistro) equiposInstaladosHoy.push(eqData);
-                        }
-                    });
+                    if(!ns || (tipoEquipoForm==='audiometria' && !cab)) { btn.disabled=false; return mostrarToast("Falta N/S de equipo o cabina."); }
 
-                    if(todosTienenBitacoraHoy) {
-                        let resumenEquipos = equiposInstaladosHoy.map(e => `<p class="mb-2 text-slate-700 bg-white p-2 rounded-lg border border-slate-100 shadow-sm"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> <b>${e.equipo}</b> <span class="text-[10px] text-slate-400 ml-1">(N/S: ${e.ns_equipo})</span></p>`).join('');
-                        window.datosComprobante = { 
-                            tipoMsg: "INSTALACIÓN COMPLETADA", empresa: empresa, fecha: fec, medico: med, equipo: "TODOS LOS EQUIPOS DE LA RUTA", ns: "MÚLTIPLES", 
-                            detallesHtml: `<p class="font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-200 pb-2 text-[10px] text-center">EQUIPOS HABILITADOS:</p>${resumenEquipos}` 
-                        };
-                        document.getElementById('exito-msg').innerHTML = "¡Excelente! Has completado la primera calibración de <b>todos los equipos</b> para este servicio.";
-                    } else {
-                        window.datosComprobante = { 
-                            tipoMsg: "PRIMERA CALIBRACIÓN (PARCIAL)", empresa: empresa, fecha: fec, medico: med, equipo: equipoTxt, ns: nsTxt, detallesHtml: detallesHtml 
-                        };
-                        document.getElementById('exito-msg').innerHTML = "Calibración inicial guardada. <b>Aún faltan equipos por calibrar en esta instalación.</b>";
-                    }
-                } else {
-                    // CALIBRACIÓN DIARIA ESTÁNDAR (Totalmente independiente)
-                    window.datosComprobante = { 
-                        tipoMsg: "CALIBRACIÓN DIARIA", empresa: empresa, fecha: fec, medico: med, equipo: equipoTxt, ns: nsTxt, detallesHtml: detallesHtml 
+                    let nuevoEquipo = {
+                        tipo: tipoEquipoForm, estado: "activo", idServicio: idServicio, empresa: empresa, equipo: marca, 
+                        ns_equipo: ns, ns_cabina: cab, fecha_inicio: fec, bitacora: [registroHoy], timestamp: new Date()
                     };
-                    document.getElementById('exito-msg').innerHTML = "Calibración operativa guardada correctamente.";
-                }
-                
-                const btnAccion = document.getElementById('btn-exito-accion');
-                btnAccion.innerText = "Finalizar y Volver";
-                btnAccion.onclick = () => { volverLista(); document.getElementById('vista-exito').classList.add('hidden'); };
 
-                document.getElementById('vista-captura').classList.add('hidden');
+                    await window.addDoc(window.collection(window.db, "control_biologico"), nuevoEquipo);
+
+                    window.datosComprobante = { tipoMsg: "INSTALACIÓN DE EQUIPO", empresa: empresa, fecha: fec, medico: med, equipo: marca, ns: ns, detallesHtml: detallesHtml };
+                    document.getElementById('exito-msg').innerHTML = "El equipo fue instalado y calibrado correctamente en la ruta activa.";
+
+                } else {
+                    // DIARIA: Update de Documento Existente
+                    const docRef = window.doc(window.db, "control_biologico", idFirebaseUpdate);
+                    await window.updateDoc(docRef, { bitacora: window.arrayUnion(registroHoy) });
+                    
+                    const empresa = document.getElementById('lec-empresa').innerText;
+                    const eqTxt = document.getElementById('lec-equipo').innerText;
+                    const nsTxt = document.getElementById('lec-ns').innerText;
+
+                    window.datosComprobante = { tipoMsg: "CALIBRACIÓN DIARIA", empresa: empresa, fecha: fec, medico: med, equipo: eqTxt, ns: nsTxt, detallesHtml: detallesHtml };
+                    document.getElementById('exito-msg').innerHTML = "La calibración diaria ha sido registrada con éxito.";
+                }
+
+                ocultarTodasLasVistas();
                 document.getElementById('vista-exito').classList.remove('hidden');
 
-            } catch(e) { console.log(e); mostrarToast("Error guardando Control Biológico."); }
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-1"></i> Guardar Control Biológico'; btn.disabled = false;
-        }
-        
+            } catch(e) { console.log(e); mostrarToast("Error guardando en la nube."); }
+            
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Finalizar y Guardar'; btn.disabled = false;
+        };
 
+        // ----------------------------------------------------
+        // COMPROBANTES (IMÁGEN Y PDF DEL SERVICIO)
+        // ----------------------------------------------------
         window.generarImagenControl = async function() {
             const btn = document.getElementById('btn-compartir-bio');
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generando comprobante...'; btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generando...'; btn.disabled = true;
 
             const d = window.datosComprobante;
             document.getElementById('cap-bio-tipo').innerText = d.tipoMsg;
@@ -663,36 +671,164 @@
             document.getElementById('cap-bio-ns').innerText = d.ns;
 
             const divResultados = document.getElementById('cap-bio-resultados');
-            if(d.detallesHtml) {
-                divResultados.innerHTML = d.detallesHtml;
-                divResultados.classList.remove('hidden');
-            } else { divResultados.classList.add('hidden'); }
+            if(d.detallesHtml) { divResultados.innerHTML = d.detallesHtml; divResultados.classList.remove('hidden'); } 
+            else { divResultados.classList.add('hidden'); }
 
             await new Promise(r => setTimeout(r, 100));
             const target = document.getElementById('captura-temp-biologico');
             
             try {
-                const canvas = await html2canvas(target, { scale: 2, useCORS: true, logging: false, backgroundColor: null, onclone: (clonedDoc) => { clonedDoc.getElementById('captura-temp-biologico').style.position = 'static'; clonedDoc.getElementById('captura-temp-biologico').style.display = 'block'; } });
+                const canvasC = await html2canvas(target, { scale: 2, useCORS: true, logging: false, backgroundColor: null, onclone: (clonedDoc) => { clonedDoc.getElementById('captura-temp-biologico').style.position = 'static'; clonedDoc.getElementById('captura-temp-biologico').style.display = 'block'; } });
                 
                 if (navigator.share && navigator.canShare) {
-                    canvas.toBlob(async (blob) => {
-                        const file = new File([blob], `LAPI_ControlBio_${d.empresa}.png`, { type: 'image/png' });
+                    canvasC.toBlob(async (blob) => {
+                        const file = new File([blob], `LAPI_ControlBio.png`, { type: 'image/png' });
                         if (navigator.canShare({ files: [file] })) {
-                            try {
-                                await navigator.share({ files: [file], title: `Control Biológico LAPI`, text: `Comprobante de ${d.tipoMsg} - ${d.empresa}` });
-                            } catch (err) { if(err.name !== 'AbortError') forzarDescarga(canvas, d.empresa); }
-                        } else { forzarDescarga(canvas, d.empresa); }
+                            try { await navigator.share({ files: [file], title: `Control Biológico`, text: `Comprobante de ${d.tipoMsg}` }); } 
+                            catch (err) { if(err.name !== 'AbortError') forzarDescarga(canvasC); }
+                        } else { forzarDescarga(canvasC); }
                     });
-                } else { forzarDescarga(canvas, d.empresa); }
+                } else { forzarDescarga(canvasC); }
             } catch(e) { mostrarToast("Error generando imagen.", "error"); }
 
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
-        function forzarDescarga(canvas, empresa) {
-            const link = document.createElement('a'); link.download = `LAPI_ControlBio_${empresa}.png`;
-            link.href = canvas.toDataURL("image/png"); link.click();
+        function forzarDescarga(canvasObj) {
+            const link = document.createElement('a'); link.download = `LAPI_ControlBio.png`;
+            link.href = canvasObj.toDataURL("image/png"); link.click();
             mostrarToast("Descarga iniciada. Revisa tu galería.", "info");
+        }
+
+        // --- CREADOR DE PDF PARA EMPRESA COMPLETA ---
+        window.generarPDFEmpresa = function(idServicio) {
+            const zona = document.getElementById('zona-impresion');
+            let htmlPDF = '';
+            
+            let equiposEmpresa = equiposGlobales.filter(e => e.idServicio === idServicio);
+            if(equiposEmpresa.length === 0) return mostrarToast("No hay equipos vinculados a este servicio.", "error");
+
+            equiposEmpresa.forEach(data => {
+                htmlPDF += '<div class="servicio-print-block">';
+                if(data.tipo === 'audiometria') htmlPDF += renderizarPDF_Audiometria(data);
+                else htmlPDF += renderizarPDF_Espirometria(data);
+                htmlPDF += '</div>';
+            });
+            
+            zona.innerHTML = htmlPDF;
+            setTimeout(() => { window.print(); }, 500);
+        };
+
+        function renderizarPDF_Audiometria(data) {
+            let filasBitacora = '';
+            if(data.bitacora) {
+                data.bitacora.forEach(b => {
+                    let oi = b.oi || {}; let od = b.od || {};
+                    filasBitacora += `
+                    <tr>
+                        <td style="font-weight: bold;">${b.fecha}</td>
+                        <td>${od[250]||''}</td><td>${od[500]||''}</td><td>${od[1000]||''}</td><td>${od[2000]||''}</td><td>${od[3000]||''}</td><td>${od[4000]||''}</td><td>${od[6000]||''}</td><td>${od[8000]||''}</td>
+                        <td style="border-top: none; border-bottom: none;"></td> 
+                        <td>${oi[250]||''}</td><td>${oi[500]||''}</td><td>${oi[1000]||''}</td><td>${oi[2000]||''}</td><td>${oi[3000]||''}</td><td>${oi[4000]||''}</td><td>${oi[6000]||''}</td><td>${oi[8000]||''}</td>
+                        <td style="padding: 2px;">
+                            <div style="font-size: 8px; line-height: 1; font-weight: bold;">${b.medico}</div>
+                            ${b.firma ? `<img src="${b.firma}" class="firma-img">` : ''}
+                        </td>
+                    </tr>`;
+                });
+            }
+            return `
+                <table class="header-box">
+                    <tr>
+                        <td style="width: 25%; text-align: center; vertical-align: middle;">
+                            <img src="logoLAPI.png" style="max-width: 150px; max-height: 65px; display: block; margin: 0 auto;">
+                        </td>
+                        <td style="width: 50%;" class="header-title">CONTROL BIOLÓGICO<br>AUDIOMETRÍAS</td>
+                        <td style="width: 25%; padding: 0;">
+                            <table style="width: 100%; height: 100%; border-collapse: collapse; text-align: center; border: none;">
+                                <tr><td style="border-top: none; border-left: none; font-weight: bold; width: 50%;">Código:</td><td style="border-top: none; border-right: none;">F-55-P11</td></tr>
+                                <tr><td style="border-left: none; font-weight: bold;">Versión:</td><td style="border-right: none;">1</td></tr>
+                                <tr><td style="border-left: none; font-weight: bold;">Fecha de<br>act.:</td><td style="border-right: none;">05-Agosto-23</td></tr>
+                                <tr><td style="border-bottom: none; border-left: none; font-weight: bold;">Página:</td><td style="border-bottom: none; border-right: none;">1 de 1</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <table style="width: 100%; font-family: Arial, sans-serif; font-size: 11px; margin-bottom: 15px; border-collapse: collapse;">
+                    <tr>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0;">AUDIÓMETRO:</td><td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.equipo}</td>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S:</td><td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_equipo}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa_actualizada || data.empresa}</td>
+                        <td style="font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S CABINA:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_cabina || ''}</td>
+                    </tr>
+                </table>
+                <div style="display: flex; justify-content: space-around; font-family: Arial; font-weight: bold; margin-bottom: 5px; font-size: 14px;">
+                    <div style="width: 45%; text-align: center;">OÍDO DERECHO</div><div style="width: 45%; text-align: center;">OÍDO IZQUIERDO</div>
+                </div>
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="bg-verde-lapi">FECHA</th><th colspan="8" class="bg-rojo-lapi"></th><th rowspan="2" style="background: white !important; border-top: none; border-bottom: none; width: 2%;"></th><th colspan="8" style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;"></th><th rowspan="2" class="bg-verde-lapi">REALIZÓ<br>NOMBRE Y FIRMA</th>
+                        </tr>
+                        <tr>
+                            <th class="bg-rojo-lapi">250</th><th class="bg-rojo-lapi">500</th><th class="bg-rojo-lapi">1000</th><th class="bg-rojo-lapi">2000</th><th class="bg-rojo-lapi">3000</th><th class="bg-rojo-lapi">4000</th><th class="bg-rojo-lapi">6000</th><th class="bg-rojo-lapi">8000</th>
+                            <th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">250</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">500</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">1000</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">2000</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">3000</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">4000</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">6000</th><th style="background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color-adjust: exact;">8000</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filasBitacora}</tbody>
+                </table>
+            `;
+        }
+
+        function renderizarPDF_Espirometria(data) {
+            let filasBitacora = '';
+            if(data.bitacora) {
+                data.bitacora.forEach(b => {
+                    filasBitacora += `
+                    <tr>
+                        <td style="font-weight: bold; padding: 4px;">${b.fecha}</td>
+                        <td style="padding: 4px;">${b.inspirar_porcentaje || ''} %</td>
+                        <td style="padding: 4px;">${b.espirar_porcentaje || ''} %</td>
+                        <td style="font-size: 10px; font-weight: bold; padding: 4px;">${b.medico}</td>
+                        <td style="padding: 2px;">${b.firma ? `<img src="${b.firma}" class="firma-img">` : ''}</td>
+                    </tr>`;
+                });
+            }
+            return `
+                <table class="header-box">
+                    <tr>
+                        <td style="width: 25%; text-align: center; vertical-align: middle;"><img src="logoLAPI.png" style="max-width: 150px; max-height: 65px; display: block; margin: 0 auto;"></td>
+                        <td style="width: 50%;" class="header-title">CONTROL BIOLÓGICO<br>ESPIROMETRÍA</td>
+                        <td style="width: 25%; padding: 0;">
+                            <table style="width: 100%; height: 100%; border-collapse: collapse; text-align: center; border: none;">
+                                <tr><td style="border-top: none; border-left: none; font-weight: bold; width: 50%;">Código:</td><td style="border-top: none; border-right: none;">F-56-P11</td></tr>
+                                <tr><td style="border-left: none; font-weight: bold;">Versión:</td><td style="border-right: none;">1</td></tr>
+                                <tr><td style="border-left: none; font-weight: bold;">Fecha de<br>act.:</td><td style="border-right: none;">05-Agosto-23</td></tr>
+                                <tr><td style="border-bottom: none; border-left: none; font-weight: bold;">Página:</td><td style="border-bottom: none; border-right: none;">1 de 1</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <table style="width: 100%; font-family: Arial, sans-serif; font-size: 11px; margin-bottom: 15px; border-collapse: collapse;">
+                    <tr>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0;">ESPIRÓMETRO:</td><td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.equipo}</td>
+                        <td style="width: 12%; font-weight: bold; padding: 3px 0; padding-left: 15px;">N/S:</td><td style="width: 38%; border-bottom: 1px solid #000; padding: 3px 5px;">${data.ns_equipo}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; padding: 3px 0;">EMPRESA:</td><td style="border-bottom: 1px solid #000; padding: 3px 5px;">${data.empresa_actualizada || data.empresa}</td>
+                        <td style="font-weight: bold; padding: 3px 0; padding-left: 15px;"></td><td style="border-bottom: 1px solid #000; padding: 3px 5px;"></td>
+                    </tr>
+                </table>
+                <table class="print-table" style="font-size: 12px;">
+                    <thead>
+                        <tr><th rowspan="2" style="width: 15%;">FECHA</th><th colspan="2">DIFERENCIA RELATIVA AL VOLUMEN INDICADO</th><th colspan="2">REALIZÓ</th></tr>
+                        <tr><th style="width: 20%;">INSPIRAR %</th><th style="width: 20%;">ESPIRAR %</th><th style="width: 25%;">NOMBRE</th><th style="width: 20%;">FIRMA</th></tr>
+                    </thead>
+                    <tbody>${filasBitacora}</tbody>
+                </table>
+            `;
         }
 
         // ==========================================
@@ -700,7 +836,6 @@
         // ==========================================
         function configurarCanvas() {
             ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#0f172a';
-
             canvas.addEventListener('mousedown', iniciarDibujo);
             canvas.addEventListener('mousemove', dibujar);
             canvas.addEventListener('mouseup', detenerDibujo);
