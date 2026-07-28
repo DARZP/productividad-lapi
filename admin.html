@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Panel</title>
+    <title>Admin - Panel LAPI</title>
     
     <link rel="manifest" href="manifest_admin.json">
-    <meta name="theme-color" content="#ea580c">
+    <meta name="theme-color" content="#f8fafc">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,7 +14,6 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        // Importamos los módulos de autenticación de Firebase
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -29,18 +28,14 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // GUARDIÁN DE SESIÓN
         onAuthStateChanged(auth, (user) => {
             if (!user) {
-                // Si no hay sesión válida, se expulsa al usuario al login
                 window.location.replace('index.html');
             } else {
-                // Si la sesión es válida, mostramos el cuerpo de la página
                 document.body.classList.remove('hidden');
             }
         });
 
-        // FUNCIÓN PARA CERRAR SESIÓN
         window.cerrarSesionAdmin = () => {
             signOut(auth).then(() => {
                 window.location.replace('index.html');
@@ -51,135 +46,421 @@
     </script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* Efecto Cristal Estándar */
-        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .scroll-custom::-webkit-scrollbar { width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: transparent; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Ajuste crucial para móviles (Evita cortes inferiores) */
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 80px); }
+
         .app-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; text-decoration: none; }
-        .app-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.3); border-color: rgba(255, 255, 255, 0.5); }
-        .app-card:active { transform: scale(0.95); }
+        .app-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); border-color: #fdba74; }
+        .app-card:active { transform: scale(0.97); }
+
+        .bot-card { background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; }
+        .bot-card:hover { transform: translateY(-3px); box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.3); border-color: #475569; }
+        .bot-card:active { transform: scale(0.97); }
         
-        /* Fondo Animado */
-        .bg-animated { background: linear-gradient(-45deg, #f97316, #ea580c, #f59e0b, #ec4899); background-size: 400% 400%; animation: gradientBG 15s ease infinite; }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        
-        /* Animaciones */
-        .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
+        .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(15px); }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        
         .delay-100 { animation-delay: 100ms; }
         .delay-200 { animation-delay: 200ms; }
         .delay-300 { animation-delay: 300ms; }
     </style>
 </head>
-<!-- La clase 'hidden' evita que la página parpadee antes de verificar la sesión -->
-<body class="bg-animated min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden hidden">
-    <!-- BOTÓN CERRAR SESIÓN -->
-    <button onclick="cerrarSesionAdmin()" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-white/20 hover:bg-red-500/80 transition-colors text-white shadow-sm border border-white/30 z-50" title="Cerrar Sesión">
-        <i class="fa-solid fa-right-from-bracket"></i>
-    </button>
+<body class="flex flex-col h-screen overflow-hidden hidden text-slate-800">
 
-    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
-    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
-
-    <div class="text-center mb-10 w-full max-w-sm animate-fade-in-up relative z-10 mt-8">
-        <div class="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
-            <i class="fa-solid fa-user-tie text-5xl text-orange-500"></i>
+    <!-- CABECERA FIJA SUPERIOR -->
+    <header class="w-full bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex justify-between items-center z-50 shrink-0 shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                <i class="fa-solid fa-staff-snake"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-black tracking-tight text-slate-800 leading-tight">LAPI SUITE</h1>
+                <p class="text-[9px] font-bold text-slate-400 tracking-widest uppercase">Admin Dashboard</p>
+            </div>
         </div>
-        <h1 class="text-4xl font-black tracking-tight text-white mb-2 drop-shadow-md">PANEL <span class="text-orange-200">ADMIN</span></h1>
-        <p class="text-sm font-medium text-white/80 tracking-widest uppercase drop-shadow">Gestión Operativa</p>
-    </div>
+        <button onclick="cerrarSesionAdmin()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors text-slate-500 shadow-sm" title="Cerrar Sesión">
+            <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+    </header>
 
-    <!-- GRID CENTRAL ORDENADO -->
-    <div class="grid grid-cols-3 gap-4 w-full max-w-md mx-auto relative z-10">
+    <!-- ÁREA CON SCROLL (El contenido de la página) -->
+    <main class="flex-1 overflow-y-auto scroll-custom p-6 pb-safe flex flex-col items-center">
         
-        <!-- 1. SERVICIOS -->
-        <a href="admin_servicios.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-truck-medical text-2xl text-white"></i>
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-white uppercase">Foráneos</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Productividad</p>
-            </div>
-        </a>
+        <div class="w-full max-w-lg mx-auto flex flex-col gap-6">
 
-        <!-- 2. SUCURSALES -->
-        <a href="admin_sucursales.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-building text-2xl text-white"></i>
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-white uppercase">Sucursales</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Productividad</p>
-            </div>
-        </a>
+            <!-- LAPI-BOT (GERENTE IA) DESTACADO -->
+            <button onclick="abrirModalBotGlobal()" class="bot-card w-full rounded-[2rem] p-6 flex items-center justify-between animate-fade-in-up text-left relative overflow-hidden group cursor-pointer shadow-lg">
+                <i class="fa-solid fa-robot absolute -right-4 -bottom-8 text-8xl text-slate-700 opacity-20 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500"></i>
+                <div class="relative z-10 flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-robot text-3xl text-orange-400"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                            LAPI-Bot <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                        </h2>
+                        <p class="text-[10px] text-slate-300 font-bold uppercase tracking-widest mt-1 mb-1">Inteligencia Artificial</p>
+                        <p class="text-xs text-slate-400 font-medium">Análisis de datos, consultas operativas y emisión de reportes.</p>
+                    </div>
+                </div>
+            </button>
 
-        <!-- 3. CONTROL BIOLÓGICO -->
-        <a href="admin_biologico.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-vial-virus text-2xl text-white"></i>
+            <!-- TÍTULO DE SECCIÓN -->
+            <div class="flex items-center gap-3 animate-fade-in-up delay-100 mt-2">
+                <div class="flex-1 h-px bg-slate-200"></div>
+                <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400">Módulos Administrativos</h3>
+                <div class="flex-1 h-px bg-slate-200"></div>
             </div>
-            <div>
-                <h3 class="font-black text-sm text-white uppercase">C. Biol.</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Equipos</p>
-            </div>
-        </a>
 
-        <!-- 4. INSUMOS -->
-        <a href="admin_requisiciones.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-box-open text-2xl text-white"></i>
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-white uppercase">Insumos</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Requisiciones</p>
-            </div>
-        </a>
+            <!-- GRID CENTRAL (Adaptado a estética clara) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full">
+                
+                <!-- 1. SERVICIOS -->
+                <a href="admin_servicios.html" class="app-card bg-white border border-slate-200 rounded-3xl p-5 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl shadow-inner group-hover:bg-orange-100 transition-colors">
+                        <i class="fa-solid fa-truck-medical"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-xs text-slate-700 uppercase">Foráneos</h3>
+                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Operaciones</p>
+                    </div>
+                </a>
 
-        <!-- 5. MONITOR -->
-        <a href="admin_monitor.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-server text-2xl text-white"></i>
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-white uppercase">Monitor</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Registros</p>
-            </div>
-        </a>
+                <!-- 2. SUCURSALES -->
+                <a href="admin_sucursales.html" class="app-card bg-white border border-slate-200 rounded-3xl p-5 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl shadow-inner group-hover:bg-orange-100 transition-colors">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-xs text-slate-700 uppercase">Sucursales</h3>
+                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Productividad</p>
+                    </div>
+                </a>
 
-        <!-- 6. REPORTES -->
-        <a href="reportes.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-fuchsia-400 to-purple-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-chart-pie text-2xl text-white"></i>
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-white uppercase">Reportes</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Generador</p>
-            </div>
-        </a>
+                <!-- 3. CONTROL BIOLÓGICO -->
+                <a href="admin_biologico.html" class="app-card bg-white border border-slate-200 rounded-3xl p-5 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl shadow-inner group-hover:bg-orange-100 transition-colors">
+                        <i class="fa-solid fa-vial-virus"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-xs text-slate-700 uppercase">C. Biol.</h3>
+                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Equipos</p>
+                    </div>
+                </a>
 
-        <!-- 7. AUDITORÍA -->
-        <a href="auditoria.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-400 to-red-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-shield-halved text-2xl text-white"></i>
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-white uppercase">Auditoría</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Cruce de inf</p>
-            </div>
-        </a>
+                <!-- 4. INSUMOS -->
+                <a href="admin_requisiciones.html" class="app-card bg-white border border-slate-200 rounded-3xl p-5 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl shadow-inner group-hover:bg-orange-100 transition-colors">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-xs text-slate-700 uppercase">Insumos</h3>
+                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Requisiciones</p>
+                    </div>
+                </a>
 
-        <!-- 8. OPERATIVO (Extra) -->
-        <a href="index.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-xl col-span-2 md:col-span-1">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-house-medical text-2xl text-white"></i>
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-white uppercase">Operativo</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Módulo</p>
-            </div>
-        </a>
+                <!-- 5. MONITOR -->
+                <a href="admin_monitor.html" class="app-card bg-white border border-slate-200 rounded-3xl p-5 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl shadow-inner group-hover:bg-orange-100 transition-colors">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-xs text-slate-700 uppercase">Monitor</h3>
+                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Registros CRUD</p>
+                    </div>
+                </a>
 
+                <!-- 6. REPORTES -->
+                <a href="reportes.html" class="app-card bg-white border border-slate-200 rounded-3xl p-5 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl shadow-inner group-hover:bg-orange-100 transition-colors">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-xs text-slate-700 uppercase">Reportes</h3>
+                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Generador PDF</p>
+                    </div>
+                </a>
+
+                <!-- 7. AUDITORÍA -->
+                <a href="auditoria.html" class="app-card bg-white border border-slate-200 rounded-3xl p-5 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl shadow-inner group-hover:bg-orange-100 transition-colors">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-xs text-slate-700 uppercase">Auditoría</h3>
+                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Cruce de Inf.</p>
+                    </div>
+                </a>
+
+                <!-- 8. OPERATIVO (Portal) -->
+                <a href="index.html" class="app-card bg-slate-800 border border-slate-700 rounded-3xl p-5 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-300 shadow-sm col-span-2 sm:col-span-1 group">
+                    <div class="w-12 h-12 rounded-xl bg-slate-700 text-slate-300 flex items-center justify-center text-xl shadow-inner group-hover:text-white transition-colors border border-slate-600">
+                        <i class="fa-solid fa-house-medical"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-xs text-white uppercase">Operativo</h3>
+                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Portal Clínico</p>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- WIDGET FLOTANTE LAPI-BOT (Se abre desde el botón principal o se puede implementar flotante si lo deseas) -->
+    <!-- Para esta pantalla "madre", el bot puede abrirse como un modal elegante -->
+    <div id="modal-bot-global" class="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-bot-card" class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg h-[85vh] sm:h-[600px] flex flex-col transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 border border-slate-200">
+            
+            <!-- HEADER BOT -->
+            <div class="bg-slate-800 text-white p-5 shrink-0 flex justify-between items-center relative overflow-hidden rounded-t-3xl">
+                <i class="fa-solid fa-robot absolute -right-4 -bottom-4 text-6xl text-slate-700 opacity-30"></i>
+                <div class="relative z-10">
+                    <h3 class="font-black text-xl flex items-center gap-2">LAPI-Bot <span class="bg-emerald-500 w-2 h-2 rounded-full animate-pulse"></span></h3>
+                    <p class="text-[10px] uppercase tracking-widest text-slate-300 font-bold mt-0.5">Gerente Operativo IA</p>
+                </div>
+                <button onclick="cerrarModalBotGlobal()" class="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors relative z-10 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- TABS BOT -->
+            <div class="flex border-b border-slate-100 bg-slate-50 shrink-0">
+                <button onclick="switchBotTab('chat')" id="bot-tab-chat" class="flex-1 py-3 text-xs font-black text-orange-600 border-b-[3px] border-orange-600 transition-colors uppercase tracking-widest"><i class="fa-solid fa-comments mr-1"></i> Asistente</button>
+                <button onclick="switchBotTab('alertas')" id="bot-tab-alertas" class="flex-1 py-3 text-xs font-black text-slate-400 border-b-[3px] border-transparent transition-colors uppercase tracking-widest relative">
+                    <i class="fa-solid fa-bell mr-1"></i> Alertas
+                    <span class="absolute top-2 right-6 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+            </div>
+
+            <!-- VISTA: CHAT -->
+            <div id="bot-view-chat" class="flex-1 flex flex-col overflow-hidden bg-white min-h-0">
+                <div class="flex-1 overflow-y-auto scroll-custom p-5 space-y-4" id="bot-mensajes">
+                    <!-- Mensaje Inicial -->
+                    <div class="flex items-start gap-2">
+                        <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center shrink-0 text-xs shadow-md border border-slate-700"><i class="fa-solid fa-robot"></i></div>
+                        <div class="bg-slate-50 p-3.5 rounded-2xl rounded-tl-none text-xs text-slate-700 font-medium border border-slate-200 shadow-sm leading-relaxed">
+                            ¡Hola, Doctor! Qué gusto saludarte. Soy tu asistente operativo inteligente. Pregúntame sobre la productividad de nuestras sucursales, los servicios foráneos, el rendimiento de tu personal o el estatus de cumplimiento de las unidades. ¿En qué te ayudo hoy?
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4 border-t border-slate-100 bg-slate-50 shrink-0">
+                    <form onsubmit="enviarMensajeBotGlobal(event)" class="relative flex items-center">
+                        <input type="text" id="bot-input-global" autocomplete="off" placeholder="Escribe tu consulta aquí..." class="w-full bg-white border border-slate-200 rounded-xl py-3 pl-4 pr-12 text-sm outline-none focus:border-orange-400 shadow-sm transition-colors text-slate-700 font-medium">
+                        <button type="submit" class="absolute right-2 w-8 h-8 flex items-center justify-center text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors">
+                            <i class="fa-solid fa-paper-plane text-lg"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- VISTA: ALERTAS -->
+            <div id="bot-view-alertas" class="flex-1 overflow-y-auto scroll-custom p-0 bg-slate-50 hidden">
+                <div class="divide-y divide-slate-100" id="contenedor-alertas-globales">
+                    <div class="p-8 text-center text-slate-400 text-xs italic">
+                        <i class="fa-solid fa-spinner fa-spin text-2xl text-orange-300 mb-3 block"></i>
+                        Cargando alertas del sistema...
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
+
+    <script type="module">
+        import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        
+        // MODAL BOT LÓGICA
+        window.abrirModalBotGlobal = function() {
+            const modal = document.getElementById('modal-bot-global');
+            const card = document.getElementById('modal-bot-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => { 
+                modal.classList.remove('opacity-0'); 
+                card.classList.remove('translate-y-full', 'sm:scale-95'); 
+            }, 10);
+            cargarAlertasGlobales();
+        };
+
+        window.cerrarModalBotGlobal = function() {
+            const modal = document.getElementById('modal-bot-global');
+            const card = document.getElementById('modal-bot-card');
+            modal.classList.add('opacity-0'); 
+            card.classList.add('translate-y-full', 'sm:scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        };
+
+        window.switchBotTab = function(tab) {
+            const btnChat = document.getElementById('bot-tab-chat');
+            const btnAlertas = document.getElementById('bot-tab-alertas');
+            const viewChat = document.getElementById('bot-view-chat');
+            const viewAlertas = document.getElementById('bot-view-alertas');
+
+            if (tab === 'chat') {
+                btnChat.className = "flex-1 py-3 text-xs font-black text-orange-600 border-b-[3px] border-orange-600 transition-colors uppercase tracking-widest";
+                btnAlertas.className = "flex-1 py-3 text-xs font-black text-slate-400 border-b-[3px] border-transparent transition-colors uppercase tracking-widest relative";
+                viewChat.classList.remove('hidden');
+                viewAlertas.classList.add('hidden');
+            } else {
+                btnAlertas.className = "flex-1 py-3 text-xs font-black text-orange-600 border-b-[3px] border-orange-600 transition-colors uppercase tracking-widest relative";
+                btnChat.className = "flex-1 py-3 text-xs font-black text-slate-400 border-b-[3px] border-transparent transition-colors uppercase tracking-widest";
+                viewAlertas.classList.remove('hidden');
+                viewChat.classList.add('hidden');
+            }
+        };
+
+        window.enviarMensajeBotGlobal = async function(e) {
+            e.preventDefault();
+            const input = document.getElementById('bot-input-global');
+            const texto = input.value.trim();
+            if(!texto) return;
+
+            const contenedor = document.getElementById('bot-mensajes');
+            
+            contenedor.innerHTML += `
+                <div class="flex items-start gap-2 justify-end animate-fade-in">
+                    <div class="bg-orange-100 p-3.5 rounded-2xl rounded-tr-none text-xs text-orange-900 font-medium border border-orange-200 shadow-sm leading-relaxed">
+                        ${texto}
+                    </div>
+                </div>
+            `;
+            input.value = '';
+            contenedor.scrollTop = contenedor.scrollHeight;
+
+            const idLoader = 'loader-' + Date.now();
+            contenedor.innerHTML += `
+                <div id="${idLoader}" class="flex items-start gap-2 animate-fade-in">
+                    <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center shrink-0 text-xs shadow-md border border-slate-700"><i class="fa-solid fa-robot"></i></div>
+                    <div class="bg-slate-50 p-3.5 rounded-2xl rounded-tl-none text-xs text-slate-500 italic font-medium border border-slate-200 flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-circle-notch fa-spin text-orange-500"></i> Consultando registros de LAPI...
+                    </div>
+                </div>
+            `;
+            contenedor.scrollTop = contenedor.scrollHeight;
+
+            try {
+                // Reemplaza con tu URL de Firebase Functions
+                const endpoint = "https://us-central1-lapi-productividad.cloudfunctions.net/apiLapiBot"; 
+                
+                const respuesta = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensaje: texto })
+                });
+
+                const data = await respuesta.json();
+                
+                let textoBotFormateado = data.respuesta
+                    .replace(/\*\*(.*?)\*\*/g, '<b class="text-slate-800">$1</b>')
+                    .replace(/\*(.*?)\*/g, '<i>$1</i>')
+                    .replace(/\n/g, '<br>');
+
+                document.getElementById(idLoader).remove();
+
+                contenedor.innerHTML += `
+                    <div class="flex items-start gap-2 animate-fade-in">
+                        <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center shrink-0 text-xs shadow-md border border-slate-700"><i class="fa-solid fa-robot"></i></div>
+                        <div class="bg-slate-50 p-3.5 rounded-2xl rounded-tl-none text-xs text-slate-700 font-medium border border-slate-200 shadow-sm leading-relaxed">
+                            ${textoBotFormateado}
+                        </div>
+                    </div>
+                `;
+                contenedor.scrollTop = contenedor.scrollHeight;
+
+            } catch (error) {
+                console.error("Error de conexión:", error);
+                document.getElementById(idLoader).remove();
+                contenedor.innerHTML += `
+                    <div class="flex items-start gap-2 animate-fade-in">
+                        <div class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0 text-xs shadow-md"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="bg-red-50 p-3.5 rounded-2xl rounded-tl-none text-xs text-red-700 font-medium border border-red-200 shadow-sm">
+                            Tuve un problema conectando con el servidor central. Por favor, intenta de nuevo.
+                        </div>
+                    </div>
+                `;
+                contenedor.scrollTop = contenedor.scrollHeight;
+            }
+        };
+
+        window.cargarAlertasGlobales = async function() {
+            const contenedorAlertas = document.getElementById('contenedor-alertas-globales');
+            try {
+                const q = query(collection(window.db, "alertas_sistema"), orderBy("timestamp", "desc"));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    contenedorAlertas.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs italic font-medium">El sistema no registra alertas recientes.</div>`;
+                    return;
+                }
+
+                let htmlAlertas = '';
+                querySnapshot.forEach((doc) => {
+                    let alerta = doc.data();
+                    let borderColor = alerta.prioridad === 'alta' ? 'border-red-500' : 'border-amber-500';
+                    let badgeBg = alerta.prioridad === 'alta' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700';
+                    let iconoTipo = alerta.tipo === 'VESPERTINO' ? 'fa-clock' : 'fa-triangle-exclamation';
+
+                    let fechaStr = 'Hace un momento';
+                    if (alerta.timestamp && alerta.timestamp.toDate) {
+                        let diffMins = Math.floor((new Date() - alerta.timestamp.toDate()) / 60000);
+                        if (diffMins > 60) {
+                            let diffHoras = Math.floor(diffMins / 60);
+                            fechaStr = `Hace ${diffHoras} hr${diffHoras > 1 ? 's' : ''}`;
+                        } else {
+                            fechaStr = `Hace ${diffMins} min`;
+                        }
+                    }
+
+                    // Lógica Expansible
+                    let textoPlano = alerta.mensaje.replace(/[\*\_]/g, '').replace(/\n/g, ' ');
+                    let snippet = textoPlano.length > 85 ? textoPlano.substring(0, 85) + '...' : textoPlano;
+                    let mensajeFormateado = alerta.mensaje
+                        .replace(/\*\*(.*?)\*\*/g, '<b class="text-slate-800">$1</b>')
+                        .replace(/\*(.*?)\*/g, '<i>$1</i>')
+                        .replace(/\n/g, '<br>');
+
+                    htmlAlertas += `
+                        <div onclick="const f = this.querySelector('.alerta-full'); const s = this.querySelector('.alerta-snippet'); const i = this.querySelector('.alerta-icon'); f.classList.toggle('hidden'); s.classList.toggle('hidden'); i.classList.toggle('rotate-180');" 
+                             class="p-5 bg-white hover:bg-slate-50 transition cursor-pointer border-l-4 ${borderColor} border-b border-slate-50 group">
+                            
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="${badgeBg} text-[8px] font-black uppercase px-2 py-1 rounded tracking-widest shadow-sm">
+                                    <i class="fa-solid ${iconoTipo} mr-1"></i> ${alerta.tipo}
+                                </span>
+                                <span class="text-[9px] text-slate-400 font-bold">${fechaStr}</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-start gap-2">
+                                <h4 class="text-xs font-black text-slate-800 leading-tight">${alerta.titulo}</h4>
+                                <div class="w-6 h-6 flex items-center justify-center shrink-0 bg-slate-50 rounded-full group-hover:bg-slate-200 transition-colors border border-slate-100 shadow-sm">
+                                    <i class="fa-solid fa-chevron-down text-slate-400 text-[10px] alerta-icon transition-transform duration-300"></i>
+                                </div>
+                            </div>
+                            
+                            <p class="alerta-snippet text-[10px] text-slate-500 mt-2 font-medium leading-relaxed pr-6">${snippet}</p>
+                            
+                            <div class="alerta-full hidden mt-4 pt-3 border-t border-slate-100">
+                                <div class="text-[10px] text-slate-600 font-medium leading-relaxed">
+                                    ${mensajeFormateado}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                contenedorAlertas.innerHTML = htmlAlertas;
+
+            } catch (error) {
+                console.error("Error al cargar alertas:", error);
+            }
+        };
+    </script>
 </body>
 </html>
