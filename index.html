@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>L Suite - Portal Operativo</title>
+    <title>LAPI Suite - Portal Operativo</title>
     
     <link rel="manifest" href="manifest_captura.json">
-    <meta name="theme-color" content="#ea580c">
+    <meta name="theme-color" content="#f8fafc">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,17 +42,11 @@
     </script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #f8fafc; }
         
-        /* Efecto Cristal Estándar */
-        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.3); }
         .app-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
-        .app-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.3); border-color: rgba(255, 255, 255, 0.5); }
-        .app-card:active { transform: scale(0.95); }
-        
-        /* Fondo Animado */
-        .bg-animated { background: linear-gradient(-45deg, #f97316, #ea580c, #f59e0b, #ec4899); background-size: 400% 400%; animation: gradientBG 15s ease infinite; }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .app-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); border-color: #fdba74; }
+        .app-card:active { transform: scale(0.97); }
         
         /* Animaciones */
         .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
@@ -61,103 +55,104 @@
         .delay-200 { animation-delay: 200ms; }
     </style>
 </head>
-<body class="bg-animated min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+<body class="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden text-slate-800">
 
     <!-- Notificaciones Toast -->
     <div id="toast-container" class="fixed top-4 right-4 z-[300] flex flex-col gap-2 pointer-events-none"></div>
 
-    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
-    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
+    <!-- Patrón de Fondo Suave -->
+    <div class="absolute inset-0 opacity-50 pointer-events-none" style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 30px 30px;"></div>
+    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
 
     <div class="text-center mb-10 w-full max-w-sm animate-fade-in-up relative z-10">
-        <div class="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
+        <div class="w-24 h-24 bg-white border border-slate-200 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-md transform rotate-3 hover:rotate-0 transition-transform duration-300">
             <i class="fa-solid fa-staff-snake text-5xl text-orange-500"></i>
         </div>
-        <h1 class="text-4xl font-black tracking-tight text-white mb-2 drop-shadow-md">L <span class="text-orange-200">Suite</span></h1>
-        <p class="text-sm font-medium text-white/80 tracking-widest uppercase drop-shadow">Portal Operativo</p>
+        <h1 class="text-4xl font-black tracking-tight text-slate-800 mb-2 drop-shadow-sm">LAPI <span class="text-orange-500">Suite</span></h1>
+        <p class="text-sm font-bold text-slate-400 tracking-widest uppercase drop-shadow-sm">Portal Operativo</p>
     </div>
 
     <div class="grid grid-cols-2 gap-4 w-full max-w-md mx-auto relative z-10">
         
-        <a href="foraneos.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-suitcase-medical text-2xl text-white"></i>
+        <a href="foraneos.html" class="app-card bg-white border border-slate-200 rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-sm group">
+            <div class="w-14 h-14 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shadow-inner relative text-2xl group-hover:bg-red-100 transition-colors">
+                <i class="fa-solid fa-suitcase-medical"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white">FORÁNEOS</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Registro</p>
+                <h3 class="font-black text-sm text-slate-700 uppercase">Foráneos</h3>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Registro</p>
             </div>
         </a>
 
-        <a href="sucursal.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-regular fa-hospital text-2xl text-white"></i>
+        <a href="sucursal.html" class="app-card bg-white border border-slate-200 rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-100 shadow-sm group">
+            <div class="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center shadow-inner relative text-2xl group-hover:bg-sky-100 transition-colors">
+                <i class="fa-regular fa-hospital"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white">SUCURSALES</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Registro</p>
+                <h3 class="font-black text-sm text-slate-700 uppercase">Sucursales</h3>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Registro</p>
             </div>
         </a>
 
-        <a href="control_biologico.html" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-laptop-medical text-2xl text-white"></i>
+        <a href="control_biologico.html" class="app-card bg-white border border-slate-200 rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-sm group col-span-2 md:col-span-1">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner relative text-2xl group-hover:bg-emerald-100 transition-colors">
+                <i class="fa-solid fa-vial-virus"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white">EQUIPOS</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Control Biológico</p>
+                <h3 class="font-black text-sm text-slate-700 uppercase">Equipos</h3>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Control Biológico</p>
             </div>
         </a>
 
         <!-- BOTÓN ADMIN CON INTERCEPTOR DE SEGURIDAD -->
-        <button onclick="accederAdmin()" class="app-card glass rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-xl w-full">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center shadow-inner relative">
-                <i class="fa-solid fa-user-tie text-2xl text-white"></i>
+        <button onclick="accederAdmin()" class="app-card bg-slate-800 border border-slate-700 rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 animate-fade-in-up delay-200 shadow-md w-full group col-span-2 md:col-span-1">
+            <div class="w-14 h-14 rounded-2xl bg-slate-700 text-slate-300 flex items-center justify-center shadow-inner relative border border-slate-600 text-2xl group-hover:text-white transition-colors">
+                <i class="fa-solid fa-user-tie"></i>
             </div>
             <div>
-                <h3 class="font-black text-sm text-white">ADMIN</h3>
-                <p class="text-[9px] text-white/80 font-bold uppercase tracking-widest mt-1">Ingresar </p>
+                <h3 class="font-black text-sm text-white uppercase">Admin</h3>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Ingresar</p>
             </div>
         </button>
 
     </div>
 
     <div class="mt-16 text-center animate-fade-in-up delay-200 relative z-10">
-        <p class="text-[10px] font-bold tracking-widest text-white/50 uppercase">&copy; v4.0.0 (Julio 2026)</p>     
+        <p class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">&copy; v4.0.0 (Julio 2026)</p>     
     </div>
 
     <!-- MODAL DE INICIO DE SESIÓN -->
     <div id="modal-login" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="modal-login-card" class="glass p-8 rounded-3xl shadow-2xl max-w-sm w-full text-white transform scale-95 transition-transform duration-300 border border-white/30 relative overflow-hidden">
+        <div id="modal-login-card" class="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200 relative overflow-hidden">
             
-            <button onclick="cerrarModalLogin()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white/70 hover:text-white">
+            <button onclick="cerrarModalLogin()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600 shadow-sm">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
             <div class="text-center mb-6 pt-2">
-                <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
-                    <i class="fa-solid fa-shield-halved text-3xl text-white"></i>
+                <div class="w-16 h-16 bg-orange-50 text-orange-600 border border-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+                    <i class="fa-solid fa-shield-halved text-3xl"></i>
                 </div>
-                <h2 class="text-2xl font-black tracking-tight drop-shadow">Acceso Restringido</h2>
-                <p class="text-[10px] uppercase tracking-widest font-bold text-white/70 mt-1">Credenciales de Administrador</p>
+                <h2 class="text-2xl font-black tracking-tight drop-shadow-sm">Acceso Restringido</h2>
+                <p class="text-[10px] uppercase tracking-widest font-bold text-slate-400 mt-1">Credenciales de Administrador</p>
             </div>
 
-            <form onsubmit="procesarLogin(event)" class="space-y-4">
+            <form onsubmit="procesarLogin(event)" class="space-y-4 text-left">
                 <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-white/80 mb-1 ml-1">Correo Electrónico</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-1">Correo Electrónico</label>
                     <div class="relative">
-                        <i class="fa-solid fa-envelope absolute left-4 top-4 text-white/50"></i>
-                        <input type="email" id="login-email" required placeholder="admin@dominio.com" class="w-full py-3.5 pl-11 pr-4 bg-black/20 border border-white/10 rounded-xl outline-none focus:border-orange-300 focus:bg-black/30 transition-all font-bold text-sm text-white placeholder-white/40 shadow-inner">
+                        <i class="fa-solid fa-envelope absolute left-4 top-4 text-slate-400"></i>
+                        <input type="email" id="login-email" required placeholder="admin@dominio.com" class="w-full py-3.5 pl-11 pr-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-orange-400 transition-all font-bold text-sm text-slate-700 placeholder-slate-400 shadow-inner">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-white/80 mb-1 ml-1">Contraseña</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-1">Contraseña</label>
                     <div class="relative">
-                        <i class="fa-solid fa-lock absolute left-4 top-4 text-white/50"></i>
-                        <input type="password" id="login-pass" required placeholder="••••••••" class="w-full py-3.5 pl-11 pr-4 bg-black/20 border border-white/10 rounded-xl outline-none focus:border-orange-300 focus:bg-black/30 transition-all font-bold text-sm text-white placeholder-white/40 shadow-inner">
+                        <i class="fa-solid fa-lock absolute left-4 top-4 text-slate-400"></i>
+                        <input type="password" id="login-pass" required placeholder="••••••••" class="w-full py-3.5 pl-11 pr-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-orange-400 transition-all font-bold text-sm text-slate-700 placeholder-slate-400 shadow-inner">
                     </div>
                 </div>
-                <button type="submit" id="btn-submit-login" class="w-full bg-white text-orange-600 font-black py-3.5 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all mt-4 flex items-center justify-center gap-2">
+                <button type="submit" id="btn-submit-login" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition-all mt-4 flex items-center justify-center gap-2 text-sm">
                     Ingresar al Panel <i class="fa-solid fa-arrow-right-to-bracket"></i>
                 </button>
             </form>
