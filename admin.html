@@ -29,6 +29,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
+        window.db = getFirestore(app);
+
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.replace('index.html');
