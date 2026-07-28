@@ -16,8 +16,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-window.db = getFirestore(app);
-window.collection = collection; window.getDocs = getDocs; window.query = query; window.orderBy = orderBy;
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -978,7 +976,6 @@ window.collection = collection; window.getDocs = getDocs; window.query = query; 
             contenedor.scrollTop = contenedor.scrollHeight;
 
             try {
-                // Endpoint de Firebase Functions
                 const endpoint = "https://us-central1-lapi-productividad.cloudfunctions.net/apiLapiBot"; 
                 
                 const respuesta = await fetch(endpoint, {
@@ -1026,11 +1023,14 @@ window.collection = collection; window.getDocs = getDocs; window.query = query; 
             if (!contenedorAlertas) return;
 
             try {
-                const q = window.query(
-                    window.collection(window.db, "alertas_sistema"), 
-                    window.orderBy("timestamp", "desc")
-                );
-                const querySnapshot = await window.getDocs(q);
+                // Hacemos el Import dinámico aquí mismo para garantizar que funcione independientemente del Scope global
+                const { getFirestore, collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                const { getApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+                
+                const db = getFirestore(getApp());
+                
+                const q = query(collection(db, "alertas_sistema"), orderBy("timestamp", "desc"));
+                const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
                     contenedorAlertas.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs italic">No hay alertas registradas por el momento.</div>`;
@@ -1055,7 +1055,6 @@ window.collection = collection; window.getDocs = getDocs; window.query = query; 
                         }
                     }
 
-                    // Limpieza y formateo dinámico (Click para expandir)
                     let textoPlano = alerta.mensaje.replace(/[\*\_]/g, '').replace(/\n/g, ' ');
                     let snippet = textoPlano.length > 85 ? textoPlano.substring(0, 85) + '...' : textoPlano;
                     let mensajeFormateado = alerta.mensaje
