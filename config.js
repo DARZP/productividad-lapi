@@ -49,6 +49,7 @@ window.LAPI_CONFIG = {
         "Izaguirre Rojas Martha",
         "Jacqueline Ruiz",
         "Jannet Alejandra",
+        "Jazmin América Cárdenas Alcántara",
         "Jazmin Morales",
         "Jose Alejandro",
         "Dr. Jose Juan",
