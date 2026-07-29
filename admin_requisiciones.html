@@ -259,6 +259,11 @@
                         <input type="number" id="visual_inst" min="0" placeholder="Inst." class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
                         <input type="number" id="visual_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
                     </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <span class="text-[11px] font-bold w-1/3 leading-tight text-slate-600">Nórdico</span>
+                        <input type="number" id="nordico_inst" min="0" placeholder="Inst." class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
+                        <input type="number" id="nordico_est" min="0" placeholder="Estudios" class="w-1/3 p-2 bg-white rounded-lg text-xs font-bold text-center outline-none border border-slate-200 focus:border-orange-400">
+                    </div>
                 </div>
 
                 <button onclick="calcularRequisicion()" class="w-full mt-6 bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs">
@@ -491,14 +496,11 @@
                 est: { 'ABATELENGUAS (1/100) NO ESTÉRILES': 1 }
             },
             espiro: {
-                // Se quitaron los Guantes de aquí para calcularlos dinámicamente por estudio
                 inst: { 'MESA': 2, 'SILLAS': 2, 'SABANA (CAMPO PELLON AZUL DE 2X1 MTS) (1/10)': 6, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'SUCURSALES TABLA DE APOYO CARTA': 1, 'SUCURSALES TOALLA HUMEDA DESINFECTANTE': 1, 'SUCURSALES TOALLA INTERDOBLADA': 1, 'SUCURSALES CINTA MASKIN TAPE': 1, 'BOTE DE BASURA NEGRO': 1, 'BIOMBOS': 2 },
                 inst_diario: { 'CUBREBOCAS MODE KN-95': 1 },
-                // Se quitaron los Abatelenguas
                 est: {} 
             },
             audio: {
-                // Se modificó MESA a 1
                 inst: { 'MESA': 1, 'SILLAS': 2, 'SABANA (CAMPO PELLON AZUL DE 2X1 MTS) (1/10)': 6, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'SUCURSALES TABLA DE APOYO CARTA': 1, 'SUCURSALES TOALLA HUMEDA DESINFECTANTE': 1, 'SUCURSALES TOALLA INTERDOBLADA': 1, 'SUCURSALES CINTA MASKIN TAPE': 1, 'BOTE DE BASURA NEGRO': 1, 'BOLSA LAPI': 2, 'EXTENSION': 1 },
                 inst_diario: {},
                 est: { 'ABATELENGUAS (1/100) NO ESTÉRILES': 1 }
@@ -507,6 +509,11 @@
                 inst: { 'MESA': 1, 'SILLAS': 2, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'BOTE DE BASURA NEGRO': 1 },
                 inst_diario: {},
                 est: {}
+            },
+            nordico: {
+                inst: {}, // No requiere mobiliario
+                inst_diario: {},
+                est: {} // No suma insumos al FO-TF-49
             }
         };
 
@@ -532,7 +539,8 @@
                 hc_web:   { inst: parseInt(document.getElementById('hc_web_inst').value)||0, est: parseInt(document.getElementById('hc_web_est').value)||0 },
                 espiro:   { inst: parseInt(document.getElementById('espiro_inst').value)||0, est: parseInt(document.getElementById('espiro_est').value)||0 },
                 audio:    { inst: parseInt(document.getElementById('audio_inst').value)||0, est: parseInt(document.getElementById('audio_est').value)||0 },
-                visual:   { inst: parseInt(document.getElementById('visual_inst').value)||0, est: parseInt(document.getElementById('visual_est').value)||0 }
+                visual:   { inst: parseInt(document.getElementById('visual_inst').value)||0, est: parseInt(document.getElementById('visual_est').value)||0 },
+                nordico:  { inst: parseInt(document.getElementById('nordico_inst').value)||0, est: parseInt(document.getElementById('nordico_est').value)||0 }
             };
 
             for(const [tipo, vals] of Object.entries(inputs)) {
@@ -566,7 +574,6 @@
             // GUANTES PARA ESPIROMETRÍA: 1 caja por cada 100 estudios
             let totalEstudiosEspiro = inputs.espiro.est;
             if (totalEstudiosEspiro > 0) {
-                // Math.ceil redondea hacia arriba: 1-100 = 1, 101-200 = 2, etc.
                 let cajasGuantes = Math.ceil(totalEstudiosEspiro / 100);
                 resultadosActuales['GUANTE VINIL MEDIANO (1/100)'] = (resultadosActuales['GUANTE VINIL MEDIANO (1/100)'] || 0) + cajasGuantes;
             }
@@ -683,6 +690,9 @@
             let visualEst = parseInt(document.getElementById('visual_est').value)||0;
             if(visualEst > 0) listaChecklist.push({ cant: visualEst, desc: "Formatos impresos de Capacidad Visual" });
 
+            let nordEst = parseInt(document.getElementById('nordico_est').value)||0;
+            if(nordEst > 0) listaChecklist.push({ cant: nordEst, desc: "Formatos impresos de Nórdico" });
+
             let audioInst = parseInt(document.getElementById('audio_inst').value)||0;
             if(audioInst > 0) listaChecklist.push({ cant: audioInst, desc: "Equipos 'No Break' (P/Audiometría)" });
 
@@ -788,12 +798,18 @@
             let desglosePacientes = [];
             let hcTot = (parseInt(document.getElementById('hc_papel_est').value)||0) + (parseInt(document.getElementById('hc_web_est').value)||0);
             if(hcTot > 0) desglosePacientes.push(`${hcTot} HC`);
+            
             let audTot = parseInt(document.getElementById('audio_est').value)||0;
             if(audTot > 0) desglosePacientes.push(`${audTot} Audios`);
+            
             let espTot = parseInt(document.getElementById('espiro_est').value)||0;
             if(espTot > 0) desglosePacientes.push(`${espTot} Espiros`);
+            
             let visTot = parseInt(document.getElementById('visual_est').value)||0;
             if(visTot > 0) desglosePacientes.push(`${visTot} Visuales`);
+            
+            let norTot = parseInt(document.getElementById('nordico_est').value)||0;
+            if(norTot > 0) desglosePacientes.push(`${norTot} Nórdicos`);
 
             const pacientesStr = desglosePacientes.length > 0 ? desglosePacientes.join(', ') : '';
 
