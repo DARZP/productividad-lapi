@@ -491,11 +491,14 @@
                 est: { 'ABATELENGUAS (1/100) NO ESTÉRILES': 1 }
             },
             espiro: {
-                inst: { 'MESA': 2, 'SILLAS': 2, 'SABANA (CAMPO PELLON AZUL DE 2X1 MTS) (1/10)': 6, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'SUCURSALES TABLA DE APOYO CARTA': 1, 'SUCURSALES TOALLA HUMEDA DESINFECTANTE': 1, 'SUCURSALES TOALLA INTERDOBLADA': 1, 'SUCURSALES CINTA MASKIN TAPE': 1, 'BOTE DE BASURA NEGRO': 1, 'BIOMBOS': 2, 'GUANTE VINIL MEDIANO (1/100)': 1 },
+                // Se quitaron los Guantes de aquí para calcularlos dinámicamente por estudio
+                inst: { 'MESA': 2, 'SILLAS': 2, 'SABANA (CAMPO PELLON AZUL DE 2X1 MTS) (1/10)': 6, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'SUCURSALES TABLA DE APOYO CARTA': 1, 'SUCURSALES TOALLA HUMEDA DESINFECTANTE': 1, 'SUCURSALES TOALLA INTERDOBLADA': 1, 'SUCURSALES CINTA MASKIN TAPE': 1, 'BOTE DE BASURA NEGRO': 1, 'BIOMBOS': 2 },
                 inst_diario: { 'CUBREBOCAS MODE KN-95': 1 },
-                est: { 'ABATELENGUAS (1/100) NO ESTÉRILES': 1 }
+                // Se quitaron los Abatelenguas
+                est: {} 
             },
             audio: {
+                // Se modificó MESA a 1
                 inst: { 'MESA': 1, 'SILLAS': 2, 'SABANA (CAMPO PELLON AZUL DE 2X1 MTS) (1/10)': 6, 'GEL ANTIBACTERIAL GALON': 1, 'SUCURSALES DESINFECTANTE EN AEROSOL LYSOL': 1, 'SUCURSALES TABLA DE APOYO CARTA': 1, 'SUCURSALES TOALLA HUMEDA DESINFECTANTE': 1, 'SUCURSALES TOALLA INTERDOBLADA': 1, 'SUCURSALES CINTA MASKIN TAPE': 1, 'BOTE DE BASURA NEGRO': 1, 'BOLSA LAPI': 2, 'EXTENSION': 1 },
                 inst_diario: {},
                 est: { 'ABATELENGUAS (1/100) NO ESTÉRILES': 1 }
@@ -560,13 +563,20 @@
             let cantEpp = totalInstEspiro * dias;
             if (cantEpp > 0) resultadosActuales['EQUIPO DE PROTECCIÓN PERSONAL'] = cantEpp;
 
+            // GUANTES PARA ESPIROMETRÍA: 1 caja por cada 100 estudios
+            let totalEstudiosEspiro = inputs.espiro.est;
+            if (totalEstudiosEspiro > 0) {
+                // Math.ceil redondea hacia arriba: 1-100 = 1, 101-200 = 2, etc.
+                let cajasGuantes = Math.ceil(totalEstudiosEspiro / 100);
+                resultadosActuales['GUANTE VINIL MEDIANO (1/100)'] = (resultadosActuales['GUANTE VINIL MEDIANO (1/100)'] || 0) + cajasGuantes;
+            }
+
             renderizarPreviewEditable();
             renderizarEtiquetas();
             renderizarChecklist();
             document.getElementById('panel-preview').classList.remove('hidden');
         };
 
-        // --- FASE 2: GENERADOR DE ETIQUETAS ---
         window.renderizarEtiquetas = function() {
             listaEtiquetas = [];
             
