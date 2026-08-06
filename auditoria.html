@@ -759,6 +759,34 @@
             return `metadata_${safeName}`;
         }
 
+        // ==========================================
+        // DICCIONARIO HISTÓRICO DE INICIALES (LEGACY V4)
+        // ==========================================
+        const DICCIONARIO_HISTORICO_INICIALES = {
+            "BALBUENA": { "JM": "Muñoz Perez Jazmin Nayeli", "JNMP": "Muñoz Perez Jazmin Nayeli", "MZ": "Zarate Flores Myriam Alejandra", "MAZF": "Zarate Flores Myriam Alejandra", "EP": "Perez Bautista Esther", "EPB": "Perez Bautista Esther", "MG": "Dra. Mariana Gaviño" },
+            "CUAUTITLAN": { "JTAV": "Angeles Velazquez Jennifer Tabata", "CBMG": "Bustos Gonzalez Claudia Montserrat", "CMBG": "Bustos Gonzalez Claudia Montserrat", "CMG": "Bustos Gonzalez Claudia Montserrat", "MCG": "Cervantes Erendira Montserrat", "EMCG": "Cervantes Erendira Montserrat", "AVD": "Velasco Duran Araceli", "LMSH": "Leilany Montserrat Sanchez", "MSH": "Leilany Montserrat Sanchez", "SLML": "Sandra Lilian Maceda Licona", "IBM": "Ingrid Bernal" },
+            "CUAUTITLAN 2": { "JTAV": "Angeles Velazquez Jennifer Tabata", "CBMG": "Bustos Gonzalez Claudia Montserrat", "CMBG": "Bustos Gonzalez Claudia Montserrat", "MCG": "Cervantes Erendira Montserrat", "EMCG": "Cervantes Erendira Montserrat", "AVD": "Velasco Duran Araceli", "LMSH": "Leilany Montserrat Sanchez", "MSH": "Leilany Montserrat Sanchez", "SLML": "Sandra Lilian Maceda Licona" },
+            "CONDESA": { "UA": "Alanis Aparicio Ulises Jasiel", "UJAA": "Alanis Aparicio Ulises Jasiel", "MC": "Contreras Herrera Maribel del Carmen", "MCCH": "Contreras Herrera Maribel del Carmen" },
+            "GRAN SUR": { "GM": "Garcia Malanco Jose Antonio" },
+            "CALZADA DEL HUESO": { "AF": "Flores Miranda Adriana", "AFM": "Flores Miranda Adriana", "PI": "Islas Veivar Patricia Guadalupe", "PGIV": "Islas Veivar Patricia Guadalupe", "CR": "Ramirez Ramirez Carlos Antonio", "CARR": "Ramirez Ramirez Carlos Antonio", "BC": "Camacho Ortiz Barbara Alejandra", "BACO": "Camacho Ortiz Barbara Alejandra" },
+            "ENCUENTRO FORTUNA": { "AD": "Dominguez Mojica Jannet Alejandra", "JADM": "Dominguez Mojica Jannet Alejandra", "JC": "Cuevas Garcia Javier Alejandro", "JACG": "Cuevas Garcia Javier Alejandro", "AF": "Fuerte Morales Aleydis", "AFM": "Fuerte Morales Aleydis" },
+            "GABRIEL MANCERA": { "VM": "Monjaraz Sanchez Viviana", "LO": "Ordoñez Mejia Luis Enrique" },
+            "INTERLOMAS": { "EE": "Escobar Rios Erika Yeraldi", "EYER": "Escobar Rios Erika Yeraldi", "CT": "Tahuilan Enciso Cinthia", "CTE": "Tahuilan Enciso Cinthia" },
+            "LINDAVISTA": { "SD": "Delgadillo Fredy Sebastian", "FSDC": "Delgadillo Fredy Sebastian", "AG": "Gonzalez Lucas Alondra Estefania", "AEGL": "Gonzalez Lucas Alondra Estefania", "DL": "Lino Reynoso Deany Alondra", "DALR": "Lino Reynoso Deany Alondra" },
+            "LOMAS VERDES": { "MIR": "Izaguirre Rojas Martha", "BD": "Dulce Maria Buenrostro Perez", "DB": "Dulce Maria Buenrostro Perez", "LC": "Cruz Zavala Lucero", "LCZ": "Cruz Zavala Lucero", "JT": "Toriz Segura Jessica Noemi" },
+            "MARTIN CARRERA": { "LS": "Luevano Sanchez Sara Maria", "LUEVANO": "Luevano Sanchez Sara Maria" },
+            "METEPEC": { "RML": "Montoya Linares Rebeca", "SSR": "Rueda Pedraza Sabine Shecid", "SSRP": "Rueda Pedraza Sabine Shecid", "SSPR": "Rueda Pedraza Sabine Shecid", "MRC": "Cabrera Velazquez Miguel Ramon", "MCR": "Cabrera Velazquez Miguel Ramon", "BD": "Dulce Maria Buenrostro Perez", "DB": "Dulce Maria Buenrostro Perez", "MRCV": "Cabrera Velazquez Miguel Ramon", "YA": "Yirelka Yeraldine", "PKEC": "Dra. Patricia Escobar", "AIRV": "Angelica Itzel", "JADM": "Dominguez Mojica Jannet Alejandra", "LCZ": "Cruz Zavala Lucero", "AGR": "Alberto Gomez" },
+            "MERIDA": { "XJ": "Jacqueline Ruiz" },
+            "MIXCOAC": { "PP": "Paula Pichardo", "BF": "Brenda Flores" },
+            "PLATEROS": { "PA": "Paulina Alba", "AM": "Garcia Morado Ana Lourdes", "ALGM": "Garcia Morado Ana Lourdes", "JG": "Juan Manuel", "GV": "Giselle Vizuet", "YP": "Yasmin Cruz", "YSPC": "Yasmin Cruz" },
+            "PLAZA CENTRAL": { "IA": "Arizcorreta Colchado Ivonne Guadalupe", "IGAC": "Arizcorreta Colchado Ivonne Guadalupe", "BC": "Chavez Muñoz Brizeth Alondra", "BACM": "Chavez Muñoz Brizeth Alondra" },
+            "POLANCO": { "KF": "Fernandez Contreras Karla Alitzel", "KAFC": "Fernandez Contreras Karla Alitzel", "AS": "Soriano Arvea Ariagna Anahi", "AASA": "Soriano Arvea Ariagna Anahi", "GH": "Hernandez Gonzalez Giovanni Mariano", "GMHG": "Hernandez Gonzalez Giovanni Mariano", "PP": "Pineda Lopez Patricia", "PPL": "Pineda Lopez Patricia", "LCZ": "Cruz Zavala Lucero", "MD": "Michelle Delgadillo", "VMS": "Viviana Mojarra Sanchez", "YAZ": "Yirelka Anaya Zambrano", "JMF": "Jazmin Morales", "FNF": "Fernanda Nicolas Flores", "PFPN": "Pichardo Nava Paula Fernanda" },
+            "SANTA FE": { "GM": "Medina Molina Guadalupe", "GMM": "Medina Molina Guadalupe", "EYER": "Escobar Rios Erika Yeraldi" },
+            "SANTA MARTHA": { "JD": "Duque Hernandez Jaqueline", "JDH": "Duque Hernandez Jaqueline", "AD": "Dominguez Mojica Jannet Alejandra", "JADM": "Dominguez Mojica Jannet Alejandra", "AC": "Cabrera Hernandez Ana Beatriz", "ABCH": "Cabrera Hernandez Ana Beatriz", "LCZ": "Cruz Zavala Lucero", "LC": "Cruz Zavala Lucero", "PEC": "Dra. Patricia Escobar", "PGIV": "Islas Veivar Patricia Guadalupe", "PGVI": "Islas Veivar Patricia Guadalupe" },
+            "SATELITE": { "MASR": "Salinas Rojas Miguel Angel", "MGZH": "Maria Guadalupe Zapata Hernandez", "LLGM": "Lopez Lopez Guadalupe Mireya", "GMLL": "Lopez Lopez Guadalupe Mireya", "MLL": "Lopez Lopez Guadalupe Mireya", "AGM": "Garcia Morado Ana Lourdes", "JNTS": "Toriz Segura Jessica Noemi" },
+            "REVOLUCION": { "MS": "Miriam Elizabeth Saavedra Olvera", "MESO": "Miriam Elizabeth Saavedra Olvera", "VR": "Reyes Perez Victor", "CS": "Sanchez Sanchez Claudia Ivonne", "CISS": "Sanchez Sanchez Claudia Ivonne", "DO": "Olvera Aguilar Diana Karen", "DKOA": "Olvera Aguilar Diana Karen", "XF": "Xally Flores Rosas", "BXFR": "Xally Flores Rosas", "BACM": "Chavez Muñoz Brizeth Alondra" }
+        };
+
         function traducirMedico(rawMed, rawSuc) {
             if (!rawMed) return "DESCONOCIDO";
             
@@ -773,28 +801,29 @@
             let suc = normalizarDato(rawSuc);
             let medicos = window.LAPI_CONFIG?.medicos || [];
 
-            // 2. Diccionario (AHORA ES INSENSIBLE A MAYÚSCULAS PARA NO ROMPER TU config.js)
-            const diccInic = window.LAPI_CONFIG?.diccionarioIniciales || {};
+            // 2. Diccionario Histórico (Ahora es constante local)
+            const diccInic = DICCIONARIO_HISTORICO_INICIALES;
             for (const sucursalKey in diccInic) {
                 if (normalizarDato(sucursalKey) === suc) {
                     for (const medKey in diccInic[sucursalKey]) {
-                        // Comparamos versiones normalizadas, pero regresamos la versión oficial del catálogo
-                        if (normalizarDato(medKey) === med) return normalizarDato(diccInic[sucursalKey][medKey]);
+                        if (normalizarDato(medKey) === med) {
+                            med = normalizarDato(diccInic[sucursalKey][medKey]); // Traducido al nombre largo (legacy)
+                        }
                     }
                 }
             }
-            // Búsqueda global en el diccionario por si la sucursal viene mal escrita
+            
             for (const sucursalKey in diccInic) {
                 for (const medKey in diccInic[sucursalKey]) {
-                    if (normalizarDato(medKey) === med) return normalizarDato(diccInic[sucursalKey][medKey]);
+                    if (normalizarDato(medKey) === med) med = normalizarDato(diccInic[sucursalKey][medKey]);
                 }
             }
 
-            // 3. Match Exacto en el catálogo principal
+            // 3. Match Exacto en el catálogo principal nuevo (V5)
             let exactMatch = medicos.find(m => normalizarDato(m) === med); 
             if(exactMatch) return normalizarDato(exactMatch);
 
-            // 4. ALGORITMO INTELIGENTE (Agnóstico al orden e incompletos)
+            // 4. ALGORITMO INTELIGENTE (Upgrades de V4 a V5 automáticamente)
             const stopwords = ["DE", "LA", "LAS", "LOS", "DEL", "Y", "MC", "MAC"];
             const tokensInput = med.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
 
@@ -809,7 +838,6 @@
                     
                     let score = 0;
                     tokensInput.forEach(tIn => {
-                        // Si la palabra es igual, o si comparten una raíz de al menos 4 letras
                         if (tokensCat.some(tCat => tCat === tIn || (tCat.length >= 4 && tIn.length >= 4 && (tCat.startsWith(tIn) || tIn.startsWith(tCat))))) {
                             score++;
                         }
@@ -817,8 +845,6 @@
 
                     let ratio = score / tokensCat.length;
 
-                    // Es válido si coinciden al menos 2 palabras (ej. un nombre y un apellido), 
-                    // o si coincide todo lo que el usuario escribió (ej. solo puso un apellido raro y cruzó)
                     if (score >= 2 || (score > 0 && score === tokensInput.length)) {
                         if (score > maxScore || (score === maxScore && ratio > bestRatio)) {
                             maxScore = score;
@@ -837,7 +863,6 @@
             });
             if(partialMatch) return normalizarDato(partialMatch);
 
-            // 6. Regresa siempre en MAYÚSCULAS PURAS para emparejar los IDs de la base de datos
             return med;
         }
         
@@ -1659,51 +1684,62 @@ Estructura exacta:
             document.body.appendChild(versionDiv);
         });
 
-     // ==========================================
-        // UNIFICADOR DE NOMBRES EN LOTE (CLEANSING)
+        // ==========================================
+        // UNIFICADOR DE NOMBRES EN LOTE (FORÁNEOS Y SUCURSALES)
         // ==========================================
         window.escanearNombresHuerfanos = async function() {
             const btn = document.getElementById('btn-escanear-nombres');
             const tbody = document.getElementById('tabla-nombres-huerfanos');
             const txtOriginal = btn.innerHTML;
             
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Escaneando...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Escaneando BD...';
             btn.disabled = true;
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-16 text-slate-400 font-bold"><i class="fa-solid fa-spinner fa-spin text-2xl text-orange-400 mb-2 block"></i> Analizando todos los registros...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-16 text-slate-400 font-bold"><i class="fa-solid fa-spinner fa-spin text-2xl text-orange-400 mb-2 block"></i> Analizando Foráneos y Sucursales...</td></tr>';
 
             const medicosOficiales = window.LAPI_CONFIG.medicos.map(m => m.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
             let nombresEncontrados = {};
 
             try {
-                const q = window.query(window.collection(window.db, "registros"));
-                const qs = await window.getDocs(q);
+                // 1. Escaneo en Foráneos
+                const qForaneos = window.query(window.collection(window.db, "registros"));
+                const qsForaneos = await window.getDocs(qForaneos);
                 
-                qs.forEach(doc => {
+                qsForaneos.forEach(doc => {
                     let d = doc.data();
                     if(d.detalles && Array.isArray(d.detalles)) {
                         d.detalles.forEach(det => {
-                            let med = det.medico;
-                            if(med) {
-                                let medNorm = med.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                                // Filtramos: Si NO está en la lista oficial y no es "DESCONOCIDO"
-                                if(!medicosOficiales.includes(medNorm) && medNorm !== "DESCONOCIDO") {
-                                    if(!nombresEncontrados[med]) nombresEncontrados[med] = { count: 0, ids: [] };
-                                    nombresEncontrados[med].count++;
-                                    nombresEncontrados[med].ids.push(doc.id);
-                                }
-                            }
+                            if(det.medico) procesarNombreEncontrado(det.medico, doc.id, "registros");
                         });
                     }
                 });
 
-                const listaOpciones = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">${m}</option>`).join('');
+                // 2. Escaneo en Sucursales
+                const qSucursales = window.query(window.collection(window.db, "registros_diarios_sucursales"));
+                const qsSucursales = await window.getDocs(qSucursales);
                 
-                let html = '';
-                let index = 0;
+                qsSucursales.forEach(doc => {
+                    let d = doc.data();
+                    if(d.medico) procesarNombreEncontrado(d.medico, doc.id, "registros_diarios_sucursales");
+                });
+
+                function procesarNombreEncontrado(med, idDoc, coleccion) {
+                    let medNorm = med.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    // Si NO está en la lista oficial V5 y no es "DESCONOCIDO"
+                    if(!medicosOficiales.includes(medNorm) && medNorm !== "DESCONOCIDO") {
+                        if(!nombresEncontrados[med]) nombresEncontrados[med] = { count: 0, refs: [] };
+                        nombresEncontrados[med].count++;
+                        // Guardar la colección de origen y el id
+                        nombresEncontrados[med].refs.push({ id: idDoc, col: coleccion });
+                    }
+                }
+
+                const listaOpciones = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">${m}</option>`).join('');
+                let html = ''; let index = 0;
+                
                 for(let nombreErroneo in nombresEncontrados) {
                     let obj = nombresEncontrados[nombreErroneo];
-                    // Un Set para no repetir IDs de documentos
-                    let uniqueIds = [...new Set(obj.ids)].join(',');
+                    // Codificamos las referencias para no romper el HTML
+                    let refsEncriptadas = encodeURIComponent(JSON.stringify(obj.refs));
                     
                     html += `
                         <tr class="hover:bg-slate-50 transition" id="row-huerfano-${index}">
@@ -1711,10 +1747,10 @@ Estructura exacta:
                             <td class="p-4 text-center font-bold text-slate-500">${obj.count} veces</td>
                             <td class="p-4">
                                 <select id="sel-oficial-${index}" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
-                                    <option value="" disabled selected>Selecciona el nombre correcto...</option>
+                                    <option value="" disabled selected>Selecciona el nombre oficial...</option>
                                     ${listaOpciones}
                                 </select>
-                                <input type="hidden" id="docs-huerfano-${index}" value="${uniqueIds}">
+                                <input type="hidden" id="refs-huerfano-${index}" value="${refsEncriptadas}">
                                 <input type="hidden" id="name-huerfano-${index}" value="${nombreErroneo}">
                             </td>
                             <td class="p-4 text-center">
@@ -1732,45 +1768,59 @@ Estructura exacta:
                 tbody.innerHTML = '<tr><td colspan="4" class="text-center py-16 text-red-500 font-bold">Error al escanear la base de datos.</td></tr>';
             }
 
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
+            btn.innerHTML = txtOriginal; btn.disabled = false;
         };
 
         window.ejecutarUnificacion = async function(index) {
             const nombreNuevo = document.getElementById(`sel-oficial-${index}`).value;
-            if(!nombreNuevo) return mostrarToast("Selecciona el nombre correcto primero.", "error");
+            if(!nombreNuevo) return mostrarToast("Selecciona el nombre oficial de la lista.", "error");
             
             const nombreMalo = document.getElementById(`name-huerfano-${index}`).value;
-            const docIds = document.getElementById(`docs-huerfano-${index}`).value.split(',');
+            const refsData = JSON.parse(decodeURIComponent(document.getElementById(`refs-huerfano-${index}`).value));
 
-            if(!confirm(`¿Seguro que deseas cambiar TODAS las apariciones de "${nombreMalo}" a "${nombreNuevo.toUpperCase()}"?\n\n(Esto sobreescribirá la base de datos de manera irreversible)`)) return;
+            if(!confirm(`¿Seguro que deseas cambiar TODAS las ${refsData.length} apariciones de "${nombreMalo}" a "${nombreNuevo.toUpperCase()}"?\n\n(Esta acción sobreescribirá la base de datos)`)) return;
 
             const btnUnificar = document.querySelector(`#row-huerfano-${index} button`);
-            btnUnificar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            btnUnificar.disabled = true;
+            btnUnificar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btnUnificar.disabled = true;
 
             try {
-                for(let id of docIds) {
-                    const docRef = window.doc(window.db, "registros", id);
-                    const docSnap = await window.getDoc(docRef);
-                    if(docSnap.exists()) {
-                        let data = docSnap.data();
-                        let changed = false;
-                        if(data.detalles) {
-                            data.detalles.forEach(det => {
-                                if(det.medico === nombreMalo) {
-                                    det.medico = nombreNuevo.toUpperCase();
-                                    changed = true;
+                let modificados = 0;
+                
+                // Mapear documentos para no pedir el mismo varias veces si el médico aparece varias veces en un mismo Foráneo
+                let mapDocs = {};
+                for(let ref of refsData) {
+                    if(!mapDocs[ref.col]) mapDocs[ref.col] = new Set();
+                    mapDocs[ref.col].add(ref.id);
+                }
+
+                for(let coleccion in mapDocs) {
+                    for(let id of mapDocs[coleccion]) {
+                        const docRef = window.doc(window.db, coleccion, id);
+                        const docSnap = await window.getDoc(docRef);
+                        
+                        if(docSnap.exists()) {
+                            let data = docSnap.data();
+                            
+                            if (coleccion === "registros") {
+                                // Es foráneo (modificar en el array de detalles)
+                                let changed = false;
+                                if(data.detalles) {
+                                    data.detalles.forEach(det => {
+                                        if(det.medico === nombreMalo) { det.medico = nombreNuevo.toUpperCase(); changed = true; }
+                                    });
                                 }
-                            });
-                        }
-                        if(changed) {
-                            await window.updateDoc(docRef, { detalles: data.detalles });
+                                if(changed) { await window.updateDoc(docRef, { detalles: data.detalles }); modificados++; }
+                            } else {
+                                // Es sucursal (modificar el campo principal)
+                                if(data.medico === nombreMalo) {
+                                    await window.updateDoc(docRef, { medico: nombreNuevo.toUpperCase() }); modificados++;
+                                }
+                            }
                         }
                     }
                 }
                 
-                mostrarToast("Unificación exitosa.", "exito");
+                mostrarToast(`Unificación exitosa (${modificados} act).`, "exito");
                 document.getElementById(`row-huerfano-${index}`).remove();
                 
                 const tbody = document.getElementById('tabla-nombres-huerfanos');
@@ -1781,10 +1831,10 @@ Estructura exacta:
             } catch(e) {
                 console.error(e);
                 mostrarToast("Error durante la unificación.", "error");
-                btnUnificar.innerHTML = '<i class="fa-solid fa-link mr-1"></i> Unificar';
-                btnUnificar.disabled = false;
+                btnUnificar.innerHTML = '<i class="fa-solid fa-link mr-1"></i> Unificar'; btnUnificar.disabled = false;
             }
-        };   
+        };
+        
     </script>
 </body>
 </html>
