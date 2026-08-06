@@ -734,16 +734,17 @@
                         clonedDoc.getElementById('captura-temp').style.display = 'block';
                     }
                 });
-                
+
                 const textoCompartir = datos.isEdit 
-                    ? `*CORRECCIÓN DE REPORTE*\nLAPI - Resumen Folio ${datos.folio}\nServicio: ${datos.empresaF}`
-                    : `LAPI - Resumen Folio ${datos.folio}\nServicio foráneo: ${datos.empresaF}`;
+                    ? `*CORRECCIÓN DE REPORTE*\nResumen de servicio foráneo. ${datos.empresaF}.`
+                    : `Resumen de servicio foráneo. ${datos.empresaF}.`;
 
                 if (navigator.share && navigator.canShare) {
                     canvas.toBlob(async (blob) => {
                         const file = new File([blob], `LAPI_${datos.isEdit ? 'Correccion' : 'Resumen'}_${datos.folio}.png`, { type: 'image/png' });
                         if (navigator.canShare({ files: [file] })) {
                             try {
+
                                 await navigator.share({ files: [file], title: `LAPI - Folio ${datos.folio}`, text: textoCompartir });
                                 mostrarToast("¡Reporte compartido!", "exito");
                             } catch (err) {
@@ -757,6 +758,7 @@
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
+        
         function forzarDescarga(canvas, folio, isEdit) {
             const link = document.createElement('a');
             link.download = `LAPI_${isEdit ? 'Correccion' : 'Resumen'}_${folio}.png`;
