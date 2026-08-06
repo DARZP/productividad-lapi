@@ -307,10 +307,11 @@
             </div>
 
             <!-- TABS DE FILTRO -->
-            <div class="flex gap-4 border-b border-slate-100 mb-4 px-2">
-                <button onclick="filtrarVista('activo')" id="tab-activo" class="tab-btn active pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-circle-play text-emerald-500 mr-1"></i> Activos</button>
-                <button onclick="filtrarVista('pausa')" id="tab-pausa" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-circle-pause text-amber-500 mr-1"></i> En Pausa</button>
-                <button onclick="filtrarVista('finalizado')" id="tab-finalizado" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent"><i class="fa-solid fa-box-archive text-slate-400 mr-1"></i> Finalizados</button>
+            <div class="flex gap-4 border-b border-slate-100 mb-4 px-2 overflow-x-auto scroll-custom pb-2">
+                <button onclick="filtrarVista('activo')" id="tab-activo" class="tab-btn active pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent whitespace-nowrap"><i class="fa-solid fa-circle-play text-emerald-500 mr-1"></i> Activos</button>
+                <button onclick="filtrarVista('proximo')" id="tab-proximo" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent whitespace-nowrap"><i class="fa-solid fa-calendar-plus text-indigo-500 mr-1"></i> Próximos a Iniciar</button>
+                <button onclick="filtrarVista('pausa')" id="tab-pausa" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent whitespace-nowrap"><i class="fa-solid fa-circle-pause text-amber-500 mr-1"></i> En Pausa</button>
+                <button onclick="filtrarVista('finalizado')" id="tab-finalizado" class="tab-btn pb-2 text-xs font-bold text-slate-500 transition-colors uppercase tracking-widest border-b-[3px] border-transparent whitespace-nowrap"><i class="fa-solid fa-box-archive text-slate-400 mr-1"></i> Finalizados</button>
             </div>
 
             <!-- BUSCADOR Y FILTRO DE MES -->
@@ -370,6 +371,35 @@
                 
                 <button onclick="analizarImagenRol()" id="btn-analizar-rol" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 text-xs flex justify-center items-center gap-2">
                     <i class="fa-solid fa-eye"></i> Analizar Rol y Activar Semáforo
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL REUTILIZAR SERVICIO -->
+        <div id="modal-reutilizar" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+            <div id="modal-reutilizar-card" class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-slate-800 transform scale-95 transition-transform duration-300 border border-slate-200">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                    <h3 class="text-lg font-black text-slate-800"><i class="fa-solid fa-rotate text-emerald-500 mr-2"></i> Iniciar Nueva Campaña</h3>
+                    <button onclick="cerrarModal('reutilizar')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                
+                <p class="text-[10px] text-slate-500 font-bold mb-4 leading-tight">Configura la nueva fecha para el servicio basándote en el historial de <b id="reutilizar-nombre-empresa" class="text-slate-800"></b>.</p>
+
+                <div class="space-y-4 mb-6">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Inicio <span class="text-red-500">*</span></label>
+                            <input type="date" id="r-fecha-ini" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-emerald-400">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Fecha Fin <span class="text-red-500">*</span></label>
+                            <input type="date" id="r-fecha-fin" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-700 focus:border-emerald-400">
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="ejecutarReutilizacion()" id="btn-ejecutar-reutilizacion" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow-md transition-all active:scale-95 text-xs flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-check"></i> Confirmar y Crear
                 </button>
             </div>
         </div>
@@ -495,17 +525,17 @@
         let serviciosGlobales = [];
         let vistaActual = 'activo';
         
-        // Variables para el Visor/Reporte
+        // Variables para el Visor/Reporte y Reutilización
         let servicioParaReporte = null; 
-        let datosReporteCache = null; // Guarda el resultado del fetch
+        let datosReporteCache = null; 
         let graficosVisor = {};
+        let empresaAReutilizar = null; // Guardará los datos del servicio a copiar
         
         // Estado del Rol evaluado por IA
         let empresasEnRol = []; 
         let fechaRolOperativo = null; 
         let reportesHechosEnRol = new Set(); 
 
-        // Mostrar Toast
         window.mostrarToast = function(mensaje, tipo = 'info') {
             const toast = document.createElement('div');
             const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-orange-600');
@@ -517,7 +547,7 @@
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
         };
 
-        // UI Colapsable (Alta)
+        // UI Colapsables
         window.toggleFormAlta = function() {
             const body = document.getElementById('form-servicio-body');
             const icono = document.getElementById('icono-alta');
@@ -532,7 +562,6 @@
             }
         };
 
-        // UI Colapsable (Rol IA)
         window.toggleFormRol = function() {
             const body = document.getElementById('form-rol-body');
             const icono = document.getElementById('icono-rol');
@@ -547,10 +576,32 @@
             }
         };
 
-        // 1. LÓGICA DE INTERFAZ Y PESTAÑAS
+        // AUTOCOMPLETADO AL ESCRIBIR EN EL FORMULARIO DE ALTA
+        document.getElementById('s-comercial').addEventListener('input', function() {
+            const valorEscrito = this.value.toUpperCase().trim();
+            if(valorEscrito.length > 2) {
+                // Buscamos en el historial global si esa empresa ya existió
+                const coincidencia = serviciosGlobales.find(s => s.nombreComercial === valorEscrito);
+                if(coincidencia) {
+                    // Prellenamos los datos estáticos si están vacíos
+                    const fRazon = document.getElementById('s-razon');
+                    if(fRazon.value === '') fRazon.value = coincidencia.razonSocial !== 'NO ESPECIFICADA' ? coincidencia.razonSocial : '';
+                    
+                    const fUbi = document.getElementById('s-ubicacion');
+                    if(fUbi.value === '') fUbi.value = coincidencia.ubicacion || '';
+                    
+                    const fHoraIni = document.getElementById('s-hora-ini');
+                    if(fHoraIni.value === '') fHoraIni.value = coincidencia.horaInicio || '';
+                    
+                    const fHoraFin = document.getElementById('s-hora-fin');
+                    if(fHoraFin.value === '') fHoraFin.value = coincidencia.horaFin || '';
+                }
+            }
+        });
+
         window.filtrarVista = function(estado) {
             vistaActual = estado;
-            ['activo', 'pausa', 'finalizado'].forEach(e => document.getElementById(`tab-${e}`).classList.remove('active'));
+            ['activo', 'proximo', 'pausa', 'finalizado'].forEach(e => document.getElementById(`tab-${e}`).classList.remove('active'));
             document.getElementById(`tab-${estado}`).classList.add('active');
             renderizarLista();
         };
@@ -579,22 +630,32 @@
             abrirModal('rol');
         };
 
-        // 2. LÓGICA DE SERVICIOS Y AUTO-CIERRE
         window.guardarServicio = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-guardar');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...'; btn.disabled = true;
+
+            const fechaInicioInput = document.getElementById('s-fecha-ini').value;
+            
+            // Determinamos el estado inicial basado en la fecha de inicio
+            const tzDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+            const hoyStr = tzDate.getFullYear() + "-" + String(tzDate.getMonth() + 1).padStart(2, '0') + "-" + String(tzDate.getDate()).padStart(2, '0');
+            
+            let estadoCalculado = 'activo';
+            if(fechaInicioInput > hoyStr) {
+                estadoCalculado = 'proximo';
+            }
 
             const payload = {
                 nombreComercial: document.getElementById('s-comercial').value.toUpperCase().trim(),
                 folio: document.getElementById('s-folio').value.toUpperCase().trim() || 'S/F',
                 razonSocial: document.getElementById('s-razon').value.toUpperCase().trim() || 'NO ESPECIFICADA',
                 ubicacion: document.getElementById('s-ubicacion').value.toUpperCase().trim() || '',
-                fechaInicio: document.getElementById('s-fecha-ini').value,
+                fechaInicio: fechaInicioInput,
                 fechaFin: document.getElementById('s-fecha-fin').value,
                 horaInicio: document.getElementById('s-hora-ini').value,
                 horaFin: document.getElementById('s-hora-fin').value,
-                estado: 'activo', 
+                estado: estadoCalculado, 
                 excepcionCierre: false,
                 timestamp: new Date()
             };
@@ -602,23 +663,21 @@
             try {
                 await window.addDoc(window.collection(window.db, "directorio_servicios"), payload);
                 document.getElementById('form-servicio').reset();
-                mostrarToast("Servicio Creado Exitosamente", "exito");
+                mostrarToast(estadoCalculado === 'proximo' ? "Servicio programado" : "Servicio Creado Exitosamente", "exito");
                 window.cargarServicios();
             } catch (error) { mostrarToast("Error al guardar.", "error"); }
 
             btn.innerHTML = 'Activar y Guardar Servicio'; btn.disabled = false;
         };
-     
+
         window.cargarServicios = async function() {
             const container = document.getElementById('lista-servicios-container');
             container.innerHTML = '<div class="text-center py-20 text-slate-400 italic"><i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-orange-300 block"></i> Cargando base de datos...</div>';
             
             try {
-                // 1. OBTENER SERVICIOS
                 const q = window.query(window.collection(window.db, "directorio_servicios"));
                 const qs = await window.getDocs(q);
                 
-                // 2. OBTENER REPORTES REALES DE HOY
                 const tzDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
                 const hoyStr = tzDate.getFullYear() + "-" + String(tzDate.getMonth() + 1).padStart(2, '0') + "-" + String(tzDate.getDate()).padStart(2, '0');
                 
@@ -629,12 +688,11 @@
                     snapRep.forEach(doc => {
                         let d = doc.data();
                         if(d.idServicio) window.reportesHoy.add(d.idServicio);
-                        if(d.empresa) window.reportesHoy.add(d.empresa); // Respaldo por nombre
+                        if(d.empresa) window.reportesHoy.add(d.empresa); 
                     });
-                } catch(e) { console.log("Error obteniendo reportes de hoy", e); }
+                } catch(e) { console.log("Error obteniendo reportes", e); }
 
                 let listaTemporal = [];
-                const hoy = new Date();
                 let promesasActualizacion = [];
 
                 qs.forEach((docSnap) => {
@@ -646,20 +704,34 @@
                 listaTemporal.sort((a, b) => a.nombreComercial.localeCompare(b.nombreComercial));
                 serviciosGlobales = [];
 
+                // Lógica Inteligente de Estados Automáticos
                 listaTemporal.forEach((data) => {
-                    if (data.estado === 'activo' && !data.excepcionCierre) {
-                        let fFin = new Date(data.fechaFin + 'T23:59:59');
-                        let diasVencido = (hoy - fFin) / (1000 * 60 * 60 * 24);
+                    let estadoReal = data.estado;
+                    
+                    if (!data.excepcionCierre && (data.estado === 'activo' || data.estado === 'proximo')) {
+                        
+                        // 1. Si era "próximo" y hoy ya empezó, pásalo a "activo"
+                        if(data.estado === 'proximo' && hoyStr >= data.fechaInicio && hoyStr <= data.fechaFin) {
+                            estadoReal = 'activo';
+                            promesasActualizacion.push( window.updateDoc(window.doc(window.db, "directorio_servicios", data.id), { estado: 'activo' }) );
+                        }
+                        
+                        // 2. Si ya pasó su fecha de fin por más de 2 días, pásalo a finalizado
+                        let hoyObj = new Date(tzDate);
+                        let fFinObj = new Date(data.fechaFin + 'T23:59:59');
+                        let diasVencido = (hoyObj - fFinObj) / (1000 * 60 * 60 * 24);
                         
                         if (diasVencido > 2) {
-                            data.estado = 'finalizado'; 
+                            estadoReal = 'finalizado'; 
                             promesasActualizacion.push( window.updateDoc(window.doc(window.db, "directorio_servicios", data.id), { estado: 'finalizado' }) );
                         }
                     }
+                    
+                    data.estado = estadoReal;
                     serviciosGlobales.push(data);
                 });
 
-                if(promesasActualizacion.length > 0) Promise.all(promesasActualizacion).catch(e => console.log("Error auto-cierre", e));
+                if(promesasActualizacion.length > 0) Promise.all(promesasActualizacion).catch(e => console.log("Error auto-actualizando", e));
 
                 renderizarLista();
             } catch (error) { 
@@ -674,7 +746,7 @@
         window.renderizarLista = function() {
             const container = document.getElementById('lista-servicios-container');
             const textoBuscado = (document.getElementById('buscador-servicios').value || '').toLowerCase();
-            const mesBuscado = document.getElementById('filtro-mes').value; // Formato YYYY-MM
+            const mesBuscado = document.getElementById('filtro-mes').value;
             
             let filtrados = serviciosGlobales.filter(s => {
                 if (s.estado !== vistaActual) return false;
@@ -698,135 +770,152 @@
                 return;
             }
 
-            // Contenedores para las 4 categorías visuales
-            let htmlConReporte = ''; let countCon = 0;
-            let htmlRetrasado = ''; let countRet = 0;
-            let htmlEnCurso = ''; let countCur = 0;
-            let htmlNoEsperado = ''; let countNo = 0;
-            let htmlPausaFin = '';
-
             // Fecha y hora actual
             const tzDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
             const horaActual = tzDate.getHours().toString().padStart(2, '0') + ":" + tzDate.getMinutes().toString().padStart(2, '0');
             const hoyStr = tzDate.getFullYear() + "-" + String(tzDate.getMonth() + 1).padStart(2, '0') + "-" + String(tzDate.getDate()).padStart(2, '0');
-
-            // LÓGICA HÍBRIDA: ¿Subiste el rol de IA hoy?
             let hayRolHoy = (fechaRolOperativo === hoyStr);
 
-            filtrados.forEach(data => {
-                let tieneReporte = (window.reportesHoy && (window.reportesHoy.has(data.id) || window.reportesHoy.has(data.nombreComercial)));
-                
-                let iconBoxClass = '';
-                let cardBorder = '';
-                let visualCue = '';
-                let categoriaActivo = ''; 
-                
-                if (vistaActual === 'activo') {
-                    if (tieneReporte) {
-                        // ✅ REPORTE RECIBIDO
-                        iconBoxClass = 'bg-emerald-50 text-emerald-600 border-emerald-200';
-                        cardBorder = 'border-emerald-300 ring-2 ring-emerald-50';
-                        visualCue = `<span class="absolute top-3 right-3 bg-emerald-500 text-white text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10"><i class="fa-solid fa-check-double"></i> REPORTE HOY</span>`;
-                        categoriaActivo = 'con_reporte';
-                    } else {
-                        // SISTEMA HÍBRIDO: Evaluamos si esperamos su reporte hoy
-                        let esperadoHoy = true; // Por defecto asumimos que sí (Falla Segura)
-                        
-                        if (hayRolHoy) {
-                            // Si la IA procesó el rol, la IA decide quién trabaja hoy
-                            let nombreNorm = normalizarTexto(data.nombreComercial);
-                            esperadoHoy = empresasEnRol.some(empRol => {
-                                let rolNorm = normalizarTexto(empRol);
-                                return nombreNorm.includes(rolNorm) || rolNorm.includes(nombreNorm);
-                            });
-                        }
+            let finalHtml = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">';
 
-                        if (!esperadoHoy) {
-                            // 💤 SIN ASIGNACIÓN HOY (No está en el Rol)
-                            iconBoxClass = 'bg-slate-50 text-slate-400 border-slate-200';
-                            cardBorder = 'border-slate-200 opacity-75';
-                            visualCue = `<span class="absolute top-3 right-3 bg-slate-100 text-slate-500 text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10" title="Activo global, pero sin operación en el rol de hoy"><i class="fa-solid fa-bed"></i> SIN ROL HOY</span>`;
-                            categoriaActivo = 'no_esperado';
-                        } else {
-                            // ⏳ SÍ ES ESPERADO HOY (Cruzamos su horario)
-                            const estaRetrasado = data.horaFin && (horaActual > data.horaFin);
+            // LÓGICA ESPECIAL PARA FINALIZADOS (Agrupar por empresa)
+            if (vistaActual === 'finalizado') {
+                
+                let agrupados = {};
+                filtrados.forEach(s => {
+                    if(!agrupados[s.nombreComercial]) agrupados[s.nombreComercial] = [];
+                    agrupados[s.nombreComercial].push(s);
+                });
+
+                Object.keys(agrupados).sort().forEach(empresaNombre => {
+                    let historial = agrupados[empresaNombre];
+                    // Ordenamos para mostrar la campaña más reciente primero en el resumen
+                    historial.sort((a,b) => b.fechaInicio.localeCompare(a.fechaInicio));
+                    let ultimo = historial[0];
+
+                    finalHtml += `
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                        <div>
+                            <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-xl flex items-center justify-center text-lg mb-3"><i class="fa-solid fa-building"></i></div>
+                            <h3 class="font-black text-slate-800 text-sm leading-tight uppercase">${empresaNombre}</h3>
+                            <p class="text-[9px] text-slate-500 font-bold uppercase mt-1 mb-3"><i class="fa-solid fa-clock-rotate-left mr-1"></i> ${historial.length} Campaña(s) Históricas</p>
                             
-                            if (estaRetrasado) {
-                                // 🔴 RETRASADO
-                                iconBoxClass = 'bg-red-50 text-red-600 border-red-200';
-                                cardBorder = 'border-red-200 ring-2 ring-red-50';
-                                visualCue = `<span class="absolute top-3 right-3 bg-red-500 text-white text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10 animate-pulse" title="Fuera de horario sin reporte"><i class="fa-solid fa-clock"></i> RETRASADO</span>`;
-                                categoriaActivo = 'retrasado';
+                            <div class="text-[9px] bg-slate-50 border border-slate-100 p-2 rounded-lg text-slate-500 mb-3">
+                                <b>Última:</b> ${ultimo.fechaInicio} al ${ultimo.fechaFin}
+                                <div class="mt-1 cursor-pointer text-sky-500 hover:text-sky-600 font-bold" onclick="abrirVisor('${ultimo.id}')">Ver reporte de cierre <i class="fa-solid fa-arrow-right ml-1"></i></div>
+                            </div>
+                        </div>
+                        
+                        <button onclick="prepararReutilizacion('${ultimo.id}')" class="w-full mt-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-black py-2 rounded-xl text-[10px] transition-colors shadow-sm uppercase tracking-widest flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-plus-circle"></i> Iniciar Nuevo Servicio
+                        </button>
+                    </div>`;
+                });
+
+            } else {
+                // RENDERIZADO NORMAL (Activos, Próximos, Pausa)
+                let htmlConReporte = ''; let countCon = 0;
+                let htmlRetrasado = ''; let countRet = 0;
+                let htmlEnCurso = ''; let countCur = 0;
+                let htmlNoEsperado = ''; let countNo = 0;
+                let htmlProximo = ''; let countProx = 0;
+                let htmlPausa = '';
+
+                filtrados.forEach(data => {
+                    let iconBoxClass = ''; let cardBorder = ''; let visualCue = ''; let categoriaActivo = ''; 
+                    
+                    if (vistaActual === 'activo') {
+                        let tieneReporte = (window.reportesHoy && (window.reportesHoy.has(data.id) || window.reportesHoy.has(data.nombreComercial)));
+                        
+                        if (tieneReporte) {
+                            iconBoxClass = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                            cardBorder = 'border-emerald-300 ring-2 ring-emerald-50';
+                            visualCue = `<span class="absolute top-3 right-3 bg-emerald-500 text-white text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10"><i class="fa-solid fa-check-double"></i> REPORTE HOY</span>`;
+                            categoriaActivo = 'con_reporte';
+                        } else {
+                            let esperadoHoy = true; 
+                            if (hayRolHoy) {
+                                let nombreNorm = normalizarTexto(data.nombreComercial);
+                                esperadoHoy = empresasEnRol.some(empRol => {
+                                    let rolNorm = normalizarTexto(empRol);
+                                    return nombreNorm.includes(rolNorm) || rolNorm.includes(nombreNorm);
+                                });
+                            }
+
+                            if (!esperadoHoy) {
+                                iconBoxClass = 'bg-slate-50 text-slate-400 border-slate-200';
+                                cardBorder = 'border-slate-200 opacity-75';
+                                visualCue = `<span class="absolute top-3 right-3 bg-slate-100 text-slate-500 text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10" title="Activo global, pero sin operación en el rol de hoy"><i class="fa-solid fa-bed"></i> SIN ROL HOY</span>`;
+                                categoriaActivo = 'no_esperado';
                             } else {
-                                // 🔵 EN CURSO
-                                iconBoxClass = 'bg-sky-50 text-sky-600 border-sky-200';
-                                cardBorder = 'border-sky-200 ring-2 ring-sky-50 hover:border-sky-400';
-                                visualCue = `<span class="absolute top-3 right-3 bg-sky-500 text-white text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10 animate-pulse" title="Operación en curso / A tiempo"><i class="fa-solid fa-truck-fast"></i> EN CURSO</span>`;
-                                categoriaActivo = 'en_curso';
+                                const estaRetrasado = data.horaFin && (horaActual > data.horaFin);
+                                if (estaRetrasado) {
+                                    iconBoxClass = 'bg-red-50 text-red-600 border-red-200';
+                                    cardBorder = 'border-red-200 ring-2 ring-red-50';
+                                    visualCue = `<span class="absolute top-3 right-3 bg-red-500 text-white text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10 animate-pulse" title="Fuera de horario sin reporte"><i class="fa-solid fa-clock"></i> RETRASADO</span>`;
+                                    categoriaActivo = 'retrasado';
+                                } else {
+                                    iconBoxClass = 'bg-sky-50 text-sky-600 border-sky-200';
+                                    cardBorder = 'border-sky-200 ring-2 ring-sky-50 hover:border-sky-400';
+                                    visualCue = `<span class="absolute top-3 right-3 bg-sky-500 text-white text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10 animate-pulse" title="Operación en curso / A tiempo"><i class="fa-solid fa-truck-fast"></i> EN CURSO</span>`;
+                                    categoriaActivo = 'en_curso';
+                                }
                             }
                         }
+                    } else if (vistaActual === 'proximo') {
+                        iconBoxClass = 'bg-indigo-50 text-indigo-600 border-indigo-200';
+                        cardBorder = 'border-indigo-200 border-dashed hover:border-solid hover:border-indigo-400';
+                        visualCue = `<span class="absolute top-3 right-3 bg-indigo-100 text-indigo-600 text-[8px] font-black px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10"><i class="fa-solid fa-calendar-check"></i> PRE-REGISTRO</span>`;
+                    } else if (vistaActual === 'pausa') {
+                        iconBoxClass = 'bg-amber-50 text-amber-600 border-amber-200';
+                        cardBorder = 'border-slate-200 hover:border-amber-300';
                     }
-                } else if (vistaActual === 'pausa') {
-                    iconBoxClass = 'bg-amber-50 text-amber-600 border-amber-200';
-                    cardBorder = 'border-slate-200 hover:border-amber-300';
-                } else {
-                    iconBoxClass = 'bg-slate-100 text-slate-400 border-slate-200';
-                    cardBorder = 'border-slate-200';
-                }
 
-                let badgeSelect = `
-                    <select onchange="cambiarEstado('${data.id}', this.value); event.stopPropagation();" onclick="event.stopPropagation();" class="mt-2 bg-slate-50 text-slate-500 border border-slate-200 px-2 py-1 rounded-lg text-[9px] font-black uppercase outline-none cursor-pointer w-[140px] text-center hover:bg-slate-100 transition-colors shadow-sm">
-                        <option value="activo" ${data.estado === 'activo' ? 'selected' : ''}>🟢 Estado: ACTIVO</option>
-                        <option value="pausa" ${data.estado === 'pausa' ? 'selected' : ''}>🟠 Estado: EN PAUSA</option>
-                        <option value="finalizado" ${data.estado === 'finalizado' ? 'selected' : ''}>⚪ Estado: FINALIZADO</option>
-                    </select>
-                `;
+                    let badgeSelect = `
+                        <select onchange="cambiarEstado('${data.id}', this.value); event.stopPropagation();" onclick="event.stopPropagation();" class="mt-2 bg-slate-50 text-slate-500 border border-slate-200 px-2 py-1 rounded-lg text-[9px] font-black uppercase outline-none cursor-pointer w-[150px] text-center hover:bg-slate-100 transition-colors shadow-sm">
+                            <option value="activo" ${data.estado === 'activo' ? 'selected' : ''}>🟢 ACTIVO</option>
+                            <option value="proximo" ${data.estado === 'proximo' ? 'selected' : ''}>🟣 PRÓXIMO</option>
+                            <option value="pausa" ${data.estado === 'pausa' ? 'selected' : ''}>🟠 EN PAUSA</option>
+                            <option value="finalizado" ${data.estado === 'finalizado' ? 'selected' : ''}>⚪ FINALIZADO</option>
+                        </select>
+                    `;
 
-                let card = `
-                <div onclick="abrirVisor('${data.id}')" class="bg-white border ${cardBorder} rounded-2xl p-4 shadow-sm transition hover:shadow-md cursor-pointer group flex flex-col justify-between relative overflow-hidden">
-                    ${visualCue}
-                    <button onclick="event.stopPropagation(); prepararEdicion('${data.id}')" class="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-slate-50 hover:bg-orange-100 text-slate-400 hover:text-orange-500 flex items-center justify-center transition-colors z-10 shadow-sm border border-slate-100" title="Editar Servicio">
-                        <i class="fa-solid fa-pen text-xs"></i>
-                    </button>
-                    <div>
-                        <div class="w-10 h-10 ${iconBoxClass} rounded-xl flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-truck-medical"></i></div>
-                        <h3 class="font-black text-slate-800 text-sm leading-tight uppercase group-hover:text-sky-600 transition-colors pr-6">${data.nombreComercial}</h3>
-                        <p class="text-[9px] text-slate-400 font-bold uppercase mt-1 truncate">Folio: ${data.folio} ${data.ubicacion ? `| ${data.ubicacion}` : ''}</p>
-                        <div class="flex flex-wrap gap-1 text-[9px] font-bold text-slate-500 mt-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100 w-fit">
-                            <span><i class="fa-solid fa-calendar-day text-orange-400 mr-1"></i> ${data.fechaInicio.substring(5)} al ${data.fechaFin.substring(5)}</span> 
+                    let card = `
+                    <div onclick="abrirVisor('${data.id}')" class="bg-white border ${cardBorder} rounded-2xl p-4 shadow-sm transition hover:shadow-md cursor-pointer group flex flex-col justify-between relative overflow-hidden">
+                        ${visualCue}
+                        <button onclick="event.stopPropagation(); prepararEdicion('${data.id}')" class="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-slate-50 hover:bg-orange-100 text-slate-400 hover:text-orange-500 flex items-center justify-center transition-colors z-10 shadow-sm border border-slate-100" title="Editar Servicio">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                        <div>
+                            <div class="w-10 h-10 ${iconBoxClass} rounded-xl flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-truck-medical"></i></div>
+                            <h3 class="font-black text-slate-800 text-sm leading-tight uppercase group-hover:text-sky-600 transition-colors pr-6">${data.nombreComercial}</h3>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase mt-1 truncate">Folio: ${data.folio} ${data.ubicacion ? `| ${data.ubicacion}` : ''}</p>
+                            <div class="flex flex-wrap gap-1 text-[9px] font-bold text-slate-500 mt-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100 w-fit">
+                                <span><i class="fa-solid fa-calendar-day text-orange-400 mr-1"></i> ${data.fechaInicio.substring(5)} al ${data.fechaFin.substring(5)}</span> 
+                            </div>
                         </div>
-                    </div>
-                    <div class="mt-1 relative z-10">${badgeSelect}</div>
-                </div>`;
+                        <div class="mt-1 relative z-10">${badgeSelect}</div>
+                    </div>`;
 
-                if(vistaActual === 'activo') {
-                    if (categoriaActivo === 'con_reporte') { htmlConReporte += card; countCon++; }
-                    else if (categoriaActivo === 'retrasado') { htmlRetrasado += card; countRet++; }
-                    else if (categoriaActivo === 'en_curso') { htmlEnCurso += card; countCur++; }
-                    else if (categoriaActivo === 'no_esperado') { htmlNoEsperado += card; countNo++; }
+                    if(vistaActual === 'activo') {
+                        if (categoriaActivo === 'con_reporte') { htmlConReporte += card; countCon++; }
+                        else if (categoriaActivo === 'retrasado') { htmlRetrasado += card; countRet++; }
+                        else if (categoriaActivo === 'en_curso') { htmlEnCurso += card; countCur++; }
+                        else if (categoriaActivo === 'no_esperado') { htmlNoEsperado += card; countNo++; }
+                    } else if(vistaActual === 'proximo') { htmlProximo += card; countProx++; }
+                    else { htmlPausa += card; }
+                });
+
+                if (vistaActual === 'activo') {
+                    if(countRet > 0) finalHtml += `<div class="col-span-full border-b border-red-100 pb-2 mt-2"><h3 class="text-xs font-black text-red-600 uppercase tracking-widest"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Retrasados (${countRet})</h3></div>` + htmlRetrasado;
+                    if(countCur > 0) finalHtml += `<div class="col-span-full border-b border-sky-100 pb-2 mt-2"><h3 class="text-xs font-black text-sky-600 uppercase tracking-widest"><i class="fa-solid fa-truck-fast mr-1"></i> Operando / En Curso (${countCur})</h3></div>` + htmlEnCurso;
+                    if(countCon > 0) finalHtml += `<div class="col-span-full border-b border-emerald-100 pb-2 mt-2"><h3 class="text-xs font-black text-emerald-600 uppercase tracking-widest"><i class="fa-solid fa-check-double mr-1"></i> Reportes Recibidos Hoy (${countCon})</h3></div>` + htmlConReporte;
+                    if(countNo > 0) finalHtml += `<div class="col-span-full border-b border-slate-100 pb-2 mt-2"><h3 class="text-xs font-black text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-bed mr-1"></i> Sin Asignación Hoy (${countNo})</h3></div>` + htmlNoEsperado;
+                } else if (vistaActual === 'proximo') {
+                    if(countProx > 0) finalHtml += `<div class="col-span-full border-b border-indigo-100 pb-2 mt-2"><h3 class="text-xs font-black text-indigo-600 uppercase tracking-widest"><i class="fa-solid fa-calendar-clock mr-1"></i> Agendados (${countProx})</h3></div>` + htmlProximo;
                 } else {
-                    htmlPausaFin += card;
+                    finalHtml += htmlPausa;
                 }
-            });
-            
-            // Construcción del Grid con Encabezados de Categoría
-            let finalHtml = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">';
-            
-            if (vistaActual === 'activo') {
-                if(countRet > 0) {
-                    finalHtml += `<div class="col-span-full border-b border-red-100 pb-2 mt-2"><h3 class="text-xs font-black text-red-600 uppercase tracking-widest"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Retrasados (${countRet})</h3></div>` + htmlRetrasado;
-                }
-                if(countCur > 0) {
-                    finalHtml += `<div class="col-span-full border-b border-sky-100 pb-2 mt-2"><h3 class="text-xs font-black text-sky-600 uppercase tracking-widest"><i class="fa-solid fa-truck-fast mr-1"></i> Operando / En Curso (${countCur})</h3></div>` + htmlEnCurso;
-                }
-                if(countCon > 0) {
-                    finalHtml += `<div class="col-span-full border-b border-emerald-100 pb-2 mt-2"><h3 class="text-xs font-black text-emerald-600 uppercase tracking-widest"><i class="fa-solid fa-check-double mr-1"></i> Reportes Recibidos Hoy (${countCon})</h3></div>` + htmlConReporte;
-                }
-                if(countNo > 0) {
-                    finalHtml += `<div class="col-span-full border-b border-slate-100 pb-2 mt-2"><h3 class="text-xs font-black text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-bed mr-1"></i> Sin Asignación Hoy (${countNo})</h3></div>` + htmlNoEsperado;
-                }
-            } else {
-                finalHtml += htmlPausaFin;
             }
             
             finalHtml += '</div>';
@@ -834,15 +923,65 @@
         }
 
         window.cambiarEstado = async function(id, nuevoEstado) {
-            let data = serviciosGlobales.find(s => s.id === id);
             let payload = { estado: nuevoEstado, ultimaModificacion: new Date() };
-            if(nuevoEstado === 'activo') payload.excepcionCierre = true; 
+            if(nuevoEstado === 'activo' || nuevoEstado === 'proximo') payload.excepcionCierre = true; 
             
             try {
                 await window.updateDoc(window.doc(window.db, "directorio_servicios", id), payload);
                 mostrarToast(`Servicio movido a ${nuevoEstado.toUpperCase()}`, "exito");
                 window.cargarServicios(); 
             } catch (error) { mostrarToast("No se pudo actualizar.", "error"); }
+        };
+
+        // ===============================================
+        // MÓDULO DE REUTILIZACIÓN (NUEVAS CAMPAÑAS)
+        // ===============================================
+        window.prepararReutilizacion = function(idUltimoServicio) {
+            empresaAReutilizar = serviciosGlobales.find(s => s.id === idUltimoServicio);
+            document.getElementById('reutilizar-nombre-empresa').innerText = empresaAReutilizar.nombreComercial;
+            document.getElementById('r-fecha-ini').value = '';
+            document.getElementById('r-fecha-fin').value = '';
+            abrirModal('reutilizar');
+        };
+
+        window.ejecutarReutilizacion = async function() {
+            const fechaIni = document.getElementById('r-fecha-ini').value;
+            const fechaFin = document.getElementById('r-fecha-fin').value;
+            
+            if(!fechaIni || !fechaFin) return mostrarToast("Ambas fechas son obligatorias", "error");
+
+            const btn = document.getElementById('btn-ejecutar-reutilizacion');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Guardando...'; btn.disabled = true;
+
+            const tzDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+            const hoyStr = tzDate.getFullYear() + "-" + String(tzDate.getMonth() + 1).padStart(2, '0') + "-" + String(tzDate.getDate()).padStart(2, '0');
+            
+            let estadoCalculado = 'activo';
+            if(fechaIni > hoyStr) estadoCalculado = 'proximo';
+
+            const payload = {
+                nombreComercial: empresaAReutilizar.nombreComercial,
+                folio: empresaAReutilizar.folio || 'S/F',
+                razonSocial: empresaAReutilizar.razonSocial || 'NO ESPECIFICADA',
+                ubicacion: empresaAReutilizar.ubicacion || '',
+                fechaInicio: fechaIni,
+                fechaFin: fechaFin,
+                horaInicio: empresaAReutilizar.horaInicio || '08:00',
+                horaFin: empresaAReutilizar.horaFin || '14:00',
+                estado: estadoCalculado, 
+                excepcionCierre: false,
+                timestamp: new Date()
+            };
+
+            try {
+                await window.addDoc(window.collection(window.db, "directorio_servicios"), payload);
+                cerrarModal('reutilizar');
+                mostrarToast(`Servicio creado (${estadoCalculado.toUpperCase()})`, "exito");
+                // Nos pasamos a la pestaña correspondiente para que el usuario vea su creación
+                filtrarVista(estadoCalculado);
+            } catch(e) { mostrarToast("Error al crear servicio.", "error"); }
+            
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar y Crear'; btn.disabled = false;
         };
 
         window.prepararEdicion = function(id) {
@@ -865,9 +1004,9 @@
             
             try {
                 await window.updateDoc(window.doc(window.db, "directorio_servicios", id), {
-                    nombreComercial: document.getElementById('e-comercial').value.toUpperCase(),
-                    folio: document.getElementById('e-folio').value.toUpperCase(),
-                    razonSocial: document.getElementById('e-razon').value.toUpperCase(),
+                    nombreComercial: document.getElementById('e-comercial').value.toUpperCase().trim(),
+                    folio: document.getElementById('e-folio').value.toUpperCase().trim(),
+                    razonSocial: document.getElementById('e-razon').value.toUpperCase().trim(),
                     ubicacion: document.getElementById('e-ubicacion').value.toUpperCase().trim(),
                     fechaFin: document.getElementById('e-fecha-fin').value,
                     horaInicio: document.getElementById('e-hora-ini').value,
@@ -879,6 +1018,7 @@
             } catch(e) { mostrarToast("Error al guardar.", "error"); }
             btn.innerHTML = 'Guardar Cambios'; btn.disabled = false;
         };
+
 
         // ==========================================
         // ANÁLISIS DE ROL POR IA (CON PERSISTENCIA)
