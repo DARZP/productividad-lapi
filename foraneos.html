@@ -433,19 +433,48 @@
         function guardarDetalle(estudio) {
             let errorValidacion = false;
             let hayDatosValidos = false;
+            let errorMedicos = false;
 
             document.querySelectorAll('.med-fila').forEach(fila => {
-                const medico = fila.querySelector('.med-name').value;
+                const medicoInput = fila.querySelector('.med-name');
+                const medicoRaw = medicoInput.value;
                 const cant = parseInt(fila.querySelector('.med-cant').value);
                 
-                if (medico && !isNaN(cant) && cant > 0) {
-                    registroFinal.push({ estudio, medico, cant });
+                // --- VALIDACIÓN INTELIGENTE (COMO EN SUCURSALES) ---
+                let medicoValidado = null;
+                if(medicoRaw) {
+                    const medInputNorm = medicoRaw.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    let exactMatch = medicos.find(m => m.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === medInputNorm);
+                    if (exactMatch) medicoValidado = exactMatch;
+                    else {
+                        let inputWords = medInputNorm.split(/\s+/).filter(w => w.length > 2);
+                        if(inputWords.length === 0) inputWords = medInputNorm.split(/\s+/);
+                        let posibles = medicos.filter(m => { 
+                            let mNorm = m.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+                            return inputWords.every(word => mNorm.includes(word)); 
+                        });
+                        if (posibles.length > 0) medicoValidado = posibles[0]; 
+                    }
+                }
+
+                // Aplicar estilos de error o corrección
+                if (medicoRaw && !medicoValidado) {
+                    medicoInput.classList.remove('border-slate-200', 'focus:border-orange-400');
+                    medicoInput.classList.add('border-red-500', 'text-red-600', 'bg-red-50');
+                    errorMedicos = true;
+                } else if (medicoValidado && !isNaN(cant) && cant > 0) {
+                    medicoInput.classList.remove('border-red-500', 'text-red-600', 'bg-red-50');
+                    medicoInput.classList.add('border-slate-200', 'focus:border-orange-400');
+                    medicoInput.value = medicoValidado.toUpperCase(); // Autocorrige en la interfaz
+                    
+                    registroFinal.push({ estudio, medico: medicoValidado.toUpperCase(), cant });
                     hayDatosValidos = true;
-                } else if (medico || !isNaN(cant)) {
+                } else if (medicoRaw || !isNaN(cant)) {
                     errorValidacion = true;
                 }
             });
 
+            if(errorMedicos) return mostrarToast("Hay nombres de personal no reconocidos. Por favor, selecciona una opción de la lista.", "error");
             if(!hayDatosValidos) return mostrarToast("Debes añadir al menos un personal con cantidad válida.", "error");
             if(errorValidacion) return mostrarToast("Por favor completa nombre y cantidad (>0) para todo el personal.", "error");
             
@@ -565,18 +594,50 @@
 
             if(!empresa || !horaInicio || !horaFin) return mostrarToast("Completa los datos generales.", "error");
 
-            let detallesNuevos = []; let hayErrorDetalles = false;
+            let detallesNuevos = []; 
+            let hayErrorDetalles = false;
+            let errorMedicos = false;
 
             document.querySelectorAll('.edit-fila').forEach(fila => {
                 const est = fila.querySelector('.edit-est').value;
-                const med = fila.querySelector('.edit-med').value;
+                const medicoInput = fila.querySelector('.edit-med');
+                const medicoRaw = medicoInput.value;
                 const cant = parseInt(fila.querySelector('.edit-cant').value);
 
-                if(!est || !med || isNaN(cant) || cant < 1) hayErrorDetalles = true;
-                else detallesNuevos.push({ estudio: est, medico: med, cant: cant });
+                // --- VALIDACIÓN INTELIGENTE EN EDICIÓN ---
+                let medicoValidado = null;
+                if(medicoRaw) {
+                    const medInputNorm = medicoRaw.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    let exactMatch = medicos.find(m => m.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === medInputNorm);
+                    if (exactMatch) medicoValidado = exactMatch;
+                    else {
+                        let inputWords = medInputNorm.split(/\s+/).filter(w => w.length > 2);
+                        if(inputWords.length === 0) inputWords = medInputNorm.split(/\s+/);
+                        let posibles = medicos.filter(m => { 
+                            let mNorm = m.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+                            return inputWords.every(word => mNorm.includes(word)); 
+                        });
+                        if (posibles.length > 0) medicoValidado = posibles[0]; 
+                    }
+                }
+
+                if (medicoRaw && !medicoValidado) {
+                    medicoInput.classList.remove('border-slate-200', 'focus:border-orange-400');
+                    medicoInput.classList.add('border-red-500', 'bg-red-50', 'text-red-600');
+                    errorMedicos = true;
+                } else if(!est || !medicoValidado || isNaN(cant) || cant < 1) {
+                    hayErrorDetalles = true;
+                } else {
+                    medicoInput.classList.remove('border-red-500', 'bg-red-50', 'text-red-600');
+                    medicoInput.classList.add('border-slate-200', 'focus:border-orange-400');
+                    medicoInput.value = medicoValidado.toUpperCase(); // Autocorrige
+                    
+                    detallesNuevos.push({ estudio: est, medico: medicoValidado.toUpperCase(), cant: cant });
+                }
             });
 
-            if(hayErrorDetalles || detallesNuevos.length === 0) return mostrarToast("Revisa que los estudios tengan Tipo, Personal y Cantidad.", "error");
+            if(errorMedicos) return mostrarToast("Hay nombres de personal inválidos. Usa los del catálogo.", "error");
+            if(hayErrorDetalles || detallesNuevos.length === 0) return mostrarToast("Revisa que los estudios tengan Tipo, Personal válido y Cantidad.", "error");
 
             const btn = document.getElementById('btn-guardar-cambios');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Actualizando...'; btn.disabled = true;
@@ -595,7 +656,6 @@
                     detalles: detallesNuevos
                 });
                 
-                // Preparar datos para compartir imagen
                 window.datosParaCaptura = {
                     folio: folioText,
                     empresaF: empresa,
@@ -606,7 +666,6 @@
                     isEdit: true
                 };
 
-                // Cambiar a la vista de confirmación
                 document.getElementById('paso-edicion').classList.add('hidden');
                 
                 const postConfirmacion = document.getElementById('paso-post-confirmacion');
