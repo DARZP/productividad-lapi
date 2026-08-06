@@ -121,13 +121,33 @@
 
         <div class="px-2 mt-2">
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-sky-500 flex items-center justify-between mb-6">
+
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-sky-50 border border-sky-100 text-sky-600 rounded-full flex items-center justify-center text-xl shadow-sm"><i class="fa-solid fa-user-md"></i></div>
                     <div>
                         <p id="ui-medico" class="font-black text-slate-800 leading-tight">Dr. Nombre</p>
-                        <p id="ui-sucursal" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sucursal</p>
+                        
+                        <!-- PESTAÑA INTERACTIVA PARA CAMBIAR SUCURSAL -->
+                        <div class="relative group cursor-pointer mt-0.5" onclick="toggleMenuCambioSucursal()">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5 hover:text-orange-600 transition-colors bg-slate-50 hover:bg-orange-50 border border-slate-200 px-2 py-0.5 rounded-md w-fit shadow-sm">
+                                <span id="ui-sucursal">Sucursal</span> 
+                                <i class="fa-solid fa-caret-down text-[9px] text-slate-400 group-hover:text-orange-500"></i>
+                            </p>
+                            
+                            <!-- MENÚ DESPLEGABLE -->
+                            <div id="menu-cambio-sucursal" class="absolute left-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-2xl z-[100] hidden opacity-0 transition-opacity duration-200">
+                                <div class="p-3 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-slate-50 rounded-t-xl">
+                                    Cambiar turno a:
+                                </div>
+                                <div id="lista-cambio-sucursales" class="max-h-56 overflow-y-auto scroll-custom p-1.5 bg-white rounded-b-xl">
+                                    <!-- Se llena dinámicamente con JS -->
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
+
                 <div class="flex flex-col items-end gap-2">
                     <button onclick="abrirMiHistorial()" class="text-[10px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-3 py-2 rounded-lg font-bold transition active:scale-95 shadow-sm flex items-center gap-1 uppercase tracking-wider"><i class="fa-solid fa-chart-user"></i> Perfil</button>
                     <div id="indicador-guardado" class="text-[10px] font-black text-white bg-emerald-500 px-2.5 py-1 rounded-md opacity-0 transition-all duration-300 shadow-sm"></div>
@@ -958,6 +978,76 @@
         }
 
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+    // =====================================
+        // ATAJO: CAMBIO RÁPIDO DE SUCURSAL
+        // =====================================
+        window.toggleMenuCambioSucursal = function() {
+            const menu = document.getElementById('menu-cambio-sucursal');
+            
+            if (menu.classList.contains('hidden')) {
+                // Llenar la lista solo la primera vez que se abre
+                const contenedorLista = document.getElementById('lista-cambio-sucursales');
+                if (contenedorLista.innerHTML.trim() === '') {
+                    const sucursales = window.LAPI_CONFIG.sucursales;
+                    contenedorLista.innerHTML = sucursales.map(s => 
+                        `<div onclick="confirmarCambioSucursal('${s}'); event.stopPropagation();" class="p-2.5 text-xs font-bold text-slate-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg cursor-pointer transition-colors flex items-center gap-2"><i class="fa-solid fa-building opacity-50"></i> ${s}</div>`
+                    ).join('');
+                }
+                menu.classList.remove('hidden');
+                setTimeout(() => menu.classList.remove('opacity-0'), 10);
+            } else {
+                menu.classList.add('opacity-0');
+                setTimeout(() => menu.classList.add('hidden'), 200);
+            }
+        };
+
+        window.confirmarCambioSucursal = function(nuevaSucursal) {
+            if (nuevaSucursal === sesionActual.sucursal) {
+                mostrarToast("Ya tienes turno activo en esta sucursal.", "info");
+                window.toggleMenuCambioSucursal();
+                return;
+            }
+
+            if (confirm(`¿Confirmas el cambio de turno a la sucursal ${nuevaSucursal}? Se cargarán los datos de esa sede.`)) {
+                // Forzar un guardado preventivo si hubo cambios en la sucursal actual
+                if (datosDelDia && datosDelDia.estudios) {
+                    clearTimeout(timerGuardado);
+                    window.setDoc(window.doc(window.db, "registros_diarios_sucursales", docId), datosDelDia, { merge: true }).catch(e => console.log(e));
+                }
+
+                // Actualizar la caché de sesión
+                sesionActual.sucursal = nuevaSucursal;
+                localStorage.setItem('lapi_sesion_sucursal', JSON.stringify(sesionActual));
+                
+                window.toggleMenuCambioSucursal();
+                
+                // Forzar el retorno a la vista principal de captura por si estaba en un resumen o en el historial
+                document.getElementById('vista-captura-principal').classList.remove('hidden');
+                document.getElementById('vista-resumen-final').classList.add('hidden');
+                document.getElementById('vista-resumen-sucursal').classList.add('hidden');
+                document.getElementById('vista-mi-historial').classList.add('hidden');
+                
+                // Ocultar el botón flotante de procedimientos por defecto (se reactivará en iniciarApp si aplica)
+                document.getElementById('btn-flotante-procedimientos').classList.add('hidden');
+                
+                // Reiniciar los contadores visuales para evitar parpadeos con datos viejos
+                document.querySelectorAll('input[type="number"]').forEach(inp => {
+                    if(inp.id.startsWith('count_')) inp.value = 0;
+                });
+                
+                // Re-ejecutar el ciclo de vida completo de la app
+                iniciarApp();
+            }
+        };
+
+        // Cerrar el menú si el usuario hace clic afuera de la pestaña
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('menu-cambio-sucursal');
+            if (menu && !menu.classList.contains('hidden') && !e.target.closest('.group.cursor-pointer')) {
+                menu.classList.add('opacity-0');
+                setTimeout(() => menu.classList.add('hidden'), 200);
+            }
+        });
     </script>
 </body>
 </html>
