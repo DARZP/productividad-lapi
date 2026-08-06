@@ -155,6 +155,7 @@
                 <button onclick="cambiarSeccion('foraneos')" id="nav-foraneos" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-white/70 hover:text-white"><i class="fa-solid fa-map-location-dot mr-1"></i> Foráneos (IA)</button>
                 <button onclick="cambiarSeccion('tnc')" id="nav-tnc" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-white/70 hover:text-white"><i class="fa-solid fa-list-check mr-1"></i> Gestión TNC</button>
                 <button onclick="cambiarSeccion('perfil')" id="nav-perfil" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-white/70 hover:text-white"><i class="fa-solid fa-user-doctor mr-1"></i> Expediente</button>
+                <button onclick="cambiarSeccion('unificador')" id="nav-unificador" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all text-white/70 hover:text-white"><i class="fa-solid fa-broom mr-1"></i> Unificador</button>
             </div>
         </div>
 
@@ -373,6 +374,36 @@
                 <div id="mensaje-perfil-vacio" class="text-center py-20 text-slate-400 italic font-medium text-lg">Selecciona un médico en la barra superior para visualizar su expediente de calidad.</div>
             </div>
         </div>
+
+        <div id="sec-unificador" class="hidden animate-fade-in flex-1">
+            <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col min-h-[500px]">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-200 pb-4 gap-4">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-800 flex items-center gap-2"><i class="fa-solid fa-broom text-orange-600"></i> Limpieza de Nombres (Data Cleansing)</h2>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Encuentra y unifica nombres huérfanos en la base de datos de foráneos.</p>
+                    </div>
+                    <button onclick="escanearNombresHuerfanos()" id="btn-escanear-nombres" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center gap-2">
+                        <i class="fa-solid fa-radar"></i> Iniciar Escaneo
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto scroll-custom flex-1 rounded-xl border border-slate-200">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-slate-50 z-10 text-[10px] uppercase text-slate-500 border-b border-slate-200 shadow-sm font-black tracking-widest">
+                            <tr>
+                                <th class="p-4 w-1/3">Nombre Huérfano (Registrado)</th>
+                                <th class="p-4 text-center">Apariciones</th>
+                                <th class="p-4 w-1/2">Mapear a Nombre Oficial</th>
+                                <th class="p-4 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-nombres-huerfanos" class="divide-y divide-slate-100 font-medium text-slate-700 text-sm bg-white">
+                            <tr><td colspan="4" class="text-center py-16 text-slate-400 italic">Haz clic en "Iniciar Escaneo" para buscar discrepancias.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Modal de Corrección Individual -->
@@ -538,7 +569,7 @@
         };
 
         window.cambiarSeccion = function(sec) {
-            ['cruce', 'foraneos', 'tnc', 'perfil'].forEach(s => {
+            ['cruce', 'foraneos', 'tnc', 'perfil', 'unificador'].forEach(s => {
                 document.getElementById(`sec-${s}`).classList.add('hidden');
                 document.getElementById(`nav-${s}`).classList.remove('tab-active', 'text-slate-800');
                 document.getElementById(`nav-${s}`).classList.add('text-white/70');
@@ -1627,6 +1658,133 @@ Estructura exacta:
             versionDiv.innerHTML = `<i class="fa-solid fa-code-branch"></i> ${window.LAPI_CONFIG.APP_VERSION || 'v1.0.0'}`;
             document.body.appendChild(versionDiv);
         });
+
+     // ==========================================
+        // UNIFICADOR DE NOMBRES EN LOTE (CLEANSING)
+        // ==========================================
+        window.escanearNombresHuerfanos = async function() {
+            const btn = document.getElementById('btn-escanear-nombres');
+            const tbody = document.getElementById('tabla-nombres-huerfanos');
+            const txtOriginal = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Escaneando...';
+            btn.disabled = true;
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-16 text-slate-400 font-bold"><i class="fa-solid fa-spinner fa-spin text-2xl text-orange-400 mb-2 block"></i> Analizando todos los registros...</td></tr>';
+
+            const medicosOficiales = window.LAPI_CONFIG.medicos.map(m => m.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+            let nombresEncontrados = {};
+
+            try {
+                const q = window.query(window.collection(window.db, "registros"));
+                const qs = await window.getDocs(q);
+                
+                qs.forEach(doc => {
+                    let d = doc.data();
+                    if(d.detalles && Array.isArray(d.detalles)) {
+                        d.detalles.forEach(det => {
+                            let med = det.medico;
+                            if(med) {
+                                let medNorm = med.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                // Filtramos: Si NO está en la lista oficial y no es "DESCONOCIDO"
+                                if(!medicosOficiales.includes(medNorm) && medNorm !== "DESCONOCIDO") {
+                                    if(!nombresEncontrados[med]) nombresEncontrados[med] = { count: 0, ids: [] };
+                                    nombresEncontrados[med].count++;
+                                    nombresEncontrados[med].ids.push(doc.id);
+                                }
+                            }
+                        });
+                    }
+                });
+
+                const listaOpciones = window.LAPI_CONFIG.medicos.map(m => `<option value="${m}">${m}</option>`).join('');
+                
+                let html = '';
+                let index = 0;
+                for(let nombreErroneo in nombresEncontrados) {
+                    let obj = nombresEncontrados[nombreErroneo];
+                    // Un Set para no repetir IDs de documentos
+                    let uniqueIds = [...new Set(obj.ids)].join(',');
+                    
+                    html += `
+                        <tr class="hover:bg-slate-50 transition" id="row-huerfano-${index}">
+                            <td class="p-4 font-black text-red-600 uppercase text-xs">${nombreErroneo}</td>
+                            <td class="p-4 text-center font-bold text-slate-500">${obj.count} veces</td>
+                            <td class="p-4">
+                                <select id="sel-oficial-${index}" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none text-slate-700 focus:border-orange-400">
+                                    <option value="" disabled selected>Selecciona el nombre correcto...</option>
+                                    ${listaOpciones}
+                                </select>
+                                <input type="hidden" id="docs-huerfano-${index}" value="${uniqueIds}">
+                                <input type="hidden" id="name-huerfano-${index}" value="${nombreErroneo}">
+                            </td>
+                            <td class="p-4 text-center">
+                                <button onclick="ejecutarUnificacion(${index})" class="bg-orange-600 hover:bg-orange-700 text-white p-2.5 rounded-lg text-xs shadow-sm transition font-bold"><i class="fa-solid fa-link mr-1"></i> Unificar</button>
+                            </td>
+                        </tr>
+                    `;
+                    index++;
+                }
+
+                tbody.innerHTML = html || '<tr><td colspan="4" class="text-center py-16 text-emerald-600 font-black uppercase tracking-widest"><i class="fa-solid fa-check-double text-2xl block mb-2"></i> Base de Datos Impecable. 0 Huérfanos encontrados.</td></tr>';
+
+            } catch(e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-16 text-red-500 font-bold">Error al escanear la base de datos.</td></tr>';
+            }
+
+            btn.innerHTML = txtOriginal;
+            btn.disabled = false;
+        };
+
+        window.ejecutarUnificacion = async function(index) {
+            const nombreNuevo = document.getElementById(`sel-oficial-${index}`).value;
+            if(!nombreNuevo) return mostrarToast("Selecciona el nombre correcto primero.", "error");
+            
+            const nombreMalo = document.getElementById(`name-huerfano-${index}`).value;
+            const docIds = document.getElementById(`docs-huerfano-${index}`).value.split(',');
+
+            if(!confirm(`¿Seguro que deseas cambiar TODAS las apariciones de "${nombreMalo}" a "${nombreNuevo.toUpperCase()}"?\n\n(Esto sobreescribirá la base de datos de manera irreversible)`)) return;
+
+            const btnUnificar = document.querySelector(`#row-huerfano-${index} button`);
+            btnUnificar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btnUnificar.disabled = true;
+
+            try {
+                for(let id of docIds) {
+                    const docRef = window.doc(window.db, "registros", id);
+                    const docSnap = await window.getDoc(docRef);
+                    if(docSnap.exists()) {
+                        let data = docSnap.data();
+                        let changed = false;
+                        if(data.detalles) {
+                            data.detalles.forEach(det => {
+                                if(det.medico === nombreMalo) {
+                                    det.medico = nombreNuevo.toUpperCase();
+                                    changed = true;
+                                }
+                            });
+                        }
+                        if(changed) {
+                            await window.updateDoc(docRef, { detalles: data.detalles });
+                        }
+                    }
+                }
+                
+                mostrarToast("Unificación exitosa.", "exito");
+                document.getElementById(`row-huerfano-${index}`).remove();
+                
+                const tbody = document.getElementById('tabla-nombres-huerfanos');
+                if(tbody.children.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-16 text-emerald-600 font-black uppercase tracking-widest"><i class="fa-solid fa-check-double text-2xl block mb-2"></i> Limpieza Finalizada.</td></tr>';
+                }
+
+            } catch(e) {
+                console.error(e);
+                mostrarToast("Error durante la unificación.", "error");
+                btnUnificar.innerHTML = '<i class="fa-solid fa-link mr-1"></i> Unificar';
+                btnUnificar.disabled = false;
+            }
+        };   
     </script>
 </body>
 </html>
