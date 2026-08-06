@@ -978,7 +978,8 @@
         }
 
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
-    // =====================================
+    
+        // =====================================
         // ATAJO: CAMBIO RÁPIDO DE SUCURSAL
         // =====================================
         window.toggleMenuCambioSucursal = function() {
@@ -987,12 +988,15 @@
             if (menu.classList.contains('hidden')) {
                 // Llenar la lista solo la primera vez que se abre
                 const contenedorLista = document.getElementById('lista-cambio-sucursales');
-                if (contenedorLista.innerHTML.trim() === '') {
+                
+                // CORRECCIÓN: Revisamos si hay elementos HTML hijos, ignorando los comentarios de texto
+                if (contenedorLista.children.length === 0) {
                     const sucursales = window.LAPI_CONFIG.sucursales;
                     contenedorLista.innerHTML = sucursales.map(s => 
                         `<div onclick="confirmarCambioSucursal('${s}'); event.stopPropagation();" class="p-2.5 text-xs font-bold text-slate-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg cursor-pointer transition-colors flex items-center gap-2"><i class="fa-solid fa-building opacity-50"></i> ${s}</div>`
                     ).join('');
                 }
+                
                 menu.classList.remove('hidden');
                 setTimeout(() => menu.classList.remove('opacity-0'), 10);
             } else {
