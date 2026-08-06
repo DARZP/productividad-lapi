@@ -1,5 +1,5 @@
 window.LAPI_CONFIG = {
-    APP_VERSION: "v4.0.1 (Julio 2026)",
+    APP_VERSION: "v5.0.0 (Agosto 2026)",
     // ==========================================
     // 1. CATÁLOGO COMPARTIDO DE MÉDICOS
     // ==========================================
