@@ -168,45 +168,50 @@
                 </div>
             </div>
 
-            <!-- MÓDULO DE EDICIÓN LEGACY -->
+            <!-- MÓDULO DE EDICIÓN -->
             <div id="paso-edicion" class="paso hidden">
-                <h2 class="text-xl font-black mb-4 text-center border-b border-slate-100 pb-3 text-slate-800">Modificando: <span id="edit-folio-text" class="text-orange-600"></span></h2>
+                <h2 class="text-xl font-black mb-6 text-center border-b border-slate-100 pb-4 text-slate-800"><i class="fa-solid fa-pen-to-square text-orange-500 mr-2"></i> Editando Folio: <span id="edit-folio-text" class="text-orange-600"></span></h2>
                 
-                <div class="space-y-4 text-sm">
-                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
-                        <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Empresa (Edición Manual):</label> 
-                        <input id="edit-empresa" list="lista-empresas" class="w-full p-3 mb-4 rounded-xl bg-white border border-slate-200 uppercase text-slate-700 outline-none font-bold focus:border-orange-400">
+                <div class="space-y-6 text-sm">
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                        <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Empresa (Foráneo):</label> 
+                        <input id="edit-empresa" list="lista-empresas" class="w-full p-3.5 mb-4 rounded-xl bg-slate-50 border border-slate-200 uppercase text-slate-700 outline-none font-bold focus:border-orange-400 transition-colors shadow-inner">
                         
-                        <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Fecha:</label> 
-                        <input type="date" id="edit-fecha" class="w-full p-3 mb-4 rounded-xl bg-white border border-slate-200 text-slate-700 outline-none font-bold focus:border-orange-400">
+                        <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500 flex justify-between items-center">
+                            Fecha Operativa 
+                            <span class="text-red-400 lowercase font-bold tracking-normal bg-red-50 px-2 py-0.5 rounded border border-red-100">No editable</span>
+                        </label> 
+                        <input type="date" id="edit-fecha" readonly class="w-full p-3.5 mb-4 rounded-xl bg-slate-100 border border-slate-300 text-slate-500 outline-none font-bold cursor-not-allowed shadow-inner opacity-70">
                         
                         <div class="flex gap-4">
                             <div class="w-1/2">
-                                <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Inicio:</label>
-                                <input type="time" id="edit-hora-inicio" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-slate-700 outline-none font-bold focus:border-orange-400">
+                                <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Inicio Real:</label>
+                                <input type="time" id="edit-hora-inicio" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 outline-none font-bold focus:border-orange-400 transition-colors shadow-inner">
                             </div>
                             <div class="w-1/2">
-                                <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Fin:</label>
-                                <input type="time" id="edit-hora-fin" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-slate-700 outline-none font-bold focus:border-orange-400">
+                                <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Fin Real:</label>
+                                <input type="time" id="edit-hora-fin" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 outline-none font-bold focus:border-orange-400 transition-colors shadow-inner">
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
-                        <h3 class="font-black uppercase tracking-widest text-[10px] border-b border-slate-200 pb-2 mb-4 text-slate-500">Estudios Realizados</h3>
-                        <div id="edit-detalles-container" class="space-y-3"></div>
-                        <button onclick="agregarFilaEdicion()" class="w-full mt-4 bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition py-2.5 rounded-xl text-xs font-bold active:scale-95 shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Agregar otro estudio</button>
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                        <h3 class="font-black uppercase tracking-widest text-[10px] border-b border-slate-100 pb-3 mb-4 text-slate-500 flex items-center gap-2"><i class="fa-solid fa-list-check text-orange-400 text-sm"></i> Estudios Realizados</h3>
+                        
+                        <div id="edit-detalles-container" class="space-y-4"></div>
+                        
+                        <button onclick="agregarFilaEdicion()" class="w-full mt-4 bg-slate-50 border border-slate-200 text-slate-600 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 transition-colors py-3.5 rounded-xl text-xs font-bold active:scale-95 shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Agregar otro estudio</button>
                     </div>
 
-                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
-                        <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Observaciones:</label>
-                        <textarea id="edit-observaciones" class="w-full p-3 rounded-xl bg-white border border-slate-200 outline-none text-slate-700 focus:border-orange-400 font-medium" rows="3"></textarea>
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                        <label class="block mb-2 font-black uppercase tracking-widest text-[10px] text-slate-500">Observaciones (Correcciones / Notas):</label>
+                        <textarea id="edit-observaciones" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none text-slate-700 focus:border-orange-400 font-medium transition-colors shadow-inner" rows="3"></textarea>
                     </div>
                 </div>
 
-                <div class="flex gap-3 mt-6">
-                    <button onclick="location.reload()" class="w-1/3 bg-slate-100 border border-slate-200 text-slate-600 font-black py-3.5 rounded-xl transition-all active:scale-95">Cancelar</button>
-                    <button id="btn-guardar-cambios" onclick="guardarEdicion()" class="w-2/3 bg-emerald-600 text-white font-black py-3.5 rounded-xl shadow-md transition-all hover:bg-emerald-700 active:scale-95">Guardar Cambios</button>
+                <div class="flex gap-3 mt-8">
+                    <button onclick="location.reload()" class="w-1/3 bg-slate-100 border border-slate-200 text-slate-600 font-black py-4 rounded-xl transition-all active:scale-95 shadow-sm">Cancelar</button>
+                    <button id="btn-guardar-cambios" onclick="guardarEdicion()" class="w-2/3 bg-emerald-600 text-white font-black py-4 rounded-xl shadow-md transition-all hover:bg-emerald-700 active:scale-95 flex justify-center items-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Confirmar Corrección</button>
                 </div>
             </div>
 
@@ -484,13 +489,23 @@
             const empresaF = document.getElementById('input-empresa-nombre').value.toUpperCase();
             const idServicioDb = document.getElementById('input-servicio').value;
             const observaciones = document.getElementById('input-observaciones').value;
+            const fechaOperativa = document.getElementById('input-fecha').value;
 
-            window.datosParaCaptura = { folio, empresaF, observaciones };
+            // Guardar para el creador de la imagen
+            window.datosParaCaptura = { 
+                folio, 
+                empresaF, 
+                observaciones, 
+                horasCalculadas,
+                fecha: fechaOperativa,
+                detalles: registroFinal,
+                isEdit: false 
+            };
 
             try {
                 await window.addDoc(window.collection(window.db, "registros"), {
                     folio, 
-                    fecha: document.getElementById('input-fecha').value, 
+                    fecha: fechaOperativa, 
                     horaInicio: hIni,
                     horaFin: hFin,
                     horasLaboradas: horasCalculadas,
@@ -514,6 +529,100 @@
             btn.disabled = false;
         }
 
+        // ================= EDICIÓN INTEGRADA ==================
+        function agregarFilaEdicion(estudio = '', medico = '', cant = '') {
+            const div = document.createElement('div');
+            div.className = "flex flex-col gap-3 bg-slate-50 p-4 rounded-xl edit-fila border border-slate-200 mb-3 shadow-sm relative";
+            
+            const opcionesEstudios = estudios.map(e => `<option value="${e}" ${e === estudio ? 'selected' : ''}>${e}</option>`).join('');
+            
+            div.innerHTML = `
+                <div class="flex gap-3 items-center">
+                    <select class="edit-est flex-1 p-3.5 rounded-xl bg-white border border-slate-200 text-slate-700 outline-none font-bold text-xs focus:border-orange-400 shadow-inner">
+                        <option value="" disabled ${!estudio ? 'selected' : ''}>Selecciona Estudio...</option>
+                        ${opcionesEstudios}
+                    </select>
+                    <button onclick="this.closest('.edit-fila').remove()" class="text-red-400 hover:text-red-600 p-3.5 shrink-0 bg-white border border-slate-200 rounded-xl shadow-sm transition-colors active:scale-90"><i class="fa-solid fa-trash text-sm"></i></button>
+                </div>
+                <div class="flex gap-3 items-center">
+                    <input list="lista-medicos" placeholder="Personal" value="${medico}" class="edit-med flex-1 p-3.5 rounded-xl bg-white border border-slate-200 outline-none text-slate-700 font-bold text-xs focus:border-orange-400 uppercase shadow-inner">
+                    <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-1 shrink-0 shadow-sm">
+                        <button type="button" onclick="modificarCant(this, -1)" class="w-10 h-10 rounded bg-slate-100 text-slate-600 font-black hover:bg-slate-200 active:scale-90 transition-colors text-lg">-</button>
+                        <input type="number" min="1" value="${cant || 1}" class="med-cant edit-cant w-12 text-center font-black text-slate-800 bg-transparent outline-none appearance-none m-0 p-0 text-base">
+                        <button type="button" onclick="modificarCant(this, 1)" class="w-10 h-10 rounded bg-orange-100 text-orange-600 font-black hover:bg-orange-200 active:scale-90 transition-colors text-lg">+</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('edit-detalles-container').appendChild(div);
+        }
+
+        async function guardarEdicion() {
+            const empresa = document.getElementById('edit-empresa').value.toUpperCase();
+            const fecha = document.getElementById('edit-fecha').value; 
+            const horaInicio = document.getElementById('edit-hora-inicio').value;
+            const horaFin = document.getElementById('edit-hora-fin').value;
+            const observaciones = document.getElementById('edit-observaciones').value;
+
+            if(!empresa || !horaInicio || !horaFin) return mostrarToast("Completa los datos generales.", "error");
+
+            let detallesNuevos = []; let hayErrorDetalles = false;
+
+            document.querySelectorAll('.edit-fila').forEach(fila => {
+                const est = fila.querySelector('.edit-est').value;
+                const med = fila.querySelector('.edit-med').value;
+                const cant = parseInt(fila.querySelector('.edit-cant').value);
+
+                if(!est || !med || isNaN(cant) || cant < 1) hayErrorDetalles = true;
+                else detallesNuevos.push({ estudio: est, medico: med, cant: cant });
+            });
+
+            if(hayErrorDetalles || detallesNuevos.length === 0) return mostrarToast("Revisa que los estudios tengan Tipo, Personal y Cantidad.", "error");
+
+            const btn = document.getElementById('btn-guardar-cambios');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Actualizando...'; btn.disabled = true;
+
+            const horasCalculadasNuevas = calcularHoras(horaInicio, horaFin);
+            const folioText = document.getElementById('edit-folio-text').innerText;
+
+            try {
+                const docRef = window.doc(window.db, "registros", editDocId);
+                await window.updateDoc(docRef, {
+                    empresa: empresa, 
+                    horaInicio: horaInicio, 
+                    horaFin: horaFin, 
+                    observaciones: observaciones,
+                    horasLaboradas: horasCalculadasNuevas,
+                    detalles: detallesNuevos
+                });
+                
+                // Preparar datos para compartir imagen
+                window.datosParaCaptura = {
+                    folio: folioText,
+                    empresaF: empresa,
+                    observaciones: observaciones,
+                    horasCalculadas: horasCalculadasNuevas,
+                    fecha: fecha,
+                    detalles: detallesNuevos,
+                    isEdit: true
+                };
+
+                // Cambiar a la vista de confirmación
+                document.getElementById('paso-edicion').classList.add('hidden');
+                
+                const postConfirmacion = document.getElementById('paso-post-confirmacion');
+                postConfirmacion.querySelector('h2').innerText = '¡Corrección Guardada!';
+                postConfirmacion.querySelector('p').innerText = 'Los datos corregidos se sincronizaron en la nube.';
+                document.getElementById('post-folio-text').innerText = folioText;
+                
+                postConfirmacion.classList.remove('hidden');
+                mostrarToast("¡Modificación exitosa!", "exito");
+            } catch(e) {
+                mostrarToast("Fallo al actualizar.", "error");
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar Corrección'; btn.disabled = false;
+            }
+        }
+
+        // ================= CREACIÓN DE IMAGEN DINÁMICA ==================
         window.generarImagenCompartir = async function() {
             const btn = document.getElementById('btn-compartir-final');
             const originalHTML = btn.innerHTML;
@@ -526,8 +635,32 @@
                 btn.innerHTML = originalHTML; btn.disabled = false; return;
             }
 
+            // Adaptar Titulo si es Edición
+            const capTitulo = document.querySelector('#captura-temp h1');
+            const capSubtitulo = document.querySelector('#captura-temp p.text-sm');
+            if(datos.isEdit) {
+                capTitulo.innerHTML = '<i class="fa-solid fa-pen-to-square text-orange-500 mr-2"></i> CORRECCIÓN DE REGISTRO';
+                capSubtitulo.innerText = 'Actualización de Productividad Foráneos';
+            } else {
+                capTitulo.innerHTML = '<i class="fa-solid fa-map-location-dot text-orange-500 mr-2"></i> REGISTRO DIARIO';
+                capSubtitulo.innerText = 'Productividad Foráneos';
+            }
+
             document.getElementById('cap-folio').innerText = datos.folio;
-            document.getElementById('cap-resumen-contenido').innerHTML = document.getElementById('resumen-contenido').innerHTML;
+            
+            // Reconstruir el HTML del resumen
+            let htmlResumen = `<p class="mb-1"><b class="opacity-70 text-slate-500">Fecha Operativa:</b> ${datos.fecha}</p>
+                        <p class="mb-1"><b class="opacity-70 text-slate-500">Jornada:</b> <span class="text-orange-600 font-black">${datos.horasCalculadas} hrs</span></p>
+                        <p class="mb-3"><b class="opacity-70 text-slate-500">Servicio:</b> ${datos.empresaF}</p>`;
+            
+            datos.detalles.forEach(item => {
+                htmlResumen += `<div class="border-t border-slate-200 pt-3 mt-3 flex justify-between items-center text-slate-800">
+                            <span><b class="text-orange-600 font-black">${item.estudio}</b><br><span class="text-[11px] font-bold text-slate-500 uppercase tracking-wide">${item.medico}</span></span>
+                            <span class="bg-white border border-slate-200 px-3 py-1.5 rounded-xl font-black text-xl shadow-sm text-slate-800">${item.cant}</span>
+                         </div>`;
+            });
+
+            document.getElementById('cap-resumen-contenido').innerHTML = htmlResumen;
             document.getElementById('cap-observaciones').innerText = datos.observaciones || 'Sin observaciones relevantes.';
             
             await new Promise(r => setTimeout(r, 100));
@@ -542,33 +675,36 @@
                         clonedDoc.getElementById('captura-temp').style.display = 'block';
                     }
                 });
+                
+                const textoCompartir = datos.isEdit 
+                    ? `*CORRECCIÓN DE REPORTE*\nLAPI - Resumen Folio ${datos.folio}\nServicio: ${datos.empresaF}`
+                    : `LAPI - Resumen Folio ${datos.folio}\nServicio foráneo: ${datos.empresaF}`;
 
                 if (navigator.share && navigator.canShare) {
                     canvas.toBlob(async (blob) => {
-                        const file = new File([blob], `LAPI_Resumen_${datos.folio}.png`, { type: 'image/png' });
+                        const file = new File([blob], `LAPI_${datos.isEdit ? 'Correccion' : 'Resumen'}_${datos.folio}.png`, { type: 'image/png' });
                         if (navigator.canShare({ files: [file] })) {
                             try {
-                                await navigator.share({ files: [file], title: `LAPI - Resumen Folio ${datos.folio}`, text: `Resumen de servicio foráneo. ${datos.empresaF}` });
+                                await navigator.share({ files: [file], title: `LAPI - Folio ${datos.folio}`, text: textoCompartir });
                                 mostrarToast("¡Reporte compartido!", "exito");
                             } catch (err) {
-                                if(err.name !== 'AbortError') forzarDescarga(canvas, datos.folio);
+                                if(err.name !== 'AbortError') forzarDescarga(canvas, datos.folio, datos.isEdit);
                             }
-                        } else { forzarDescarga(canvas, datos.folio); }
+                        } else { forzarDescarga(canvas, datos.folio, datos.isEdit); }
                     });
-                } else { forzarDescarga(canvas, datos.folio); }
+                } else { forzarDescarga(canvas, datos.folio, datos.isEdit); }
             } catch(e) { mostrarToast("Falló la generación de Reporte.", "error"); }
 
             btn.innerHTML = originalHTML; btn.disabled = false;
         };
 
-        function forzarDescarga(canvas, folio) {
+        function forzarDescarga(canvas, folio, isEdit) {
             const link = document.createElement('a');
-            link.download = `LAPI_Resumen_${folio}.png`;
+            link.download = `LAPI_${isEdit ? 'Correccion' : 'Resumen'}_${folio}.png`;
             link.href = canvas.toDataURL("image/png");
             link.click();
             mostrarToast("Descarga iniciada. Revisa tu galería.", "info");
         }
-
         // ================= EDICIÓN (LEGACY) ==================
         async function buscarRegistro() { 
             const folioInput = document.getElementById('input-edit-id').value.trim().toUpperCase();
