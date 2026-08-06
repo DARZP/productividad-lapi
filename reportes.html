@@ -444,12 +444,19 @@
         function unificarEstudio(est) {
             if(!est) return "Desconocido";
             let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            
             if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "EXAMEN MEDICO") return "Historia Clínica";
             if (upper.includes("CONSULTA")) return "Consulta Médica";
             if (upper.includes("ESPIROMETRIA")) return "Espirometría";
+            
+            // ¡AQUÍ ESTÁ LA MAGIA! Evaluamos LOGOAUDIOMETRIA ANTES que AUDIOMETRIA
+            if (upper.includes("LOGOAUDIOMETRIA")) return "Logoaudiometría"; 
             if (upper.includes("AUDIOMETRIA")) return "Audiometría";
+            
             if (upper.includes("ELECTROCARDIOGRAMA")) return "Electrocardiograma";
             if (upper.includes("VISUAL")) return "Examen Capacidad Visual";
+            if (upper.includes("TIMPANOMETRIA")) return "Timpanometría"; 
+            
             return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
