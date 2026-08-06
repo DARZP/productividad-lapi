@@ -1093,15 +1093,20 @@
             let match=0, faltaEnApp=0, extraEnApp=0, ignoradosEnKpi=0; 
             let html = "";
             
-            window.discrepanciasInyectar = []; window.discrepanciasEliminar = []; window.discrepanciasTNC = []; window.matchesParaEnriquecer = []; 
+            window.discrepanciasInyectar = []; 
+            window.discrepanciasEliminar = []; 
+            window.discrepanciasTNC = []; 
+            window.matchesParaEnriquecer = []; 
 
             let discrepanciasPorSucursal = {};
+            let listaPendientes = [];
+            
+            // EL NUEVO MOTOR DE CUADRATURA DIMENSIONAL
+            let cuadraturaGlobal = {};
 
             const hashesExcel = new Set(Object.keys(excelDataGlobal));
             const sucursalesAuditadas = new Set([...hashesExcel].map(k => k.split('|')[1])); 
             const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
-
-            let listaPendientes = [];
 
             todasLasLlaves.forEach(hash => {
                 const [fecha, sucursalBase, medico, estudio] = hash.split('|');
@@ -1113,14 +1118,29 @@
                 const cA = appDataGlobal[hash] || 0;
 
                 if (cE === cA) {
-                    match++; if(cE > 0 && !window.enrichedHashes.has(hash)) window.matchesParaEnriquecer.push(hash); 
+                    match++; 
+                    if(cE > 0 && !window.enrichedHashes.has(hash)) window.matchesParaEnriquecer.push(hash); 
                 } else if (window.ignoredHashes.has(hash)) {
                     ignoradosEnKpi++; 
                 } else {
                     if (cE > cA) faltaEnApp++; else extraEnApp++;
+                    
                     if (!discrepanciasPorSucursal[sucursalBase]) discrepanciasPorSucursal[sucursalBase] = 0;
                     discrepanciasPorSucursal[sucursalBase]++;
+                    
                     listaPendientes.push({ hash, fecha, sucursalBase, medico, estudio, cE, cA });
+
+                    // Alimentamos el motor de cuadratura por Día + Lugar + Estudio
+                    let quadHash = `${fecha}|${sucursalBase}|${estudio}`;
+                    if(!cuadraturaGlobal[quadHash]) {
+                        cuadraturaGlobal[quadHash] = { sumE: 0, sumA: 0, mExtraE: [], mExtraA: [] };
+                    }
+                    cuadraturaGlobal[quadHash].sumE += cE;
+                    cuadraturaGlobal[quadHash].sumA += cA;
+                    
+                    // Registramos quién tiene de más en Excel y quién tiene de más en App
+                    if(cE > cA) cuadraturaGlobal[quadHash].mExtraE.push(medico);
+                    if(cA > cE) cuadraturaGlobal[quadHash].mExtraA.push(medico);
                 }
             });
 
@@ -1130,21 +1150,45 @@
             if (window.sucursalActiva !== "Todas") {
                 filtrados = filtrados.filter(item => item.sucursalBase === window.sucursalActiva);
                 document.getElementById('lbl-sucursal-activa').innerText = window.sucursalActiva.toUpperCase();
-            } else { document.getElementById('lbl-sucursal-activa').innerText = "TODAS"; }
+            } else { 
+                document.getElementById('lbl-sucursal-activa').innerText = "TODAS"; 
+            }
 
             filtrados.forEach(item => {
                 const { hash, fecha, sucursalBase, medico, estudio, cE, cA } = item;
                 
-                let cHTML='', aHTML='';
+                let cHTML='', aHTML='', insight='';
                 let btnLupa = cE > 0 ? `<button onclick="verLupa('${hash}')" class="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-2 py-1 rounded ml-2 transition shadow-sm" title="Ver Metadatos Extraídos del Excel"><i class="fa-solid fa-magnifying-glass"></i></button>` : '';
 
                 if (cE > cA) { 
-                    cHTML = 'bg-red-50 hover:bg-red-100 border-l-4 border-red-400'; window.discrepanciasInyectar.push({hash: hash, cantE: cE, cantA: cA});
+                    cHTML = 'bg-red-50 hover:bg-red-100 border-l-4 border-red-400'; 
+                    window.discrepanciasInyectar.push({hash: hash, cantE: cE, cantA: cA});
                 } else { 
-                    cHTML = 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-400'; window.discrepanciasEliminar.push({hash: hash, cantE: cE, cantA: cA});
+                    cHTML = 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-400'; 
+                    window.discrepanciasEliminar.push({hash: hash, cantE: cE, cantA: cA});
                 }
                 
                 window.discrepanciasTNC.push({hash: hash, cE: cE, cA: cA});
+
+                // ANÁLISIS DE INTELIGENCIA DE CUADRATURA
+                let quad = cuadraturaGlobal[`${fecha}|${sucursalBase}|${estudio}`];
+                if (quad) {
+                    if (quad.sumE === quad.sumA) {
+                        if (cE > cA) {
+                            let compas = quad.mExtraA.filter(m => m !== medico).join(", ");
+                            insight = `<div class="mt-2 text-[9px] text-indigo-700 bg-indigo-50/80 p-2 rounded-lg border border-indigo-200 leading-tight shadow-sm"><i class="fa-solid fa-lightbulb text-indigo-500 mr-1"></i> <b>Cruce Detectado:</b> El total del día cuadra. Los ${cE - cA} que faltan aquí, se los anotaron por error a <b>${compas}</b> en la App.</div>`;
+                        } else {
+                            let compas = quad.mExtraE.filter(m => m !== medico).join(", ");
+                            insight = `<div class="mt-2 text-[9px] text-indigo-700 bg-indigo-50/80 p-2 rounded-lg border border-indigo-200 leading-tight shadow-sm"><i class="fa-solid fa-lightbulb text-indigo-500 mr-1"></i> <b>Cruce Detectado:</b> El total cuadra. Estos ${cA - cE} que sobran aquí, en realidad le pertenecen a <b>${compas}</b> según el Excel.</div>`;
+                        }
+                    } else if (quad.sumE > quad.sumA && cE > cA) {
+                        let faltantesReales = quad.sumE - quad.sumA;
+                        insight = `<div class="mt-2 text-[9px] text-red-700 bg-red-50/80 p-2 rounded-lg border border-red-200 leading-tight shadow-sm"><i class="fa-solid fa-magnifying-glass text-red-500 mr-1"></i> <b>Fuga Real:</b> Faltan ${faltantesReales} "${estudio}" en toda la sede este día. Omitieron capturarlos.</div>`;
+                    } else if (quad.sumA > quad.sumE && cA > cE) {
+                        let sobrantesReales = quad.sumA - quad.sumE;
+                        insight = `<div class="mt-2 text-[9px] text-amber-700 bg-amber-50/80 p-2 rounded-lg border border-amber-200 leading-tight shadow-sm"><i class="fa-solid fa-circle-exclamation text-amber-500 mr-1"></i> <b>Exceso Real:</b> Hay ${sobrantesReales} "${estudio}" de más en toda la sede. Posible duplicidad.</div>`;
+                    }
+                }
 
                 aHTML = `
                     <button onclick="prepararCorreccion('${hash}', ${cE}, ${cA})" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Ajustar Base de Datos"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
@@ -1154,7 +1198,18 @@
                 
                 let alertMedico = medico.includes('[') ? `text-red-500 font-black` : `text-slate-700 font-bold`;
 
-                html += `<tr class="${cHTML} transition border-b border-slate-100"><td class="p-3">${fecha}<br><span class="text-[10px] text-slate-500">${sucursalBase}</span></td><td class="p-3 ${alertMedico}">${medico}</td><td class="p-3 text-orange-700 text-[11px] font-bold">${estudio}</td><td class="p-3 text-center text-slate-500 font-black"><div class="flex items-center justify-center">${cE} ${btnLupa}</div></td><td class="p-3 text-center text-slate-800 font-black">${cA}</td><td class="p-3 text-center flex justify-center gap-2">${aHTML}</td></tr>`;
+                html += `
+                    <tr class="${cHTML} transition border-b border-slate-100">
+                        <td class="p-3 align-top">${fecha}<br><span class="text-[10px] text-slate-500">${sucursalBase}</span></td>
+                        <td class="p-3 align-top ${alertMedico}">${medico}</td>
+                        <td class="p-3 align-top text-orange-700 text-[11px] font-bold">${estudio}</td>
+                        <td class="p-3 text-center align-top text-slate-500 font-black"><div class="flex items-center justify-center">${cE} ${btnLupa}</div></td>
+                        <td class="p-3 text-left align-top text-slate-800 font-black">
+                            <div class="text-center text-base">${cA}</div>
+                            ${insight}
+                        </td>
+                        <td class="p-3 text-center align-top flex justify-center gap-2">${aHTML}</td>
+                    </tr>`;
             });
 
             tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-16 text-slate-400 italic">No hay discrepancias. La operación está sana o no has cruzado datos.</td></tr>';
