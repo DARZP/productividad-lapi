@@ -27,7 +27,7 @@ window.LAPI_CONFIG = {
     "Duque Hernandez Jaqueline",
     "Elzy Damaris Chacon Padilla",
     "Escobar Rios Erika Yeraldi",
-    "Estefany Becherel Rocha",
+    "Estefany Becherell Rocha",
     "Fatima Zeltzin Ziranda Contreras",
     "Fernanda Nicolas Flores",
     "Fernandez Contreras Karla Alitzel",
