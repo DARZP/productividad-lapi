@@ -75,6 +75,7 @@ window.LAPI_CONFIG = {
     "Tania Aidee Ledesma Corona",
     "Toriz Segura Jessica Noemi",
     "Vazquez Euan Daniela De Los Angeles",
+    "Velasco Durán Araceli",
     "Yasmin Stefani Perez Cruz",
     "Zarate Flores Myriam Alejandra"
 ].sort(),
