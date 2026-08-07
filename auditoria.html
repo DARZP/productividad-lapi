@@ -746,7 +746,7 @@
             // Normalizamos quitando acentos y espacios extra
             let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             
-            // 1. EXCEPCIONES COMPUESTAS
+            // 1. EXCEPCIONES COMPUESTAS (Para evitar que Audio atrape Logoaudiometria)
             if (upper.includes("LOGOAUDIOMETRIA")) return "Logoaudiometría"; 
             
             // 2. RAÍCES PODEROSAS (Atrapan la palabra completa, abreviaturas y variaciones de App)
@@ -759,10 +759,10 @@
             if (upper.includes("VISUAL") || upper.includes("OPTOMETRIA") || upper.includes("AGUDEZA VISUAL")) return "Examen Capacidad Visual";
             if (upper.includes("CONSULTA")) return "Consulta Médica";
             if (upper.includes("TIMPANOMETRIA") || upper.includes("TIMPANO")) return "Timpanometría"; 
+            if (upper.includes("NORDICO")) return "Nórdico";
             
             return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
-
         function getMetaKey(estudioStr) {
             if(!estudioStr) return "metadata_DESCONOCIDO";
             let safeName = estudioStr.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
@@ -1134,7 +1134,7 @@
             let discrepanciasPorSucursal = {};
             let listaPendientes = [];
 
-            // EL NUEVO MOTOR DE CUADRATURA DIMENSIONAL
+            // MOTOR DE CUADRATURA DIMENSIONAL
             let cuadraturaGlobal = {};
 
             const hashesExcel = new Set(Object.keys(excelDataGlobal));
@@ -1170,7 +1170,7 @@
                     }
                     cuadraturaGlobal[quadHash].sumE += cE;
                     cuadraturaGlobal[quadHash].sumA += cA;
-
+                    
                     // Registramos quién tiene de más en Excel y quién tiene de más en App
                     if(cE > cA) cuadraturaGlobal[quadHash].mExtraE.push(medico);
                     if(cA > cE) cuadraturaGlobal[quadHash].mExtraA.push(medico);
