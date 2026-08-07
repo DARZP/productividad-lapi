@@ -746,13 +746,13 @@
             // Normalizamos quitando acentos y espacios extra
             let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             
-            // 1. EXCEPCIONES COMPUESTAS (Deben ir primero para no chocar con las raíces)
+            // 1. EXCEPCIONES COMPUESTAS
             if (upper.includes("LOGOAUDIOMETRIA")) return "Logoaudiometría"; 
             
-            // 2. RAÍCES PODEROSAS (Atrapan la palabra completa, abreviaturas y plurales automáticamente)
+            // 2. RAÍCES PODEROSAS (Atrapan la palabra completa, abreviaturas y variaciones de App)
             if (upper.includes("ELECTRO") || upper.includes("ECG") || upper.includes("EKG")) return "Electrocardiograma"; 
-            if (upper.includes("AUDIO")) return "Audiometría"; // Atrapa Audio, Audios, Audiometria
-            if (upper.includes("ESPIRO")) return "Espirometría"; // Atrapa Espiro, Espiros, Espirometria
+            if (upper.includes("AUDIO")) return "Audiometría"; 
+            if (upper.includes("ESPIRO")) return "Espirometría"; 
             
             // 3. MAPEOS FLEXIBLES
             if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "H.C." || upper.includes("EXAMEN MEDICO")) return "Historia Clínica";
@@ -760,7 +760,6 @@
             if (upper.includes("CONSULTA")) return "Consulta Médica";
             if (upper.includes("TIMPANOMETRIA") || upper.includes("TIMPANO")) return "Timpanometría"; 
             
-            // 4. Si es un estudio nuevo o no mapeado, lo devuelve capitalizado bonito
             return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         }
 
@@ -768,6 +767,25 @@
             if(!estudioStr) return "metadata_DESCONOCIDO";
             let safeName = estudioStr.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
             return `metadata_${safeName}`;
+        }
+
+        // --- NUEVA FUNCIÓN: GENERADOR DINÁMICO DE INICIALES ---
+        function getPosiblesIniciales(nombreOficial) {
+            const words = window.normalizarDato(nombreOficial).split(' ').filter(w => w.length > 2);
+            if (words.length === 0) return [];
+            
+            let iniciales = [];
+            // 1. Orden Natural (Ej. Lino Reynoso Deany Alondra -> LRDA)
+            iniciales.push(words.map(w => w.charAt(0)).join(''));
+            
+            // 2. Orden Invertido (Por si escriben Nombres y luego Apellidos -> DALR)
+            if (words.length === 4) {
+                iniciales.push(words[2].charAt(0) + words[3].charAt(0) + words[0].charAt(0) + words[1].charAt(0));
+            } else if (words.length === 3) {
+                iniciales.push(words[1].charAt(0) + words[2].charAt(0) + words[0].charAt(0));
+                iniciales.push(words[2].charAt(0) + words[0].charAt(0) + words[1].charAt(0));
+            }
+            return iniciales;
         }
 
         // ==========================================
@@ -801,40 +819,46 @@
         function traducirMedico(rawMed, rawSuc) {
             if (!rawMed) return "DESCONOCIDO";
             
-            // 1. Limpieza base del input
-            let med = normalizarDato(rawMed);
+            let med = window.normalizarDato(rawMed);
             med = med.replace(/^DR\(A\)\.?\s*/, '').replace(/^DRA\.?\s*/, '').replace(/^DR\.?\s*/, '');
             med = med.replace(/\./g, ' ');
             med = med.replace(/\[INICIAL NO REGISTRADA:\s*/g, '').replace(/\]/g, '').trim();
 
             if (med === 'X' || med === '✔' || med === 'OK') return "X";
             
-            let suc = normalizarDato(rawSuc);
+            let suc = window.normalizarDato(rawSuc);
             let medicos = window.LAPI_CONFIG?.medicos || [];
 
-            // 2. Diccionario Histórico (Ahora es constante local)
+            // 1. Diccionario Histórico 
             const diccInic = DICCIONARIO_HISTORICO_INICIALES;
+            if (diccInic[suc]) {
+                for (const medKey in diccInic[suc]) {
+                    if (window.normalizarDato(medKey) === med) return window.normalizarDato(diccInic[suc][medKey]);
+                }
+            }
+            // Búsqueda global en diccionario histórico
             for (const sucursalKey in diccInic) {
-                if (normalizarDato(sucursalKey) === suc) {
-                    for (const medKey in diccInic[sucursalKey]) {
-                        if (normalizarDato(medKey) === med) {
-                            med = normalizarDato(diccInic[sucursalKey][medKey]); // Traducido al nombre largo (legacy)
-                        }
+                for (const medKey in diccInic[sucursalKey]) {
+                    if (window.normalizarDato(medKey) === med) return window.normalizarDato(diccInic[sucursalKey][medKey]);
+                }
+            }
+
+            // 2. Match Exacto Catálogo V5
+            let exactMatch = medicos.find(m => window.normalizarDato(m) === med);
+            if(exactMatch) return window.normalizarDato(exactMatch);
+
+            // 3. Iniciales Múltiples o Diagonales (Ej. AEGL/DALR o DALR)
+            let partes = med.split(/[\/\-\&]/).map(p => p.trim());
+            for (let parte of partes) {
+                if (!parte.includes(' ') && parte.length >= 2 && parte.length <= 5) {
+                    for (let m of medicos) {
+                        let iniciales = getPosiblesIniciales(m);
+                        if (iniciales.includes(parte)) return window.normalizarDato(m);
                     }
                 }
             }
-            
-            for (const sucursalKey in diccInic) {
-                for (const medKey in diccInic[sucursalKey]) {
-                    if (normalizarDato(medKey) === med) med = normalizarDato(diccInic[sucursalKey][medKey]);
-                }
-            }
 
-            // 3. Match Exacto en el catálogo principal nuevo (V5)
-            let exactMatch = medicos.find(m => normalizarDato(m) === med); 
-            if(exactMatch) return normalizarDato(exactMatch);
-
-            // 4. ALGORITMO INTELIGENTE (Upgrades de V4 a V5 automáticamente)
+            // 4. Fuzzy Match (Incompletos)
             const stopwords = ["DE", "LA", "LAS", "LOS", "DEL", "Y", "MC", "MAC"];
             const tokensInput = med.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
 
@@ -844,14 +868,12 @@
                 let bestRatio = 0;
 
                 for (let m of medicos) {
-                    const mNorm = normalizarDato(m);
+                    const mNorm = window.normalizarDato(m);
                     const tokensCat = mNorm.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
-                    
+
                     let score = 0;
                     tokensInput.forEach(tIn => {
-                        if (tokensCat.some(tCat => tCat === tIn || (tCat.length >= 4 && tIn.length >= 4 && (tCat.startsWith(tIn) || tIn.startsWith(tCat))))) {
-                            score++;
-                        }
+                        if (tokensCat.some(tCat => tCat === tIn || (tCat.length >= 4 && tIn.length >= 4 && (tCat.startsWith(tIn) || tIn.startsWith(tCat))))) score++;
                     });
 
                     let ratio = score / tokensCat.length;
@@ -867,12 +889,12 @@
                 if (bestMatch) return bestMatch;
             }
 
-            // 5. Fallback Básico
-            const partialMatch = medicos.find(m => { 
-                const mNorm = normalizarDato(m); 
-                return mNorm.includes(med) || med.includes(mNorm); 
+            // 5. Parcial básico
+            const partialMatch = medicos.find(m => {
+                const mNorm = window.normalizarDato(m);
+                return mNorm.includes(med) || med.includes(mNorm);
             });
-            if(partialMatch) return normalizarDato(partialMatch);
+            if(partialMatch) return window.normalizarDato(partialMatch);
 
             return med;
         }
@@ -1097,48 +1119,48 @@
         };
 
         window.reRenderAuditoria = function() {
-            const tbody = document.getElementById('tabla-auditoria'); 
-            const fIni = document.getElementById('a-inicio').value; 
+            const tbody = document.getElementById('tabla-auditoria');
+            const fIni = document.getElementById('a-inicio').value;
             const fFin = document.getElementById('a-fin').value;
-            
-            let match=0, faltaEnApp=0, extraEnApp=0, ignoradosEnKpi=0; 
+
+            let match=0, faltaEnApp=0, extraEnApp=0, ignoradosEnKpi=0;
             let html = "";
-            
-            window.discrepanciasInyectar = []; 
-            window.discrepanciasEliminar = []; 
-            window.discrepanciasTNC = []; 
-            window.matchesParaEnriquecer = []; 
+
+            window.discrepanciasInyectar = [];
+            window.discrepanciasEliminar = [];
+            window.discrepanciasTNC = [];
+            window.matchesParaEnriquecer = [];
 
             let discrepanciasPorSucursal = {};
             let listaPendientes = [];
-            
+
             // EL NUEVO MOTOR DE CUADRATURA DIMENSIONAL
             let cuadraturaGlobal = {};
 
             const hashesExcel = new Set(Object.keys(excelDataGlobal));
-            const sucursalesAuditadas = new Set([...hashesExcel].map(k => k.split('|')[1])); 
+            const sucursalesAuditadas = new Set([...hashesExcel].map(k => k.split('|')[1]));
             const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
 
             todasLasLlaves.forEach(hash => {
                 const [fecha, sucursalBase, medico, estudio] = hash.split('|');
-                if(!sucursalesAuditadas.has(sucursalBase)) return; 
-                if(fIni && fecha < fIni) return; 
+                if(!sucursalesAuditadas.has(sucursalBase)) return;
+                if(fIni && fecha < fIni) return;
                 if(fFin && fecha > fFin) return;
 
-                const cE = (excelDataGlobal[hash] || []).length; 
+                const cE = (excelDataGlobal[hash] || []).length;
                 const cA = appDataGlobal[hash] || 0;
 
                 if (cE === cA) {
-                    match++; 
-                    if(cE > 0 && !window.enrichedHashes.has(hash)) window.matchesParaEnriquecer.push(hash); 
+                    match++;
+                    if(cE > 0 && !window.enrichedHashes.has(hash)) window.matchesParaEnriquecer.push(hash);
                 } else if (window.ignoredHashes.has(hash)) {
-                    ignoradosEnKpi++; 
+                    ignoradosEnKpi++;
                 } else {
                     if (cE > cA) faltaEnApp++; else extraEnApp++;
-                    
+
                     if (!discrepanciasPorSucursal[sucursalBase]) discrepanciasPorSucursal[sucursalBase] = 0;
                     discrepanciasPorSucursal[sucursalBase]++;
-                    
+
                     listaPendientes.push({ hash, fecha, sucursalBase, medico, estudio, cE, cA });
 
                     // Alimentamos el motor de cuadratura por Día + Lugar + Estudio
@@ -1148,7 +1170,7 @@
                     }
                     cuadraturaGlobal[quadHash].sumE += cE;
                     cuadraturaGlobal[quadHash].sumA += cA;
-                    
+
                     // Registramos quién tiene de más en Excel y quién tiene de más en App
                     if(cE > cA) cuadraturaGlobal[quadHash].mExtraE.push(medico);
                     if(cA > cE) cuadraturaGlobal[quadHash].mExtraA.push(medico);
@@ -1161,43 +1183,45 @@
             if (window.sucursalActiva !== "Todas") {
                 filtrados = filtrados.filter(item => item.sucursalBase === window.sucursalActiva);
                 document.getElementById('lbl-sucursal-activa').innerText = window.sucursalActiva.toUpperCase();
-            } else { 
-                document.getElementById('lbl-sucursal-activa').innerText = "TODAS"; 
+            } else {
+                document.getElementById('lbl-sucursal-activa').innerText = "TODAS";
             }
 
             filtrados.forEach(item => {
                 const { hash, fecha, sucursalBase, medico, estudio, cE, cA } = item;
-                
+
                 let cHTML='', aHTML='', insight='';
                 let btnLupa = cE > 0 ? `<button onclick="verLupa('${hash}')" class="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-2 py-1 rounded ml-2 transition shadow-sm" title="Ver Metadatos Extraídos del Excel"><i class="fa-solid fa-magnifying-glass"></i></button>` : '';
 
-                if (cE > cA) { 
-                    cHTML = 'bg-red-50 hover:bg-red-100 border-l-4 border-red-400'; 
+                if (cE > cA) {
+                    cHTML = 'bg-red-50 hover:bg-red-100 border-l-4 border-red-400';
                     window.discrepanciasInyectar.push({hash: hash, cantE: cE, cantA: cA});
-                } else { 
-                    cHTML = 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-400'; 
+                } else {
+                    cHTML = 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-400';
                     window.discrepanciasEliminar.push({hash: hash, cantE: cE, cantA: cA});
                 }
-                
+
                 window.discrepanciasTNC.push({hash: hash, cE: cE, cA: cA});
 
                 // ANÁLISIS DE INTELIGENCIA DE CUADRATURA
                 let quad = cuadraturaGlobal[`${fecha}|${sucursalBase}|${estudio}`];
                 if (quad) {
+                    let btnAutoCruce = `<button onclick="sincronizarCruceCuadrado('${fecha}', '${sucursalBase}', '${estudio}')" class="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-3 rounded-lg text-[9px] shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1 uppercase tracking-widest w-full"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Reasignar</button>`;
+
                     if (quad.sumE === quad.sumA) {
                         if (cE > cA) {
-                            let compas = quad.mExtraA.filter(m => m !== medico).join(", ");
-                            insight = `<div class="mt-2 text-[9px] text-indigo-700 bg-indigo-50/80 p-2 rounded-lg border border-indigo-200 leading-tight shadow-sm"><i class="fa-solid fa-lightbulb text-indigo-500 mr-1"></i> <b>Cruce Detectado:</b> El total del día cuadra. Los ${cE - cA} que faltan aquí, se los anotaron por error a <b>${compas}</b> en la App.</div>`;
+                            let compas = [...new Set(quad.mExtraA.filter(m => m !== medico))].join(", ");
+                            insight = `<div class="mt-2 text-[10px] text-indigo-700 bg-indigo-50/80 p-3 rounded-xl border border-indigo-200 leading-tight shadow-sm"><i class="fa-solid fa-lightbulb text-indigo-500 mr-1 text-sm"></i> <b class="uppercase">Cruce Detectado:</b> El total del día cuadra. Los ${cE - cA} faltantes aquí, se anotaron por error a <b>${compas}</b> en la App. ${btnAutoCruce}</div>`;
                         } else {
-                            let compas = quad.mExtraE.filter(m => m !== medico).join(", ");
-                            insight = `<div class="mt-2 text-[9px] text-indigo-700 bg-indigo-50/80 p-2 rounded-lg border border-indigo-200 leading-tight shadow-sm"><i class="fa-solid fa-lightbulb text-indigo-500 mr-1"></i> <b>Cruce Detectado:</b> El total cuadra. Estos ${cA - cE} que sobran aquí, en realidad le pertenecen a <b>${compas}</b> según el Excel.</div>`;
+                            let compas = [...new Set(quad.mExtraE.filter(m => m !== medico))].join(", ");
+                            insight = `<div class="mt-2 text-[10px] text-indigo-700 bg-indigo-50/80 p-3 rounded-xl border border-indigo-200 leading-tight shadow-sm"><i class="fa-solid fa-lightbulb text-indigo-500 mr-1 text-sm"></i> <b class="uppercase">Cruce Detectado:</b> El total cuadra. Estos ${cA - cE} sobrantes, le pertenecen a <b>${compas}</b> según el Excel. ${btnAutoCruce}</div>`;
                         }
                     } else if (quad.sumE > quad.sumA && cE > cA) {
                         let faltantesReales = quad.sumE - quad.sumA;
-                        insight = `<div class="mt-2 text-[9px] text-red-700 bg-red-50/80 p-2 rounded-lg border border-red-200 leading-tight shadow-sm"><i class="fa-solid fa-magnifying-glass text-red-500 mr-1"></i> <b>Fuga Real:</b> Faltan ${faltantesReales} "${estudio}" en toda la sede este día. Omitieron capturarlos.</div>`;
+                        insight = `<div class="mt-2 text-[10px] text-red-700 bg-red-50/80 p-3 rounded-xl border border-red-200 leading-tight shadow-sm"><i class="fa-solid fa-magnifying-glass text-red-500 mr-1 text-sm"></i> <b class="uppercase">Fuga Real:</b> Faltan ${faltantesReales} "${estudio}" en toda la sede este día. Omitieron capturarlos.</div>`;
                     } else if (quad.sumA > quad.sumE && cA > cE) {
                         let sobrantesReales = quad.sumA - quad.sumE;
-                        insight = `<div class="mt-2 text-[9px] text-amber-700 bg-amber-50/80 p-2 rounded-lg border border-amber-200 leading-tight shadow-sm"><i class="fa-solid fa-circle-exclamation text-amber-500 mr-1"></i> <b>Exceso Real:</b> Hay ${sobrantesReales} "${estudio}" de más en toda la sede. Posible duplicidad.</div>`;
+                        insight = `<div class="mt-2 text-[10px] text-amber-700 bg-amber-50/80 p-3 rounded-xl border border-amber-200 leading-tight shadow-sm"><i class="fa-solid fa-circle-exclamation text-amber-500 mr-1 text-sm"></i> <b class="uppercase">Exceso Real:</b> Hay ${sobrantesReales} "${estudio}" de más en toda la sede. Posible duplicidad.</div>`;
                     }
                 }
 
@@ -1206,7 +1230,7 @@
                     <button onclick="abrirModalTncAutomatica('${hash}', ${cE}, ${cA})" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg text-xs shadow-sm transition" title="Levantar TNC"><i class="fa-solid fa-triangle-exclamation"></i></button>
                     <button onclick="ignorarDiscrepancia('${hash}')" class="bg-slate-300 hover:bg-slate-400 text-slate-700 p-2 rounded-lg text-xs shadow-sm transition" title="Ignorar / Descartar"><i class="fa-solid fa-eye-slash"></i></button>
                 `;
-                
+
                 let alertMedico = medico.includes('[') ? `text-red-500 font-black` : `text-slate-700 font-bold`;
 
                 html += `
@@ -1224,9 +1248,9 @@
             });
 
             tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-16 text-slate-400 italic">No hay discrepancias. La operación está sana o no has cruzado datos.</td></tr>';
-            
-            document.getElementById('kpi-aud-match').innerText = match; 
-            document.getElementById('kpi-aud-rojo').innerText = faltaEnApp; 
+
+            document.getElementById('kpi-aud-match').innerText = match;
+            document.getElementById('kpi-aud-rojo').innerText = faltaEnApp;
             document.getElementById('kpi-aud-ama').innerText = extraEnApp;
             document.getElementById('kpi-aud-ign').innerText = window.ignoredHashes.size;
 
@@ -1234,6 +1258,45 @@
             document.getElementById('btn-bulk-eliminar').style.display = window.discrepanciasEliminar.length > 0 ? 'inline-block' : 'none';
             document.getElementById('btn-bulk-tnc').style.display = window.discrepanciasTNC.length > 0 ? 'inline-block' : 'none';
             document.getElementById('btn-bulk-enriquecer').style.display = window.matchesParaEnriquecer.length > 0 ? 'inline-block' : 'none';
+        };
+
+        // ==========================================
+        // AUTO-REASIGNACIÓN INTELIGENTE (CUADRATURA)
+        // ==========================================
+        window.sincronizarCruceCuadrado = async function(fecha, sucursal, estudio) {
+            if(!confirm(`¿Deseas reasignar automáticamente los estudios de "${estudio}" entre el personal de ${sucursal} para que cuadren exactamente con el Excel?`)) return;
+
+            mostrarToast("Iniciando reasignación mágica...", "info", 2000);
+
+            const hashesExcel = Object.keys(excelDataGlobal);
+            const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
+
+            let operacionesPendientes = [];
+
+            // Recorremos todas las llaves buscando a los doctores involucrados ese día en esa sucursal para ese estudio
+            todasLasLlaves.forEach(hash => {
+                const [hFecha, hSucursal, hMedico, hEstudio] = hash.split('|');
+                if (hFecha === fecha && hSucursal === sucursal && hEstudio === estudio) {
+                    const cE = (excelDataGlobal[hash] || []).length;
+                    const cA = appDataGlobal[hash] || 0;
+
+                    // Si el doctor tiene un desfase (le sobran o le faltan), lo mandamos a ajustar
+                    if (cE !== cA) {
+                        operacionesPendientes.push(window.aplicarAjuste(fecha, sucursal, hMedico, estudio, cA, cE));
+                    }
+                }
+            });
+
+            try {
+                // Ejecutamos todos los ajustes (quitar y poner) de forma simultánea
+                await Promise.all(operacionesPendientes);
+                mostrarToast("¡Reasignación completada con éxito!", "exito");
+                // Recargamos la auditoría para que los errores desaparezcan mágicamente
+                await window.initAuditoria();
+            } catch(e) {
+                console.error(e);
+                mostrarToast("Hubo un error en la reasignación.", "error");
+            }
         };
 
         function renderizarMenuSucursales(conteos) {
