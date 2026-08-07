@@ -808,29 +808,45 @@
 
         function traducirMedico(rawMed, rawSuc) {
             if (!rawMed) return "DESCONOCIDO";
-            let med = normalizarDato(rawMed);
+            let med = window.normalizarDato(rawMed);
             med = med.replace(/^DR\(A\)\.?\s*/, '').replace(/^DRA\.?\s*/, '').replace(/^DR\.?\s*/, '').replace(/\./g, ' ').replace(/\[INICIAL NO REGISTRADA:\s*/g, '').replace(/\]/g, '').trim();
             if (med === 'X' || med === '✔' || med === 'OK') return "X";
             
-            let suc = normalizarDato(rawSuc);
+            let suc = window.normalizarDato(rawSuc);
             let medicos = window.LAPI_CONFIG?.medicos || [];
 
+            // 1. Diccionario Histórico
+            // CORRECCIÓN: Ahora NO hacemos "return" inmediato. Guardamos el nombre viejo 
+            // para que el algoritmo lo analice y lo adapte al catálogo nuevo (V5).
             const diccInic = DICCIONARIO_HISTORICO_INICIALES;
+            let medFromDict = null;
             if (diccInic[suc]) {
                 for (const medKey in diccInic[suc]) {
-                    if (normalizarDato(medKey) === med) return normalizarDato(diccInic[suc][medKey]);
+                    if (window.normalizarDato(medKey) === med) {
+                        medFromDict = window.normalizarDato(diccInic[suc][medKey]);
+                        break;
+                    }
                 }
             }
-            for (const sucursalKey in diccInic) {
-                for (const medKey in diccInic[sucursalKey]) {
-                    if (normalizarDato(medKey) === med) return normalizarDato(diccInic[sucursalKey][medKey]);
+            if (!medFromDict) {
+                for (const sucursalKey in diccInic) {
+                    for (const medKey in diccInic[sucursalKey]) {
+                        if (window.normalizarDato(medKey) === med) {
+                            medFromDict = window.normalizarDato(diccInic[sucursalKey][medKey]);
+                            break;
+                        }
+                    }
+                    if (medFromDict) break;
                 }
             }
+            // Si lo encontramos en el diccionario, sobreescribimos la variable 'med'
+            if (medFromDict) med = medFromDict; 
 
-            let exactMatch = medicos.find(m => normalizarDato(m) === med); 
-            if(exactMatch) return normalizarDato(exactMatch);
+            // 2. Match Exacto Catálogo V5
+            let exactMatch = medicos.find(m => window.normalizarDato(m) === med); 
+            if(exactMatch) return window.normalizarDato(exactMatch);
 
-            // Búsqueda de iniciales aunque vengan solas o con espacios
+            // 3. Búsqueda de iniciales (Ej. AEGL/DALR divide y busca)
             let partes = med.split(/[\/\-\&\+\,]| Y |\s+/).map(p => p.trim());
             let matchParcial = null;
             for (let parte of partes) {
@@ -838,7 +854,7 @@
                     for (let m of medicos) {
                         let iniciales = getPosiblesIniciales(m);
                         if (iniciales.includes(parte)) {
-                            matchParcial = normalizarDato(m);
+                            matchParcial = window.normalizarDato(m);
                             break;
                         }
                     }
@@ -847,13 +863,14 @@
             }
             if(matchParcial) return matchParcial;
 
+            // 4. Algoritmo Inteligente (Fuzzy Match - IGNORA EL ORDEN DE LOS APELLIDOS/NOMBRES)
             const stopwords = ["DE", "LA", "LAS", "LOS", "DEL", "Y", "MC", "MAC"];
             const tokensInput = med.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
 
             if (tokensInput.length > 0) {
                 let bestMatch = null; let maxScore = 0; let bestRatio = 0;
                 for (let m of medicos) {
-                    const mNorm = normalizarDato(m);
+                    const mNorm = window.normalizarDato(m);
                     const tokensCat = mNorm.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
                     let score = 0;
                     tokensInput.forEach(tIn => {
@@ -869,11 +886,12 @@
                 if (bestMatch) return bestMatch;
             }
 
+            // 5. Parcial básico
             const partialMatch = medicos.find(m => { 
-                const mNorm = normalizarDato(m); 
+                const mNorm = window.normalizarDato(m); 
                 return mNorm.includes(med) || med.includes(mNorm); 
             });
-            if(partialMatch) return normalizarDato(partialMatch);
+            if(partialMatch) return window.normalizarDato(partialMatch);
 
             return med;
         }
