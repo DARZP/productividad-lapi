@@ -15,7 +15,7 @@
     <!-- NUEVO BLOQUE DE SEGURIDAD FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, getDoc, query, orderBy, addDoc, updateDoc, setDoc, doc, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -32,28 +32,28 @@
 
         // GUARDIÁN DE SESIÓN
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                // Si no hay sesión, rebotar al login
-                window.location.replace('index.html');
-            } else {
-                // Si la sesión es válida, mostramos la página
-                document.body.classList.remove('hidden');
-            }
+            if (!user) { window.location.replace('index.html'); } 
+            else { document.body.classList.remove('hidden'); }
         });
 
         // FUNCION PARA SALIR
         window.cerrarSesionAdmin = () => {
-            signOut(auth).then(() => {
-                window.location.replace('index.html');
-            });
+            signOut(auth).then(() => { window.location.replace('index.html'); });
+        };
+
+        // FUNCION PARA SALIR
+        window.cerrarSesionAdmin = () => {
+            signOut(auth).then(() => { window.location.replace('index.html'); });
         };
 
         // 4. INICIALIZACIÓN DE VARIABLES GLOBALES (FIRESTORE)
         window.db = getFirestore(app);
         window.getDocs = getDocs;
+        window.getDoc = getDoc;
         window.addDoc = addDoc;
         window.updateDoc = updateDoc;
         window.setDoc = setDoc;
+        window.deleteDoc = deleteDoc;
         window.doc = doc;
         window.collection = collection;
         window.query = query;
@@ -266,12 +266,27 @@
                     </div>
                 </div>
 
-                <button onclick="calcularRequisicion()" class="w-full mt-6 bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs">
-                    <i class="fa-solid fa-calculator mr-2"></i> Calcular Insumos
-                </button>
+                <div class="grid grid-cols-1 gap-3 mt-6">
+                    <button onclick="calcularRequisicion()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs">
+                        <i class="fa-solid fa-calculator mr-2"></i> Calcular Insumos
+                    </button>
+                    <button id="btn-guardar-req" onclick="guardarRequisicionActual()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs hidden">
+                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Guardar Requisición
+                    </button>
+                </div>
+            </div>
+
+            <!-- CAJA DE REQUISICIONES GUARDADAS -->
+            <div class="glass p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col shrink-0 mb-4">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-2">
+                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest"><i class="fa-solid fa-folder-open text-sky-500 mr-2"></i> Guardadas</h3>
+                    <button onclick="prepararNuevaRequisicion()" class="text-[9px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded transition-colors uppercase tracking-widest shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Nueva</button>
+                </div>
+                <div id="lista-guardadas" class="space-y-2 max-h-48 overflow-y-auto scroll-custom pr-1">
+                    <div class="text-center text-xs text-slate-400 italic py-4">Cargando...</div>
+                </div>
             </div>
         </div>
-
         <!-- COLUMNA DERECHA: VISTA PREVIA Y HERRAMIENTAS -->
         <div class="w-full xl:w-[600px] flex-1 flex flex-col gap-6 hidden animate-fade-in h-[calc(100vh-60px)] overflow-y-auto scroll-custom pb-10" id="panel-preview">
             
@@ -582,6 +597,186 @@
             renderizarEtiquetas();
             renderizarChecklist();
             document.getElementById('panel-preview').classList.remove('hidden');
+            
+            // Mostrar botón de guardar
+            document.getElementById('btn-guardar-req').classList.remove('hidden');
+        };
+
+        // ===============================================
+        // MÓDULO DE GUARDADO Y CARGA DE REQUISICIONES
+        // ===============================================
+        let currentReqId = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(window.cargarRequisicionesGuardadas, 1000);
+        });
+
+        window.cargarRequisicionesGuardadas = async function() {
+            const container = document.getElementById('lista-guardadas');
+            try {
+                const q = window.query(window.collection(window.db, "requisiciones_guardadas"), window.orderBy("timestamp", "desc"));
+                const snap = await window.getDocs(q);
+                if (snap.empty) {
+                    container.innerHTML = '<div class="text-center text-xs text-slate-400 italic py-4">No hay requisiciones guardadas.</div>';
+                    return;
+                }
+                let html = '';
+                snap.forEach(doc => {
+                    let d = doc.data();
+                    let activeClass = (currentReqId === doc.id) ? 'border-sky-400 ring-2 ring-sky-100 bg-sky-50' : 'border-slate-200 bg-slate-50 hover:bg-slate-100';
+                    html += `
+                        <div class="border p-3 rounded-xl transition-colors group cursor-pointer relative shadow-sm ${activeClass}" onclick="cargarRequisicion('${doc.id}')">
+                            <h4 class="text-[11px] font-black text-slate-800 uppercase pr-6">${d.empresa || 'SIN EMPRESA'}</h4>
+                            <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1"><i class="fa-regular fa-calendar text-orange-400 mr-1"></i> ${d.fechaIni} al ${d.fechaFin}</p>
+                            <button onclick="eliminarRequisicion('${doc.id}', event)" class="absolute top-3 right-3 text-slate-300 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<div class="text-center text-xs text-red-400 font-bold py-4">Error al cargar listado.</div>';
+                console.error(error);
+            }
+        };
+
+        window.guardarRequisicionActual = async function() {
+            const empresa = document.getElementById('req-empresa').value.trim();
+            const fechaIni = document.getElementById('req-fecha-ini').value;
+            const fechaFin = document.getElementById('req-fecha-fin').value;
+            
+            if(!empresa || !fechaIni) {
+                alert("Por favor, ingresa al menos la Empresa Destino y la Fecha de Inicio para guardar.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-guardar-req');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...';
+            btn.disabled = true;
+
+            const inputsState = {
+                hc_papel_inst: document.getElementById('hc_papel_inst').value,
+                hc_papel_est: document.getElementById('hc_papel_est').value,
+                hc_web_inst: document.getElementById('hc_web_inst').value,
+                hc_web_est: document.getElementById('hc_web_est').value,
+                audio_inst: document.getElementById('audio_inst').value,
+                audio_est: document.getElementById('audio_est').value,
+                espiro_inst: document.getElementById('espiro_inst').value,
+                espiro_est: document.getElementById('espiro_est').value,
+                visual_inst: document.getElementById('visual_inst').value,
+                visual_est: document.getElementById('visual_est').value,
+                nordico_inst: document.getElementById('nordico_inst').value,
+                nordico_est: document.getElementById('nordico_est').value,
+                medicos: document.getElementById('req-medicos').value,
+                manual_bolsa: document.getElementById('manual_bolsa') ? document.getElementById('manual_bolsa').value : '',
+                manual_epp: document.getElementById('manual_epp') ? document.getElementById('manual_epp').value : ''
+            };
+
+            const payload = {
+                empresa,
+                fechaIni,
+                fechaFin,
+                inputsState,
+                timestamp: new Date()
+            };
+
+            try {
+                if (currentReqId) {
+                    await window.updateDoc(window.doc(window.db, "requisiciones_guardadas", currentReqId), payload);
+                } else {
+                    const docRef = await window.addDoc(window.collection(window.db, "requisiciones_guardadas"), payload);
+                    currentReqId = docRef.id;
+                }
+                
+                btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                btn.classList.add('bg-sky-600', 'hover:bg-sky-700');
+                btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> ¡Guardado Exitosamente!';
+                
+                setTimeout(() => { 
+                    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-2"></i> Actualizar Requisición'; 
+                    btn.disabled = false; 
+                }, 2000);
+                
+                window.cargarRequisicionesGuardadas();
+            } catch (error) {
+                console.error("Error guardando requisición:", error);
+                alert("Hubo un error al intentar guardar en la nube.");
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        };
+
+        window.cargarRequisicion = async function(id) {
+            try {
+                const docSnap = await window.getDoc(window.doc(window.db, "requisiciones_guardadas", id));
+                if (docSnap.exists()) {
+                    const d = docSnap.data();
+                    currentReqId = id;
+                    
+                    document.getElementById('req-empresa').value = d.empresa || '';
+                    document.getElementById('req-fecha-ini').value = d.fechaIni || '';
+                    document.getElementById('req-fecha-fin').value = d.fechaFin || '';
+                    
+                    if (d.inputsState) {
+                        for (const [key, value] of Object.entries(d.inputsState)) {
+                            const inputElem = document.getElementById(key);
+                            if (inputElem) inputElem.value = value;
+                        }
+                    }
+                    
+                    window.calcularRequisicion();
+                    
+                    // Restauramos los valores manuales si se habían modificado sobre el FO-TF-49
+                    if (d.inputsState.manual_bolsa && document.getElementById('manual_bolsa')) {
+                        document.getElementById('manual_bolsa').value = d.inputsState.manual_bolsa;
+                    }
+                    if (d.inputsState.manual_epp && document.getElementById('manual_epp')) {
+                        document.getElementById('manual_epp').value = d.inputsState.manual_epp;
+                    }
+
+                    const btn = document.getElementById('btn-guardar-req');
+                    btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                    btn.classList.add('bg-sky-600', 'hover:bg-sky-700');
+                    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-2"></i> Actualizar Requisición';
+                    
+                    window.cargarRequisicionesGuardadas();
+                }
+            } catch(e) { console.error("Error cargando la requisición:", e); }
+        };
+
+        window.eliminarRequisicion = async function(id, event) {
+            event.stopPropagation(); 
+            if(!confirm("¿Estás seguro de eliminar esta requisición de la base de datos?")) return;
+            try {
+                await window.deleteDoc(window.doc(window.db, "requisiciones_guardadas", id));
+                if(currentReqId === id) window.prepararNuevaRequisicion();
+                window.cargarRequisicionesGuardadas();
+            } catch(e) { console.error("Error eliminando:", e); }
+        };
+
+        window.prepararNuevaRequisicion = function() {
+            currentReqId = null;
+            document.getElementById('req-empresa').value = '';
+            document.getElementById('req-fecha-ini').value = '';
+            document.getElementById('req-fecha-fin').value = '';
+            
+            const fields = [
+                'hc_papel_inst', 'hc_papel_est', 'hc_web_inst', 'hc_web_est', 
+                'audio_inst', 'audio_est', 'espiro_inst', 'espiro_est', 
+                'visual_inst', 'visual_est', 'nordico_inst', 'nordico_est'
+            ];
+            fields.forEach(f => { if(document.getElementById(f)) document.getElementById(f).value = ''; });
+            document.getElementById('req-medicos').value = '1';
+            
+            document.getElementById('panel-preview').classList.add('hidden');
+            
+            const btn = document.getElementById('btn-guardar-req');
+            btn.classList.add('hidden');
+            btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            btn.classList.remove('bg-sky-600', 'hover:bg-sky-700');
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-2"></i> Guardar Requisición';
+            
+            window.cargarRequisicionesGuardadas();
         };
 
         window.renderizarEtiquetas = function() {
