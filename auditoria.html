@@ -756,7 +756,7 @@
             
             // 3. MAPEOS FLEXIBLES
             if (upper.includes("HISTORIA CLINICA") || upper === "HC" || upper === "H.C." || upper.includes("EXAMEN MEDICO")) return "Historia Clínica";
-            if (upper.includes("VISUAL") || upper.includes("OPTOMETRIA") || upper.includes("AGUDEZA")) return "Examen Capacidad Visual";
+            if (upper.includes("VISUAL") || upper.includes("OPTOMETRIA") || upper.includes("AGUDEZA VISUAL")) || upper.includes("AGUDEZA")) || upper.includes("EXAMEN MEDICO"))  return "Examen Capacidad Visual";
             if (upper.includes("CONSULTA")) return "Consulta Médica";
             if (upper.includes("TIMPANOMETRIA") || upper.includes("TIMPANO")) return "Timpanometría"; 
             
