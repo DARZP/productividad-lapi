@@ -766,19 +766,17 @@
             return `metadata_${safeName}`;
         }
 
-        // 2. GENERADOR DE INICIALES (Para cuando ponen "DALR" en lugar de "LRDA")
-        function getPosiblesIniciales(nombreOficial) {
+        // 2. GENERADOR DE INICIALES INFALIBLE (Agnóstico al orden)
+        function coincidenIniciales(siglas, nombreOficial) {
             const words = normalizarDato(nombreOficial).split(' ').filter(w => w.length > 2);
-            if (words.length === 0) return [];
-            let iniciales = [];
-            iniciales.push(words.map(w => w.charAt(0)).join(''));
-            if (words.length === 4) {
-                iniciales.push(words[2].charAt(0) + words[3].charAt(0) + words[0].charAt(0) + words[1].charAt(0));
-            } else if (words.length === 3) {
-                iniciales.push(words[1].charAt(0) + words[2].charAt(0) + words[0].charAt(0));
-                iniciales.push(words[2].charAt(0) + words[0].charAt(0) + words[1].charAt(0));
-            }
-            return iniciales;
+            // Si la cantidad de letras no coincide con la cantidad de nombres/apellidos, no es match
+            if (words.length === 0 || siglas.length !== words.length) return false;
+            
+            // Ordenamos alfabéticamente las letras de las siglas y las iniciales del nombre oficial
+            const siglasSort = siglas.split('').sort().join('');
+            const inicialesSort = words.map(w => w.charAt(0)).sort().join('');
+            
+            return siglasSort === inicialesSort;
         }
 
         const DICCIONARIO_HISTORICO_INICIALES = {
@@ -816,8 +814,6 @@
             let medicos = window.LAPI_CONFIG?.medicos || [];
 
             // 1. Diccionario Histórico
-            // CORRECCIÓN: Ahora NO hacemos "return" inmediato. Guardamos el nombre viejo 
-            // para que el algoritmo lo analice y lo adapte al catálogo nuevo (V5).
             const diccInic = DICCIONARIO_HISTORICO_INICIALES;
             let medFromDict = null;
             if (diccInic[suc]) {
@@ -839,21 +835,19 @@
                     if (medFromDict) break;
                 }
             }
-            // Si lo encontramos en el diccionario, sobreescribimos la variable 'med'
             if (medFromDict) med = medFromDict; 
 
             // 2. Match Exacto Catálogo V5
             let exactMatch = medicos.find(m => window.normalizarDato(m) === med); 
             if(exactMatch) return window.normalizarDato(exactMatch);
 
-            // 3. Búsqueda de iniciales (Ej. AEGL/DALR divide y busca)
+            // 3. Búsqueda de iniciales infalible (Soporta orden inventado ej. RAVH)
             let partes = med.split(/[\/\-\&\+\,]| Y |\s+/).map(p => p.trim());
             let matchParcial = null;
             for (let parte of partes) {
                 if (parte.length >= 2 && parte.length <= 5) {
                     for (let m of medicos) {
-                        let iniciales = getPosiblesIniciales(m);
-                        if (iniciales.includes(parte)) {
+                        if (coincidenIniciales(parte, m)) {
                             matchParcial = window.normalizarDato(m);
                             break;
                         }
@@ -863,7 +857,7 @@
             }
             if(matchParcial) return matchParcial;
 
-            // 4. Algoritmo Inteligente (Fuzzy Match - IGNORA EL ORDEN DE LOS APELLIDOS/NOMBRES)
+            // 4. Algoritmo Inteligente Fuzzy Match
             const stopwords = ["DE", "LA", "LAS", "LOS", "DEL", "Y", "MC", "MAC"];
             const tokensInput = med.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
 
@@ -1258,7 +1252,7 @@
             const hashesExcel = Object.keys(excelDataGlobal);
             const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
 
-            let operacionesPendientes = [];
+            let tareasPendientes = [];
 
             todasLasLlaves.forEach(hash => {
                 const [hFecha, hSucursal, hMedico, hEstudio] = hash.split('|');
@@ -1267,13 +1261,18 @@
                     const cA = appDataGlobal[hash] || 0;
 
                     if (cE !== cA) {
-                        operacionesPendientes.push(window.aplicarAjuste(fecha, sucursal, hMedico, estudio, cA, cE));
+                        // Guardamos los parámetros de la tarea en lugar de ejecutar la promesa
+                        tareasPendientes.push({ fecha, sucursal, medico: hMedico, estudio, cA, cE });
                     }
                 }
             });
 
             try {
-                await Promise.all(operacionesPendientes);
+                // Ejecutamos secuencialmente para evitar que Firestore colapse al escribir sobre el mismo array
+                for (let tarea of tareasPendientes) {
+                    await window.aplicarAjuste(tarea.fecha, tarea.sucursal, tarea.medico, tarea.estudio, tarea.cA, tarea.cE);
+                }
+                
                 mostrarToast("¡Reasignación completada con éxito!", "exito");
                 await window.initAuditoria();
             } catch(e) {
@@ -1362,6 +1361,7 @@
                 
                 for(let d of querySnapshot.docs) {
                     let dData = d.data(); 
+                    // CORRECCIÓN VITAL: Forzamos que lea la Sucursal, no la empresa
                     let rawSuc = dData.sucursal || "FORÁNEO"; 
                     let dbSuc = normalizarDato(rawSuc); 
                     let dbMed = normalizarDato(traducirMedico(dData.medico, rawSuc)); 
@@ -1379,7 +1379,6 @@
                     if(metadatosRicos.length > 0) updatePayload[getMetaKey(estudio)] = metadatosRicos;
                     await window.updateDoc(docRefToUpdate, updatePayload);
                 } else {
-                    // SE CORRIGIÓ LA GENERACIÓN DEL ID PARA HACER MATCH EXACTO CON LA APP
                     let safeSucursal = sucursal.replace(/\s+/g, ''); 
                     let safeMedico = medico.replace(/\s+/g, ''); 
                     const newDocId = `SUC_${fecha}_${safeSucursal}_${safeMedico}`;
@@ -1418,7 +1417,8 @@
                     for (let d of qsL.docs) {
                         if (aReducir <= 0) break;
                         let data = d.data(); 
-                        let rawSuc = data.sucursal || data.empresa || "FORÁNEO"; 
+                        // CORRECCIÓN VITAL AQUÍ TAMBIÉN: Ignoramos Empresa para no confundir
+                        let rawSuc = data.sucursal || "FORÁNEO"; 
                         let dbSuc = normalizarDato(rawSuc); 
                         let dbMedTop = normalizarDato(traducirMedico(data.medico, rawSuc)); 
                         if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { 
@@ -1449,13 +1449,6 @@
                     }
                 }
             }
-        };
-
-        window.prepararCorreccion = function(hash, cantExcel, cantApp) {
-            const [fecha, suc, med, est] = hash.split('|');
-            document.getElementById('c-hash').value = hash; document.getElementById('c-cantE').value = cantExcel; document.getElementById('c-cantA').value = cantApp;
-            document.getElementById('c-info').innerHTML = `El sistema ajustará el perfil de <b>${med}</b> para que pase de ${cantApp} a exactamente <b>${cantExcel}</b> estudios de <b>${est}</b>.`;
-            abrirModal('correccion');
         };
 
         window.ejecutarCorreccion = async function() {
