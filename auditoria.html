@@ -70,8 +70,6 @@
         window.deleteDoc = deleteDoc;
         window.orderBy = orderBy; 
 
-        // Iniciar herramienta de Auditoría
-        window.iniciarAppAuditoria();
     </script>
     
     <style>
@@ -522,11 +520,28 @@
         estudiosMapeo["CONSULTA MÉDICA"] = "Consulta Médica";
         const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 
+        // Funciones auxiliares primero
+        window.normalizarDato = function(texto) {
+            if (!texto) return "DESCONOCIDO";
+            return String(texto).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        };
+
+        window.mostrarToast = function(mensaje, tipo = 'info') {
+            const toast = document.createElement('div');
+            const color = tipo === 'exito' ? 'bg-emerald-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-orange-600');
+            const icono = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-triangle-exclamation' : 'fa-info-circle');
+            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-lg font-bold text-xs flex items-center gap-3 transform transition-all duration-300 translate-x-full opacity-0 max-w-xs`;
+            toast.innerHTML = `<i class="fa-solid ${icono} text-base"></i> <span class="leading-tight">${mensaje}</span>`;
+            document.getElementById('toast-container').appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-x-full', 'opacity-0'), 10);
+            setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
+        };
+
         window.iniciarAppAuditoria = async function() {
             const savedKey = localStorage.getItem('gemini_api_key');
             if(savedKey) document.getElementById('gemini-api-key').value = savedKey;
 
-            aplicarFiltroRapido('mes_anterior'); 
+            window.aplicarFiltroRapido('mes_anterior'); 
             window.cargarTNCs();
             await window.cargarIgnorados();
         };
