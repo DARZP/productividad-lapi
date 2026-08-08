@@ -417,8 +417,8 @@
             <input type="hidden" id="c-cantE">
             <input type="hidden" id="c-cantA">
             <div class="flex gap-3">
-                <button onclick="cerrarModal('correccion')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar</button>
-                <button id="btn-ejecutar-corr" onclick="ejecutarCorreccion()" class="w-1/2 bg-orange-600 hover:bg-orange-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Sincronizar</button>
+                <button onclick="window.cerrarModal('correccion')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-all">Cancelar</button>
+                <button id="btn-ejecutar-corr" onclick="window.ejecutarCorreccion()" class="w-1/2 bg-orange-600 hover:bg-orange-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95">Sincronizar</button>
             </div>
         </div>
     </div>
@@ -1343,6 +1343,7 @@
             let metadatosRicos = excelDataGlobal[hashParaMetadatos] || [];
             
             if (cantExcel > cantApp) {
+                // LÓGICA DE INYECCIÓN (App < Excel) -> Esto funcionaba bien
                 let aInyectar = cantExcel - cantApp;
                 const qDocs = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", "==", fecha));
                 const querySnapshot = await window.getDocs(qDocs);
@@ -1376,7 +1377,10 @@
                     await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", newDocId), setPayload);
                 }
             } else {
+                // LÓGICA DE ELIMINACIÓN/REDUCCIÓN (App > Excel) -> Corregida
                 let aReducir = cantApp - cantExcel;
+                
+                // 1. Reducir primero en Sucursales
                 const qDocs = window.query(window.collection(window.db, "registros_diarios_sucursales"), window.where("fecha", "==", fecha));
                 const qs2 = await window.getDocs(qDocs);
                 for(let d of qs2.docs) {
@@ -1385,13 +1389,17 @@
                     let rawSuc = datos.sucursal || "FORÁNEO"; 
                     let dbSuc = window.normalizarDato(rawSuc); 
                     let dbMed = window.normalizarDato(window.traducirMedico(datos.medico, rawSuc)); 
+                    
                     if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { 
                         if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed]; 
                     }
                     if (dbMed === medico && dbSuc === sucursal && datos.estudios && datos.estudios[estudio]) {
                         let actual = parseInt(datos.estudios[estudio]) || 0;
                         if(actual > 0) {
-                            let quitar = Math.min(actual, aReducir); datos.estudios[estudio] = actual - quitar; aReducir -= quitar;
+                            let quitar = Math.min(actual, aReducir); 
+                            datos.estudios[estudio] = actual - quitar; 
+                            aReducir -= quitar;
+                            
                             if(datos.estudios[estudio] <= 0) delete datos.estudios[estudio];
                             let updatePayload = { estudios: datos.estudios, ultimaActualizacion: new Date() };
                             if(metadatosRicos.length > 0) updatePayload[window.getMetaKey(estudio)] = metadatosRicos;
@@ -1399,39 +1407,64 @@
                         }
                     }
                 }
+                
+                // 2. Si todavía sobran, reducir en Foráneos (revisando dentro del arreglo de detalles)
                 if (aReducir > 0) {
                     const qL = window.query(window.collection(window.db, "registros"), window.where("fecha", "==", fecha));
                     const qsL = await window.getDocs(qL);
+                    
                     for (let d of qsL.docs) {
                         if (aReducir <= 0) break;
                         let data = d.data(); 
                         let rawSuc = data.sucursal || "FORÁNEO"; 
-                        let dbSuc = window.normalizarDato(rawSuc); 
-                        let dbMedTop = window.normalizarDato(window.traducirMedico(data.medico, rawSuc)); 
-                        if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { 
-                            if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop]; 
-                        }
-                        if(dbSuc !== sucursal) continue; 
                         let modificado = false;
+                        
                         if (data.detalles && data.detalles.length > 0) {
                             for (let det of data.detalles) {
                                 if (aReducir <= 0) break;
+                                
                                 let dMed = window.normalizarDato(window.traducirMedico(det.medico || data.medico, rawSuc)); 
                                 let dEst = window.unificarEstudio(det.estudio);
-                                if (dMed === medico && dEst === estudio) { 
+                                
+                                // Evaluamos la sucursal de manera individual para este detalle específico
+                                let detSuc = window.normalizarDato(rawSuc);
+                                if (!detSuc || detSuc === "FORÁNEO" || detSuc === "DESCONOCIDO") {
+                                    if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dMed]) {
+                                        detSuc = window.medicoASucursalGlobal[dMed];
+                                    }
+                                }
+
+                                if (dMed === medico && dEst === estudio && detSuc === sucursal) { 
                                     let c = parseInt(det.cant) || 1; 
                                     let quitar = Math.min(c, aReducir); 
-                                    det.cant = c - quitar; aReducir -= quitar; modificado = true; 
+                                    det.cant = c - quitar; 
+                                    aReducir -= quitar; 
+                                    modificado = true; 
                                 }
                             }
                             if(modificado) {
+                                // Limpiamos los que hayan quedado en 0
                                 data.detalles = data.detalles.filter(det => (parseInt(det.cant) || 0) > 0);
-                                if (data.detalles.length === 0 && !data.estudio) { await window.deleteDoc(d.ref); } else { await window.updateDoc(d.ref, { detalles: data.detalles }); }
+                                if (data.detalles.length === 0 && !data.estudio) { 
+                                    await window.deleteDoc(d.ref); 
+                                } else { 
+                                    await window.updateDoc(d.ref, { detalles: data.detalles }); 
+                                }
                             }
-                        } else if (data.estudio) {
+                        } else if (data.estudio) { // Casos muy viejos sin detalles
                             let dMed = window.normalizarDato(window.traducirMedico(data.medico, rawSuc)); 
                             let dEst = window.unificarEstudio(data.estudio);
-                            if (dMed === medico && dEst === estudio) { await window.deleteDoc(d.ref); aReducir -= 1; }
+                            let detSuc = window.normalizarDato(rawSuc);
+                            if (!detSuc || detSuc === "FORÁNEO" || detSuc === "DESCONOCIDO") {
+                                if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dMed]) {
+                                    detSuc = window.medicoASucursalGlobal[dMed];
+                                }
+                            }
+                            
+                            if (dMed === medico && dEst === estudio && detSuc === sucursal) { 
+                                await window.deleteDoc(d.ref); 
+                                aReducir -= 1; 
+                            }
                         }
                     }
                 }
@@ -1440,19 +1473,35 @@
 
         window.prepararCorreccion = function(hash, cantExcel, cantApp) {
             const [fecha, suc, med, est] = hash.split('|');
-            document.getElementById('c-hash').value = hash; document.getElementById('c-cantE').value = cantExcel; document.getElementById('c-cantA').value = cantApp;
+            document.getElementById('c-hash').value = hash; 
+            document.getElementById('c-cantE').value = cantExcel; 
+            document.getElementById('c-cantA').value = cantApp;
             document.getElementById('c-info').innerHTML = `El sistema ajustará el perfil de <b>${med}</b> para que pase de ${cantApp} a exactamente <b>${cantExcel}</b> estudios de <b>${est}</b>.`;
             window.abrirModal('correccion');
         };
 
         window.ejecutarCorreccion = async function() {
-            const btn = document.getElementById('btn-ejecutar-corr'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
-            const hash = document.getElementById('c-hash').value; const cE = parseInt(document.getElementById('c-cantE').value); const cA = parseInt(document.getElementById('c-cantA').value);
+            const btn = document.getElementById('btn-ejecutar-corr'); 
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; 
+            btn.disabled = true;
+            
+            const hash = document.getElementById('c-hash').value; 
+            const cE = parseInt(document.getElementById('c-cantE').value); 
+            const cA = parseInt(document.getElementById('c-cantA').value);
             const [fecha, sucursal, medico, estudio] = hash.split('|');
+            
             try {
-                await window.aplicarAjuste(fecha, sucursal, medico, estudio, cA, cE); window.mostrarToast("Base de datos sincronizada", "exito"); window.cerrarModal('correccion'); await window.initAuditoria(); 
-            } catch (e) { console.error(e); window.mostrarToast("Fallo sincronización", "error"); }
-            btn.innerHTML = 'Sincronizar'; btn.disabled = false;
+                await window.aplicarAjuste(fecha, sucursal, medico, estudio, cA, cE); 
+                window.mostrarToast("Base de datos sincronizada", "exito"); 
+                window.cerrarModal('correccion'); 
+                await window.initAuditoria(); 
+            } catch (e) { 
+                console.error(e); 
+                window.mostrarToast("Fallo sincronización", "error"); 
+            }
+            
+            btn.innerHTML = 'Sincronizar'; 
+            btn.disabled = false;
         };
 
         window.inyectarFaltantesMasivo = async function() {
