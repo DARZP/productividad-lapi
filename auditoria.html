@@ -712,21 +712,21 @@
             } catch (err) { statusTxt.innerHTML = `<span class="text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Error en la conexión con Microsoft.</span>`; }
         };
 
-        function normalizarDato(texto) {
+        window.normalizarDato = function(texto) {
             if (!texto) return "DESCONOCIDO";
             return String(texto).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-        }
+        };
         
         window.normalizarEmpresa = function(rawEmpresa) {
             if(!rawEmpresa) return "PARTICULAR";
-            let norm = normalizarDato(rawEmpresa).toUpperCase();
+            let norm = window.normalizarDato(rawEmpresa).toUpperCase();
             const empresas = window.LAPI_CONFIG.empresas || [];
             
-            let exact = empresas.find(e => normalizarDato(e).toUpperCase() === norm);
+            let exact = empresas.find(e => window.normalizarDato(e).toUpperCase() === norm);
             if(exact) return exact;
 
             let partial = empresas.find(e => {
-                let eNorm = normalizarDato(e).toUpperCase();
+                let eNorm = window.normalizarDato(e).toUpperCase();
                 return eNorm.includes(norm) || norm.includes(eNorm);
             });
             if(partial) return partial;
@@ -734,15 +734,14 @@
             let words = norm.split(' ').filter(w => w.length > 3); 
             if(words.length > 0) {
                 for(let e of empresas) {
-                    let eNorm = normalizarDato(e).toUpperCase();
+                    let eNorm = window.normalizarDato(e).toUpperCase();
                     if(words.some(w => eNorm.includes(w))) return e;
                 }
             }
             return rawEmpresa.toUpperCase(); 
         };
 
-        // 1. SOLUCIÓN A "ELECTRO" VS "ELECTROCARDIOGRAMA" (Búsqueda por Raíces)
-        function unificarEstudio(est) {
+        window.unificarEstudio = function(est) {
             if(!est) return "Desconocido";
             let upper = est.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             
@@ -758,26 +757,25 @@
             if (upper.includes("NORDICO")) return "Nórdico";
             
             return upper.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-        }
+        };
 
-        function getMetaKey(estudioStr) {
+        window.getMetaKey = function(estudioStr) {
             if(!estudioStr) return "metadata_DESCONOCIDO";
             let safeName = estudioStr.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
             return `metadata_${safeName}`;
-        }
+        };
 
-        // 2. GENERADOR DE INICIALES INFALIBLE (Agnóstico al orden)
-        function coincidenIniciales(siglas, nombreOficial) {
-            const words = normalizarDato(nombreOficial).split(' ').filter(w => w.length > 2);
-            // Si la cantidad de letras no coincide con la cantidad de nombres/apellidos, no es match
+        // EL NUEVO GENERADOR DE INICIALES (A PRUEBA DE DESORDEN)
+        window.coincidenIniciales = function(siglas, nombreOficial) {
+            const words = window.normalizarDato(nombreOficial).split(' ').filter(w => w.length > 2);
             if (words.length === 0 || siglas.length !== words.length) return false;
             
-            // Ordenamos alfabéticamente las letras de las siglas y las iniciales del nombre oficial
+            // Ordenamos las iniciales alfabéticamente para que hagan match sin importar el orden
             const siglasSort = siglas.split('').sort().join('');
             const inicialesSort = words.map(w => w.charAt(0)).sort().join('');
             
             return siglasSort === inicialesSort;
-        }
+        };
 
         const DICCIONARIO_HISTORICO_INICIALES = {
             "BALBUENA": { "JM": "Muñoz Perez Jazmin Nayeli", "JNMP": "Muñoz Perez Jazmin Nayeli", "MZ": "Zarate Flores Myriam Alejandra", "MAZF": "Zarate Flores Myriam Alejandra", "EP": "Perez Bautista Esther", "EPB": "Perez Bautista Esther", "MG": "Dra. Mariana Gaviño" },
@@ -804,7 +802,7 @@
             "REVOLUCION": { "MS": "Miriam Elizabeth Saavedra Olvera", "MESO": "Miriam Elizabeth Saavedra Olvera", "VR": "Reyes Perez Victor", "CS": "Sanchez Sanchez Claudia Ivonne", "CISS": "Sanchez Sanchez Claudia Ivonne", "DO": "Olvera Aguilar Diana Karen", "DKOA": "Olvera Aguilar Diana Karen", "XF": "Xally Flores Rosas", "BXFR": "Xally Flores Rosas", "BACM": "Chavez Muñoz Brizeth Alondra" }
         };
 
-        function traducirMedico(rawMed, rawSuc) {
+        window.traducirMedico = function(rawMed, rawSuc) {
             if (!rawMed) return "DESCONOCIDO";
             let med = window.normalizarDato(rawMed);
             med = med.replace(/^DR\(A\)\.?\s*/, '').replace(/^DRA\.?\s*/, '').replace(/^DR\.?\s*/, '').replace(/\./g, ' ').replace(/\[INICIAL NO REGISTRADA:\s*/g, '').replace(/\]/g, '').trim();
@@ -813,7 +811,6 @@
             let suc = window.normalizarDato(rawSuc);
             let medicos = window.LAPI_CONFIG?.medicos || [];
 
-            // 1. Diccionario Histórico
             const diccInic = DICCIONARIO_HISTORICO_INICIALES;
             let medFromDict = null;
             if (diccInic[suc]) {
@@ -837,17 +834,15 @@
             }
             if (medFromDict) med = medFromDict; 
 
-            // 2. Match Exacto Catálogo V5
             let exactMatch = medicos.find(m => window.normalizarDato(m) === med); 
             if(exactMatch) return window.normalizarDato(exactMatch);
 
-            // 3. Búsqueda de iniciales infalible (Soporta orden inventado ej. RAVH)
             let partes = med.split(/[\/\-\&\+\,]| Y |\s+/).map(p => p.trim());
             let matchParcial = null;
             for (let parte of partes) {
                 if (parte.length >= 2 && parte.length <= 5) {
                     for (let m of medicos) {
-                        if (coincidenIniciales(parte, m)) {
+                        if (window.coincidenIniciales(parte, m)) {
                             matchParcial = window.normalizarDato(m);
                             break;
                         }
@@ -857,7 +852,6 @@
             }
             if(matchParcial) return matchParcial;
 
-            // 4. Algoritmo Inteligente Fuzzy Match
             const stopwords = ["DE", "LA", "LAS", "LOS", "DEL", "Y", "MC", "MAC"];
             const tokensInput = med.split(/\s+/).filter(p => p.length > 2 && !stopwords.includes(p));
 
@@ -880,7 +874,6 @@
                 if (bestMatch) return bestMatch;
             }
 
-            // 5. Parcial básico
             const partialMatch = medicos.find(m => { 
                 const mNorm = window.normalizarDato(m); 
                 return mNorm.includes(med) || med.includes(mNorm); 
@@ -888,10 +881,9 @@
             if(partialMatch) return window.normalizarDato(partialMatch);
 
             return med;
-        }
+        };
         
-        // 3. SOLUCIÓN A SIGLAS DOBLES (Ej. AEGL/DALR divide y otorga 1 estudio a cada uno)
-        async function procesarArrayBufferExcel(arrayBuffer) {
+        window.procesarArrayBufferExcel = async function(arrayBuffer) {
             let wb = XLSX.read(arrayBuffer, {type:'array'});
             const mesesTexto = { "ENE":0, "FEB":1, "MAR":2, "ABR":3, "MAY":4, "JUN":5, "JUL":6, "AGO":7, "SEP":8, "OCT":9, "NOV":10, "DIC":11 };
             
@@ -930,7 +922,7 @@
                 }
 
                 if(iEnc!==-1){
-                    sEx = normalizarDato(sEx);
+                    sEx = window.normalizarDato(sEx);
                     for(let r=iEnc+1; r<filas.length; r++){
                         let f = filas[r]; if(!f) continue;
                         let fStr = f.join(" ").toUpperCase();
@@ -953,18 +945,17 @@
                         Object.keys(estudiosMapeo).forEach(key => {
                             if(mapa[key]!==undefined && f[mapa[key]] && !String(f[mapa[key]]).toUpperCase().includes("PEND")){
                                 let estRaw = estudiosMapeo[key];
-                                let est = unificarEstudio(estRaw);
+                                let est = window.unificarEstudio(estRaw);
                                 
-                                // El separador de iniciales dobles
                                 let celdaMedicos = String(f[mapa[key]]).toUpperCase();
                                 let medicosSeparados = celdaMedicos.split(/[\/\-\&\+\,]| Y /);
                                 
                                 medicosSeparados.forEach(rMed => {
                                     let medLimpio = rMed.trim();
                                     if(medLimpio) {
-                                        let med = traducirMedico(medLimpio, sEx);
+                                        let med = window.traducirMedico(medLimpio, sEx);
                                         let folioAsignado = (est === "Historia Clínica") ? folioEncontrado : "N/A";
-                                        const hash = `${fEx}|${sEx}|${normalizarDato(med)}|${est}`;
+                                        const hash = `${fEx}|${sEx}|${window.normalizarDato(med)}|${est}`;
                                         
                                         if(!excelDataGlobal[hash]) excelDataGlobal[hash] = [];
                                         excelDataGlobal[hash].push({ orden: numeroOrden, paciente: nombrePaciente, empresa: empresaLimpia, folio: folioAsignado });
@@ -975,13 +966,13 @@
                     }
                 }
             }
-        }
+        };
 
         window.sincronizarAppGlobal = function() {
             appDataGlobal = {};
             for (let suc in diccIniciales) {
                 for (let ini in diccIniciales[suc]) {
-                    window.medicoASucursalGlobal[normalizarDato(diccIniciales[suc][ini])] = normalizarDato(suc);
+                    window.medicoASucursalGlobal[window.normalizarDato(diccIniciales[suc][ini])] = window.normalizarDato(suc);
                 }
             }
             rawDataGlobal.forEach(reg => {
@@ -997,17 +988,17 @@
 
         window.ejecutarCruceDeDatos = async function() {
             const input = document.getElementById('archivoAuditoria');
-            if(input.files.length === 0) return mostrarToast("Sube un archivo Excel.", "error");
+            if(input.files.length === 0) return window.mostrarToast("Sube un archivo Excel.", "error");
             document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cruzando...';
             excelDataGlobal = {};
 
             try {
                 for(let i=0; i<input.files.length; i++){
                     let data = await input.files[i].arrayBuffer();
-                    await procesarArrayBufferExcel(data); 
+                    await window.procesarArrayBufferExcel(data); 
                 }
-                sincronizarAppGlobal(); window.reRenderAuditoria();
-            } catch(e) { mostrarToast("Error leyendo Excel", "error"); console.error(e); }
+                window.sincronizarAppGlobal(); window.reRenderAuditoria();
+            } catch(e) { window.mostrarToast("Error leyendo Excel", "error"); console.error(e); }
             document.getElementById('btn-auditoria').innerHTML = '<i class="fa-solid fa-upload mr-1"></i> Cruzar Archivos Locales';
         };
 
@@ -1020,8 +1011,8 @@
                 const fIni = document.getElementById('a-inicio').value; 
                 const fFin = document.getElementById('a-fin').value;
 
-                let q1 = window.collection(window.db, "registros");
-                let q2 = window.collection(window.db, "registros_diarios_sucursales");
+                let q1 = window.query(window.collection(window.db, "registros"));
+                let q2 = window.query(window.collection(window.db, "registros_diarios_sucursales"));
 
                 if (fIni && fFin) {
                     q1 = window.query(q1, window.where("fecha", ">=", fIni), window.where("fecha", "<=", fFin));
@@ -1037,24 +1028,24 @@
                         if (data.detalles && data.detalles.length > 0) {
                             data.detalles.forEach(det => {
                                 let cant = parseInt(det.cant) || 1;
-                                let estLimpio = unificarEstudio(det.estudio);
-                                let metaKey = getMetaKey(estLimpio);
+                                let estLimpio = window.unificarEstudio(det.estudio);
+                                let metaKey = window.getMetaKey(estLimpio);
                                 let hasMeta = data[metaKey] && data[metaKey].length > 0;
-                                for(let k=0; k<cant; k++) rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: estLimpio, medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal)), hasMeta });
+                                for(let k=0; k<cant; k++) rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: window.normalizarDato(data.sucursal), sucursalBase: window.normalizarDato(data.sucursal), estudio: estLimpio, medico: window.normalizarDato(window.traducirMedico(det.medico || data.medico, data.sucursal)), hasMeta });
                             });
                         } else if (data.estudio) {
-                            let estLimpio = unificarEstudio(data.estudio);
-                            let metaKey = getMetaKey(estLimpio);
+                            let estLimpio = window.unificarEstudio(data.estudio);
+                            let metaKey = window.getMetaKey(estLimpio);
                             let hasMeta = data[metaKey] && data[metaKey].length > 0;
-                            rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: estLimpio, medico: normalizarDato(traducirMedico(data.medico, data.sucursal)), hasMeta });
+                            rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: window.normalizarDato(data.sucursal), sucursalBase: window.normalizarDato(data.sucursal), estudio: estLimpio, medico: window.normalizarDato(window.traducirMedico(data.medico, data.sucursal)), hasMeta });
                         }
                     } else if (data.detalles) {
                         data.detalles.forEach(det => {
                             let cant = parseInt(det.cant) || 1;
-                            let estLimpio = unificarEstudio(det.estudio);
-                            let metaKey = getMetaKey(estLimpio);
+                            let estLimpio = window.unificarEstudio(det.estudio);
+                            let metaKey = window.getMetaKey(estLimpio);
                             let hasMeta = data[metaKey] && data[metaKey].length > 0;
-                            for(let k=0; k<cant; k++) rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: normalizarDato(data.empresa), sucursalBase: normalizarDato(data.sucursal || "FORÁNEO"), estudio: estLimpio, medico: normalizarDato(traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")), hasMeta, cantDetalle: cant });
+                            for(let k=0; k<cant; k++) rawDataGlobal.push({ tipo: "Foráneo", fecha: data.fecha, lugar: window.normalizarDato(data.empresa), sucursalBase: window.normalizarDato(data.sucursal || "FORÁNEO"), estudio: estLimpio, medico: window.normalizarDato(window.traducirMedico(det.medico || data.medico, data.sucursal || "FORÁNEO")), hasMeta, cantDetalle: cant });
                         });
                     }
                 });
@@ -1065,18 +1056,18 @@
                     if(data.estudios) {
                         Object.keys(data.estudios).forEach(est => {
                             let cant = parseInt(data.estudios[est]) || 0;
-                            let estLimpio = unificarEstudio(est);
-                            let metaKey = getMetaKey(estLimpio);
+                            let estLimpio = window.unificarEstudio(est);
+                            let metaKey = window.getMetaKey(estLimpio);
                             let hasMeta = data[metaKey] && data[metaKey].length > 0;
                             for(let k=0; k<cant; k++){
-                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: normalizarDato(data.sucursal), sucursalBase: normalizarDato(data.sucursal), estudio: estLimpio, medico: normalizarDato(traducirMedico(data.medico, data.sucursal)), hasMeta });
+                                rawDataGlobal.push({ tipo: "Sucursal", fecha: data.fecha, lugar: window.normalizarDato(data.sucursal), sucursalBase: window.normalizarDato(data.sucursal), estudio: estLimpio, medico: window.normalizarDato(window.traducirMedico(data.medico, data.sucursal)), hasMeta });
                             }
                         });
                     }
                 });
                 
                 document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-check text-emerald-500 mr-1"></i> BD Lista';
-                sincronizarAppGlobal();
+                window.sincronizarAppGlobal();
                 if(Object.keys(excelDataGlobal).length > 0) window.reRenderAuditoria();
             } catch (error) { document.getElementById('status-db').innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-1"></i> Límite de Cuota o Red'; }
         };
@@ -1166,7 +1157,7 @@
                 }
             });
 
-            renderizarMenuSucursales(discrepanciasPorSucursal);
+            window.renderizarMenuSucursales(discrepanciasPorSucursal);
 
             let filtrados = listaPendientes;
             if (window.sucursalActiva !== "Todas") {
@@ -1177,7 +1168,7 @@
             filtrados.forEach(item => {
                 const { hash, fecha, sucursalBase, medico, estudio, cE, cA } = item;
                 let cHTML='', aHTML='', insight='';
-                let btnLupa = cE > 0 ? `<button onclick="verLupa('${hash}')" class="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-2 py-1 rounded ml-2 transition shadow-sm"><i class="fa-solid fa-magnifying-glass"></i></button>` : '';
+                let btnLupa = cE > 0 ? `<button onclick="window.verLupa('${hash}')" class="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-2 py-1 rounded ml-2 transition shadow-sm"><i class="fa-solid fa-magnifying-glass"></i></button>` : '';
 
                 if (cE > cA) {
                     cHTML = 'bg-red-50 hover:bg-red-100 border-l-4 border-red-400';
@@ -1190,7 +1181,7 @@
 
                 let quad = cuadraturaGlobal[`${fecha}|${sucursalBase}|${estudio}`];
                 if (quad) {
-                    let btnAutoCruce = `<button onclick="sincronizarCruceCuadrado('${fecha}', '${sucursalBase}', '${estudio}')" class="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-3 rounded-lg text-[9px] shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1 uppercase tracking-widest w-full"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Reasignar</button>`;
+                    let btnAutoCruce = `<button onclick="window.sincronizarCruceCuadrado('${fecha}', '${sucursalBase}', '${estudio}')" class="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-3 rounded-lg text-[9px] shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1 uppercase tracking-widest w-full"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Reasignar</button>`;
 
                     if (quad.sumE === quad.sumA) {
                         if (cE > cA) {
@@ -1210,9 +1201,9 @@
                 }
 
                 aHTML = `
-                    <button onclick="prepararCorreccion('${hash}', ${cE}, ${cA})" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg text-xs shadow-sm transition"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
-                    <button onclick="abrirModalTncAutomatica('${hash}', ${cE}, ${cA})" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg text-xs shadow-sm transition"><i class="fa-solid fa-triangle-exclamation"></i></button>
-                    <button onclick="ignorarDiscrepancia('${hash}')" class="bg-slate-300 hover:bg-slate-400 text-slate-700 p-2 rounded-lg text-xs shadow-sm transition"><i class="fa-solid fa-eye-slash"></i></button>
+                    <button onclick="window.prepararCorreccion('${hash}', ${cE}, ${cA})" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg text-xs shadow-sm transition"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                    <button onclick="window.abrirBuscadorUniversal()" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg text-xs shadow-sm transition"><i class="fa-solid fa-triangle-exclamation"></i></button>
+                    <button onclick="window.ignorarDiscrepancia('${hash}')" class="bg-slate-300 hover:bg-slate-400 text-slate-700 p-2 rounded-lg text-xs shadow-sm transition"><i class="fa-solid fa-eye-slash"></i></button>
                 `;
 
                 let alertMedico = medico.includes('[') ? `text-red-500 font-black` : `text-slate-700 font-bold`;
@@ -1247,7 +1238,7 @@
         window.sincronizarCruceCuadrado = async function(fecha, sucursal, estudio) {
             if(!confirm(`¿Deseas reasignar automáticamente los estudios de "${estudio}" entre el personal de ${sucursal} para que cuadren exactamente con el Excel?`)) return;
 
-            mostrarToast("Iniciando reasignación mágica...", "info", 2000);
+            window.mostrarToast("Iniciando reasignación mágica...", "info", 2000);
 
             const hashesExcel = Object.keys(excelDataGlobal);
             const todasLasLlaves = new Set([...hashesExcel, ...Object.keys(appDataGlobal)]);
@@ -1261,39 +1252,37 @@
                     const cA = appDataGlobal[hash] || 0;
 
                     if (cE !== cA) {
-                        // Guardamos los parámetros de la tarea en lugar de ejecutar la promesa
                         tareasPendientes.push({ fecha, sucursal, medico: hMedico, estudio, cA, cE });
                     }
                 }
             });
 
             try {
-                // Ejecutamos secuencialmente para evitar que Firestore colapse al escribir sobre el mismo array
                 for (let tarea of tareasPendientes) {
                     await window.aplicarAjuste(tarea.fecha, tarea.sucursal, tarea.medico, tarea.estudio, tarea.cA, tarea.cE);
                 }
                 
-                mostrarToast("¡Reasignación completada con éxito!", "exito");
+                window.mostrarToast("¡Reasignación completada con éxito!", "exito");
                 await window.initAuditoria();
             } catch(e) {
                 console.error(e);
-                mostrarToast("Hubo un error en la reasignación.", "error");
+                window.mostrarToast("Hubo un error en la reasignación.", "error");
             }
         };
 
-        function renderizarMenuSucursales(conteos) {
+        window.renderizarMenuSucursales = function(conteos) {
             const menu = document.getElementById('menu-sucursales'); let html = ''; let totalErr = Object.values(conteos).reduce((a,b) => a+b, 0);
             let actTodas = window.sucursalActiva === "Todas" ? "bg-orange-600 text-white shadow-md" : "bg-orange-50 text-orange-700 hover:bg-orange-100";
-            html += `<button onclick="cambiarFiltroSucursal('Todas')" class="w-full text-left p-2.5 rounded-xl font-bold text-xs flex justify-between items-center transition-all ${actTodas}">Todas <span class="bg-black/20 px-2 py-0.5 rounded-lg text-[10px]">${totalErr}</span></button>`;
+            html += `<button onclick="window.cambiarFiltroSucursal('Todas')" class="w-full text-left p-2.5 rounded-xl font-bold text-xs flex justify-between items-center transition-all ${actTodas}">Todas <span class="bg-black/20 px-2 py-0.5 rounded-lg text-[10px]">${totalErr}</span></button>`;
             for(let suc in conteos) {
                 let errs = conteos[suc]; let act = window.sucursalActiva === suc ? "bg-orange-600 text-white shadow-md" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50";
                 let badge = errs > 0 ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-600";
-                html += `<button onclick="cambiarFiltroSucursal('${suc}')" class="w-full text-left p-2.5 rounded-xl font-bold text-xs flex justify-between items-center transition-all mt-1 ${act}">${suc} <span class="${badge} px-2 py-0.5 rounded-lg text-[10px]">${errs}</span></button>`;
+                html += `<button onclick="window.cambiarFiltroSucursal('${suc}')" class="w-full text-left p-2.5 rounded-xl font-bold text-xs flex justify-between items-center transition-all mt-1 ${act}">${suc} <span class="${badge} px-2 py-0.5 rounded-lg text-[10px]">${errs}</span></button>`;
             }
             menu.innerHTML = html;
-        }
+        };
 
-        window.cambiarFiltroSucursal = function(suc) { window.sucursalActiva = suc; window.reRenderAuditoria(); }
+        window.cambiarFiltroSucursal = function(suc) { window.sucursalActiva = suc; window.reRenderAuditoria(); };
 
         window.enriquecerMatchesMasivo = async function() {
             if(!confirm(`¿Deseas inyectar los metadatos de Excel a los ${window.matchesParaEnriquecer.length} grupos que hicieron Match perfecto?`)) return;
@@ -1318,33 +1307,33 @@
                         let docRefToUpdate = null;
 
                         for(let d of qsDocs.docs) {
-                            let data = d.data(); let dbSuc = normalizarDato(data.sucursal); let dbMed = normalizarDato(traducirMedico(data.medico, dbSuc));
+                            let data = d.data(); let dbSuc = window.normalizarDato(data.sucursal); let dbMed = window.normalizarDato(window.traducirMedico(data.medico, dbSuc));
                             if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed]; }
                             if (dbMed === item.medico && dbSuc === item.sucursal) {
-                                let hasStudy = false; if (data.estudios) { for(let k in data.estudios) { if (unificarEstudio(k) === item.estudio) hasStudy = true; } }
+                                let hasStudy = false; if (data.estudios) { for(let k in data.estudios) { if (window.unificarEstudio(k) === item.estudio) hasStudy = true; } }
                                 if (hasStudy) { docRefToUpdate = d.ref; break; }
                             }
                         }
 
                         if (!docRefToUpdate) {
                             for(let d of qsLeg.docs) {
-                                let data = d.data(); let dbSuc = normalizarDato(data.sucursal || data.empresa || "FORÁNEO"); let dbMedTop = normalizarDato(traducirMedico(data.medico, dbSuc)); 
+                                let data = d.data(); let dbSuc = window.normalizarDato(data.sucursal || data.empresa || "FORÁNEO"); let dbMedTop = window.normalizarDato(window.traducirMedico(data.medico, dbSuc)); 
                                 if (dbSuc === "FORÁNEO" && window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop];
                                 let docHasMedicoAndStudy = false;
                                 if (data.detalles && data.detalles.length > 0) {
-                                    docHasMedicoAndStudy = data.detalles.some(det => normalizarDato(traducirMedico(det.medico || data.medico, dbSuc)) === item.medico && unificarEstudio(det.estudio) === item.estudio);
+                                    docHasMedicoAndStudy = data.detalles.some(det => window.normalizarDato(window.traducirMedico(det.medico || data.medico, dbSuc)) === item.medico && window.unificarEstudio(det.estudio) === item.estudio);
                                 } else if (data.estudio) {
-                                    docHasMedicoAndStudy = (normalizarDato(traducirMedico(data.medico, dbSuc)) === item.medico && unificarEstudio(data.estudio) === item.estudio);
+                                    docHasMedicoAndStudy = (window.normalizarDato(window.traducirMedico(data.medico, dbSuc)) === item.medico && window.unificarEstudio(data.estudio) === item.estudio);
                                 }
                                 if (dbSuc === item.sucursal && docHasMedicoAndStudy) { docRefToUpdate = d.ref; break; }
                             }
                         }
 
-                        if (docRefToUpdate) { let key = getMetaKey(item.estudio); await window.updateDoc(docRefToUpdate, { [key]: metadatosRicos }); actualizados++; }
+                        if (docRefToUpdate) { let key = window.getMetaKey(item.estudio); await window.updateDoc(docRefToUpdate, { [key]: metadatosRicos }); actualizados++; }
                     }
                 }
-                mostrarToast(`Enriquecimiento exitoso: ${actualizados} registros actualizados con IA`, "exito"); await window.initAuditoria(); 
-            } catch(e) { console.error(e); mostrarToast("Error enriqueciendo datos", "error"); }
+                window.mostrarToast(`Enriquecimiento exitoso: ${actualizados} registros actualizados con IA`, "exito"); await window.initAuditoria(); 
+            } catch(e) { console.error(e); window.mostrarToast("Error enriqueciendo datos", "error"); }
             btn.innerHTML = txtOriginal; btn.disabled = false;
         };
 
@@ -1361,10 +1350,9 @@
                 
                 for(let d of querySnapshot.docs) {
                     let dData = d.data(); 
-                    // CORRECCIÓN VITAL: Forzamos que lea la Sucursal, no la empresa
                     let rawSuc = dData.sucursal || "FORÁNEO"; 
-                    let dbSuc = normalizarDato(rawSuc); 
-                    let dbMed = normalizarDato(traducirMedico(dData.medico, rawSuc)); 
+                    let dbSuc = window.normalizarDato(rawSuc); 
+                    let dbMed = window.normalizarDato(window.traducirMedico(dData.medico, rawSuc)); 
                     
                     if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { 
                         if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed]; 
@@ -1376,7 +1364,7 @@
                     if(!datos.estudios) datos.estudios = {}; 
                     datos.estudios[estudio] = (parseInt(datos.estudios[estudio]) || 0) + aInyectar; 
                     let updatePayload = { estudios: datos.estudios, ultimaActualizacion: new Date() };
-                    if(metadatosRicos.length > 0) updatePayload[getMetaKey(estudio)] = metadatosRicos;
+                    if(metadatosRicos.length > 0) updatePayload[window.getMetaKey(estudio)] = metadatosRicos;
                     await window.updateDoc(docRefToUpdate, updatePayload);
                 } else {
                     let safeSucursal = sucursal.replace(/\s+/g, ''); 
@@ -1384,7 +1372,7 @@
                     const newDocId = `SUC_${fecha}_${safeSucursal}_${safeMedico}`;
                     
                     let setPayload = { tipo: "sucursal_agrupada", fecha, sucursal, medico, estudios: { [estudio]: aInyectar }, observaciones: "Ajustado por Auditoría", ultimaActualizacion: new Date() };
-                    if(metadatosRicos.length > 0) setPayload[getMetaKey(estudio)] = metadatosRicos;
+                    if(metadatosRicos.length > 0) setPayload[window.getMetaKey(estudio)] = metadatosRicos;
                     await window.setDoc(window.doc(window.db, "registros_diarios_sucursales", newDocId), setPayload);
                 }
             } else {
@@ -1395,8 +1383,8 @@
                     if (aReducir <= 0) break;
                     let datos = d.data(); 
                     let rawSuc = datos.sucursal || "FORÁNEO"; 
-                    let dbSuc = normalizarDato(rawSuc); 
-                    let dbMed = normalizarDato(traducirMedico(datos.medico, rawSuc)); 
+                    let dbSuc = window.normalizarDato(rawSuc); 
+                    let dbMed = window.normalizarDato(window.traducirMedico(datos.medico, rawSuc)); 
                     if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { 
                         if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMed]) dbSuc = window.medicoASucursalGlobal[dbMed]; 
                     }
@@ -1406,7 +1394,7 @@
                             let quitar = Math.min(actual, aReducir); datos.estudios[estudio] = actual - quitar; aReducir -= quitar;
                             if(datos.estudios[estudio] <= 0) delete datos.estudios[estudio];
                             let updatePayload = { estudios: datos.estudios, ultimaActualizacion: new Date() };
-                            if(metadatosRicos.length > 0) updatePayload[getMetaKey(estudio)] = metadatosRicos;
+                            if(metadatosRicos.length > 0) updatePayload[window.getMetaKey(estudio)] = metadatosRicos;
                             await window.updateDoc(d.ref, updatePayload);
                         }
                     }
@@ -1417,10 +1405,9 @@
                     for (let d of qsL.docs) {
                         if (aReducir <= 0) break;
                         let data = d.data(); 
-                        // CORRECCIÓN VITAL AQUÍ TAMBIÉN: Ignoramos Empresa para no confundir
                         let rawSuc = data.sucursal || "FORÁNEO"; 
-                        let dbSuc = normalizarDato(rawSuc); 
-                        let dbMedTop = normalizarDato(traducirMedico(data.medico, rawSuc)); 
+                        let dbSuc = window.normalizarDato(rawSuc); 
+                        let dbMedTop = window.normalizarDato(window.traducirMedico(data.medico, rawSuc)); 
                         if (!dbSuc || dbSuc === "FORÁNEO" || dbSuc === "DESCONOCIDO") { 
                             if (window.medicoASucursalGlobal && window.medicoASucursalGlobal[dbMedTop]) dbSuc = window.medicoASucursalGlobal[dbMedTop]; 
                         }
@@ -1429,8 +1416,8 @@
                         if (data.detalles && data.detalles.length > 0) {
                             for (let det of data.detalles) {
                                 if (aReducir <= 0) break;
-                                let dMed = normalizarDato(traducirMedico(det.medico || data.medico, rawSuc)); 
-                                let dEst = unificarEstudio(det.estudio);
+                                let dMed = window.normalizarDato(window.traducirMedico(det.medico || data.medico, rawSuc)); 
+                                let dEst = window.unificarEstudio(det.estudio);
                                 if (dMed === medico && dEst === estudio) { 
                                     let c = parseInt(det.cant) || 1; 
                                     let quitar = Math.min(c, aReducir); 
@@ -1442,8 +1429,8 @@
                                 if (data.detalles.length === 0 && !data.estudio) { await window.deleteDoc(d.ref); } else { await window.updateDoc(d.ref, { detalles: data.detalles }); }
                             }
                         } else if (data.estudio) {
-                            let dMed = normalizarDato(traducirMedico(data.medico, rawSuc)); 
-                            let dEst = unificarEstudio(data.estudio);
+                            let dMed = window.normalizarDato(window.traducirMedico(data.medico, rawSuc)); 
+                            let dEst = window.unificarEstudio(data.estudio);
                             if (dMed === medico && dEst === estudio) { await window.deleteDoc(d.ref); aReducir -= 1; }
                         }
                     }
@@ -1451,13 +1438,20 @@
             }
         };
 
+        window.prepararCorreccion = function(hash, cantExcel, cantApp) {
+            const [fecha, suc, med, est] = hash.split('|');
+            document.getElementById('c-hash').value = hash; document.getElementById('c-cantE').value = cantExcel; document.getElementById('c-cantA').value = cantApp;
+            document.getElementById('c-info').innerHTML = `El sistema ajustará el perfil de <b>${med}</b> para que pase de ${cantApp} a exactamente <b>${cantExcel}</b> estudios de <b>${est}</b>.`;
+            window.abrirModal('correccion');
+        };
+
         window.ejecutarCorreccion = async function() {
             const btn = document.getElementById('btn-ejecutar-corr'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
             const hash = document.getElementById('c-hash').value; const cE = parseInt(document.getElementById('c-cantE').value); const cA = parseInt(document.getElementById('c-cantA').value);
             const [fecha, sucursal, medico, estudio] = hash.split('|');
             try {
-                await window.aplicarAjuste(fecha, sucursal, medico, estudio, cA, cE); mostrarToast("Base de datos sincronizada", "exito"); cerrarModal('correccion'); await window.initAuditoria(); 
-            } catch (e) { console.error(e); mostrarToast("Fallo sincronización", "error"); }
+                await window.aplicarAjuste(fecha, sucursal, medico, estudio, cA, cE); window.mostrarToast("Base de datos sincronizada", "exito"); window.cerrarModal('correccion'); await window.initAuditoria(); 
+            } catch (e) { console.error(e); window.mostrarToast("Fallo sincronización", "error"); }
             btn.innerHTML = 'Sincronizar'; btn.disabled = false;
         };
 
@@ -1466,8 +1460,8 @@
             const btn = document.getElementById('btn-bulk-inyectar'); const txtOriginal = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Inyectando...'; btn.disabled = true;
             try {
                 for(let item of window.discrepanciasInyectar) { const [fecha, sucursal, medico, estudio] = item.hash.split('|'); await window.aplicarAjuste(fecha, sucursal, medico, estudio, item.cantA, item.cantE); }
-                mostrarToast("Inyección completada", "exito"); await window.initAuditoria(); 
-            } catch(e) { mostrarToast("Error", "error"); }
+                window.mostrarToast("Inyección completada", "exito"); await window.initAuditoria(); 
+            } catch(e) { window.mostrarToast("Error", "error"); }
             btn.innerHTML = txtOriginal; btn.disabled = false;
         };
 
@@ -1476,8 +1470,8 @@
             const btn = document.getElementById('btn-bulk-eliminar'); const txtOriginal = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Ajustando...'; btn.disabled = true;
             try {
                 for(let item of window.discrepanciasEliminar) { const [fecha, sucursal, medico, estudio] = item.hash.split('|'); await window.aplicarAjuste(fecha, sucursal, medico, estudio, item.cantA, item.cantE); }
-                mostrarToast("Limpieza completada", "exito"); await window.initAuditoria();
-            } catch(e) { mostrarToast("Error", "error"); }
+                window.mostrarToast("Limpieza completada", "exito"); await window.initAuditoria();
+            } catch(e) { window.mostrarToast("Error", "error"); }
             btn.innerHTML = txtOriginal; btn.disabled = false;
         };
 
@@ -1490,12 +1484,12 @@
                     const clasif = dif > 0 ? "ESTUDIO FALTANTE (OMISIÓN APP)" : "ESTUDIO SOBRANTE (DUPLICADO APP)"; const notas = `Detectado en Auditoría Ciega Masiva (Diferencia: ${dif > 0 ? '+' + dif : dif})`;
                     await window.addDoc(window.collection(window.db, "tickets_auditoria"), { origen: "Sucursal", fechaOperativa: fecha, sucursal: lugar, medico: medico, estudio: estudio, clasificacion: clasif, comentarios: notas, estado: 'Abierto', timestamp: new Date() });
                 }
-                mostrarToast("TNCs generados con éxito", "exito"); window.cargarTNCs(); 
-            } catch(e) { mostrarToast("Error", "error"); }
+                window.mostrarToast("TNCs generados con éxito", "exito"); window.cargarTNCs(); 
+            } catch(e) { window.mostrarToast("Error", "error"); }
             btn.innerHTML = txtOriginal; btn.disabled = false;
         };
 
-        window.abrirBuscadorUniversal = function() { document.getElementById('tnc-hash').value = ""; window.resetBuscadorTNC(); abrirModal('tnc'); window.ejecutarBuscadorTNC(); };
+        window.abrirBuscadorUniversal = function() { document.getElementById('tnc-hash').value = ""; window.resetBuscadorTNC(); window.abrirModal('tnc'); window.ejecutarBuscadorTNC(); };
 
         window.resetBuscadorTNC = function() {
             document.getElementById('tnc-paso-1').classList.remove('hidden'); document.getElementById('tnc-paso-2').classList.add('hidden');
